@@ -158,7 +158,7 @@
             if (!is_null($shippingAddress)) {
                 foreach ($classFunctions as $function) {
                     if (call_user_func(array($billingAddress, $function)) !== call_user_func(array($shippingAddress, $function))) {
-                        Shopware()->Log()->Debug('RatePAY: areAddressesEqual-> The value of ' . $function . " differs.");
+                        Shopware()->Pluginlogger()->info('areAddressesEqual-> The value of ' . $function . " differs.");
                         $return = false;
                     }
                 }

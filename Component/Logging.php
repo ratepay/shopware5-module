@@ -60,7 +60,7 @@
             try {
                 Shopware()->Db()->insert('rpay_ratepay_logging', $bind);
             } catch (Exception $exception) {
-                Shopware()->Log()->Err('Fehler beim Loggen: ' . $exception->getMessage());
+                Shopware()->Pluginlogger()->error('Fehler beim Loggen: ' . $exception->getMessage());
             }
         }
 

@@ -38,16 +38,16 @@
                 'copyright'   => 'Copyright (c) 2014, RatePAY GmbH',
                 'label'       => 'RatePAY Payment',
                 'description' =>
-                       '<h2>RatePAY Payment plugin for Shopware Community Edition Version 5.0.0</h2>'
-                     . '<ul>'
-                     . '<li style="list-style: inherit;">RatePAY Payment Module</li>'
-                     . '<li style="list-style: inherit;">Payment means: Invoice, Direct Debit (ELV), Rate</li>'
-                     . '<li style="list-style: inherit;">Cancellations, Returns, etc. can be created from an additional tab in the order detail view</li>'
-                     . '<li style="list-style: inherit;">Integrated support for multishops</li>'
-                     . '<li style="list-style: inherit;">Improved payment form with visual feedback for your customers</li>'
-                     . '<li style="list-style: inherit;">Supported Languages: German, English</li>'
-                     . '<li style="list-style: inherit;">Backend Log with custom View accessible from your shop backend</li>'
-                     . '</ul>'
+                    '<h2>RatePAY Payment plugin for Shopware Community Edition Version 5.0.0</h2>'
+                    . '<ul>'
+                    . '<li style="list-style: inherit;">RatePAY Payment Module</li>'
+                    . '<li style="list-style: inherit;">Payment means: Invoice, Direct Debit (ELV), Rate</li>'
+                    . '<li style="list-style: inherit;">Cancellations, Returns, etc. can be created from an additional tab in the order detail view</li>'
+                    . '<li style="list-style: inherit;">Integrated support for multishops</li>'
+                    . '<li style="list-style: inherit;">Improved payment form with visual feedback for your customers</li>'
+                    . '<li style="list-style: inherit;">Supported Languages: German, English</li>'
+                    . '<li style="list-style: inherit;">Backend Log with custom View accessible from your shop backend</li>'
+                    . '</ul>'
             );
         }
 
@@ -83,7 +83,7 @@
          */
         public function getVersion()
         {
-            return "4.0.1";
+            return "4.0.2";
         }
 
         /**
@@ -364,77 +364,77 @@
         private function _createDataBaseTables()
         {
             $sqlLogging = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_logging` (" .
-                "`id` int(11) NOT NULL AUTO_INCREMENT," .
-                "`date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP," .
-                "`version` varchar(10) DEFAULT 'N/A'," .
-                "`operation` varchar(255) DEFAULT 'N/A'," .
-                "`suboperation` varchar(255) DEFAULT 'N/A'," .
-                "`transactionId` varchar(255) DEFAULT 'N/A'," .
-                "`firstname` varchar(255) DEFAULT 'N/A'," .
-                "`lastname` varchar(255) DEFAULT 'N/A'," .
-                "`request` text," .
-                "`response` text," .
-                "PRIMARY KEY (`id`)" .
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+                          "`id` int(11) NOT NULL AUTO_INCREMENT," .
+                          "`date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP," .
+                          "`version` varchar(10) DEFAULT 'N/A'," .
+                          "`operation` varchar(255) DEFAULT 'N/A'," .
+                          "`suboperation` varchar(255) DEFAULT 'N/A'," .
+                          "`transactionId` varchar(255) DEFAULT 'N/A'," .
+                          "`firstname` varchar(255) DEFAULT 'N/A'," .
+                          "`lastname` varchar(255) DEFAULT 'N/A'," .
+                          "`request` text," .
+                          "`response` text," .
+                          "PRIMARY KEY (`id`)" .
+                          ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $sqlBankdata = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_user_bankdata` (" .
-                "`userID` int(11) NOT NULL AUTO_INCREMENT," .
-                "`bankname` varchar(255) NOT NULL," .
-                "`bankcode` varchar(255) NOT NULL," .
-                "`bankholder` varchar(255) NOT NULL," .
-                "`account` varchar(255) NOT NULL," .
-                "`iban` varchar(255) NOT NULL," .
-                "`bic` varchar(255) NOT NULL," .
-                "PRIMARY KEY (`userID`)" .
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+                           "`userID` int(11) NOT NULL AUTO_INCREMENT," .
+                           "`bankname` varchar(255) NOT NULL," .
+                           "`bankcode` varchar(255) NOT NULL," .
+                           "`bankholder` varchar(255) NOT NULL," .
+                           "`account` varchar(255) NOT NULL," .
+                           "`iban` varchar(255) NOT NULL," .
+                           "`bic` varchar(255) NOT NULL," .
+                           "PRIMARY KEY (`userID`)" .
+                           ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $sqlConfig = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config` (" .
-                "`profileId` varchar(255) NOT NULL," .
-                "`shopId` int(5) NOT NULL, " .
-                "`invoiceStatus` int(1) NOT NULL, " .
-                "`debitStatus` int(1) NOT NULL, " .
-                "`rateStatus` int(1) NOT NULL, " .
-                "`b2b-invoice` varchar(3) NOT NULL, " .
-                "`b2b-debit` varchar(3) NOT NULL, " .
-                "`b2b-rate` varchar(3) NOT NULL, " .
-                "`address-invoice` varchar(3) NOT NULL, " .
-                "`address-debit` varchar(3) NOT NULL, " .
-                "`address-rate` varchar(3) NOT NULL, " .
-                "`limit-invoice-min` int(5) NOT NULL, " .
-                "`limit-debit-min` int(5) NOT NULL, " .
-                "`limit-rate-min` int(5) NOT NULL, " .
-                "`limit-invoice-max` int(5) NOT NULL, " .
-                "`limit-debit-max` int(5) NOT NULL, " .
-                "`limit-rate-max` int(5) NOT NULL, " .
-                "PRIMARY KEY (`profileId`, `shopId`)" .
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+                         "`profileId` varchar(255) NOT NULL," .
+                         "`shopId` int(5) NOT NULL, " .
+                         "`invoiceStatus` int(1) NOT NULL, " .
+                         "`debitStatus` int(1) NOT NULL, " .
+                         "`rateStatus` int(1) NOT NULL, " .
+                         "`b2b-invoice` varchar(3) NOT NULL, " .
+                         "`b2b-debit` varchar(3) NOT NULL, " .
+                         "`b2b-rate` varchar(3) NOT NULL, " .
+                         "`address-invoice` varchar(3) NOT NULL, " .
+                         "`address-debit` varchar(3) NOT NULL, " .
+                         "`address-rate` varchar(3) NOT NULL, " .
+                         "`limit-invoice-min` int(5) NOT NULL, " .
+                         "`limit-debit-min` int(5) NOT NULL, " .
+                         "`limit-rate-min` int(5) NOT NULL, " .
+                         "`limit-invoice-max` int(5) NOT NULL, " .
+                         "`limit-debit-max` int(5) NOT NULL, " .
+                         "`limit-rate-max` int(5) NOT NULL, " .
+                         "PRIMARY KEY (`profileId`, `shopId`)" .
+                         ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $sqlOrderPositions = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_order_positions` (" .
-                "`s_order_details_id` int(11) NOT NULL," .
-                "`delivered` int NOT NULL DEFAULT 0, " .
-                "`cancelled` int NOT NULL DEFAULT 0, " .
-                "`returned` int NOT NULL DEFAULT 0, " .
-                "PRIMARY KEY (`s_order_details_id`)" .
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+                                 "`s_order_details_id` int(11) NOT NULL," .
+                                 "`delivered` int NOT NULL DEFAULT 0, " .
+                                 "`cancelled` int NOT NULL DEFAULT 0, " .
+                                 "`returned` int NOT NULL DEFAULT 0, " .
+                                 "PRIMARY KEY (`s_order_details_id`)" .
+                                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $sqlOrderShipping = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_order_shipping` (" .
-                "`s_order_id` int(11) NOT NULL," .
-                "`delivered` int NOT NULL DEFAULT 0, " .
-                "`cancelled` int NOT NULL DEFAULT 0, " .
-                "`returned` int NOT NULL DEFAULT 0, " .
-                "PRIMARY KEY (`s_order_id`)" .
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+                                "`s_order_id` int(11) NOT NULL," .
+                                "`delivered` int NOT NULL DEFAULT 0, " .
+                                "`cancelled` int NOT NULL DEFAULT 0, " .
+                                "`returned` int NOT NULL DEFAULT 0, " .
+                                "PRIMARY KEY (`s_order_id`)" .
+                                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $sqlOrderHistory = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_order_history` (" .
-                "`id` int(11) NOT NULL AUTO_INCREMENT," .
-                "`orderId` varchar(50) ," .
-                "`date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, " .
-                "`event` varchar(100), " .
-                "`articlename` varchar(100), " .
-                "`articlenumber` varchar(50), " .
-                "`quantity` varchar(50), " .
-                "PRIMARY KEY (`id`)" .
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+                               "`id` int(11) NOT NULL AUTO_INCREMENT," .
+                               "`orderId` varchar(50) ," .
+                               "`date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, " .
+                               "`event` varchar(100), " .
+                               "`articlename` varchar(100), " .
+                               "`articlenumber` varchar(50), " .
+                               "`quantity` varchar(50), " .
+                               "PRIMARY KEY (`id`)" .
+                               ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
             try {
                 Shopware()->Db()->query($sqlBankdata);
                 Shopware()->Db()->query($sqlLogging);
@@ -611,7 +611,7 @@
                 )
                 {
                     if ($this->getRatepayConfig($credentials['de']['profileID'], $credentials['de']['securityCode'], $shopId, $credentials['de']['sandbox'])) {
-                        Shopware()->Pluginlogger()->addNotice('RatePAY', 'RatePAY: Ruleset for germany successfully updated.');
+                        Shopware()->PluginLogger()->addNotice('RatePAY', 'Ruleset for germany successfully updated.');
                     }
                 }
 
@@ -625,7 +625,7 @@
                 )
                 {
                     if ($this->getRatepayConfig($credentials['at']['profileID'], $credentials['at']['securityCode'], $shopId, $credentials['at']['sandbox'])) {
-                        Shopware()->Pluginlogger()->addNotice('RatePAY', 'RatePAY: Ruleset for austria successfully updated.');
+                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for austria successfully updated.');
                     }
                 }
 
@@ -647,7 +647,7 @@
             $parameter = $request->getParams();
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['orderID']);
             if ($parameter['valid'] != true && in_array($order->getPayment()->getName(), array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit"))) {
-                Shopware()->Pluginlogger()->addNotice('RatePAY', 'Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
+                Shopware()->Pluginlogger()->warning('Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
                 $arguments->stop();
             }
 
@@ -667,13 +667,13 @@
                 return false;
             }
             $sql = "SELECT COUNT(*) FROM `s_order_details` AS `detail` "
-                . "INNER JOIN `rpay_ratepay_order_positions` AS `position` "
-                . "ON `position`.`s_order_details_id` = `detail`.`id` "
-                . "WHERE `detail`.`orderID`=? AND "
-                . "(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)";
+                   . "INNER JOIN `rpay_ratepay_order_positions` AS `position` "
+                   . "ON `position`.`s_order_details_id` = `detail`.`id` "
+                   . "WHERE `detail`.`orderID`=? AND "
+                   . "(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)";
             $count = Shopware()->Db()->fetchOne($sql, array($parameter['id']));
             if ($count > 0) {
-                Shopware()->Pluginlogger()->addNotice('RatePAY', 'RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.');
+                Shopware()->Pluginlogger()->warning('RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.');
                 $arguments->stop();
             }
             else {
@@ -693,7 +693,7 @@
                 $response = $request->xmlRequest($paymentChange->toArray());
                 $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
                 if (!$result) {
-                    Shopware()->Pluginlogger()->addNotice('RatePAY', 'Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');
+                    Shopware()->Pluginlogger()->warning('Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');
                     $arguments->stop();
                 }
             }
@@ -746,12 +746,12 @@
 
             try {
                 $isRatePAYpaymentSQL = "SELECT COUNT(*) FROM `s_order` "
-                    . "JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id`=`s_order`.`paymentID` "
-                    . "WHERE  `s_order`.`ordernumber`=? AND`s_core_paymentmeans`.`name` LIKE 'rpayratepay%';";
+                                       . "JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id`=`s_order`.`paymentID` "
+                                       . "WHERE  `s_order`.`ordernumber`=? AND`s_core_paymentmeans`.`name` LIKE 'rpayratepay%';";
                 $isRatePAYpayment = Shopware()->Db()->fetchOne($isRatePAYpaymentSQL, array($ordernumber));
-                Shopware()->Pluginlogger()->addNotice('RatePAY', $isRatePAYpayment);
+                Shopware()->Pluginlogger()->info($isRatePAYpayment);
             } catch (Exception $exception) {
-                Shopware()->Pluginlogger()->addNotice('RatePAY', $exception->getMessage());
+                Shopware()->Pluginlogger()->error($exception->getMessage());
                 $isRatePAYpayment = 0;
             }
 
@@ -764,12 +764,12 @@
                 }
                 $values = substr($values, 0, -1);
                 $sqlInsert = "INSERT INTO `rpay_ratepay_order_positions` "
-                    . "(`s_order_details_id`) "
-                    . "VALUES " . $values;
+                             . "(`s_order_details_id`) "
+                             . "VALUES " . $values;
                 try {
                     Shopware()->Db()->query($sqlInsert);
                 } catch (Exception $exception) {
-                    Shopware()->Pluginlogger()->addNotice('RatePAY', $exception->getMessage());
+                    Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
             }
 
@@ -798,7 +798,7 @@
             }
 
             if (empty(Shopware()->Session()->sUserId)) {
-                Shopware()->Pluginlogger()->addNotice('RatePAY', "RatePAY: sUserId is empty");
+                Shopware()->Pluginlogger()->warning('RatePAY: sUserId is empty');
 
                 return;
             }
@@ -809,22 +809,22 @@
                 $view->sRegisterFinished = 'false';
 
                 $view->ratepayValidateUST = $validation->isUSTSet() ? 'true' : 'false';
-                Shopware()->Pluginlogger()->addNotice('RatePAY', "RatePAY: isUSTSet->" . $view->ratepayValidateUST);
+                Shopware()->Pluginlogger()->info('RatePAY: isUSTSet->' . $view->ratepayValidateUST);
 
                 $view->ratepayValidateCompanyName = $validation->isCompanyNameSet() ? 'true' : 'false';
-                Shopware()->Pluginlogger()->addNotice('RatePAY', "RatePAY: isCompanyNameSet->" . $view->ratepayValidateCompanyName);
+                Shopware()->Pluginlogger()->info('RatePAY: isCompanyNameSet->' . $view->ratepayValidateCompanyName);
 
                 $view->ratepayValidateIsB2B = $validation->isCompanyNameSet() || $validation->isUSTSet() ? 'true' : 'false';
-                Shopware()->Pluginlogger()->addNotice('RatePAY', "RatePAY: isB2B->" . $view->ratepayValidateIsB2B);
+                Shopware()->Pluginlogger()->info('RatePAY: isB2B->' . $view->ratepayValidateIsB2B);
 
                 $view->ratepayIsBillingAddressSameLikeShippingAddress = $validation->isBillingAddressSameLikeShippingAddress() ? 'true' : 'false';
-                Shopware()->Pluginlogger()->addNotice('RatePAY', "RatePAY: isBillingAddressSameLikeShippingAddress->" . $view->ratepayIsBillingAddressSameLikeShippingAddress);
+                Shopware()->Pluginlogger()->info('RatePAY: isBillingAddressSameLikeShippingAddress->' . $view->ratepayIsBillingAddressSameLikeShippingAddress);
 
                 $view->ratepayValidateIsBirthdayValid = true;
                 $view->ratepayValidateisAgeValid = true;
 
                 $view->ratepayValidateisDebitSet = $validation->isDebitSet() ? 'true' : 'false';
-                Shopware()->Pluginlogger()->addNotice('RatePAY', "RatePAY: isDebitSet->" . $view->ratepayValidateisDebitSet);
+                Shopware()->Pluginlogger()->info('RatePAY: isDebitSet->' . $view->ratepayValidateisDebitSet);
 
                 $view->ratepayErrorRatenrechner = Shopware()->Session()->ratepayErrorRatenrechner ? 'true' : 'false';
             }
@@ -921,7 +921,7 @@
                 $basket = Shopware()->Modules()->Basket()->sGetAmount();
                 $basket = $basket['totalAmount'];
 
-                Shopware()->Pluginlogger()->addNotice('RatePAY', "BasketAmount: $basket");
+                Shopware()->Pluginlogger()->info('BasketAmount: $basket');
 
                 if ($basket < $paymentStati['limit-invoice-min'] || $basket > $paymentStati['limit-invoice-max']) {
                     $showInvoice = false;
@@ -943,17 +943,17 @@
             $payments = array();
             foreach ($return as $payment) {
                 if ($payment['name'] === 'rpayratepayinvoice' && !$showInvoice) {
-                    Shopware()->Pluginlogger()->addNotice('RatePAY', "RatePAY: Filter RatePAY-Invoice");
+                    Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Invoice');
                     $setToDefaultPayment = $paymentModel->getName() === "rpayratepayinvoice" ? : $setToDefaultPayment;
                     continue;
                 }
                 if ($payment['name'] === 'rpayratepaydebit' && !$showDebit) {
-                    Shopware()->Pluginlogger()->addNotice('RatePAY', "RatePAY: Filter RatePAY-Debit");
+                    Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Debit');
                     $setToDefaultPayment = $paymentModel->getName() === "rpayratepaydebit" ? : $setToDefaultPayment;
                     continue;
                 }
                 if ($payment['name'] === 'rpayratepayrate' && !$showRate) {
-                    Shopware()->Pluginlogger()->addNotice('RatePAY', "RatePAY: Filter RatePAY-Rate");
+                    Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Rate');
                     $setToDefaultPayment = $paymentModel->getName() === "rpayratepayrate" ? : $setToDefaultPayment;
                     continue;
                 }
@@ -961,12 +961,12 @@
             }
 
             if ($setToDefaultPayment) {
-                Shopware()->Pluginlogger()->addNotice('RatePAY', $user->getPaymentId());
+                Shopware()->Pluginlogger()->info($user->getPaymentId());
                 $user->setPaymentId(Shopware()->Config()->get('paymentdefault'));
                 Shopware()->Models()->persist($user);
                 Shopware()->Models()->flush();
                 Shopware()->Models()->refresh($user);
-                Shopware()->Pluginlogger()->addNotice('RatePAY', $user->getPaymentId());
+                Shopware()->Pluginlogger()->info($user->getPaymentId());
             }
 
             return $payments;
@@ -1026,13 +1026,13 @@
 
                 $updatesql = "UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in($activePayments)";
                 $sql = "REPLACE INTO `rpay_ratepay_config`"
-                    . "(`profileId`, `invoiceStatus`,`debitStatus`,`rateStatus`, "
-                    . "`b2b-invoice`, `b2b-debit`, `b2b-rate`, "
-                    . "`address-invoice`, `address-debit`, `address-rate`, "
-                    . "`limit-invoice-min`, `limit-debit-min`, `limit-rate-min`, "
-                    . "`limit-invoice-max`, `limit-debit-max`, `limit-rate-max`, "
-                    . "`shopId`)"
-                    . "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                       . "(`profileId`, `invoiceStatus`,`debitStatus`,`rateStatus`, "
+                       . "`b2b-invoice`, `b2b-debit`, `b2b-rate`, "
+                       . "`address-invoice`, `address-debit`, `address-rate`, "
+                       . "`limit-invoice-min`, `limit-debit-min`, `limit-rate-min`, "
+                       . "`limit-invoice-max`, `limit-debit-max`, `limit-rate-max`, "
+                       . "`shopId`)"
+                       . "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
                 try {
                     $this->clearRuleSet();
@@ -1050,14 +1050,14 @@
 
                     return true;
                 } catch (Exception $exception) {
-                    Shopware()->Pluginlogger()->addNotice('RatePAY', $exception->getMessage());
+                    Shopware()->Pluginlogger()->info($exception->getMessage());
                     Shopware()->Db()->query("UPDATE `s_core_paymentmeans` SET `active` =0 WHERE `name` LIKE 'rpayratepay%'");
 
                     return false;
                 }
             }
             else {
-                Shopware()->Pluginlogger()->addNotice('RatePAY', 'RatePAY: Profile_Request failed!');
+                Shopware()->Pluginlogger()->error('RatePAY: Profile_Request failed!');
                 Shopware()->Db()->query("UPDATE `s_core_paymentmeans` SET `active` =0 WHERE `name` LIKE 'rpayratepay%'");
 
                 return false;
@@ -1089,10 +1089,10 @@
         private function clearRuleSet()
         {
             $sql = "DELETE FROM `s_core_rulesets` "
-                . "WHERE `paymentID` IN("
-                . "SELECT `id` FROM `s_core_paymentmeans` "
-                . "WHERE `name` LIKE 'rpayratepay%'"
-                . ") AND `rule1` LIKE 'ORDERVALUE%' OR `rule1` = 'CURRENCIESISOISNOT';";
+                   . "WHERE `paymentID` IN("
+                   . "SELECT `id` FROM `s_core_paymentmeans` "
+                   . "WHERE `name` LIKE 'rpayratepay%'"
+                   . ") AND `rule1` LIKE 'ORDERVALUE%' OR `rule1` = 'CURRENCIESISOISNOT';";
             Shopware()->Db()->query($sql);
         }
 

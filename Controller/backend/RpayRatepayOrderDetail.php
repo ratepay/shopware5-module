@@ -100,7 +100,7 @@
                     }
                 } catch (Exception $exception) {
                     $success = false;
-                    Shopware()->Log()->Err("Exception:" . $exception->getMessage());
+                    Shopware()->Pluginlogger()->info('Exception:' . $exception->getMessage());
                 }
             }
 
@@ -120,7 +120,7 @@
                     Shopware()->Db()->query($sqlInsert);
                 } catch (Exception $exception) {
                     $success = false;
-                    Shopware()->Log()->Err("Exception:" . $exception->getMessage(), " SQL:" . $sqlInsert);
+                    Shopware()->Pluginlogger()->info('Exception:' . $exception->getMessage(), ' SQL:' . $sqlInsert);
                 }
             }
 
@@ -658,7 +658,7 @@
                 $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
                 $count += $temp;
             } catch (Exception $exception) {
-                Shopware()->Log()->Err($exception->getMessage());
+                Shopware()->Pluginlogger()->error($exception->getMessage());
             }
 
             return $count;
@@ -686,7 +686,7 @@
             $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
             $count += $temp;
         } catch (Exception $exception) {
-            Shopware()->Log()->Err($exception->getMessage());
+            Shopware()->Pluginlogger()->error($exception->getMessage());
         }
 
         return $count;
@@ -714,7 +714,7 @@
             $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
             $count += $temp;
         } catch (Exception $exception) {
-            Shopware()->Log()->Err($exception->getMessage());
+            Shopware()->Pluginlogger()->error($exception->getMessage());
         }
 
         return $count;
@@ -736,7 +736,7 @@
                 $count    = Shopware()->Db()->fetchOne($sql, array($orderId));
                 $shipping = Shopware()->Db()->fetchOne($shipping, array($orderId));
             } catch (Exception $exception) {
-                Shopware()->Log()->Err($exception->getMessage());
+                Shopware()->Pluginlogger()->error($exception->getMessage());
             }
 
             return $shipping + $count;
@@ -760,7 +760,7 @@
                         'status' => $newState
                     ), '`id`=' . $orderId);
             } catch (Exception $exception) {
-                Shopware()->Log()->Err($exception->getMessage());
+                Shopware()->Pluginlogger()->error($exception->getMessage());
             }
         }
 

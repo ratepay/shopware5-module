@@ -124,9 +124,9 @@
                 )->format("Y-m-d");
                 try {
                     Shopware()->Db()->update('s_user_billingaddress', $updateData, 'userID=' . $Parameter['userid']);
-                    Shopware()->Log()->Info('Kundendaten aktualisiert.');
+                    Shopware()->Pluginlogger()->info('Kundendaten aktualisiert.');
                 } catch (Exception $exception) {
-                    Shopware()->Log()->Err('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
+                    Shopware()->Pluginlogger()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
             }
@@ -145,10 +145,10 @@
                     );
                     try {
                         $this->_encryption->saveBankdata($Parameter['userid'], $updateData);
-                        Shopware()->Log()->Info('Bankdaten aktualisiert.');
+                        Shopware()->Pluginlogger()->info('Bankdaten aktualisiert.');
                     } catch (Exception $exception) {
-                        Shopware()->Log()->Err('Fehler beim Updaten der Bankdaten: ' . $exception->getMessage());
-                        Shopware()->Log()->Debug($updateData);
+                        Shopware()->Pluginlogger()->error('Fehler beim Updaten der Bankdaten: ' . $exception->getMessage());
+                        Shopware()->Pluginlogger()->error($updateData);
                         $return = 'NOK';
                     }
                 }
@@ -216,7 +216,7 @@
                                 'orderID=' . $orderId
                             );
                         } catch (Exception $exception) {
-                            Shopware()->Log()->Err($exception->getMessage());
+                            Shopware()->Pluginlogger()->error($exception->getMessage());
                         }
 
                         //set payments status to payed
@@ -301,7 +301,7 @@
                     array($orderID)
                 );
             } catch (Exception $exception) {
-                Shopware()->Log()->Err($exception->getMessage());
+                Shopware()->Pluginlogger()->error($exception->getMessage());
             }
         }
 
