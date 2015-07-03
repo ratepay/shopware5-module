@@ -83,9 +83,9 @@
             $bindings = array($orderID);
             foreach (array_unique($articleNumbers) as $articleNumber) {
                 $sqlCountEntrys = "SELECT `id`, COUNT(*) AS 'count', SUM(`quantity`) AS 'quantity' FROM `s_order_details` "
-                    . "WHERE `orderID`=? "
-                    . "AND `articleordernumber` = ? "
-                    . "ORDER BY `id` ASC";
+                                  . "WHERE `orderID`=? "
+                                  . "AND `articleordernumber` = ? "
+                                  . "ORDER BY `id` ASC";
                 try {
                     $row = Shopware()->Db()->fetchRow($sqlCountEntrys, array($orderID, $articleNumber));
                     if ($row['count'] > 1) { // article already in order, update its quantity
@@ -100,14 +100,14 @@
                     }
                 } catch (Exception $exception) {
                     $success = false;
-                    Shopware()->Pluginlogger()->info('Exception:' . $exception->getMessage());
+                    Shopware()->Pluginlogger()->error('Exception:' . $exception->getMessage());
                 }
             }
 
             if (!is_null($bind)) { // add new items to order
                 $bind = substr($bind, 0, -1);
                 $sqlSelectIDs = "SELECT `id` FROM `s_order_details` "
-                    . "WHERE `orderID`=? AND `articleordernumber` IN ($bind) ";
+                                . "WHERE `orderID`=? AND `articleordernumber` IN ($bind) ";
                 try {
                     $detailIDs = Shopware()->Db()->fetchAll($sqlSelectIDs, $bindings);
                     foreach ($detailIDs as $row) {
@@ -115,12 +115,12 @@
                     }
                     $values = substr($values, 0, -1);
                     $sqlInsert = "INSERT INTO `rpay_ratepay_order_positions` "
-                        . "(`s_order_details_id`) "
-                        . "VALUES " . $values;
+                                 . "(`s_order_details_id`) "
+                                 . "VALUES " . $values;
                     Shopware()->Db()->query($sqlInsert);
                 } catch (Exception $exception) {
                     $success = false;
-                    Shopware()->Pluginlogger()->info('Exception:' . $exception->getMessage(), ' SQL:' . $sqlInsert);
+                    Shopware()->Pluginlogger()->error('Exception:' . $exception->getMessage(), " SQL:" . $sqlInsert);
                 }
             }
 
@@ -231,7 +231,7 @@
                     }
                 }
 
-                $this->setNewOrderState($orderId);
+                $this->setNewOrderState($orderId, 'delivery');
                 $this->View()->assign(array(
                         "result"  => $result,
                         "success" => true
@@ -306,7 +306,7 @@
                         $this->_history->logHistory($orderId, "Artikel wurde storniert.", $item->name, $item->articlenumber, $item->cancelledItems);
                     }
                 }
-                $this->setNewOrderState($orderId);
+                $this->setNewOrderState($orderId, 'cancellation');
                 $this->View()->assign(array(
                         "result"  => $result,
                         "success" => true
@@ -384,6 +384,8 @@
                     }
                 }
 
+                $this->setNewOrderState($orderId, 'return');
+
                 $this->View()->assign(array(
                         "result"  => $result,
                         "success" => true
@@ -408,8 +410,8 @@
             $subOperation = $this->Request()->getParam("suboperation");
             $order = Shopware()->Db()->fetchRow("SELECT * FROM `s_order` WHERE `id`=?", array($orderId));
             $orderItems = Shopware()->Db()->fetchAll("SELECT *, (`quantity` - `delivered` - `cancelled`) AS `quantityDeliver` FROM `s_order_details` "
-                . "INNER JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-                . "WHERE `orderID`=?", array($orderId));
+                                                     . "INNER JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
+                                                     . "WHERE `orderID`=?", array($orderId));
             $basketItems = array();
             foreach ($orderItems as $row) {
                 if ($row['quantityDeliver'] == 0) {
@@ -510,8 +512,8 @@
         protected function getPrices($id, $tax)
         {
             $prices = Shopware()->Models()->getRepository('Shopware\Models\Article\Article')
-                ->getPricesQuery($id)
-                ->getArrayResult();
+                                ->getPricesQuery($id)
+                                ->getArrayResult();
 
             return $this->formatPricesFromNetToGross($prices, $tax);
         }
@@ -548,18 +550,18 @@
         private function getShippingFromDBAsItem($orderId)
         {
             $sql = "SELECT "
-                . "`invoice_shipping` AS `price`, "
-                . "(1 - `delivered` - `cancelled`) AS `quantityDeliver`, "
-                . "(`delivered` - `returned`) AS `quantityReturn`, "
-                . "`delivered`, "
-                . "`cancelled`, "
-                . "`returned`, "
-                . "`s_core_tax`.`tax` AS `tax_rate` "
-                . "FROM `s_order` "
-                . "LEFT JOIN `rpay_ratepay_order_shipping` ON `s_order_id`=`s_order`.`id` "
-                . "LEFT JOIN `s_premium_dispatch` ON `s_order`.`dispatchID`=`s_premium_dispatch`.`id` "
-                . "LEFT JOIN `s_core_tax` ON `s_premium_dispatch`.`tax_calculation`=`s_core_tax`.`id` "
-                . "WHERE `s_order`.`id` = ?";
+                   . "`invoice_shipping` AS `price`, "
+                   . "(1 - `delivered` - `cancelled`) AS `quantityDeliver`, "
+                   . "(`delivered` - `returned`) AS `quantityReturn`, "
+                   . "`delivered`, "
+                   . "`cancelled`, "
+                   . "`returned`, "
+                   . "`s_core_tax`.`tax` AS `tax_rate` "
+                   . "FROM `s_order` "
+                   . "LEFT JOIN `rpay_ratepay_order_shipping` ON `s_order_id`=`s_order`.`id` "
+                   . "LEFT JOIN `s_premium_dispatch` ON `s_order`.`dispatchID`=`s_premium_dispatch`.`id` "
+                   . "LEFT JOIN `s_core_tax` ON `s_premium_dispatch`.`tax_calculation`=`s_core_tax`.`id` "
+                   . "WHERE `s_order`.`id` = ?";
             $shippingRow = Shopware()->Db()->fetchRow($sql, array($orderId));
             if (isset($shippingRow['quantityDeliver'])) {
                 if ($shippingRow['tax_rate'] == null) {
@@ -610,21 +612,21 @@
         private function getFullBasket($orderId)
         {
             $sql = "SELECT "
-                . "`articleID`, "
-                . "`name`, "
-                . "`articleordernumber`, "
-                . "`price`, "
-                . "`quantity`, "
-                . "(`quantity` - `delivered` - `cancelled`) AS `quantityDeliver`, "
-                . "(`delivered` - `returned`) AS `quantityReturn`, "
-                . "`delivered`, "
-                . "`cancelled`, "
-                . "`returned`, "
-                . "`tax_rate` "
-                . "FROM `s_order_details` AS detail "
-                . "INNER JOIN `rpay_ratepay_order_positions` AS ratepay ON detail.`id`=ratepay.`s_order_details_id` "
-                . "WHERE detail.`orderId`=? "
-                . "ORDER BY detail.`id`;";
+                   . "`articleID`, "
+                   . "`name`, "
+                   . "`articleordernumber`, "
+                   . "`price`, "
+                   . "`quantity`, "
+                   . "(`quantity` - `delivered` - `cancelled`) AS `quantityDeliver`, "
+                   . "(`delivered` - `returned`) AS `quantityReturn`, "
+                   . "`delivered`, "
+                   . "`cancelled`, "
+                   . "`returned`, "
+                   . "`tax_rate` "
+                   . "FROM `s_order_details` AS detail "
+                   . "INNER JOIN `rpay_ratepay_order_positions` AS ratepay ON detail.`id`=ratepay.`s_order_details_id` "
+                   . "WHERE detail.`orderId`=? "
+                   . "ORDER BY detail.`id`;";
 
             $data = Shopware()->Db()->fetchAll($sql, array($orderId));
             $shipping = $this->getShippingFromDBAsItem($orderId);
@@ -647,12 +649,12 @@
         {
             $count = null;
             $sql = "SELECT COUNT(*)"
-                . "FROM `s_order_details` AS `detail` "
-                . "INNER JOIN `rpay_ratepay_order_positions` ON `detail`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-                . "WHERE `$column` != 0 AND `detail`.`orderID` = ?";
+                   . "FROM `s_order_details` AS `detail` "
+                   . "INNER JOIN `rpay_ratepay_order_positions` ON `detail`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
+                   . "WHERE `$column` != 0 AND `detail`.`orderID` = ?";
             $sqlShipping = "SELECT COUNT(*) "
-                . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-                . "WHERE `$column` != 0 AND `shipping`.`s_order_id` = ?";
+                           . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
+                           . "WHERE `$column` != 0 AND `shipping`.`s_order_id` = ?";
             try {
                 $count = Shopware()->Db()->fetchOne($sql, array($orderId));
                 $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
@@ -664,61 +666,61 @@
             return $count;
         }
 
-    /**
-     * return counted cancelled positions
-     *
-     * @param $orderId
-     *
-     * @return null|string
-     */
-    private function countReturnedPositions($orderId)
-    {
-        $count = null;
-        $sql = "SELECT sum(returned)"
-            . "FROM `s_order_details` AS `detail` "
-            . "INNER JOIN `rpay_ratepay_order_positions` ON `detail`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-            . "WHERE `returned` != 0 AND `detail`.`orderID` = ?";
-        $sqlShipping = "SELECT COUNT(*) "
-            . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-            . "WHERE `returned` != 0 AND `shipping`.`s_order_id` = ?";
-        try {
-            $count = Shopware()->Db()->fetchOne($sql, array($orderId));
-            $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
-            $count += $temp;
-        } catch (Exception $exception) {
-            Shopware()->Pluginlogger()->error($exception->getMessage());
+        /**
+         * return counted cancelled positions
+         *
+         * @param $orderId
+         *
+         * @return null|string
+         */
+        private function countReturnedPositions($orderId)
+        {
+            $count = null;
+            $sql = "SELECT sum(returned)"
+                   . "FROM `s_order_details` AS `detail` "
+                   . "INNER JOIN `rpay_ratepay_order_positions` ON `detail`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
+                   . "WHERE `returned` != 0 AND `detail`.`orderID` = ?";
+            $sqlShipping = "SELECT COUNT(*) "
+                           . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
+                           . "WHERE `returned` != 0 AND `shipping`.`s_order_id` = ?";
+            try {
+                $count = Shopware()->Db()->fetchOne($sql, array($orderId));
+                $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
+                $count += $temp;
+            } catch (Exception $exception) {
+                Shopware()->Pluginlogger()->error($exception->getMessage());
+            }
+
+            return $count;
         }
 
-        return $count;
-    }
+        /**
+         * return counted cancelled positions
+         *
+         * @param $orderId
+         *
+         * @return null|string
+         */
+        private function countCancelledPositions($orderId)
+        {
+            $count = null;
+            $sql = "SELECT sum(cancelled)"
+                   . "FROM `s_order_details` AS `detail` "
+                   . "INNER JOIN `rpay_ratepay_order_positions` ON `detail`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
+                   . "WHERE `cancelled` != 0 AND `detail`.`orderID` = ?";
+            $sqlShipping = "SELECT COUNT(*) "
+                           . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
+                           . "WHERE `cancelled` != 0 AND `shipping`.`s_order_id` = ?";
+            try {
+                $count = Shopware()->Db()->fetchOne($sql, array($orderId));
+                $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
+                $count += $temp;
+            } catch (Exception $exception) {
+                Shopware()->Pluginlogger()->error($exception->getMessage());
+            }
 
-    /**
-     * return counted cancelled positions
-     *
-     * @param $orderId
-     *
-     * @return null|string
-     */
-    private function countCancelledPositions($orderId)
-    {
-        $count = null;
-        $sql = "SELECT sum(cancelled)"
-            . "FROM `s_order_details` AS `detail` "
-            . "INNER JOIN `rpay_ratepay_order_positions` ON `detail`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-            . "WHERE `cancelled` != 0 AND `detail`.`orderID` = ?";
-        $sqlShipping = "SELECT COUNT(*) "
-            . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-            . "WHERE `cancelled` != 0 AND `shipping`.`s_order_id` = ?";
-        try {
-            $count = Shopware()->Db()->fetchOne($sql, array($orderId));
-            $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
-            $count += $temp;
-        } catch (Exception $exception) {
-            Shopware()->Pluginlogger()->error($exception->getMessage());
+            return $count;
         }
-
-        return $count;
-    }
 
         /**
          * Counts all Positions of an order
@@ -747,18 +749,37 @@
          *
          * @param boolean $orderComplete
          */
-        private function setNewOrderState($orderId)
+        private function setNewOrderState($orderId, $operation = null)
         {
             $sql = "SELECT COUNT((`quantity` - `delivered` - `cancelled`)) AS 'itemsLeft' "
-                . "FROM `s_order_details` "
-                . "JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-                . "WHERE `orderID`=? AND (`quantity` - `delivered` - `cancelled`) > 0";
+                   . "FROM `s_order_details` "
+                   . "JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
+                   . "WHERE `orderID`=? AND (`quantity` - `delivered` - `cancelled`) > 0";
             try {
                 $orderComplete = Shopware()->Db()->fetchOne($sql, array($orderId));
-                $newState = $orderComplete == 0 ? 7 : 6;
+
+                if($operation === 'cancellation')
+                {
+                    $newState = $orderComplete == 0 ? 265 : 265;
+                } elseif($operation === 'delivery') {
+                    //only set if order is not partial returned / cancelled
+                    if($orderComplete != 255 && $orderComplete != 265)
+                    {
+                        $newState = $orderComplete == 0 ? 7 : 6;
+                    }
+                } elseif($operation === 'return') {
+                    $newState = $orderComplete == 0 ? 255: 265;
+                }
+
+                // return if no status update
+                if(null === $newState)
+                {
+                    return;
+                }
+
                 Shopware()->Db()->update('s_order', array(
-                        'status' => $newState
-                    ), '`id`=' . $orderId);
+                    'status' => $newState
+                ), '`id`=' . $orderId);
             } catch (Exception $exception) {
                 Shopware()->Pluginlogger()->error($exception->getMessage());
             }
