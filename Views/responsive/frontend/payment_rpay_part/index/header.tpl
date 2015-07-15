@@ -1,0 +1,151 @@
+{extends file="parent:frontend/index/header.tpl"}
+
+{block name="frontend_index_header_css_print" append}
+    <link type="text/css" media="screen, projection" rel="stylesheet"
+          href="{link file='engine/Shopware/Plugins/Community/Frontend/RpayRatePay/Views/responsive/frontend/_public/src/styles/ratepay.css' fullPath}"/>
+{/block}
+
+{block name="frontend_index_header_javascript" append}
+    <script language='javascript'>
+        $(document).ready(function () {
+            {if $ratepayValidateisAgeValid != 'true'}
+            $("#ratepay_error").append("{s namespace=RatePAY name=invalidAge}Bitte überprüfen sie die Eingabe ihres Geburtstdatums. Sie müssen mindestens 18 Jahre alt sein!{/s}");
+            $("#ratepay_error").parent().show();
+            {/if}
+            {if $ratepayErrorRatenrechner == 'true'}
+            $("#ratepay_error").append("{s namespace=RatePAY name=errorRatenrechner}Bitte lassen Sie sich den Ratenplan berechnen!{/s}");
+            $("#ratepay_error").parent().show();
+            {/if}
+        });
+    </script>
+
+
+    <script language='javascript'>
+        $(document).ready(function () {
+
+            /* returns correct YYYY-MM-dd dob */
+            Date.prototype.yyyymmdd = function () {
+                var yyyy = this.getFullYear().toString();
+                var mm = (this.getMonth() + 1).toString();
+                var dd = this.getDate().toString();
+                return yyyy + '-' + (mm[1] ? mm : "0" + mm[0]) + '-' + (dd[1] ? dd : "0" + dd[0]);
+            };
+
+            /* returns age */
+            function getAge(dateString) {
+                var today = new Date();
+                var birthDate = new Date(dateString);
+                var age = today.getFullYear() - birthDate.getFullYear();
+                var m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                return age;
+            }
+
+            $("button[form=shippingPaymentForm]").click(function () {
+
+                var requestParams = 'userid=' + "{$sUserData.billingaddress.userID}";
+                var dob = false;
+                var userUpdate = true;
+                var error = false;
+                var errorMessage = '{s namespace=RatePAY name=invaliddata}Bitte vervollständigen Sie die Daten.{/s}';
+                /** show the modal window */
+                $("div.ratepay-overlay").show();
+
+                /* handle all normal inputs */
+                $('input[id^="ratepay_"]').each(function () {
+                    requestParams += '&' + $(this).attr('id') + '=' + $(this).val();
+                    if ($(this).val() == '' || $(this).val() == '0000-00-00') {
+                        error = true;
+                        userUpdate = false;
+                    }
+
+                    /* validate sepa direct debit - no error if no blz is net @toDo: fix for international direct debits */
+
+                    if ($(this).attr('id') == 'ratepay_debit_bankcode' && !$(":input#ratepay_debit_accountnumber").val().match(/^\d+$/)) {
+                        error = false;
+                        userUpdate = true;
+                    }
+
+                });
+
+                /* dob validation */
+                if ($('#ratepay_birthyear').val() != '' && $('#ratepay_birthmonth').val() != '' && $('#ratepay_birthday').val() != '') {
+                    dob = new Date($('#ratepay_birthyear').val() + '-' + $('#ratepay_birthmonth').val() + '-' + $('#ratepay_birthday').val());
+
+                    /* validate age */
+                    if (getAge(dob) < 18 || getAge(dob) > 120) {
+                        error = true;
+                        userUpdate = false;
+                        errorMessage = '{s namespace=RatePAY name=dobtooyoung}Für eine Bezahlung mit RatePAY müssen Sie mindestens 18 Jahre alt sein.{/s}'
+                    }
+
+                    requestParams += '&ratepay_dob=' + dob.yyyymmdd();
+                } else {
+                    error = true;
+                    userUpdate = false;
+                }
+
+                /* phone number validation */
+                if($('#ratepay_phone').val() != '') {
+                    {literal}
+                    var regex = /[0-9-()+]{3,20}/;
+                    {/literal}
+
+                    var phoneNumber = $('#ratepay_phone').val().replace(/ /g,'');
+
+                    if($('#ratepay_phone').val().length < 6 ||  ( phoneNumber.match(regex) != phoneNumber ) )
+                    {
+                        error = true;
+                        userUpdate = false;
+                        errorMessage = '{s namespace=RatePAY name=phonenumbernotvalid}Für eine Bezahlung mit RatePay müssen Sie eine gültige Telefonnummer angeben. Die Nummer muss mindestens 6 Zeichen lang sein und darf Sonderzeichen wie - und + enthalten.{/s}'
+                    }
+                } else {
+                    error = true;
+                    userUpdate = false;
+                }
+
+                /* error handler */
+                if (error) {
+
+                    /** hide the modal window */
+                    $("div.ratepay-overlay").hide();
+
+                    $("#ratepay_error").text(errorMessage);
+                    $("#ratepay_error").parent().removeClass("is--hidden");
+                    $('html, body').animate({
+                        scrollTop: $("#ratepay_error").offset().top - 100
+                    }, 1000);
+                    return false;
+
+                } else {
+                    $("#ratepay_error").parent().hide();
+                }
+
+                /* update user */
+                if (userUpdate) {
+                    $.ajax({
+                        type: "POST",
+                        async: false,
+                        {if $smarty.server.HTTPS eq '' || $smarty.server.HTTPS eq 'off'}
+                        url: "{url controller='RpayRatepay' action='saveUserData'}",
+                        {else}
+                        url: "{url controller='RpayRatepay' action='saveUserData' forceSecure}",
+                        {/if}
+                        data: requestParams
+                    }).done(function (msg) {
+                        if (msg == 'OK') {
+                            console.log('{s namespace=RatePAY name=updateUserSuccess}UserDaten erfolgreich aktualisiert.{/s}');
+                        } else {
+                            console.log('{s namespace=RatePAY name=updateUserSuccess}Fehler beim Aktualisieren der UserDaten. Return: {/s}' + msg);
+                        }
+                    });
+                }
+
+
+            });
+        });
+    </script>
+
+{/block}
