@@ -71,7 +71,7 @@
             Shopware()->Session()->ratepayErrorRatenrechner = false;
             if (preg_match("/^rpayratepay(invoice|rate|debit)$/", $this->getPaymentShortName())) {
                 if ($this->getPaymentShortName() === 'rpayratepayrate' && !isset(Shopware()->Session(
-                    )->RatePAY['ratenrechner'])
+                        )->RatePAY['ratenrechner'])
                 ) {
                     Shopware()->Session()->ratepayErrorRatenrechner = true;
                     $this->redirect(
@@ -230,7 +230,7 @@
                          * if you run into problems with the redirect method then use the forwarding
                          * return $this->forward('finish', 'checkout', null, array('sUniqueID' => $uniqueId));
                          **/
-                        
+
                         $this->redirect(
                             Shopware()->Front()->Router()->assemble(
                                 array(
