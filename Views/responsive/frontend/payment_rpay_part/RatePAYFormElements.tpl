@@ -16,7 +16,7 @@
 {block name='ratepay_frontend_birthday'}
     <div class="register--birthdate">
         <label for="register_personal_birthdate" class="birthday--label">{s namespace=RatePAY name=birthday}Geburtsdatum{/s}*</label>
-        <div class="register--birthday field--select">
+        <div class="register--birthday field--select" id="foo">
             <select id="ratepay_birthday" name="ratepay[personal][birthday]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if}>
                 <option value="">{s namespace=RatePAY name=dob_day}Tag{/s}</option>
                 {section name="birthdate" start=1 loop=32 step=1}

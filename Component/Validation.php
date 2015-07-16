@@ -28,6 +28,13 @@
         private $_user;
 
         /**
+         * An Instance of the Shopware-PaymentModel
+         *
+         * @var Shopware\Models\Payment\Payment
+         */
+        private $_payment;
+
+        /**
          * Constructor
          *
          * Saves the CustomerModel and initiate the Class
@@ -35,6 +42,7 @@
         public function __construct()
         {
             $this->_user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
+            $this->_payment = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $this->_user->getPaymentId());
         }
 
         /**
@@ -44,9 +52,7 @@
          */
         public function isRatePAYPayment()
         {
-            $payment = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $this->_user->getPaymentId());
-
-            return in_array($payment->getName(), array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit"));
+            return in_array($this->_payment->getName(), array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit"));
         }
 
         /**
@@ -188,6 +194,16 @@
             $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $this->_user->getBilling()->getCountryId());
 
             return ($country->getIso() === "DE") || ($country->getIso() === 'AT');
+        }
+
+        public function getPayment()
+        {
+            return $this->_payment;
+        }
+
+        public function getUser()
+        {
+            return $this->_user;
         }
 
     }

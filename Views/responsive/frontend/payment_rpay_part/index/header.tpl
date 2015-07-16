@@ -100,7 +100,7 @@
                 return age;
             }
 
-            $("button[form=shippingPaymentForm]").click(function () {
+            $("button[type=submit]").click(function () {
 
                 var requestParams = 'userid=' + "{$sUserData.billingaddress.userID}";
                 var dob = false;

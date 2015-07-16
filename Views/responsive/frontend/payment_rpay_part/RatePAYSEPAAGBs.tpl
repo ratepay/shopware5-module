@@ -1,6 +1,6 @@
 <div>
     <p class="none">
-        <input type="checkbox" id="ratepay_agb" class="register--checkbox chkbox">
+        <input type="checkbox" id="ratepay_agb" required="required" aria-required="true" class="register--checkbox chkbox">
         {s namespace=RatePAY name='ratepaySEPAAgbFirst'}Ich willige hiermit in die Weiterleitung meiner Daten an RatePAY GmbH, Schlüterstr. 39, 10629 Berlin gemäß{/s}
 
 

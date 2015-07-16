@@ -1,13 +1,13 @@
-{extends file="parent:frontend/checkout/change_payment.tpl"}
+{extends file="parent:frontend/checkout/confirm.tpl"}
 
-{block name='frontend_checkout_payment_fieldset_description' append}
+{block name='frontend_checkout_confirm_tos_panel' append}
 
     {if (
-        ($sUserData.additional.payment.name == 'rpayratepayinvoice' && $payment_mean.name == 'rpayratepayinvoice')
+        ( $sPayment.name == 'rpayratepayinvoice')
             ||
-        ($sUserData.additional.payment.name == 'rpayratepaydebit' && $payment_mean.name == 'rpayratepaydebit')
+        ( $sPayment.name == 'rpayratepaydebit')
             ||
-        ($sUserData.additional.payment.name == 'rpayratepayrate' && $payment_mean.name == 'rpayratepayrate')
+        ( $sPayment.name == 'rpayratepayrate')
     )}
 
     <div class="ratepay-overlay" style="display: none;">
@@ -28,12 +28,12 @@
                             <h2 class="panel--title is--underline">RatePAY Stammdaten</h2>
                             <div class="panel--body is--wide">
 
-                                {if $sUserData.additional.payment.name == 'rpayratepayinvoice' && $payment_mean.name == 'rpayratepayinvoice'}
+                                {if $sPayment.name == 'rpayratepayinvoice'}
                                     {include file='frontend/payment_rpay_part/RatePAYErrorMessage.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYFormElements.tpl'}
                                 {/if}
 
-                                {if $sUserData.additional.payment.name == 'rpayratepaydebit' && $payment_mean.name == 'rpayratepaydebit'}
+                                {if $sPayment.name == 'rpayratepaydebit'}
                                     {include file='frontend/payment_rpay_part/RatePAYSEPAInformationHeader.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYErrorMessage.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYFormElements.tpl'}
@@ -41,7 +41,7 @@
                                     {include file='frontend/payment_rpay_part/RatePAYSEPAAGBs.tpl'}
                                 {/if}
 
-                                {if $sUserData.additional.payment.name == 'rpayratepayrate' && $payment_mean.name == 'rpayratepayrate'}
+                                {if $sPayment.name == 'rpayratepayrate'}
                                     {include file='frontend/payment_rpay_part/RatePAYErrorMessage.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYFormElements.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYRatenrechner.tpl'}

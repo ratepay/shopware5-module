@@ -564,15 +564,11 @@
                 return;
             }
 
-            $session = Shopware()->Session();
-            $manager = Shopware()->Models();
-            $config = Shopware()->Config();
-
-            if('checkout' === $request->getControllerName() && 'shippingPayment' === $request->getActionName())
+            if('checkout' === $request->getControllerName() && 'confirm' === $request->getActionName())
             {
                 $this->registerMyTemplateDir();
                 $view->extendsTemplate('frontend/payment_rpay_part/index/header.tpl');
-                $view->extendsTemplate('frontend/payment_rpay_part/checkout/change_payment.tpl');
+                $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
             }
 
         }
@@ -851,9 +847,9 @@
         public function preValidation(Enlight_Event_EventArgs $arguments)
         {
 
-            $request = $arguments->getSubject()->Request();
+            $request  = $arguments->getSubject()->Request();
             $response = $arguments->getSubject()->Response();
-            $view = $arguments->getSubject()->View();
+            $view     = $arguments->getSubject()->View();
 
             if (!$request->isDispatched() || $response->isException() || $request->getModuleName() != 'frontend' || !$view->hasTemplate()) {
                 return;
@@ -891,7 +887,53 @@
                 $view->ratepayValidateisAgeValid = true;
 
                 $view->ratepayErrorRatenrechner = Shopware()->Session()->ratepayErrorRatenrechner ? 'true' : 'false';
+
+                //check if all data for payment method is set. if not redirect to payment site
+                /*if (in_array('confirm', array($request->get('action'), $view->sTargetAction))
+                    && $request->get('controller') === 'checkout')
+                {
+
+                    $redirect = false;
+
+                    if(!$validation->isAgeValid())
+                    {
+                        $view->ratepayValidateisAgeValid = false;
+                        Shopware()->Pluginlogger()->info('RatePAY: isAgeValid->' . $view->ratepayValidateisAgeValid);
+                        $redirect = true;
+                    }
+
+                    if(!$validation->isBirthdayValid())
+                    {
+                        $view->ratepayValidateIsBirthdayValid = true;
+                        Shopware()->Pluginlogger()->info('RatePAY: isBirthdayValid->' . $view->ratepayValidateIsBirthdayValid);
+                        $redirect = true;
+                    }
+
+                    //check if all debit fields are set
+                    if('rpayratepaydebit' === $validation->getPayment()->getName())
+                    {
+                        if(isset(Shopware()->Session()->RatePAY['bankdata']['account'])
+                           && null === Shopware()->Session()->RatePAY['bankdata']['account']) {
+                            $redirect = true;
+                        } elseif(isset(Shopware()->Session()->RatePAY['bankdata']['bankcode'])
+                                 && null === Shopware()->Session()->RatePAY['bankdata']['bankcode']) {
+                            $redirect = true;
+                        } elseif(isset(Shopware()->Session()->RatePAY['bankdata']['bankholder'])
+                                 && null === Shopware()->Session()->RatePAY['bankdata']['bankholder']) {
+                            $redirect = true;
+                        }
+                    }
+
+                    if(true === $redirect)
+                    {
+                        $request->setControllerName('checkout');
+                        $request->setActionName('shippingPayment')->setDispatched(false);
+                    }
+
+                }*/
+
             }
+
         }
 
         /**
