@@ -19,7 +19,8 @@
 }
 
 #pirpmain-cont {
-    width: 472px !important;
+    width: 100%;
+    max-width: 472px !important;
     vertical-align: middle;
 }
 
@@ -78,6 +79,7 @@
 }
 
 #piRpHeader img {
+    max-height: 43px !important;
     float: right;
     margin-bottom: 3px;
 }

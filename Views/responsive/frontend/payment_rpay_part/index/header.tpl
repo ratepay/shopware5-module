@@ -30,7 +30,6 @@
                 });
             });
 
-
             {* Handle BIC Field ( only fade in for AT ) *}
             $(document).ready(function () {
 
@@ -61,10 +60,13 @@
                     }
                 })
             });
+
         </script>
+
     {/if}
 
     <script language='javascript'>
+
         $(document).ready(function () {
             {if $ratepayValidateisAgeValid != 'true'}
             $("#ratepay_error").append("{s namespace=RatePAY name=invalidAge}Bitte überprüfen sie die Eingabe ihres Geburtstdatums. Sie müssen mindestens 18 Jahre alt sein!{/s}");
@@ -75,10 +77,7 @@
             $("#ratepay_error").parent().show();
             {/if}
         });
-    </script>
 
-
-    <script language='javascript'>
         $(document).ready(function () {
 
             /* returns correct YYYY-MM-dd dob */
