@@ -162,28 +162,21 @@
          * Updates the Plugin and its components
          *
          * @param string $version
+         *
+         * @todo: implement translation update while updating
          */
         public function update($version)
         {
             $this->_subscribeEvents();
             $this->_createForm();
-            //$this->_createPluginConfigTranslation();
 
-            switch($version) {
-                case '3.2.2':
-                    $this->uninstall();
-                    $sql = 'ALTER TABLE `rpay_ratepay_config` DROP PRIMARY KEY;';
-                    Shopware()->Db()->query($sql);
-                    $sql = 'ALTER TABLE `rpay_ratepay_config` ADD `shopId` INT(5) NOT NULL ;';
-                    Shopware()->Db()->query($sql);
-                    $sql = 'ALTER TABLE `rpay_ratepay_config` ADD PRIMARY KEY (`profileId`,`shopId`);';
-                    Shopware()->Db()->query($sql);
-
-                    //create extra fields
-                    $this->_createExtraFields();
-            }
-
-            return array('success' => true, 'invalidateCache' => array('frontend', 'backend'));
+            return array(
+                'success' => true,
+                'invalidateCache' => array(
+                    'frontend',
+                    'backend'
+                )
+            );
         }
 
 
