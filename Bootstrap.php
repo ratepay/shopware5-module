@@ -461,7 +461,6 @@
                                "PRIMARY KEY (`id`)" .
                                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
             try {
-                Shopware()->Db()->query($sqlBankdata);
                 Shopware()->Db()->query($sqlLogging);
                 Shopware()->Db()->query($sqlConfig);
                 Shopware()->Db()->query($sqlOrderPositions);
