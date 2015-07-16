@@ -167,7 +167,7 @@
         {
             $this->_subscribeEvents();
             $this->_createForm();
-            $this->_createPluginConfigTranslation();
+            //$this->_createPluginConfigTranslation();
 
             switch($version) {
                 case '3.2.2':
