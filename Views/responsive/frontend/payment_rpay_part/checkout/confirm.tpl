@@ -20,7 +20,7 @@
 
 
     <div class="content--wrapper">
-        <div class="account--change-billing account--content register--content" data-register="true">
+        <div class="account--change-billing account--content register--content" data-register="true" style="width: 100% !important;">
             <div class="panel has--border is--rounded">
                 <div class="account--billing-form">
                     <form name="frmRegister" method="post" action="http://shopware5.dev/account/saveBilling/sTarget/account">

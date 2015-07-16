@@ -83,7 +83,7 @@
                 "Connection: keep-alive"
             ));
             //TLS
-            //curl_setopt($this->_curl, CURLOPT_SSLVERSION,6);
+            curl_setopt($this->_curl, CURLOPT_SSLVERSION,6);
             // Request
             curl_setopt($ch, CURLOPT_POSTFIELDS, $xmlRequest);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
