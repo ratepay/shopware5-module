@@ -593,28 +593,7 @@
          */
         protected function registerMyTemplateDir($isBackend = false)
         {
-            if ($isBackend) {
-                $this->Application()->Template()->addTemplateDir(__DIR__ . '/Views/', 'rpay');
-            } elseif ($this->isTemplateResponsive()) {
-                $this->Application()->Template()->addTemplateDir(__DIR__ . '/Views/responsive', 'rpay');
-            } else {
-                $this->Application()->Template()->addTemplateDir(__DIR__ . '/Views/_emotion', 'rpay');
-            }
-        }
-
-        /**
-         * Checks if the the current Template is responsive
-         *
-         * @return bool
-         */
-        private function isTemplateResponsive()
-        {
-            $template = $this->Application()->Shop()->getTemplate()->getVersion();
-            if ($template < 3) {
-                return false;
-            }
-
-            return true;
+            $this->Application()->Template()->addTemplateDir(__DIR__ . '/Views/responsive', 'rpay');
         }
 
         /**

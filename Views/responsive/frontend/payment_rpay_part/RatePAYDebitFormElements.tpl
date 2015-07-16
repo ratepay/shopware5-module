@@ -1,56 +1,38 @@
-{if $ratepayValidateisDebitSet == 'false'}
+{* Hidden Data *}
+{block name='ratepay_frontend_updatedebitdata'}
     <input id='ratepay_debit_updatedebitdata' type='hidden' value='true'>
-    <div class='none'>
-        <label for='ratepay_debit_accountholder' class="normal">{s namespace=RatePAY name=accountHolder}Vor- und Nachname Kontoinhaber{/s}
-            :</label>
-        <input id='ratepay_debit_accountholder' value="{$smarty.session.Shopware.RatePAY.bankdata.bankholder}"
-               type='text' class='text'>
-    </div>
-    <div class='none'>
-        <label for='ratepay_debit_accountnumber' class="normal">{s namespace=RatePAY name=accountNumber}Kontonummer / IBAN{/s}:</label>
-        <input id='ratepay_debit_accountnumber' value="{$smarty.session.Shopware.RatePAY.bankdata.account}" type='text'
-               class='text'>
-    </div>
-    <div class='none'>
-        <label for='ratepay_debit_bankcode' class="normal">{s namespace=RatePAY name=bankCode}Bankleitzahl{/s}:</label>
-        <input id='ratepay_debit_bankcode' value="{$smarty.session.Shopware.RatePAY.bankdata.bankcode}" type='text'
-               class='text'>
-    </div>
-    <div class='none'>
-        <label for='ratepay_debit_bankname' class="normal">{s namespace=RatePAY name=bankName}Kreditinstitut{/s}:</label>
-        <input id='ratepay_debit_bankname' value="{$smarty.session.Shopware.RatePAY.bankdata.bankname}" type='text'
-               class='text'>
-    </div>
+{/block}
 
-    <script language='javascript'>
-        $(document).ready(function () {
+{* Accountholder *}
+{block name='ratepay_frontend_accountholder'}
+    <div class="register--accountholder">
+        <input id="ratepay_debit_accountholder" name="ratepay_debit_accountholder" class="register--field is--required" type="text" required="required" aria-required="true" placeholder="{s namespace=RatePAY name=accountHolder}Vor- und Nachname Kontoinhaber{/s}*" value="{if $smarty.session.Shopware.RatePAY.bankdata.bankholder}{$smarty.session.Shopware.RatePAY.bankdata.bankholder|escape}{/if}">
+    </div>
+{/block}
 
-            var blzInput       = $(":input#ratepay_debit_bankcode");
-            var blzInputLabel  = $("label[for='ratepay_debit_bankcode']");
-            var accNumberInput = $(":input#ratepay_debit_accountnumber");
+{* Accountnumber/ IBAN *}
+{block name='ratepay_frontend_accountnumber'}
+    <div class="register--accountnumber">
+        <input id="ratepay_debit_accountnumber" name="ratepay_debit_accountnumber" class="register--field is--required" type="text" required="required" aria-required="true" placeholder="{s namespace=RatePAY name=accountNumber}Kontonummer / IBAN{/s}*" value="{if $smarty.session.Shopware.RatePAY.bankdata.account}{$smarty.session.Shopware.RatePAY.bankdata.account|escape}{/if}">
+    </div>
+{/block}
 
-            $(blzInput).prop('disabled', true);
-            $(blzInput).hide();
-            $(blzInputLabel).hide();
 
-            $(accNumberInput).keyup(function () {
-                if ($(this).val().match(/^\d+$/)) {
-                    $(blzInput).prop('disabled', false);
-                    $(blzInput).show();
-                    $(blzInputLabel).show();
-                    $(blzInputLabel).text('Bankleitzahl:')
-                } else if ($(this).val().match(/at/i)) {
-                    $(blzInput).prop('disabled', false);
-                    $(blzInput).show();
-                    $(blzInputLabel).show();
-                    $(blzInputLabel).text('BIC / SWIFT:')
-                }
-                else {
-                    $(blzInput).prop('disabled', true);
-                    $(blzInput).hide();
-                    $(blzInputLabel).hide();
-                }
-            })
-        });
-    </script>
-{/if}
+{* Bankcode/ BIC *}
+{block name='ratepay_frontend_bankcode'}
+    <div class="register--accountnumber">
+        <input id="ratepay_debit_bankcode" name="ratepay_debit_accountnumber" class="register--field is--required" type="text" required="required" aria-required="true" placeholder="{s namespace=RatePAY name=bankCode}Bankleitzahl / BIC{/s}*" value="{if $smarty.session.Shopware.RatePAY.bankdata.account}{$smarty.session.Shopware.RatePAY.bankdata.bankcode|escape}{/if}">
+    </div>
+{/block}
+
+{* Bankname *}
+{block name='ratepay_frontend_bankname'}
+    <div class="register--accountnumber">
+        <input id="ratepay_debit_bankname" name="ratepay_debit_accountnumber" class="register--field" type="text" placeholder="{s namespace=RatePAY name=bankName}Kreditinstitut{/s}*" value="{if $smarty.session.Shopware.RatePAY.bankdata.bankname}{$smarty.session.Shopware.RatePAY.bankdata.bankname|escape}{/if}">
+    </div>
+{/block}
+
+
+
+
+

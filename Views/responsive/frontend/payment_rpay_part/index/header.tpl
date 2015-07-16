@@ -6,6 +6,64 @@
 {/block}
 
 {block name="frontend_index_header_javascript" append}
+
+    {if $sUserData.additional.payment.name == 'rpayratepaydebit' }
+    {* Javascript for SepaDirectDebit *}
+        <script language='javascript'>
+            {*  *}
+            $(document).ready(function () {
+                var button = $('button[type=submit]');
+
+                button.attr('disabled', 'disabled');
+                button.css({ opacity: 0.5 });
+                button.attr('title', '{s namespace=RatePAY name="ratepayAgbMouseover"}Um RatePAY nutzen zu können müssen sie den AGBs von RatePAY zustimmen{/s}');
+                $('#ratepay_agb').click(function () {
+                    if ($(this).prop('checked')) {
+                        button.removeAttr('disabled');
+                        button.removeAttr('title');
+                        button.css({ opacity: 1.0 });
+                    } else {
+                        button.attr('disabled', 'disabled');
+                        button.attr('title', '{s namespace=RatePAY name="ratepayAgbMouseover"}Um RatePAY nutzen zu können müssen sie den AGBs von RatePAY zustimmen{/s}');
+                        button.css({ opacity: 0.5 });
+                    }
+                });
+            });
+
+
+            {* Handle BIC Field ( only fade in for AT ) *}
+            $(document).ready(function () {
+
+                var blzInput       = $(":input#ratepay_debit_bankcode");
+                var blzInputLabel  = $("label[for='ratepay_debit_bankcode']");
+                var accNumberInput = $(":input#ratepay_debit_accountnumber");
+
+                $(blzInput).prop('disabled', true);
+                $(blzInput).hide();
+                $(blzInputLabel).hide();
+
+                $(accNumberInput).keyup(function () {
+                    if ($(this).val().match(/^\d+$/)) {
+                        $(blzInput).prop('disabled', false);
+                        $(blzInput).show();
+                        $(blzInputLabel).show();
+                        $(blzInputLabel).text('Bankleitzahl:')
+                    } else if ($(this).val().match(/at/i)) {
+                        $(blzInput).prop('disabled', false);
+                        $(blzInput).show();
+                        $(blzInputLabel).show();
+                        $(blzInputLabel).text('BIC / SWIFT:')
+                    }
+                    else {
+                        $(blzInput).prop('disabled', true);
+                        $(blzInput).hide();
+                        $(blzInputLabel).hide();
+                    }
+                })
+            });
+        </script>
+    {/if}
+
     <script language='javascript'>
         $(document).ready(function () {
             {if $ratepayValidateisAgeValid != 'true'}
