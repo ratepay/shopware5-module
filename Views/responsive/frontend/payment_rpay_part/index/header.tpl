@@ -37,26 +37,24 @@
                 var blzInputLabel  = $("label[for='ratepay_debit_bankcode']");
                 var accNumberInput = $(":input#ratepay_debit_accountnumber");
 
-                $(blzInput).prop('disabled', true);
-                $(blzInput).hide();
-                $(blzInputLabel).hide();
+                blzInput.prop('disabled', true);
+                blzInput.hide();
+                blzInputLabel.hide();
 
-                $(accNumberInput).keyup(function () {
+                accNumberInput.keyup(function () {
                     if ($(this).val().match(/^\d+$/)) {
-                        $(blzInput).prop('disabled', false);
-                        $(blzInput).show();
-                        $(blzInputLabel).show();
-                        $(blzInputLabel).text('Bankleitzahl:')
+                        blzInput.prop('disabled', false);
+                        blzInput.show();
+                        blzInputLabel.show();
                     } else if ($(this).val().match(/at/i)) {
-                        $(blzInput).prop('disabled', false);
-                        $(blzInput).show();
-                        $(blzInputLabel).show();
-                        $(blzInputLabel).text('BIC / SWIFT:')
+                        blzInput.prop('disabled', false);
+                        blzInput.show();
+                        blzInputLabel.show();
                     }
                     else {
-                        $(blzInput).prop('disabled', true);
-                        $(blzInput).hide();
-                        $(blzInputLabel).hide();
+                        blzInput.prop('disabled', true);
+                        blzInput.hide();
+                        blzInputLabel.hide();
                     }
                 })
             });

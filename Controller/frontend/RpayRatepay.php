@@ -126,11 +126,6 @@
                     $return = 'NOK';
                 }
             }
-            if ($Parameter['ratepay_debit_updatedebitdata']) {
-                Shopware()->Session()->RatePAY['bankdata']['account'] = $Parameter['ratepay_debit_accountnumber'];
-                Shopware()->Session()->RatePAY['bankdata']['bankcode'] = $Parameter['ratepay_debit_bankcode'];
-                Shopware()->Session()->RatePAY['bankdata']['bankholder'] = $Parameter['ratepay_debit_accountholder'];
-            }
             echo $return;
         }
 
