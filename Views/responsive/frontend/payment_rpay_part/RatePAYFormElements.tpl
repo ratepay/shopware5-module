@@ -17,7 +17,7 @@
     <div class="register--birthdate">
         <label for="register_personal_birthdate" class="birthday--label">{s namespace=RatePAY name=birthday}Geburtsdatum{/s}*</label>
         <div class="register--birthday field--select">
-            <select id="ratepay_birthday" name="ratepay[personal][birthday]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if} class="{if {config name=requireBirthdayField}}is--required{/if}{if $error_flags.birthday && {config name=requireBirthdayField}} has--error{/if}">
+            <select id="ratepay_birthday" name="ratepay[personal][birthday]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if}>
                 <option value="">{s namespace=RatePAY name=dob_day}Tag{/s}</option>
                 {section name="birthdate" start=1 loop=32 step=1}
                     <option value="{if $smarty.section.birthdate.index < 10}0{$smarty.section.birthdate.index}{else}{$smarty.section.birthdate.index}{/if}"
@@ -27,7 +27,7 @@
         </div>
 
         <div class="register--birthmonth field--select">
-            <select id="ratepay_birthmonth" name="ratepay[personal][birthmonth]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if} class="{if {config name=requireBirthdayField}}is--required{/if}{if $error_flags.birthmonth && {config name=requireBirthdayField}} has--error{/if}">
+            <select id="ratepay_birthmonth" name="ratepay[personal][birthmonth]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if}>
                 <option value="">{s namespace=RatePAY name=dob_month}Monat{/s}</option>
                 {section name="birthmonth" start=1 loop=13 step=1}
                     <option value="{if $smarty.section.birthmonth.index < 10}0{$smarty.section.birthmonth.index}{else}{$smarty.section.birthmonth.index}{/if}"
@@ -37,7 +37,7 @@
         </div>
 
         <div class="register--birthyear field--select">
-            <select id="ratepay_birthyear" name="ratepay[personal][birthyear]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if} class="{if {config name=requireBirthdayField}}is--required{/if}{if $error_flags.birthyear && {config name=requireBirthdayField}} has--error{/if}">
+            <select id="ratepay_birthyear" name="ratepay[personal][birthyear]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if}>
                 <option value="">{s namespace=RatePAY name=dob_year}Jahr{/s}</option>
                 {section name="birthyear" start=$smarty.now|date_format:"%Y"-18 loop=2000 max=100 step=-1}
                     <option value="{$smarty.section.birthyear.index}"

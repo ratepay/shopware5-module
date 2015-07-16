@@ -30,7 +30,6 @@
         private $_service;
         private $_modelFactory;
         private $_logging;
-        private $_encryption;
 
         /**
          * Initiates the Object
@@ -60,7 +59,6 @@
 
             $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $this->_logging      = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
-            $this->_encryption   = new Shopware_Plugins_Frontend_RpayRatePay_Component_Encryption_ShopwareEncryption();
         }
 
         /**
@@ -110,8 +108,6 @@
             $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
             $userModel = $customerModel->findOneBy(array('id' => Shopware()->Session()->sUserId));
             $user = $userModel->getBilling();
-            $debitUser = $userModel->getDebit();
-            $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
             $return = 'OK';
             $updateData = array();
@@ -130,28 +126,10 @@
                     $return = 'NOK';
                 }
             }
-            $updateData = array();
             if ($Parameter['ratepay_debit_updatedebitdata']) {
                 Shopware()->Session()->RatePAY['bankdata']['account'] = $Parameter['ratepay_debit_accountnumber'];
                 Shopware()->Session()->RatePAY['bankdata']['bankcode'] = $Parameter['ratepay_debit_bankcode'];
-                Shopware()->Session()->RatePAY['bankdata']['bankname'] = $Parameter['ratepay_debit_bankname'];
                 Shopware()->Session()->RatePAY['bankdata']['bankholder'] = $Parameter['ratepay_debit_accountholder'];
-                if ($config->get('RatePayBankData')) {
-                    $updateData = array(
-                        'account'    => $Parameter['ratepay_debit_accountnumber'] ? : $debitUser->getAccount(),
-                        'bankcode'   => $Parameter['ratepay_debit_bankcode'] ? : $debitUser->getBankCode(),
-                        'bankname'   => $Parameter['ratepay_debit_bankname'] ? : $debitUser->getBankName(),
-                        'bankholder' => $Parameter['ratepay_debit_accountholder'] ? : $debitUser->getAccountHolder()
-                    );
-                    try {
-                        $this->_encryption->saveBankdata($Parameter['userid'], $updateData);
-                        Shopware()->Pluginlogger()->info('Bankdaten aktualisiert.');
-                    } catch (Exception $exception) {
-                        Shopware()->Pluginlogger()->error('Fehler beim Updaten der Bankdaten: ' . $exception->getMessage());
-                        Shopware()->Pluginlogger()->error($updateData);
-                        $return = 'NOK';
-                    }
-                }
             }
             echo $return;
         }
@@ -257,7 +235,8 @@
         private function _error()
         {
             Shopware()->Session()->RatePAY['hidePayment'] = true;
-            $this->View()->loadTemplate("frontend/RatePAYErrorpage.tpl");
+
+            $this->View()->loadTemplate("frontend/payment_rpay_part/index/header.tpl");
         }
 
         /**

@@ -37,11 +37,6 @@
         private $_bankCode;
 
         /**
-         * @var string
-         */
-        private $_bankName;
-
-        /**
          * This function returns the value of $_owner
          *
          * @return string
@@ -102,26 +97,6 @@
         }
 
         /**
-         * This function returns the value of $_bankName
-         *
-         * @return string
-         */
-        public function getBankName()
-        {
-            return $this->_bankName;
-        }
-
-        /**
-         * This function sets the value for $_bankName
-         *
-         * @param string $bankName
-         */
-        public function setBankName($bankName)
-        {
-            $this->_bankName = $bankName;
-        }
-
-        /**
          * This function returns all values as Array
          * This contains a quickfix for sepa transactions
          *
@@ -136,7 +111,6 @@
 
                 return array(
                     'owner'     => $this->getOwner(),
-                    'bank-name' => $this->getBankName(),
                     'iban'      => $this->getBankAccount()
                 );
 
@@ -144,7 +118,6 @@
 
                 return array(
                     'owner'     => $this->getOwner(),
-                    'bank-name' => $this->getBankName(),
                     'iban'      => $this->getBankAccount(),
                     'bic-swift' => $this->getBankCode()
                 );
@@ -153,7 +126,6 @@
 
             return array(
                 'owner'               => $this->getOwner(),
-                'bank-name'           => $this->getBankName(),
                 'bank-account-number' => $this->getBankAccount(),
                 'bank-code'           => $this->getBankCode()
             );

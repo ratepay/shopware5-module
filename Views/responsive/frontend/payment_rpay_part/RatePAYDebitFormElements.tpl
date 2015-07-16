@@ -25,13 +25,6 @@
     </div>
 {/block}
 
-{* Bankname *}
-{block name='ratepay_frontend_bankname'}
-    <div class="register--accountnumber">
-        <input id="ratepay_debit_bankname" name="ratepay_debit_accountnumber" class="register--field" type="text" placeholder="{s namespace=RatePAY name=bankName}Kreditinstitut{/s}*" value="{if $smarty.session.Shopware.RatePAY.bankdata.bankname}{$smarty.session.Shopware.RatePAY.bankdata.bankname|escape}{/if}">
-    </div>
-{/block}
-
 
 
 

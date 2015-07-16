@@ -413,17 +413,6 @@
                           "PRIMARY KEY (`id`)" .
                           ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
-            $sqlBankdata = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_user_bankdata` (" .
-                           "`userID` int(11) NOT NULL AUTO_INCREMENT," .
-                           "`bankname` varchar(255) NOT NULL," .
-                           "`bankcode` varchar(255) NOT NULL," .
-                           "`bankholder` varchar(255) NOT NULL," .
-                           "`account` varchar(255) NOT NULL," .
-                           "`iban` varchar(255) NOT NULL," .
-                           "`bic` varchar(255) NOT NULL," .
-                           "PRIMARY KEY (`userID`)" .
-                           ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-
             $sqlConfig = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config` (" .
                          "`profileId` varchar(255) NOT NULL," .
                          "`shopId` int(5) NOT NULL, " .
@@ -900,9 +889,6 @@
 
                 $view->ratepayValidateIsBirthdayValid = true;
                 $view->ratepayValidateisAgeValid = true;
-
-                $view->ratepayValidateisDebitSet = $validation->isDebitSet() ? 'true' : 'false';
-                Shopware()->Pluginlogger()->info('RatePAY: isDebitSet->' . $view->ratepayValidateisDebitSet);
 
                 $view->ratepayErrorRatenrechner = Shopware()->Session()->ratepayErrorRatenrechner ? 'true' : 'false';
             }

@@ -119,7 +119,6 @@
             $method = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
                 Shopware()->Session()->sOrderVariables['sUserData']['additional']['payment']['name']
             );
-            $encryption = new Shopware_Plugins_Frontend_RpayRatePay_Component_Encryption_ShopwareEncryption();
 
             $shopUser = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
 
@@ -172,7 +171,6 @@
 
                 $bankAccount->setBankAccount(Shopware()->Session()->RatePAY['bankdata']['account']);
                 $bankAccount->setBankCode(Shopware()->Session()->RatePAY['bankdata']['bankcode']);
-                $bankAccount->setBankName(Shopware()->Session()->RatePAY['bankdata']['bankname']);
                 $bankAccount->setOwner(Shopware()->Session()->RatePAY['bankdata']['bankholder']);
 
                 $customer->setBankAccount($bankAccount);
@@ -320,7 +318,6 @@
         private function fillPaymentChange(
             Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange &$paymentChangeModel
         ) {
-            $encryption = new Shopware_Plugins_Frontend_RpayRatePay_Component_Encryption_ShopwareEncryption();
 
             $order = Shopware()->Db()->fetchRow(
                 "SELECT * FROM `s_order` WHERE `transactionID`=?",
@@ -370,16 +367,6 @@
             $shippingAddress->setZipCode($shopShippingAddress->getZipCode());
             $customer->setShippingAddresses($shippingAddress);
 
-            // nur bei ELV
-            if ($encryption->isBankdataSetForUser($order['userID'])) {
-                $bankdata = $encryption->loadBankdata($order['userID']);
-                $bankAccount = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_BankAccount();
-                $bankAccount->setBankAccount($bankdata['account']);
-                $bankAccount->setBankCode($bankdata['bankcode']);
-                $bankAccount->setBankName($bankdata['bankname']);
-                $bankAccount->setOwner($bankdata['bankholder']);
-                $customer->setBankAccount($bankAccount);
-            }
             $customer->setCompanyName($shopBillingAddress->getCompany());
             $customer->setVatId($shopBillingAddress->getVatId());
             $customer->setDateOfBirth($shopBillingAddress->getBirthday()->format('Y-m-d'));

@@ -28,13 +28,6 @@
         private $_user;
 
         /**
-         * An Instance of the Shopware_Plugins_Frontend_RpayRatePay_Component_Encryption_ShopwareEncryption
-         *
-         * @var Shopware_Plugins_Frontend_RpayRatePay_Component_Encryption_ShopwareEncryption
-         */
-        private $_encryption;
-
-        /**
          * Constructor
          *
          * Saves the CustomerModel and initiate the Class
@@ -42,7 +35,6 @@
         public function __construct()
         {
             $this->_user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
-            $this->_encryption = new Shopware_Plugins_Frontend_RpayRatePay_Component_Encryption_ShopwareEncryption();
         }
 
         /**
@@ -196,20 +188,6 @@
             $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $this->_user->getBilling()->getCountryId());
 
             return ($country->getIso() === "DE") || ($country->getIso() === 'AT');
-        }
-
-
-        /**
-         * Checks if the customer has debit data saved
-         * Returns true if data is aviable, otherwise false.
-         *
-         * @return boolean
-         */
-        public function isDebitSet()
-        {
-            $id = $this->_user->getId();
-
-            return $this->_encryption->isBankdataSetForUser((string)$id);
         }
 
     }
