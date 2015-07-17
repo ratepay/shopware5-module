@@ -238,7 +238,7 @@
         {
             Shopware()->Session()->RatePAY['hidePayment'] = true;
 
-            $this->View()->loadTemplate("frontend/payment_rpay_part/index/header.tpl");
+            $this->View()->loadTemplate("frontend/payment_rpay_part/RatePAYErrorpage.tpl");
         }
 
         /**
