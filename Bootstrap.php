@@ -1019,7 +1019,7 @@
                 $basket = Shopware()->Modules()->Basket()->sGetAmount();
                 $basket = $basket['totalAmount'];
 
-                Shopware()->Pluginlogger()->info('BasketAmount: $basket');
+                Shopware()->Pluginlogger()->info('BasketAmount: '.$basket);
 
                 if ($basket < $paymentStati['limit-invoice-min'] || $basket > $paymentStati['limit-invoice-max']) {
                     $showInvoice = false;
