@@ -162,10 +162,10 @@
                     }
 
                     {if $sUserData.additional.payment.name == 'rpayratepaydebit' }
-                    if($('#ratepay_debit_accountnumber').val() != '' || $('#ratepay_debit_accountholder').val() != '') {
+                    if($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '') {
                         error = true;
                         userUpdate = false;
-                        errorMessage = '{s namespace=RatePAY name=bankdatanotvalid}Für eine Bezahlung mit RatePay müssen Sie gültig Bankdaten angeben.{/s}'
+                        errorMessage = '{s namespace=RatePAY name=bankdatanotvalid}Für eine Bezahlung mit RatePay müssen Sie gültige Bankverbindung angeben.{/s}'
                     }
                     {/if}
 
