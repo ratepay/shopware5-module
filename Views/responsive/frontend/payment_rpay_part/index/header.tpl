@@ -168,7 +168,7 @@
                     if($('#ratepay_debit_accountnumber').val() != '' || $('#ratepay_debit_accountholder').val() != '') {
                         error = true;
                         userUpdate = false;
-                        errorMessage = '{s namespace=RatePAY name=bankdatanotvalid}Für eine Bezahlung mit RatePay müssen Sie eine gültig Bankdaten angeben.{/s}'
+                        errorMessage = '{s namespace=RatePAY name=bankdatanotvalid}Für eine Bezahlung mit RatePay müssen Sie gültig Bankdaten angeben.{/s}'
                     }
                     {/if}
 
