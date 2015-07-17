@@ -68,16 +68,13 @@
         $(document).ready(function () {
 
             {if $ratepayValidateisAgeValid != 'true'}
-            $("#ratepay_error").append("{s namespace=RatePAY name=invalidAge}Bitte überprüfen sie die Eingabe ihres Geburtstdatums. Sie müssen mindestens 18 Jahre alt sein!{/s}");
-            $("#ratepay_error").parent().show();
+            $("#ratepay_error").text("{s namespace=RatePAY name=invalidAge}Bitte überprüfen sie die Eingabe ihres Geburtstdatums. Sie müssen mindestens 18 Jahre alt sein!{/s}");
+            $("#ratepay_error").parent().removeClass("is--hidden");
             {/if}
             {if $ratepayErrorRatenrechner == 'true'}
-            $("#ratepay_error").append("{s namespace=RatePAY name=errorRatenrechner}Bitte lassen Sie sich den Ratenplan berechnen!{/s}");
-            $("#ratepay_error").parent().show();
+            $("#ratepay_error").text("{s namespace=RatePAY name=errorRatenrechner}Bitte lassen Sie sich den Ratenplan berechnen!{/s}");
+            $("#ratepay_error").parent().removeClass("is--hidden");
             {/if}
-        });
-
-        $(document).ready(function () {
 
             /* returns correct YYYY-MM-dd dob */
             Date.prototype.yyyymmdd = function () {
