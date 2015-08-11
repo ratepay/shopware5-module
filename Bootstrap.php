@@ -83,7 +83,7 @@
          */
         public function getVersion()
         {
-            return "4.0.3";
+            return "4.0.4";
         }
 
         /**
@@ -169,6 +169,13 @@
         {
             $this->_subscribeEvents();
             $this->_createForm();
+
+            switch($version) {
+                case '4.0.3':
+                    $sql= "ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintStatus` int(1) NOT NULL";
+                    Shopware()->Db()->query($sql);
+                default:
+            }
 
             return array(
                 'success' => true,
@@ -424,6 +431,7 @@
                          "`limit-invoice-max` int(5) NOT NULL, " .
                          "`limit-debit-max` int(5) NOT NULL, " .
                          "`limit-rate-max` int(5) NOT NULL, " .
+                         "`deviceFingerprintStatus` int(1) NOT NULL, " .
                          "PRIMARY KEY (`profileId`, `shopId`)" .
                          ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
@@ -1108,6 +1116,8 @@
                     $response->getElementsByTagName('tx-limit-invoice-max')->item(0)->nodeValue,
                     $response->getElementsByTagName('tx-limit-elv-max')->item(0)->nodeValue,
                     $response->getElementsByTagName('tx-limit-installment-max')->item(0)->nodeValue,
+                    $response->getElementsByTagName('eligibility-device-fingerprint')->item(0)->nodeValue ? : 'no',
+
                     $shopId
                 );
 
