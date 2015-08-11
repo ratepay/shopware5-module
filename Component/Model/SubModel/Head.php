@@ -66,6 +66,11 @@
         private $_merchantConsumerId = null;
 
         /**
+         * @var string
+         */
+        private $_deviceToken;
+
+        /**
          * This function returns the value of $_systemId
          *
          * @return string
@@ -247,6 +252,23 @@
         }
 
         /**
+         * @return string
+         */
+        public function getDeviceToken()
+        {
+            return $this->_deviceToken;
+        }
+
+        /**
+         * @param $deviceToken
+         */
+        public function setDeviceToken($deviceToken)
+        {
+
+            $this->_deviceToken = $deviceToken;
+        }
+
+        /**
          * This function returns all values as Array
          *
          * @return array
@@ -275,6 +297,9 @@
             }
             if ($this->_merchantConsumerId ==! null) {
                 $return['external']['merchant-consumer-id'] = $this->getMerchantConsumerId();
+            }
+            if ($this->_deviceToken ==! null) {
+                $return['customer-device']['device-token'] = $this->getDeviceToken();
             }
             if ($this->_transactionId != null) {
                 $return['transaction-id'] = $this->getTransactionId();

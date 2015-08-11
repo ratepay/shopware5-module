@@ -172,8 +172,8 @@
 
             switch($version) {
                 case '4.0.3':
-                    $sql= "ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintStatus` int(1) NOT NULL";
-                    Shopware()->Db()->query($sql);
+                    Shopware()->Db()->query('ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintStatus` varchar(3) NOT NULL,');
+                    Shopware()->Db()->query('ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintSnippetId` varchar(55) NOT NULL');
                 default:
             }
 
@@ -431,7 +431,8 @@
                          "`limit-invoice-max` int(5) NOT NULL, " .
                          "`limit-debit-max` int(5) NOT NULL, " .
                          "`limit-rate-max` int(5) NOT NULL, " .
-                         "`deviceFingerprintStatus` int(1) NOT NULL, " .
+                         "`deviceFingerprintStatus` varchar(3) NOT NULL, " .
+                         "`deviceFingerprintSnippetId` varchar(55) NOT NULL, " .
                          "PRIMARY KEY (`profileId`, `shopId`)" .
                          ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
@@ -564,9 +565,37 @@
                 return;
             }
 
+            $this->registerMyTemplateDir();
+
+            //get ratepay config based on shopId @toDo: IF DI SNIPPET ID WILL BE VARIABLE BETWEEN SUBSHOPS WE NEED TO SELECT BY SHOPID AND COUNTRY CREDENTIALS!!!
+            $diConfig = Shopware()->Db()->fetchRow('
+                SELECT
+                *
+                FROM
+                `rpay_ratepay_config`
+                WHERE
+                `shopId` =?
+            ', array(Shopware()->Shop()->getId()));
+
+            //if no DF token is set, receive all the necessary data to set it and extend template
+            if(true == $diConfig['deviceFingerprintStatus']) {
+
+                $view->assign('snippetId', $diConfig['deviceFingerprintSnippetId']);
+
+                if(!Shopware()->Session()->RatePAY['devicefinterprintident']['token'])
+                {
+                    $token = md5(Shopware()->Session()->get('sessionId') . new \DateTime());
+                    Shopware()->Session()->RatePAY['devicefinterprintident']['token'] = $token;
+                }
+
+
+                $view->assign('token', Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
+                $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
+            }
+
+
             if('checkout' === $request->getControllerName() && 'confirm' === $request->getActionName())
             {
-                $this->registerMyTemplateDir();
                 $view->extendsTemplate('frontend/payment_rpay_part/index/header.tpl');
                 $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
             }
@@ -1117,7 +1146,9 @@
                     $response->getElementsByTagName('tx-limit-elv-max')->item(0)->nodeValue,
                     $response->getElementsByTagName('tx-limit-installment-max')->item(0)->nodeValue,
                     $response->getElementsByTagName('eligibility-device-fingerprint')->item(0)->nodeValue ? : 'no',
+                    $response->getElementsByTagName('device-fingerprint-snippet-id')->item(0)->nodeValue,
 
+                    //shopId should always be the last line
                     $shopId
                 );
 
@@ -1132,15 +1163,17 @@
                     $activePayments = $activePayments == '' ? '"rpayratepayrate"' : $activePayments . ', "rpayratepayrate"';
                 }
 
-                $updatesql = "UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in($activePayments)";
-                $sql = "REPLACE INTO `rpay_ratepay_config`"
-                       . "(`profileId`, `invoiceStatus`,`debitStatus`,`rateStatus`, "
-                       . "`b2b-invoice`, `b2b-debit`, `b2b-rate`, "
-                       . "`address-invoice`, `address-debit`, `address-rate`, "
-                       . "`limit-invoice-min`, `limit-debit-min`, `limit-rate-min`, "
-                       . "`limit-invoice-max`, `limit-debit-max`, `limit-rate-max`, "
-                       . "`shopId`)"
-                       . "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                $updatesql = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in($activePayments)';
+
+                $sql = 'REPLACE INTO `rpay_ratepay_config`'
+                       . '(`profileId`, `invoiceStatus`,`debitStatus`,`rateStatus`,'
+                       . '`b2b-invoice`, `b2b-debit`, `b2b-rate`,'
+                       . '`address-invoice`, `address-debit`, `address-rate`,'
+                       . '`limit-invoice-min`, `limit-debit-min`, `limit-rate-min`,'
+                       . '`limit-invoice-max`, `limit-debit-max`, `limit-rate-max`,'
+                       . '`deviceFingerprintStatus`, `deviceFingerprintSnippetId`,'
+                       . ' `shopId`)'
+                       . 'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
 
                 try {
                     $this->clearRuleSet();

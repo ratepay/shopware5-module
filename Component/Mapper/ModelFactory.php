@@ -131,6 +131,11 @@
             $head->setSystemVersion($this->_getVersion());
             $head->setOrderId($this->_getOrderIdFromTransactionId());
 
+            //set device ident token if available
+            if (Shopware()->Session()->RatePAY['devicefinterprintident']['token']) {
+                $head->setDeviceToken(Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
+            }
+
             $shopCountry = Shopware()->Models()->find(
                 'Shopware\Models\Country\Country',
                 $shopUser->getBilling()->getCountryId()

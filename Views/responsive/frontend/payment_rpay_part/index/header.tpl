@@ -8,7 +8,7 @@
 {block name="frontend_index_header_javascript" append}
 
     {if $sUserData.additional.payment.name == 'rpayratepaydebit' }
-    {* Javascript for SepaDirectDebit *}
+        {* Javascript for SepaDirectDebit *}
         <script language='javascript'>
             {* Disable confirmation button if sepadirectdebit tac are not checked *}
             $(document).ready(function () {
