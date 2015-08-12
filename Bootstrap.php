@@ -1192,14 +1192,12 @@
                     return true;
                 } catch (Exception $exception) {
                     Shopware()->Pluginlogger()->info($exception->getMessage());
-                    Shopware()->Db()->query("UPDATE `s_core_paymentmeans` SET `active` =0 WHERE `name` LIKE 'rpayratepay%'");
 
                     return false;
                 }
             }
             else {
                 Shopware()->Pluginlogger()->error('RatePAY: Profile_Request failed!');
-                Shopware()->Db()->query("UPDATE `s_core_paymentmeans` SET `active` =0 WHERE `name` LIKE 'rpayratepay%'");
 
                 return false;
             }
