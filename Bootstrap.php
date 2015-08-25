@@ -173,7 +173,7 @@
             switch($version) {
                 case '4.0.3':
                     Shopware()->Db()->query('ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintStatus` varchar(3) NOT NULL,');
-                    Shopware()->Db()->query('ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintSnippetId` varchar(55) NOT NULL');
+                    Shopware()->Db()->query('ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintSnippetId` varchar(55) NULL');
                 default:
             }
 
@@ -432,7 +432,7 @@
                          "`limit-debit-max` int(5) NOT NULL, " .
                          "`limit-rate-max` int(5) NOT NULL, " .
                          "`deviceFingerprintStatus` varchar(3) NOT NULL, " .
-                         "`deviceFingerprintSnippetId` varchar(55) NOT NULL, " .
+                         "`deviceFingerprintSnippetId` varchar(55) NULL, " .
                          "PRIMARY KEY (`profileId`, `shopId`)" .
                          ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
@@ -540,10 +540,28 @@
                 $this->subscribeEvent(
                     'Shopware_Modules_Order_SaveOrder_ProcessDetails', 'insertRatepayPositions'
                 );
+                $this->subscribeEvent(
+                    'Theme_Compiler_Collect_Plugin_Javascript',
+                    'addJsFiles'
+                );
             } catch (Exception $exception) {
                 $this->uninstall();
                 throw new Exception('Can not create events.' . $exception->getMessage());
             }
+        }
+
+        /**
+         * Add base javascripts
+         *
+         * @return \Doctrine\Common\Collections\ArrayCollection
+         */
+        public function addJsFiles()
+        {
+            $jsPath = array(
+                __DIR__ . '/Views/responsive/frontend/_public/src/javascripts/jquery.ratepay_checkout.js'
+            );
+
+            return new Doctrine\Common\Collections\ArrayCollection($jsPath);
         }
 
         /**
