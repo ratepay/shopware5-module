@@ -84,6 +84,7 @@
          * @param event
          */
         onCheckoutButtonClick: function (event) {
+
             var me = this;
 
             /* returns correct YYYY-MM-dd dob */

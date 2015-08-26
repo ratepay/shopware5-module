@@ -333,6 +333,102 @@
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
                 ));
 
+                /** BIDIRECTIONAL ORDER SETTINGS **/
+                $form->setElement('button', 'button2', array(
+                    'label' => '<b>Bidirektionale RatePAY-Bestellungen:</b>',
+                    'value' => ''
+                ));
+
+                $form->setElement('checkbox', 'RatePayBidirectional', array(
+                    'label' => 'Bidirektionalität aktivieren ( Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert )',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
+                ));
+
+                /** ORDERSTATUS **/
+                $form->setElement('button', 'button3', array(
+                    'label' => '<b>Bestellstati:</b>',
+                    'value' => ''
+                ));
+
+                $form->setElement(
+                    'select',
+                    'RatePayFullDelivery',
+                    array(
+                        'label' => 'Status für Volllieferung',
+                        'value' => 7,
+                        'store' => 'base.OrderStatus',
+                        'displayField' => 'description',
+                        'valueField' => 'id',
+                        'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
+                    )
+                );
+
+                $form->setElement(
+                    'select',
+                    'RatePayPartialDelivery',
+                    array(
+                        'label' => 'Status für Teillieferung',
+                        'value' => 6,
+                        'store' => 'base.OrderStatus',
+                        'displayField' => 'description',
+                        'valueField' => 'id',
+                        'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
+                    )
+                );
+
+                $form->setElement(
+                    'select',
+                    'RatePayFullCancellation',
+                    array(
+                        'label' => 'Status für Vollstornierung',
+                        'value' => 265,
+                        'store' => 'base.OrderStatus',
+                        'displayField' => 'description',
+                        'valueField' => 'id',
+                        'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
+                    )
+                );
+
+                $form->setElement(
+                    'select',
+                    'RatePayPartialCancellation',
+                    array(
+                        'label' => 'Status für Teilstornierung',
+                        'value' => 265,
+                        'store' => 'base.OrderStatus',
+                        'displayField' => 'description',
+                        'valueField' => 'id',
+                        'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
+                    )
+                );
+
+                $form->setElement(
+                    'select',
+                    'RatePayFullReturn',
+                    array(
+                        'label' => 'Status für Vollretournierung',
+                        'value' => 255,
+                        'store' => 'base.OrderStatus',
+                        'displayField' => 'description',
+                        'valueField' => 'id',
+                        'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
+                    )
+                );
+
+                $form->setElement(
+                    'select',
+                    'RatePayPartialReturn',
+                    array(
+                        'label' => 'Status für Vollretournierung',
+                        'value' => 255,
+                        'store' => 'base.OrderStatus',
+                        'displayField' => 'description',
+                        'valueField' => 'id',
+                        'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
+                    )
+                );
+
+
             } catch (Exception $exception) {
                 $this->uninstall();
                 throw new Exception("Can not create config elements." . $exception->getMessage());
@@ -934,50 +1030,6 @@
                 $view->ratepayValidateisAgeValid = true;
 
                 $view->ratepayErrorRatenrechner = Shopware()->Session()->ratepayErrorRatenrechner ? 'true' : 'false';
-
-                //check if all data for payment method is set. if not redirect to payment site
-                /*if (in_array('confirm', array($request->get('action'), $view->sTargetAction))
-                    && $request->get('controller') === 'checkout')
-                {
-
-                    $redirect = false;
-
-                    if(!$validation->isAgeValid())
-                    {
-                        $view->ratepayValidateisAgeValid = false;
-                        Shopware()->Pluginlogger()->info('RatePAY: isAgeValid->' . $view->ratepayValidateisAgeValid);
-                        $redirect = true;
-                    }
-
-                    if(!$validation->isBirthdayValid())
-                    {
-                        $view->ratepayValidateIsBirthdayValid = true;
-                        Shopware()->Pluginlogger()->info('RatePAY: isBirthdayValid->' . $view->ratepayValidateIsBirthdayValid);
-                        $redirect = true;
-                    }
-
-                    //check if all debit fields are set
-                    if('rpayratepaydebit' === $validation->getPayment()->getName())
-                    {
-                        if(isset(Shopware()->Session()->RatePAY['bankdata']['account'])
-                           && null === Shopware()->Session()->RatePAY['bankdata']['account']) {
-                            $redirect = true;
-                        } elseif(isset(Shopware()->Session()->RatePAY['bankdata']['bankcode'])
-                                 && null === Shopware()->Session()->RatePAY['bankdata']['bankcode']) {
-                            $redirect = true;
-                        } elseif(isset(Shopware()->Session()->RatePAY['bankdata']['bankholder'])
-                                 && null === Shopware()->Session()->RatePAY['bankdata']['bankholder']) {
-                            $redirect = true;
-                        }
-                    }
-
-                    if(true === $redirect)
-                    {
-                        $request->setControllerName('checkout');
-                        $request->setActionName('shippingPayment')->setDispatched(false);
-                    }
-
-                }*/
 
             }
 

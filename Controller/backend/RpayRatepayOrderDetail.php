@@ -760,15 +760,15 @@
 
                 if($operation === 'cancellation')
                 {
-                    $newState = $orderComplete == 0 ? 265 : 265;
+                    $newState = $orderComplete == 0 ? $this->_config['RatePayPartialCancellation'] : $this->_config['RatePayFullCancellation'];
                 } elseif($operation === 'delivery') {
                     //only set if order is not partial returned / cancelled
-                    if($orderComplete != 255 && $orderComplete != 265)
+                    if($orderComplete != $this->_config['RatePayPartialReturn'] && $orderComplete != $this->_config['RatePayPartialCancellation'])
                     {
-                        $newState = $orderComplete == 0 ? 7 : 6;
+                        $newState = $orderComplete == 0 ? $this->_config['RatePayFullDelivery'] : $this->_config['RatePayPartialDelivery'];
                     }
                 } elseif($operation === 'return') {
-                    $newState = $orderComplete == 0 ? 255: 265;
+                    $newState = $orderComplete == 0 ? $this->_config['RatePayFullReturn']: $this->_config['RatePayFullCancellation'];
                 }
 
                 // return if no status update
