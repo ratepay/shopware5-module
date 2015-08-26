@@ -8,6 +8,66 @@
 
             me.$checkoutButton = $('button[form=confirm--form]');
             me.registerEvents();
+
+            /* exception if user age is not valid*/
+            if(ratepayAgeNotValid == true) {
+                $("#ratepay_error").text(errorMessageAgeNotValid);
+                $("#ratepay_error").parent().removeClass("is--hidden");
+            }
+
+            /* exception if no rate is calculated */
+            if(ratepayCalcRateError == true) {
+                $("#ratepay_error").text(errorMessageCalcRate);
+                $("#ratepay_error").parent().removeClass("is--hidden");
+            }
+
+            if(isDebitPayment == true){
+                /* Disable confirmation button if sepadirectdebit tac are not checked */
+                var button = $('button[type=submit]');
+
+                button.attr('disabled', 'disabled');
+                button.css({ opacity: 0.5 });
+                button.attr('title', errorMessageAcceptSepaAGB);
+                $('#ratepay_agb').click(function () {
+                    if ($(this).prop('checked')) {
+                        button.removeAttr('disabled');
+                        button.removeAttr('title');
+                        button.css({ opacity: 1.0 });
+                    } else {
+                        button.attr('disabled', 'disabled');
+                        button.attr('title', errorMessageAcceptSepaAGB);
+                        button.css({ opacity: 0.5 });
+                    }
+                });
+
+                /* Handle BIC Field ( only fade in for AT ) */
+
+                var blzInput       = $(":input#ratepay_debit_bankcode");
+                var blzInputLabel  = $("label[for='ratepay_debit_bankcode']");
+                var accNumberInput = $(":input#ratepay_debit_accountnumber");
+
+                blzInput.prop('disabled', true);
+                blzInput.hide();
+                blzInputLabel.hide();
+
+                accNumberInput.keyup(function () {
+                    if ($(this).val().match(/^\d+$/)) {
+                        blzInput.prop('disabled', false);
+                        blzInput.show();
+                        blzInputLabel.show();
+                    } else if ($(this).val().match(/at/i)) {
+                        blzInput.prop('disabled', false);
+                        blzInput.show();
+                        blzInputLabel.show();
+                    }
+                    else {
+                        blzInput.prop('disabled', true);
+                        blzInput.hide();
+                        blzInputLabel.hide();
+                    }
+                })
+            }
+
         },
 
         /**
@@ -25,54 +85,6 @@
          */
         onCheckoutButtonClick: function (event) {
             var me = this;
-
-            if(isDebitPayment == true){
-                /* Disable confirmation button if sepadirectdebit tac are not checked */
-                    var button = $('button[type=submit]');
-
-                    button.attr('disabled', 'disabled');
-                    button.css({ opacity: 0.5 });
-                    button.attr('title', errorMessageAcceptSepaAGB);
-                    $('#ratepay_agb').click(function () {
-                        if ($(this).prop('checked')) {
-                            button.removeAttr('disabled');
-                            button.removeAttr('title');
-                            button.css({ opacity: 1.0 });
-                        } else {
-                            button.attr('disabled', 'disabled');
-                            button.attr('title', errorMessageAcceptSepaAGB);
-                            button.css({ opacity: 0.5 });
-                        }
-                    });
-
-                /* Handle BIC Field ( only fade in for AT ) */
-
-                    var blzInput       = $(":input#ratepay_debit_bankcode");
-                    var blzInputLabel  = $("label[for='ratepay_debit_bankcode']");
-                    var accNumberInput = $(":input#ratepay_debit_accountnumber");
-
-                    blzInput.prop('disabled', true);
-                    blzInput.hide();
-                    blzInputLabel.hide();
-
-                    accNumberInput.keyup(function () {
-                        if ($(this).val().match(/^\d+$/)) {
-                            blzInput.prop('disabled', false);
-                            blzInput.show();
-                            blzInputLabel.show();
-                        } else if ($(this).val().match(/at/i)) {
-                            blzInput.prop('disabled', false);
-                            blzInput.show();
-                            blzInputLabel.show();
-                        }
-                        else {
-                            blzInput.prop('disabled', true);
-                            blzInput.hide();
-                            blzInputLabel.hide();
-                        }
-                    })
-            }
-
 
             /* returns correct YYYY-MM-dd dob */
             Date.prototype.yyyymmdd = function () {
@@ -165,24 +177,28 @@
                 /* error handler */
                 if (error) {
 
-                    /** hide the modal window */
-                    $("div.ratepay-overlay").hide();
+                    /* prevent shopware changing button status */
+                    $('button[form=confirm--form]').removeAttr('disabled');
+                    $('div.js--loading').hide();
 
-                    $("#ratepay_error").text(errorMessage);
-                    $("#ratepay_error").parent().removeClass("is--hidden");
+                    /** hide the modal window */
+                    $('div.ratepay-overlay').hide();
+
+                    $('#ratepay_error').text(errorMessage);
+                    $('#ratepay_error').parent().removeClass('is--hidden');
                     $('html, body').animate({
-                        scrollTop: $("#ratepay_error").offset().top - 100
+                        scrollTop: $('#ratepay_error').offset().top - 100
                     }, 1000);
                     return false;
 
                 } else {
-                    $("#ratepay_error").parent().hide();
+                    $('#ratepay_error').parent().hide();
                 }
 
                 /* update user */
                 if (userUpdate) {
                     $.ajax({
-                        type: "POST",
+                        type: 'POST',
                         async: false,
                         url: ratepayUrl,
                         data: requestParams
