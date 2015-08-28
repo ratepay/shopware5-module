@@ -604,6 +604,9 @@
                 $this->subscribeEvent(
                     'Shopware_Controllers_Backend_Order::saveAction::before', 'beforeSaveOrderInBackend'
                 );
+                $this->subscribeEvent(
+                    'Shopware_Controllers_Backend_Order::saveAction::after', 'onBidirectionalSendOrderOperation'
+                );
                 $this->subscribeEvent('Enlight_Controller_Action_PostDispatch', 'onPostDispatch', 110
                 );
                 $this->subscribeEvent(
@@ -858,6 +861,34 @@
             }
 
             return true;
+        }
+
+        public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $arguments)
+        {
+            $request = $arguments->getSubject()->Request();
+            $parameter = $request->getParams();
+            $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
+
+            if (true !== $config->get('RatePayBidirectional') || (!in_array(
+                    $parameter['payment'][0]['name'],
+                    array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit")
+                ))
+            ) {
+                return;
+            }
+
+            $newOrderStatus = $parameter->get('status');
+            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
+
+            $backendMethods = new Shopware_Controllers_Backend_RpayRatepayOrderDetail($request, $response = null);
+            if ($newOrderStatus = $this->_config['RatePayFullDelivery']) {
+                $backendMethods->deliverItemsAction();
+            } elseif ($newOrderStatus = $this->_config['RatePayFullCancellation']) {
+
+            }  elseif ($newOrderStatus = $this->_config['RatePayFullReturn']) {
+
+            }
+
         }
 
         /**
@@ -1218,7 +1249,7 @@
                     $response->getElementsByTagName('eligibility-device-fingerprint')->item(0)->nodeValue ? : 'no',
                     $response->getElementsByTagName('device-fingerprint-snippet-id')->item(0)->nodeValue,
 
-                    //shopId should always be the last line
+                    //shopId always needs be the last line
                     $shopId
                 );
 
