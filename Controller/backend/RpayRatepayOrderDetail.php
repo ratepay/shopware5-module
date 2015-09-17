@@ -12,7 +12,7 @@
      * You should have received a copy of the GNU General Public License along with this program;
      * if not, see <http://www.gnu.org/licenses/>.
      *
-     * RpayRatepayLogging
+     * RpayRatepayOrderDetail
      *
      * @category   RatePAY
      * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
@@ -67,7 +67,6 @@
 
             }
 
-            #$this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
             $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
             $this->_history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
         }

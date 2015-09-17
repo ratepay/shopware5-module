@@ -148,9 +148,9 @@
          */
         public function _createExtraFields()
         {
-            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','ShopId','int(5)', false, 0);
-            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','TransactionId','varchar(255)', false, 0);
-            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','DgNumber','varchar(255)', false, 0);
+            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','ShopId','int(5)', true, 0);
+            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','TransactionId','varchar(255)', true, 0);
+            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','DgNumber','varchar(255)', true, 0);
             $metaDataCache  = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
             $metaDataCache->deleteAll();
             Shopware()->Models()->generateAttributeModels(
@@ -865,6 +865,7 @@
 
         public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $arguments)
         {
+
             $request = $arguments->getSubject()->Request();
             $parameter = $request->getParams();
             $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
@@ -877,18 +878,117 @@
                 return;
             }
 
-            $newOrderStatus = $parameter->get('status');
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
 
-            $backendMethods = new Shopware_Controllers_Backend_RpayRatepayOrderDetail($request, $response = null);
-            if ($newOrderStatus = $this->_config['RatePayFullDelivery']) {
-                $backendMethods->deliverItemsAction();
-            } elseif ($newOrderStatus = $this->_config['RatePayFullCancellation']) {
+            //get country of order
+            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $order->getCustomer()->getBilling()->getCountryId());
 
-            }  elseif ($newOrderStatus = $this->_config['RatePayFullReturn']) {
+            //set sandbox mode based on config
+            $sandbox = false;
+            if('DE' === $country->getIso())
+            {
+                $sandbox = $config->get('RatePaySandboxDE');
+            } elseif ('AT' === $country->getIso())
+            {
+                $sandbox = $this->_config->get('RatePaySandboxAT');
+            }
+            $service = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
+            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+            $history      = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
+
+            $newOrderStatus = $parameter['status'];
+
+
+            if ($newOrderStatus == $config['RatePayFullDelivery']) {
+
+                $sqlShipping = "SELECT COUNT(*) "
+                               . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
+                               . "WHERE `delivered` == 0 AND WHERE cancelled == 0 AND WHERE returned == 0 AND WHERE`shipping`.`s_order_id` = ?";
+
+                try {
+                    $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
+                } catch (Exception $exception) {
+                    Shopware()->Pluginlogger()->error($exception->getMessage());
+                }
+
+                if (null === $count) {
+
+                    $basketItems = $this->getBasket($order);
+                    $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
+                    $basket->setAmount($order->getInvoiceAmount());
+                    $basket->setCurrency($order->getCurrency());
+                    $basket->setItems($basketItems);
+
+                    $confirmationDeliveryModel = $modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery(), $order->getId());
+                    $confirmationDeliveryModel->setShoppingBasket($basket);
+                    $head = $confirmationDeliveryModel->getHead();
+                    $head->setTransactionId($order->getTransactionID());
+                    $confirmationDeliveryModel->setHead($head);
+                    $response = $service->xmlRequest($confirmationDeliveryModel->toArray());
+                    $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('CONFIRMATION_DELIVER', $response);
+                    if ($result === true) {
+                        foreach ($basketItems as $item) {
+                            $bind = array(
+                                'delivered' => $item->getQuantity()
+                            );
+                            $this->updateItem($order->getId(), $item->getArticlenumber(), $bind);
+                            if ($item->getQuantity() <= 0) {
+                                continue;
+                            }
+                            $history->logHistory($order->getId(), "Artikel wurde versand.", $item->getArticleName(), $item->getArticlenumber(), $item->getQuantity());
+                        }
+                    }
+
+                }
+
+            } elseif ($newOrderStatus == $config['RatePayFullCancellation']) {
+
+            }  elseif ($newOrderStatus == $config['RatePayFullReturn']) {
 
             }
 
+        }
+
+        /**
+         * Updates the given binding for the given article
+         *
+         * @param string $orderID
+         * @param string $articleordernumber
+         * @param array  $bind
+         */
+        private function updateItem($orderID, $articleordernumber, $bind)
+        {
+            if ($articleordernumber === 'shipping') {
+                Shopware()->Db()->update('rpay_ratepay_order_shipping', $bind, '`s_order_id`=' . $orderID);
+            }
+            else {
+                $positionId = Shopware()->Db()->fetchOne("SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?", array($orderID, $articleordernumber));
+                Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
+            }
+        }
+
+        /**
+         * returns basket items as an array
+         *
+         * @param \Shopware\Models\Order\Order $order
+         *
+         * @return array
+         */
+        public function getBasket(Shopware\Models\Order\Order $order)
+        {
+            $basketItems = array();
+            foreach ($items = $order->getDetails() as $item) {
+                $basketItem = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item();
+
+                $basketItem->setArticleName($item->getArticleName());
+                $basketItem->setArticleNumber($item->getArticlenumber());
+                $basketItem->setQuantity($item->getQuantity());
+                $basketItem->setTaxRate($item->getTaxRate());
+                $basketItem->setUnitPriceGross($item->getPrice());
+                $basketItems[] = $basketItem;
+            }
+
+            return $basketItems;
         }
 
         /**
