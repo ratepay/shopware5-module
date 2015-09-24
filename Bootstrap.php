@@ -363,7 +363,7 @@
                     )
                 );
 
-                $form->setElement(
+                /*$form->setElement(
                     'select',
                     'RatePayPartialDelivery',
                     array(
@@ -374,7 +374,7 @@
                         'valueField' => 'id',
                         'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
                     )
-                );
+                );*/
 
                 $form->setElement(
                     'select',
@@ -389,7 +389,7 @@
                     )
                 );
 
-                $form->setElement(
+                /*$form->setElement(
                     'select',
                     'RatePayPartialCancellation',
                     array(
@@ -400,7 +400,7 @@
                         'valueField' => 'id',
                         'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
                     )
-                );
+                );*/
 
                 $form->setElement(
                     'select',
@@ -415,7 +415,7 @@
                     )
                 );
 
-                $form->setElement(
+                /*$form->setElement(
                     'select',
                     'RatePayPartialReturn',
                     array(
@@ -426,7 +426,7 @@
                         'valueField' => 'id',
                         'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
                     )
-                );
+                );*/
 
 
             } catch (Exception $exception) {
@@ -898,12 +898,11 @@
 
             $newOrderStatus = $parameter['status'];
 
-
             if ($newOrderStatus == $config['RatePayFullDelivery']) {
 
                 $sqlShipping = "SELECT COUNT(*) "
                                . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-                               . "WHERE `delivered` == 0 AND WHERE cancelled == 0 AND WHERE returned == 0 AND WHERE`shipping`.`s_order_id` = ?";
+                               . "WHERE `delivered` = 0 AND `cancelled` = 0 AND `returned` = 0 AND `shipping`.`s_order_id` = ?";
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
@@ -911,7 +910,7 @@
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
 
-                if (null === $count) {
+                if (null != $count) {
 
                     $basketItems = $this->getBasket($order);
                     $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
@@ -926,12 +925,14 @@
                     $confirmationDeliveryModel->setHead($head);
                     $response = $service->xmlRequest($confirmationDeliveryModel->toArray());
                     $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('CONFIRMATION_DELIVER', $response);
+
                     if ($result === true) {
                         foreach ($basketItems as $item) {
                             $bind = array(
                                 'delivered' => $item->getQuantity()
                             );
-                            $this->updateItem($order->getId(), $item->getArticlenumber(), $bind);
+
+                            $this->updateItem($order->getId(), 'shipping', $bind);
                             if ($item->getQuantity() <= 0) {
                                 continue;
                             }
@@ -943,7 +944,86 @@
 
             } elseif ($newOrderStatus == $config['RatePayFullCancellation']) {
 
+                $sqlShipping = "SELECT COUNT(*) "
+                               . "FROM `rpay_ratepay_order_positions` AS `positions` "
+                               . "WHERE `cancelled` = 0 AND `shipping`.`s_order_id` = ?";
+                try {
+                    $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
+                } catch (Exception $exception) {
+                    Shopware()->Pluginlogger()->error($exception->getMessage());
+                }
+
+                if (null != $count) {
+                    $basketItems = $this->getBasket($order);
+                    $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
+                    $basket->setAmount($order->getInvoiceAmount());
+                    $basket->setCurrency($order->getCurrency());
+                    $basket->setItems($basketItems);
+
+                    $modelFactory->setTransactionId($order->getTransactionID());
+                    $paymentChange = $modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange());
+                    $head = $paymentChange->getHead();
+                    $head->setOperationSubstring('partial-cancellation');
+                    $paymentChange->setHead($head);
+                    $paymentChange->setShoppingBasket($basket);
+
+                    $response = $service->xmlRequest($paymentChange->toArray());
+                    $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
+                    if ($result === true) {
+                        foreach ($basketItems as $item) {
+                            $bind = array(
+                                'cancelled' => $item->getQuantity()
+                            );
+                            $this->updateItem($order->getId(), $item->getArticlenumber(), $bind);
+                            if ($item->getQuantity() <= 0) {
+                                continue;
+                            }
+                            $history->logHistory($order->getId(), "Artikel wurde storniert.", $item->getArticleName(), $item->getArticlenumber(), $item->getQuantity());
+                        }
+                    }
+                }
+
             }  elseif ($newOrderStatus == $config['RatePayFullReturn']) {
+
+                $sqlShipping = "SELECT COUNT(*) "
+                               . "FROM `rpay_ratepay_order_positions` AS `positions` "
+                               . "WHERE `returned` = 0 AND `shipping`.`s_order_id` = ?";
+
+                try {
+                    $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
+                } catch (Exception $exception) {
+                    Shopware()->Pluginlogger()->error($exception->getMessage());
+                }
+
+                if (null != $count) {
+                    $basketItems = $this->getBasket($order);
+                    $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
+                    $basket->setAmount($order->getInvoiceAmount());
+                    $basket->setCurrency($order->getCurrency());
+                    $basket->setItems($basketItems);
+
+                    $modelFactory->setTransactionId($order->getTransactionID());
+                    $paymentChange = $modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange());
+                    $head = $paymentChange->getHead();
+                    $head->setOperationSubstring('partial-return');
+                    $paymentChange->setHead($head);
+                    $paymentChange->setShoppingBasket($basket);
+
+                    $response = $service->xmlRequest($paymentChange->toArray());
+                    $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
+                    if ($result === true) {
+                        foreach ($basketItems as $item) {
+                            $bind = array(
+                                'returned' => $item->getQuantity()
+                            );
+                            $this->updateItem($order->getId(), $item->getArticlenumber(), $bind);
+                            if ($item->getQuantity() <= 0) {
+                                continue;
+                            }
+                            $history->logHistory($order->getId(), "Artikel wurde retourniert.", $item->getArticleName(), $item->getArticlenumber(), $item->getQuantity());
+                        }
+                    }
+                }
 
             }
 
