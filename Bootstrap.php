@@ -945,8 +945,8 @@
             } elseif ($newOrderStatus == $config['RatePayFullCancellation']) {
 
                 $sqlShipping = "SELECT COUNT(*) "
-                               . "FROM `rpay_ratepay_order_positions` AS `positions` "
-                               . "WHERE `cancelled` = 0 AND `positions`.`s_order_id` = ?";
+                               . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
+                               . "WHERE `cancelled` = 0 AND `shipping`.`s_order_id` = ?";
                 try {
                     $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
                 } catch (Exception $exception) {
@@ -986,8 +986,8 @@
             }  elseif ($newOrderStatus == $config['RatePayFullReturn']) {
 
                 $sqlShipping = "SELECT COUNT(*) "
-                               . "FROM `rpay_ratepay_order_positions` AS `positions` "
-                               . "WHERE `returned` = 0 AND `positions`.`s_order_id` = ?";
+                               . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
+                               . "WHERE `returned` = 0 AND `shipping`.`s_order_id` = ?";
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
