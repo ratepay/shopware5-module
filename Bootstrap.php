@@ -946,7 +946,7 @@
 
                 $sqlShipping = "SELECT COUNT(*) "
                                . "FROM `rpay_ratepay_order_positions` AS `positions` "
-                               . "WHERE `cancelled` = 0 AND `shipping`.`s_order_id` = ?";
+                               . "WHERE `cancelled` = 0 AND `positions`.`s_order_id` = ?";
                 try {
                     $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
                 } catch (Exception $exception) {
@@ -987,7 +987,7 @@
 
                 $sqlShipping = "SELECT COUNT(*) "
                                . "FROM `rpay_ratepay_order_positions` AS `positions` "
-                               . "WHERE `returned` = 0 AND `shipping`.`s_order_id` = ?";
+                               . "WHERE `returned` = 0 AND `positions`.`s_order_id` = ?";
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
