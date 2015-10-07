@@ -173,13 +173,27 @@
                     error = true;
                     userUpdate = false;
                     errorMessage = errorMessageValidBankData;
+                } else if ($('#ratepay_debit_accountnumber').val().match(/at/i)) {
+                    if($('#ratepay_debit_accountnumber').val().length < 18) {
+                        error = true;
+                        userUpdate = false;
+                        errorMessage = errorMessageValidBankData;
+                    }
+                } else if ($('#ratepay_debit_accountnumber').val().match(/de/i)) {
+                    if($('#ratepay_debit_accountnumber').val().length < 20) {
+                        error = true;
+                        userUpdate = false;
+                        errorMessage = errorMessageValidBankData;
+                    }
                 }
 
                 /* error handler */
                 if (error) {
 
                     /* prevent shopware changing button status */
-                    $('button[form=confirm--form]').removeAttr('disabled');
+                    $('div.js--loading').remove();
+                    $('button[form=confirm--form]').prop("disabled", false);
+                    $('button[form=confirm--form]').prop("foo", true);
                     $('div.js--loading').hide();
 
                     /** hide the modal window */
