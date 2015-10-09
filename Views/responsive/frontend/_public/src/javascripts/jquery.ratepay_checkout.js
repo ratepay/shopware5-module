@@ -126,8 +126,7 @@
                         userUpdate = false;
                     }
 
-                    /* validate sepa direct debit - no error if no blz is net @toDo: fix for international direct debits */
-
+                    /* validate sepa direct debit - no error if no blz is set @toDo: fix for international direct debits */
                     if ($(this).attr('id') == 'ratepay_debit_bankcode' && !$(":input#ratepay_debit_accountnumber").val().match(/^\d+$/)) {
                         error = false;
                         userUpdate = true;
@@ -167,20 +166,9 @@
                     error = true;
                     userUpdate = false;
                 }
-
-
-                if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '') {
-                    error = true;
-                    userUpdate = false;
-                    errorMessage = errorMessageValidBankData;
-                } else if ($('#ratepay_debit_accountnumber').val().match(/at/i)) {
-                    if($('#ratepay_debit_accountnumber').val().length < 18) {
-                        error = true;
-                        userUpdate = false;
-                        errorMessage = errorMessageValidBankData;
-                    }
-                } else if ($('#ratepay_debit_accountnumber').val().match(/de/i)) {
-                    if($('#ratepay_debit_accountnumber').val().length < 20) {
+                
+                if($('#ratepay_debit_accountnumber').length) { /* only do the check if bankdata form exists */
+                    if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '' || $('#ratepay_debit_accountholder').val().length < 18) {
                         error = true;
                         userUpdate = false;
                         errorMessage = errorMessageValidBankData;
@@ -189,12 +177,6 @@
 
                 /* error handler */
                 if (error) {
-
-                    /* prevent shopware changing button status */
-                    $('div.js--loading').remove();
-                    $('button[form=confirm--form]').prop("disabled", false);
-                    $('button[form=confirm--form]').prop("foo", true);
-                    $('div.js--loading').hide();
 
                     /** hide the modal window */
                     $('div.ratepay-overlay').hide();

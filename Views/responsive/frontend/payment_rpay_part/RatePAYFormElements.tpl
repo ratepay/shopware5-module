@@ -47,7 +47,6 @@
         </div>
 
         <p>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um mit RatePay bezahlen zu können.{/s}</p>
-
     </div>
 {/block}
 
