@@ -168,7 +168,7 @@
                 }
                 
                 if($('#ratepay_debit_accountnumber').length) { /* only do the check if bankdata form exists */
-                    if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '' || $('#ratepay_debit_accountholder').val().length < 18) {
+                    if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '' || $('#ratepay_debit_accountnumber').val().length < 18) {
                         error = true;
                         userUpdate = false;
                         errorMessage = errorMessageValidBankData;
