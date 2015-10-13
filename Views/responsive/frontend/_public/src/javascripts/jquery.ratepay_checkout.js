@@ -120,7 +120,12 @@
 
                 /* handle all normal inputs */
                 $('input[id^="ratepay_"]').each(function () {
-                    requestParams += '&' + $(this).attr('id') + '=' + $(this).val();
+                    if ($(this).attr('id') == 'ratepay_debit_accountnumber' || $(this).attr('id') == 'ratepay_debit_bankcode')
+                    {
+                        requestParams += '&' + $(this).attr('id') + '=' + $(this).val().replace(/ /g, '');
+                    } else {
+                        requestParams += '&' + $(this).attr('id') + '=' + $(this).val();
+                    }
                     if ($(this).val() == '') {
                         error = true;
                         userUpdate = false;
@@ -168,7 +173,8 @@
                 }
                 
                 if($('#ratepay_debit_accountnumber').length) { /* only do the check if bankdata form exists */
-                    if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '' || $('#ratepay_debit_accountnumber').val().length < 18) {
+                    if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == ''
+                        || $('#ratepay_debit_accountnumber').val().replace(/ /g,'').length < 18) {
                         error = true;
                         userUpdate = false;
                         errorMessage = errorMessageValidBankData;
