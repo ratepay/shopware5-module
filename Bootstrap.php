@@ -334,23 +334,23 @@
                 ));
 
                 /** BIDIRECTIONAL ORDER SETTINGS **/
-                $form->setElement('button', 'button2', array(
+                /*$form->setElement('button', 'button2', array(
                     'label' => '<b>Bidirektionale RatePAY-Bestellungen:</b>',
                     'value' => ''
-                ));
+                ));*/
 
-                $form->setElement('checkbox', 'RatePayBidirectional', array(
+                /*$form->setElement('checkbox', 'RatePayBidirectional', array(
                     'label' => 'Bidirektionalität aktivieren ( Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert )',
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
-                ));
+                ));*/
 
                 /** ORDERSTATUS **/
-                $form->setElement('button', 'button3', array(
+                /*$form->setElement('button', 'button3', array(
                     'label' => '<b>Bestellstati:</b>',
                     'value' => ''
-                ));
+                ));*/
 
-                $form->setElement(
+                /*$form->setElement(
                     'select',
                     'RatePayFullDelivery',
                     array(
@@ -361,7 +361,7 @@
                         'valueField' => 'id',
                         'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
                     )
-                );
+                );*/
 
                 /*$form->setElement(
                     'select',
@@ -376,7 +376,7 @@
                     )
                 );*/
 
-                $form->setElement(
+                /*$form->setElement(
                     'select',
                     'RatePayFullCancellation',
                     array(
@@ -387,7 +387,7 @@
                         'valueField' => 'id',
                         'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
                     )
-                );
+                );*/
 
                 /*$form->setElement(
                     'select',
@@ -402,7 +402,7 @@
                     )
                 );*/
 
-                $form->setElement(
+                /*$form->setElement(
                     'select',
                     'RatePayFullReturn',
                     array(
@@ -413,7 +413,7 @@
                         'valueField' => 'id',
                         'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
                     )
-                );
+                );*/
 
                 /*$form->setElement(
                     'select',
