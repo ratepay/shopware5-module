@@ -6,7 +6,8 @@
         init: function () {
             var me = this;
 
-            me.$checkoutButton = $('button[form=confirm--form]');
+            me.$checkoutButton = $('button[role=ratepaytest]');
+            /*me.$checkoutButton = $('button[form=confirm--form]');*/
             me.registerEvents();
 
             /* exception if user age is not valid*/
