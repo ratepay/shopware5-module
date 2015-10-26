@@ -72,11 +72,11 @@
                     {* Submit order button *}
                     {if $sPayment.embediframe || $sPayment.action}
                         <button type="submit" class="btn is--primary is--large right is--icon-right" form="confirm--form" data-preloader-button="false">
-                            {s name='ConfirmDoPayment'}{/s}<i class="icon--arrow-right"></i>
+                            {s name='ConfirmDoPayment'}Zahlungspflichtig bestellen{/s}<i class="icon--arrow-right"></i>
                         </button>
                     {else}
                         <button type="submit" class="btn is--primary is--large right is--icon-right" form="confirm--form" data-preloader-button="false">
-                            {s name='ConfirmActionSubmit'}{/s}<i class="icon--arrow-right"></i>
+                            {s name='ConfirmActionSubmit'}Zahlungspflichtig bestellen{/s}<i class="icon--arrow-right"></i>
                         </button>
                     {/if}
                 {/block}

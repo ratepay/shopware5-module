@@ -6,7 +6,7 @@
         init: function () {
             var me = this;
 
-            me.$checkoutButton = $('button[role=ratepaytest]');
+            me.$checkoutButton = $('button[form=confirm--form]');
             /*me.$checkoutButton = $('button[form=confirm--form]');*/
             me.registerEvents();
 
@@ -178,8 +178,8 @@
                         error = true;
                         userUpdate = false;
                         errorMessage = errorMessageValidBankData;
-                    } else if (!("ratepay_debit_accountnumber").val().replace(/ /g,'').match(/^\d+$/)) {
-                        if(!$('#ratepay_debit_accountnumber').val().replace(/ /g,'').length < 18) {
+                    } else if (!$("#ratepay_debit_accountnumber").val().replace(/ /g,'').match(/^\d+$/)) {
+                        if($('#ratepay_debit_accountnumber').val().replace(/ /g,'').length < 18) {
                             error = true;
                             userUpdate = false;
                             errorMessage = errorMessageValidBankData;
