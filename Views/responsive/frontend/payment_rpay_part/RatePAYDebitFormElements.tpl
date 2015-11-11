@@ -1,12 +1,12 @@
 {* Hidden Data *}
 {block name='ratepay_frontend_updatedebitdata'}
-    <input id='ratepay_debit_updatedebitdata' type='hidden' value='true'>
+    <input id="ratepay_debit_updatedebitdata" name="ratepay_debit_updatedebitdata" type='hidden' value='true'>
 {/block}
 
 {* Accountholder *}
 {block name='ratepay_frontend_accountholder'}
     <div class="register--accountholder">
-        <input id="ratepay_debit_accountholder" name="ratepay_debit_accountholder" class="register--field is--required" type="text" required="required" aria-required="true" placeholder="{s namespace=RatePAY name=accountHolder}Vor- und Nachname Kontoinhaber{/s}*" value="{if $smarty.session.Shopware.RatePAY.bankdata.bankholder}{$smarty.session.Shopware.RatePAY.bankdata.bankholder|escape}{/if}">
+        <input class="register--field disabled" type="text" disabled="true" value="{if $smarty.session.Shopware.RatePAY.bankdata.bankholder}{$smarty.session.Shopware.RatePAY.bankdata.bankholder|escape}{/if}">
     </div>
 {/block}
 

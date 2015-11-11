@@ -30,13 +30,13 @@
         {
             return array(
                 'version'     => $this->getVersion(),
-                'author'      => 'RatePay GmbH author',
+                'author'      => 'RatePay GmbH',
                 'source'      => $this->getSource(),
-                'supplier'    => 'RatePAY GmbH supplier',
+                'supplier'    => 'RatePAY GmbH',
                 'support'     => 'https://www.ratepay.com/service-center-haendler',
                 'link'        => 'https://www.ratepay.com/',
                 'copyright'   => 'Copyright (c) 2014, RatePAY GmbH',
-                'label'       => 'RatePAY Payment label',
+                'label'       => 'RatePAY Payment',
                 'description' =>
                     '<h2>RatePAY Payment plugin for Shopware Community Edition Version 5.0.0</h2>'
                     . '<ul>'
@@ -1442,6 +1442,8 @@
                 Shopware()->Models()->refresh($user);
                 Shopware()->Pluginlogger()->info($user->getPaymentId());
             }
+
+            Shopware()->Session()->RatePAY['bankdata']['bankholder']   = $user->getBilling()->getFirstname() . " " . $user->getBilling()->getLastname();
 
             return $payments;
         }
