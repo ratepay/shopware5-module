@@ -229,6 +229,7 @@
             }
         }
 
+
         /**
          * Uninstalls the Plugin and its components
          *
@@ -923,7 +924,6 @@
 
         public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $arguments)
         {
-
             $request = $arguments->getSubject()->Request();
             $parameter = $request->getParams();
             $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
@@ -1382,8 +1382,8 @@
                 $showInvoice = $paymentStati['address-invoice'] == 'yes' && $validation->isCountryValid() && $showInvoice ? true : false;
             }
 
-            //check if payments are hidden by session
-            if (true === Shopware()->Session()->RatePAY['hidePayment']) {
+            //check if payments are hidden by session (just in sandbox mode)
+            if ($validation->isRatepayHidden()) {
                 $showRate    = false;
                 $showDebit   = false;
                 $showInvoice = false;

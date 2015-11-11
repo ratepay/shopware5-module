@@ -196,6 +196,27 @@
             return ($country->getIso() === "DE") || ($country->getIso() === 'AT');
         }
 
+        /**
+         * Checks if payment methods are hidden by session. Methods will be hide just in live/production mode
+         *
+         * @return bool
+         */
+        public function isRatepayHidden() {
+            $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
+            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $this->_user->getBilling()->getCountryId())->getIso();
+            if('DE' === $country && $config->get('RatePaySandboxDE') === true) {
+                $sandbox = $config->get('RatePaySandboxDE');
+            } elseif ('AT' === $country && $config->get('RatePaySandboxAT') === true) {
+                $sandbox = $this->_config->get('RatePaySandboxAT');
+            }
+
+            if (true === Shopware()->Session()->RatePAY['hidePayment'] && false === $sandbox) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         public function getPayment()
         {
             return $this->_payment;
