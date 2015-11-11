@@ -30,13 +30,13 @@
         {
             return array(
                 'version'     => $this->getVersion(),
-                'author'      => 'RatePay GmbH',
+                'author'      => 'RatePay GmbH author',
                 'source'      => $this->getSource(),
-                'supplier'    => 'RatePAY GmbH',
+                'supplier'    => 'RatePAY GmbH supplier',
                 'support'     => 'https://www.ratepay.com/service-center-haendler',
                 'link'        => 'https://www.ratepay.com/',
                 'copyright'   => 'Copyright (c) 2014, RatePAY GmbH',
-                'label'       => 'RatePAY Payment',
+                'label'       => 'RatePAY Payment label',
                 'description' =>
                     '<h2>RatePAY Payment plugin for Shopware Community Edition Version 5.0.0</h2>'
                     . '<ul>'
@@ -170,12 +170,7 @@
             $this->_subscribeEvents();
             $this->_createForm();
 
-            switch($version) {
-                case '4.0.3':
-                    Shopware()->Db()->query('ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintStatus` varchar(3) NOT NULL,');
-                    Shopware()->Db()->query('ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintSnippetId` varchar(55) NULL');
-                default:
-            }
+            $this->_incrementalTableUpdate();
 
             return array(
                 'success' => true,
@@ -188,6 +183,53 @@
 
 
         /**
+         * Starts incremental update/alter queries in case of update
+         *
+         * @throws Exception
+         */
+        private function _incrementalTableUpdate() {
+
+            // Adding device fingerprint columns into config table from version 4.1.0
+            $this->_sqlCheckAndExecute("rpay_ratepay_config", "deviceFingerprintStatus", array(
+                "ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintStatus` varchar(3) NOT NULL",
+                "ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintSnippetId` varchar(55) NOT NULL"
+            ));
+        }
+
+        /**
+         * Checks if column exists and execute queries if not
+         *
+         * @param string $table
+         * @param string $column
+         * @param array $queries
+         * @throws Exception
+         */
+        private function _sqlCheckAndExecute(string $table, string $column, array $queries) {
+            try {
+                $columnExists = Shopware()->Db()->fetchRow("
+                SHOW
+                    COLUMNS
+                FROM
+                    `" . $table . "`
+                LIKE
+                    '" . $column . "'");
+            } catch (Exception $exception) {
+                throw new Exception("Can not enter table " . $table . " - " . $exception->getMessage());
+            }
+
+            if ($columnExists === false) {
+                foreach ($queries AS $query) {
+                    try {
+                        Shopware()->Db()->query($query);
+                    } catch (Exception $exception) {
+                        throw new Exception("Can not execute query '" . $query . "' in table " . $table . " - " . $exception->getMessage());
+                    }
+
+                }
+            }
+        }
+
+        /**
          * Uninstalls the Plugin and its components
          *
          * @return boolean
@@ -195,6 +237,7 @@
         public function uninstall()
         {
             $this->disable();
+            $this->_dropDatabaseTables();
             return parent::uninstall();
         }
 
@@ -567,6 +610,21 @@
             } catch (Exception $exception) {
                 $this->uninstall();
                 throw new Exception('Can not create Database.' . $exception->getMessage());
+            }
+        }
+
+        /**
+         * Drops all RatePAY database tables
+         */
+        private function _dropDatabaseTables() {
+            try {
+                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_logging`");
+                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_config`");
+                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_order_positions`");
+                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_order_shipping`");
+                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_order_history`");
+            } catch (Exception $exception) {
+                throw new Exception('Can not delete RatePAY tables - ' . $exception->getMessage());
             }
         }
 
