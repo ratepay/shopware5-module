@@ -18,7 +18,7 @@
 5. Installieren & konfigurieren Sie das Modul
 
 ## Install
-1. Download the module here ([https://github.com/ratepay/shopware5-module/archive/4.1.1.zip])
+1. Download the module here (https://github.com/ratepay/shopware5-module/archive/4.1.1.zip)
 2. Extract the zipfile.
 3. Create Directory `RpayRatePay` in `engine/Shopware/Plugins/Default/Frontend`
 4. Merge the content of the "shopware-module-4.1.1"-folder into `engine/Shopware/Plugins/Default/Frontend/RpayRatePay`
@@ -27,10 +27,13 @@
 
 ## Changelog
 
-### Version Version 4.1.1 - Released 2015-11-12
-* Fixed DFP update bug
+### Version Version 4.1.1 - Released 2015-11-18
+* Fixed DFP
+* Fixed DFP DB update bug
+* New DB update procedure
 * No hiding of payment methods in sandbox mode
 * Account holder is always customer name by billing address
+* Fixed JS checkout form validation
 
 ### Version Version 4.1.0
 * fixed compatibility for 5.0.4 - 5.1.1

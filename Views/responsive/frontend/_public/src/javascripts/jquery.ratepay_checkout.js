@@ -141,36 +141,31 @@
                 });
 
                 /* dob validation */
-                if ($('#ratepay_birthyear').val() != '' && $('#ratepay_birthmonth').val() != '' && $('#ratepay_birthday').val() != '') {
-                    dob = new Date($('#ratepay_birthyear').val() + '-' + $('#ratepay_birthmonth').val() + '-' + $('#ratepay_birthday').val());
+                if ($('#ratepay_birthyear').length) { /* only do the check if dob form exists */
+                    if ($('#ratepay_birthyear').val() != '' && $('#ratepay_birthmonth').val() != '' && $('#ratepay_birthday').val() != '') {
+                        dob = new Date($('#ratepay_birthyear').val() + '-' + $('#ratepay_birthmonth').val() + '-' + $('#ratepay_birthday').val());
 
-                    /* validate age */
-                    if (getAge(dob) < 18 || getAge(dob) > 120) {
+                        /* validate age */
+                        if (getAge(dob) < 18 || getAge(dob) > 120) {
+                            error = true;
+                            userUpdate = false;
+                            errorMessage = errorMessageValidAge;
+                        }
+
+                        requestParams += '&ratepay_dob=' + dob.yyyymmdd();
+                    } else {
                         error = true;
                         userUpdate = false;
-                        errorMessage = errorMessageValidAge;
                     }
-
-                    requestParams += '&ratepay_dob=' + dob.yyyymmdd();
-                } else {
-                    error = true;
-                    userUpdate = false;
                 }
 
                 /* phone number validation */
-                if ($('#ratepay_phone').val() != '') {
-
-                    var regex = /[0-9-()+]{3,20}/;
-                    var phoneNumber = $('#ratepay_phone').val().replace(/ /g, '');
-
-                    if ($('#ratepay_phone').val().length < 6 || ( phoneNumber.match(regex) != phoneNumber )) {
+                if ($('#ratepay_phone').length) { /* only do the check if phone form exists */
+                    if ($('#ratepay_phone').val().length < 6) {
                         error = true;
                         userUpdate = false;
                         errorMessage = errorMessageValidPhone;
                     }
-                } else {
-                    error = true;
-                    userUpdate = false;
                 }
                 
                 if($('#ratepay_debit_accountnumber').length) { /* only do the check if bankdata form exists */

@@ -758,14 +758,18 @@
 
                 $view->assign('snippetId', $diConfig['deviceFingerprintSnippetId']);
 
-                if(!Shopware()->Session()->RatePAY['devicefinterprintident']['token'])
+                try {
+                    $sId = Shopware()->SessionID();
+                } catch (Exception $exception) {}
+
+
+                if($sId && !Shopware()->Session()->RatePAY['devicefinterprintident']['token'])
                 {
-                    $token = md5(Shopware()->Session()->get('sessionId') . new \DateTime());
+                    $token = md5(Shopware()->SessionID() . microtime());
                     Shopware()->Session()->RatePAY['devicefinterprintident']['token'] = $token;
+                    $view->assign('token', Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
                 }
 
-
-                $view->assign('token', Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
                 $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
             }
 
