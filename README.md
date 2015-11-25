@@ -13,9 +13,10 @@
 ## Installation
 1. Laden Sie sich das Modul hier herunter(https://github.com/ratepay/shopware5-module/archive/4.1.1.zip)
 2. Entpacken Sie die Zipdatei.
-3. Integrieren Sie den Inhalt des "shopware5-module-4.1.1"-Ordners in `engine/Shopware/Plugins/Default/Frontend/RpayRatePay`
-4. Loggen Sie sich in ihr Shopware-Backend ein
-5. Installieren & konfigurieren Sie das Modul
+3. Erzeugen Sie das Verzeichnis `RpayRatePay` in `engine/Shopware/Plugins/Default/Frontend`
+4. Integrieren Sie den Inhalt des "shopware5-module-4.1.1"-Ordners in `engine/Shopware/Plugins/Default/Frontend/RpayRatePay`
+5. Loggen Sie sich in ihr Shopware-Backend ein
+6. Installieren & konfigurieren Sie das Modul
 
 ## Install
 1. Download the module here (https://github.com/ratepay/shopware5-module/archive/4.1.1.zip)
