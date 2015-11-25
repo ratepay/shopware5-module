@@ -32,10 +32,11 @@
 * Fixed DFP DB update bug
 * Fixed JS checkout form validation
 * Fixed JS not defined resources
+* Fixed JS checkout button hook
 * New DB update procedure
 * No hiding of payment methods in sandbox mode
 * Account holder is always customer name by billing address
-
+* Redesign of rejection page
 
 ### Version Version 4.1.0
 * fixed compatibility for 5.0.4 - 5.1.1
