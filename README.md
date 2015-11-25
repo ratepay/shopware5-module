@@ -27,13 +27,15 @@
 
 ## Changelog
 
-### Version Version 4.1.1 - Released 2015-11-18
+### Version Version 4.1.1 - Released 2015-11-26
 * Fixed DFP
 * Fixed DFP DB update bug
+* Fixed JS checkout form validation
+* Fixed JS not defined resources
 * New DB update procedure
 * No hiding of payment methods in sandbox mode
 * Account holder is always customer name by billing address
-* Fixed JS checkout form validation
+
 
 ### Version Version 4.1.0
 * fixed compatibility for 5.0.4 - 5.1.1

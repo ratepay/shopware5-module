@@ -1,6 +1,8 @@
 {extends file="parent:frontend/index/index.tpl"}
 
 {block name='frontend_index_header_javascript_inline' prepend}
+    var rateHeaderConstantsExists = 'true';
+
     var ratepayUrl                = '{url controller='RpayRatepay' action='saveUserData'}';
     var userId                    = '{$sUserData.billingaddress.userID}';
 

@@ -4,10 +4,13 @@
     /** Plugin constructor */
     $.plugin('RpayRatePay', {
         init: function () {
+            if (!rateHeaderConstantsExists) {
+                return;
+            }
+
             var me = this;
 
             me.$checkoutButton = $('button[form=confirm--form]');
-            /*me.$checkoutButton = $('button[form=confirm--form]');*/
             me.registerEvents();
 
             /* exception if user age is not valid*/
