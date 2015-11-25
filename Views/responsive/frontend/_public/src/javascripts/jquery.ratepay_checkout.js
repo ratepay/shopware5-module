@@ -4,7 +4,7 @@
     /** Plugin constructor */
     $.plugin('RpayRatePay', {
         init: function () {
-            if (!rateHeaderConstantsExists) {
+            if (typeof ratepayPaymentMethodSelected == 'undefined' || typeof ratepayConstantsExists == 'undefined') {
                 return;
             }
 
@@ -113,7 +113,6 @@
 
 
             if ($('input#sAGB').is(':checked')) {
-
                 var requestParams = 'userid=' + userId;
                 var dob = false;
                 var userUpdate = true;

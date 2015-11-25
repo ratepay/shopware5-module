@@ -6,7 +6,6 @@
     {else}
         pi_ratepay_rate_ajax_path = "{url controller="RpayRatepay" action="" forceSecure}";      
     {/if}
-
 </script>
 <script type="text/javascript" src="{link file='frontend/Ratenrechner/js/mouseaction.js' fullPath}"></script>
 <script type="text/javascript" src="{link file='frontend/Ratenrechner/js/layout.js' fullPath}"></script>

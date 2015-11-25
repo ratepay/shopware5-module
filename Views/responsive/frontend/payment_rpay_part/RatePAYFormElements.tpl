@@ -1,3 +1,7 @@
+<script type="text/javascript">
+    ratepayPaymentMethodSelected = true;
+</script>
+
 {if $ratepayValidateIsB2B == 'true'}
     {block  name='ratepay_frontend_b2b'}
     <div class="none">
