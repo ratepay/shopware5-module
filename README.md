@@ -34,6 +34,7 @@
 * Fixed JS checkout form validation
 * Fixed JS not defined resources
 * Fixed JS checkout button hook
+* Fixed RR curl bug
 * New DB update procedure
 * No hiding of payment methods in sandbox mode
 * Account holder is always customer name by billing address
