@@ -6,7 +6,7 @@
 {* Accountholder *}
 {block name='ratepay_frontend_accountholder'}
     <div class="register--accountholder">
-        <input class="register--field disabled" type="text" disabled="true" value="{if $smarty.session.Shopware.RatePAY.bankdata.bankholder}{$smarty.session.Shopware.RatePAY.bankdata.bankholder|escape}{/if}">
+        <input class="register--field disabled" type="text" disabled="true" value="{$sUserData.billingaddress.firstname} {$sUserData.billingaddress.lastname}">
     </div>
 {/block}
 

@@ -1447,8 +1447,6 @@
                 Shopware()->Pluginlogger()->info($user->getPaymentId());
             }
 
-            Shopware()->Session()->RatePAY['bankdata']['bankholder']   = $user->getBilling()->getFirstname() . " " . $user->getBilling()->getLastname();
-
             return $payments;
         }
 
