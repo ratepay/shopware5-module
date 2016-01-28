@@ -148,9 +148,9 @@
          */
         public function _createExtraFields()
         {
-            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','ShopId','int(5)', true, 0);
-            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','TransactionId','varchar(255)', true, 0);
-            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','DgNumber','varchar(255)', true, 0);
+            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','ShopId','int(5)', true);
+            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','TransactionId','varchar(255)', true);
+            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','DgNumber','varchar(255)', true);
             $metaDataCache  = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
             $metaDataCache->deleteAll();
             Shopware()->Models()->generateAttributeModels(
