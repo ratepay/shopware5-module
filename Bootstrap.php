@@ -159,6 +159,22 @@
         }
 
         /**
+         * creates extra fields for ratepay orders in s_order_attributes
+         */
+        public function _dropExtraFields()
+        {
+            Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','ShopId');
+            Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','TransactionId');
+            Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','DgNumber');
+
+            $metaDataCache  = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
+            $metaDataCache->deleteAll();
+            Shopware()->Models()->generateAttributeModels(
+                array('s_order_attributes')
+            );
+        }
+
+        /**
          * Updates the Plugin and its components
          *
          * @param string $version
@@ -239,6 +255,7 @@
         {
             $this->disable();
             $this->_dropDatabaseTables();
+            $this->_dropExtraFields();
             return parent::uninstall();
         }
 
