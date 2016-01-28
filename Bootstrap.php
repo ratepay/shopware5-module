@@ -779,10 +779,12 @@
                     $sId = Shopware()->SessionID();
                 } catch (Exception $exception) {}
 
+                $tokenFirstPart = (!empty($sId)) ? $sId : rand();
 
-                if($sId && !Shopware()->Session()->RatePAY['devicefinterprintident']['token'])
+
+                if(!Shopware()->Session()->RatePAY['devicefinterprintident']['token'])
                 {
-                    $token = md5(Shopware()->SessionID() . microtime());
+                    $token = md5($tokenFirstPart . microtime());
                     Shopware()->Session()->RatePAY['devicefinterprintident']['token'] = $token;
                     $view->assign('token', Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
                 }
@@ -790,13 +792,11 @@
                 $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
             }
 
-
             if('checkout' === $request->getControllerName() && 'confirm' === $request->getActionName())
             {
                 $view->extendsTemplate('frontend/payment_rpay_part/index/header.tpl');
                 $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
             }
-
         }
 
         /**
