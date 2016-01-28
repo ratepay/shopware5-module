@@ -3,15 +3,7 @@
         <input type="checkbox" id="ratepay_agb" required="required" aria-required="true" class="register--checkbox chkbox">
         {s namespace=RatePAY name='ratepaySEPAAgbFirst'}Ich willige hiermit in die Weiterleitung meiner Daten an RatePAY GmbH, Schlüterstr. 39, 10629 Berlin gemäß{/s}
 
-
-
-        {if $sUserData.additional.country.countryiso == 'DE'}
-            <a href='http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis' target="_blank" style="text-decoration: underline !important;">RatePAY-Datenschutzerklärung</a>
-        {elseif $sUserData.additional.country.countryiso == 'AT'}
-            <a href='http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-at' target="_blank" style="text-decoration: underline !important;">RatePAY-Datenschutzerklärung</a>
-        {else}
-            <a href='http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis' target="_blank" style="text-decoration: underline !important;">RatePAY-Datenschutzerklärung</a>
-        {/if}
+        <a href='http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach' target="_blank" style="text-decoration: underline !important;">RatePAY-Datenschutzerklärung</a>
 
         {s namespace=RatePAY name='ratepaySEPAAgbLast'}
             ein und ermächtige diese, mit diesem Kaufvertrag in Zusammenhang stehende Zahlungen von meinem
