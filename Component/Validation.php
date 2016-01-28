@@ -204,10 +204,9 @@
         public function isRatepayHidden() {
             $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
             $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $this->_user->getBilling()->getCountryId())->getIso();
-            if('DE' === $country && $config->get('RatePaySandboxDE') === true) {
-                $sandbox = $config->get('RatePaySandboxDE');
-            } elseif ('AT' === $country && $config->get('RatePaySandboxAT') === true) {
-                $sandbox = $this->_config->get('RatePaySandboxAT');
+
+            if('DE' === $country || 'AT' === $country) {
+                $sandbox = $config->get('RatePaySandbox' . $country);
             }
 
             if (true === Shopware()->Session()->RatePAY['hidePayment'] && false === $sandbox) {
