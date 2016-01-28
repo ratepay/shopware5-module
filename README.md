@@ -5,28 +5,30 @@
 |------|----------
 |Author | Aarne Welschlau
 |Shop Version | `5.0.x` `5.1.x`
-|Version | `4.1.1`
+|Version | `4.1.2`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
 
 ## Installation
-1. Laden Sie sich das Modul hier herunter(https://github.com/ratepay/shopware5-module/archive/4.1.1.zip)
-2. Entpacken Sie die Zipdatei.
-3. Erzeugen Sie das Verzeichnis `RpayRatePay` in `engine/Shopware/Plugins/Default/Frontend`
-4. Integrieren Sie den Inhalt des "shopware5-module-4.1.1"-Ordners in `engine/Shopware/Plugins/Default/Frontend/RpayRatePay`
-5. Loggen Sie sich in ihr Shopware-Backend ein
-6. Installieren & konfigurieren Sie das Modul
+1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `engine/Shopware/Plugins/Default/Frontend`
+2. Integrieren Sie den Inhalt in `engine/Shopware/Plugins/Default/Frontend/RpayRatePay`
+3. Loggen Sie sich in ihr Shopware-Backend ein
+4. Installieren & konfigurieren Sie das Modul
 
 ## Install
-1. Download the module here (https://github.com/ratepay/shopware5-module/archive/4.1.1.zip)
-2. Extract the zipfile.
-3. Create Directory `RpayRatePay` in `engine/Shopware/Plugins/Default/Frontend`
-4. Merge the content of the "shopware-module-4.1.1"-folder into `engine/Shopware/Plugins/Default/Frontend/RpayRatePay`
-5. Log into your Shopware-backend
-6. Install & configure the module
+1. Create Directory `RpayRatePay` in `engine/Shopware/Plugins/Default/Frontend`
+2. Merge the content into `engine/Shopware/Plugins/Default/Frontend/RpayRatePay`
+3. Log into your Shopware-backend
+4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.1.2 - Released 2016-01-29
+* Fixed get sandbox bug
+* Changed ZGB/DSE link in SEPA text
+* Enhanced unistall - deleting of Ratepay order attributes
+* Ratepay order attributes now nullable
 
 ### Version Version 4.1.1 - Released 2015-11-26
 * Fixed DFP
