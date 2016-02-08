@@ -771,7 +771,7 @@
             ', array(Shopware()->Shop()->getId()));
 
             //if no DF token is set, receive all the necessary data to set it and extend template
-            if(true == $diConfig['deviceFingerprintStatus']) {
+            if(true == $diConfig['deviceFingerprintStatus'] && !Shopware()->Session()->RatePAY['devicefinterprintident']['token']) {
 
                 $view->assign('snippetId', $diConfig['deviceFingerprintSnippetId']);
 
@@ -781,13 +781,9 @@
 
                 $tokenFirstPart = (!empty($sId)) ? $sId : rand();
 
-
-                if(!Shopware()->Session()->RatePAY['devicefinterprintident']['token'])
-                {
-                    $token = md5($tokenFirstPart . microtime());
-                    Shopware()->Session()->RatePAY['devicefinterprintident']['token'] = $token;
-                    $view->assign('token', Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
-                }
+                $token = md5($tokenFirstPart . microtime());
+                Shopware()->Session()->RatePAY['devicefinterprintident']['token'] = $token;
+                $view->assign('token', Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
 
                 $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
             }
