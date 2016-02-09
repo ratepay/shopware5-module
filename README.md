@@ -24,11 +24,12 @@
 
 ## Changelog
 
-### Version Version 4.1.2 - Released 2016-01-29
+### Version Version 4.1.2 - Released 2016-02-09
 * Fixed get sandbox bug
 * Changed ZGB/DSE link in SEPA text
 * Enhanced unistall - deleting of Ratepay order attributes
 * Ratepay order attributes now nullable
+* Prevented error in case of call by crawler
 
 ### Version Version 4.1.1 - Released 2015-11-26
 * Fixed DFP

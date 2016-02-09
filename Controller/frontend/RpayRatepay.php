@@ -36,6 +36,11 @@
          */
         public function init()
         {
+            // return if no current user set. e.g. call by crawler
+            if (!isset($this->_user)) {
+                return;
+            }
+
             $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
             $this->_user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(
