@@ -342,56 +342,6 @@
             );
             $head->setSystemVersion($this->_getVersion());
 
-            $shopCountry = Shopware()->Models()->find(
-                'Shopware\Models\Country\Country',
-                $shopUser->getBilling()->getCountryId()
-            );
-            $customer = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Customer();
-
-            $shopBillingAddress = $shopUser->getBilling();
-            $billingAddress = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Address();
-            $billingAddress->setFirstName($shopBillingAddress->getFirstName());
-            $billingAddress->setLastName($shopBillingAddress->getLastName());
-            $billingAddress->setSalutation($shopBillingAddress->getSalutation());
-            $billingAddress->setCompany($shopBillingAddress->getCompany());
-            $billingAddress->setType('BILLING');
-            $billingAddress->setCountryCode($shopCountry->getIso());
-            $billingAddress->setCity($shopBillingAddress->getCity());
-            $billingAddress->setStreet($shopBillingAddress->getStreet());
-            $billingAddress->setZipCode($shopBillingAddress->getZipCode());
-            $customer->setBillingAddresses($billingAddress);
-
-
-            $shopShippingAddress = $shopUser->getShipping() === null ? $shopUser->getBilling() : $shopUser->getShipping(
-            );
-            $shippingAddress = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Address();
-            $shippingAddress->setType('DELIVERY');
-            $shippingAddress->setCountryCode($shopCountry->getIso());
-            $shippingAddress->setCity($shopShippingAddress->getCity());
-            $shippingAddress->setStreet($shopShippingAddress->getStreet());
-            $shippingAddress->setZipCode($shopShippingAddress->getZipCode());
-            $customer->setShippingAddresses($shippingAddress);
-
-            $customer->setCompanyName($shopBillingAddress->getCompany());
-            $customer->setVatId($shopBillingAddress->getVatId());
-            $customer->setDateOfBirth($shopBillingAddress->getBirthday()->format('Y-m-d'));
-            $customer->setEmail($shopUser->getEmail());
-            $customer->setFirstName($shopBillingAddress->getFirstName());
-            $customer->setLastName($shopBillingAddress->getLastName());
-            $gender = 'U';
-            if ($shopBillingAddress->getSalutation() === 'mr') {
-                $gender = 'M';
-            } else {
-                if ($shopBillingAddress->getSalutation() === 'ms') {
-                    $gender = 'F';
-                }
-            }
-            $customer->setGender($gender);
-            $customer->setSalutation($shopBillingAddress->getSalutation());
-            $customer->setPhone($shopBillingAddress->getPhone());
-            $customer->setNationality($shopCountry->getIso());
-            $customer->setIpAddress($this->_getCustomerIP());
-
             $order = Shopware()->Db()->fetchRow(
                 "SELECT `name`,`currency` FROM `s_order` "
                 . "INNER JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id` = `s_order`.`paymentID` "
@@ -407,7 +357,6 @@
 
             $paymentChangeModel->setPayment($payment);
             $paymentChangeModel->setHead($head);
-            $paymentChangeModel->setCustomer($customer);
         }
 
         /**

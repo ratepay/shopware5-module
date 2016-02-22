@@ -26,11 +26,6 @@
         private $_head;
 
         /**
-         * @var Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Customer
-         */
-        private $_customer;
-
-        /**
          * @var Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket
          */
         private $_shoppingBasket;
@@ -58,26 +53,6 @@
         public function setHead(Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Head $head)
         {
             $this->_head = $head;
-        }
-
-        /**
-         * This function sets the value for $_customer
-         *
-         * @return Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Customer
-         */
-        public function getCustomer()
-        {
-            return $this->_customer;
-        }
-
-        /**
-         * This function returns the value of $_customer
-         *
-         * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Customer $customer
-         */
-        public function setCustomer(Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Customer $customer)
-        {
-            $this->_customer = $customer;
         }
 
         /**
@@ -132,7 +107,6 @@
                 '@xmlns'   => "urn://www.ratepay.com/payment/1_0",
                 'head'     => $this->getHead()->toArray(),
                 'content'  => array(
-                    'customer'        => $this->getCustomer()->toArray(),
                     'shopping-basket' => $this->getShoppingBasket()->toArray(),
                     'payment'         => $this->getPayment()->toArray()
                 )
