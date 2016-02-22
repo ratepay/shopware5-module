@@ -195,8 +195,8 @@
                                 's_order_attributes',
                                 array(
                                     'RatePAY_ShopID' => Shopware()->Shop()->getId(),
-                                    'attribute5' => $dgNumber,
-                                    'attribute6' => Shopware()->Session()->RatePAY['transactionId']
+                                    'RatePAY_DgNumber' => $dgNumber,
+                                    'RatePAY_TransactionId' => Shopware()->Session()->RatePAY['transactionId']
                                 ),
                                 'orderID=' . $orderId
                             );
