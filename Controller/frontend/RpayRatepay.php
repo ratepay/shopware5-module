@@ -37,7 +37,7 @@
         public function init()
         {
             // return if no current user set. e.g. call by crawler
-            if (!isset($this->_user)) {
+            if (!isset(Shopware()->Session()->sUserId)) {
                 return;
             }
 
