@@ -101,7 +101,7 @@
             $this->_createDataBaseTables();
             $this->_createPaymentStati();
             $this->_createDeliveryStati();
-            $this->_createExtraFields();
+            $this->_createOrderAdditionalAttributes();
             $this->Plugin()->setActive(true);
 
             return array('success' => true, 'invalidateCache' => array('frontend', 'backend'));
@@ -144,13 +144,17 @@
         }
 
         /**
-         * creates extra fields for ratepay orders in s_order_attributes
+         * creates additional attributes for ratepay orders in s_order_attributes
          */
-        public function _createExtraFields()
+        public function _createOrderAdditionalAttributes()
         {
-            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','ShopId','int(5)', true);
-            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','TransactionId','varchar(255)', true);
-            Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','DgNumber','varchar(255)', true);
+            try {
+                Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','ShopId','int(5)', true);
+                Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','TransactionId','varchar(255)', true);
+                Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','DgNumber','varchar(255)', true);
+            } catch (Exception $e) {
+            }
+
             $metaDataCache  = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
             $metaDataCache->deleteAll();
             Shopware()->Models()->generateAttributeModels(
@@ -159,9 +163,9 @@
         }
 
         /**
-         * creates extra fields for ratepay orders in s_order_attributes
+         * creates additional attributes fields for ratepay orders in s_order_attributes
          */
-        public function _dropExtraFields()
+        public function _dropOrderAdditionalAttributes()
         {
             Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','ShopId');
             Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','TransactionId');
@@ -255,7 +259,7 @@
         {
             $this->disable();
             $this->_dropDatabaseTables();
-            $this->_dropExtraFields();
+            //$this->_dropOrderAdditionalAttributes();
             return parent::uninstall();
         }
 
