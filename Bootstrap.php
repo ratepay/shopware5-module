@@ -789,8 +789,11 @@
                 Shopware()->Session()->RatePAY['devicefinterprintident']['token'] = $token;
                 $view->assign('token', Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
 
-                $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
+                $view->extendsTemplate('frontend/payment_rpay_part/index/dfp.tpl');
+
             }
+
+            $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
 
             if('checkout' === $request->getControllerName() && 'confirm' === $request->getActionName())
             {
