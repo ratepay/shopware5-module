@@ -119,10 +119,13 @@
 
             if (!is_null($user)) {
                 $updateData['phone'] = $Parameter['ratepay_phone'] ? : $user->getPhone();
-                $updateData['ustid'] = $Parameter['ratepay_ustid'] ? : $user->getVatId();
-                $updateData['company'] = $Parameter['ratepay_company'] ? : $user->getCompany();
-                $updateData['birthday'] = $Parameter['ratepay_dob'] ? : $user->getBirthday(
-                )->format("Y-m-d");
+                if ($user->getCompany() !== "") {
+                    $updateData['company'] = $Parameter['ratepay_company'] ? : $user->getCompany();
+                    $updateData['ustid'] = $Parameter['ratepay_ustid'] ? : $user->getVatId();
+                } else {
+                    $updateData['birthday'] = $Parameter['ratepay_dob'] ? : $user->getBirthday()->format("Y-m-d");
+                }
+
                 try {
                     Shopware()->Db()->update('s_user_billingaddress', $updateData, 'userID=' . $Parameter['userid']);
                     Shopware()->Pluginlogger()->info('Kundendaten aktualisiert.');

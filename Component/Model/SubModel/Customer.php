@@ -384,7 +384,6 @@
                 'last-name'                     => $this->getLastName(),
                 'salutation'                    => $this->getSalutation(),
                 'gender'                        => $this->getGender(),
-                'date-of-birth'                 => $this->getDateOfBirth(),
                 'ip-address'                    => $this->getIpAddress(),
                 'contacts'                      => array(
                     'email' => $this->getEmail(),
@@ -406,6 +405,8 @@
             if ($this->_companyName != null && $this->_vatId != null) {
                 $return['company-name'] = $this->getCompanyName();
                 $return['vat-id'] = $this->getVatId();
+            } else {
+                $return['date-of-birth'] = $this->getDateOfBirth();
             }
 
             if ($this->_bankAccount != null) {
