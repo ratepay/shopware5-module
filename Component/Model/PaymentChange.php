@@ -76,26 +76,6 @@
         }
 
         /**
-         * This function returns the value of $_payment
-         *
-         * @return Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Payment
-         */
-        public function getPayment()
-        {
-            return $this->_payment;
-        }
-
-        /**
-         * This function sets the value for $_payment
-         *
-         * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Payment $payment
-         */
-        public function setPayment(Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Payment $payment)
-        {
-            $this->_payment = $payment;
-        }
-
-        /**
          * This function returns all values as Array
          *
          * @return array
@@ -107,8 +87,7 @@
                 '@xmlns'   => "urn://www.ratepay.com/payment/1_0",
                 'head'     => $this->getHead()->toArray(),
                 'content'  => array(
-                    'shopping-basket' => $this->getShoppingBasket()->toArray(),
-                    'payment'         => $this->getPayment()->toArray()
+                    'shopping-basket' => $this->getShoppingBasket()->toArray()
                 )
             );
         }

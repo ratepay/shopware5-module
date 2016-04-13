@@ -349,13 +349,6 @@
                 array($this->_transactionId)
             );
 
-            $payment = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Payment();
-            $payment->setMethod(
-                Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod($order['name'])
-            );
-            $payment->setCurrency($order['currency']);
-
-            $paymentChangeModel->setPayment($payment);
             $paymentChangeModel->setHead($head);
         }
 
