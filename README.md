@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau
 |Shop Version | `5.0.x` `5.1.x`
-|Version | `4.1.2`
+|Version | `4.1.3`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.1.3 - Released 2016-04-25
+* Compatibility with deactivated conditions checkbox
 
 ### Version Version 4.1.2 - Released 2016-04-13
 * Fixed get sandbox bug

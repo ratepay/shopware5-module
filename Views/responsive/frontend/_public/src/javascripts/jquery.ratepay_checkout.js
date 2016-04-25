@@ -112,7 +112,7 @@
             }
 
 
-            if ($('input#sAGB').is(':checked')) {
+            if (!$('input#sAGB').length || $('input#sAGB').is(':checked')) {
                 var requestParams = 'userid=' + userId;
                 var dob = false;
                 var userUpdate = true;
