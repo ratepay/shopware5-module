@@ -26,6 +26,7 @@
 
 ### Version Version 4.1.5 - Released 2016-05-26
 * Adjusted frontend controller URL (SSL)
+* Conveyed sUniqueID to checkout controller
 
 ### Version Version 4.1.4 - Released 2016-04-26
 * Payment information additionally saved in order additional fields
