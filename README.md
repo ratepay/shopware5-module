@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau
 |Shop Version | `5.0.x` `5.1.x`
-|Version | `4.1.4`
+|Version | `4.1.5`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.1.5 - Released 2016-05-26
+* Adjusted frontend controller URL (SSL)
 
 ### Version Version 4.1.4 - Released 2016-04-26
 * Payment information additionally saved in order additional fields
