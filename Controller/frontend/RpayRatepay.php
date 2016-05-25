@@ -224,17 +224,15 @@
                             unset(Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
                         }
 
-                        /**
-                         * if you run into problems with the redirect method then use the forwarding
-                         * return $this->forward('finish', 'checkout', null, array('sUniqueID' => $uniqueId));
-                         **/
+                        /*
+                         * redirect to success page
+                         */
                         $this->redirect(
-                            Shopware()->Front()->Router()->assemble(
-                                array(
-                                    'controller'  => 'checkout',
-                                    'action'      => 'finish',
-                                    'forceSecure' => true
-                                )
+                            array(
+                                'controller'  => 'checkout',
+                                'action'      => 'finish',
+                                'sUniqueID' => $uniqueId,
+                                'forceSecure' => true
                             )
                         );
                     } else {
