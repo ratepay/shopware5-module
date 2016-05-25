@@ -640,11 +640,11 @@
          */
         private function _dropDatabaseTables() {
             try {
-                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_logging`");
-                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_config`");
-                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_order_positions`");
-                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_order_shipping`");
-                Shopware()->Db()->query("DROP TABLE `rpay_ratepay_order_history`");
+                Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_logging`");
+                Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config`");
+                Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_positions`");
+                Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_shipping`");
+                Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
             } catch (Exception $exception) {
                 throw new Exception('Can not delete RatePAY tables - ' . $exception->getMessage());
             }
@@ -656,7 +656,7 @@
         private function _createMenu()
         {
             try {
-                $parent = $this->Menu()->findOneBy('label', 'logfile');
+                $parent = $this->Menu()->findOneBy(array('label' => 'logfile'));
                 $this->createMenuItem(array(
                         'label'      => 'RatePAY',
                         'class'      => 'sprite-cards-stack',
@@ -668,7 +668,7 @@
                 );
             } catch (Exception $exception) {
                 $this->uninstall();
-                throw new Exception("Can not create menuentry." . $exception->getMessage());
+                throw new Exception("Can not create menu entry." . $exception->getMessage());
             }
         }
 
@@ -792,6 +792,9 @@
                 $view->extendsTemplate('frontend/payment_rpay_part/index/dfp.tpl');
 
             }
+
+            $noServerSecure = (is_null($_SERVER['HTTPS']) || strtolower($_SERVER['HTTPS']) == "off");
+            $view->assign('noServerSecure', $noServerSecure);
 
             $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
 

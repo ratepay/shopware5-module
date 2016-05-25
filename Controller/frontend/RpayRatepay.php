@@ -36,27 +36,28 @@
          */
         public function init()
         {
-            // return if no current user set. e.g. call by crawler
-            if (!isset(Shopware()->Session()->sUserId)) {
-                return;
+            $Parameter = $this->Request()->getParams();
+
+            if (isset(Shopware()->Session()->sUserId)) {
+                $userId = Shopware()->Session()->sUserId;
+            } elseif ($Parameter['userid']) {
+                $userId = $Parameter['userid'];
+            } else { // return if no current user set. e.g. call by crawler
+                return "No user set";
             }
 
             $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
-            $this->_user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(
-                array('customerId' => Shopware()->Session()->sUserId)
-            );
+            $this->_user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
 
             //get country of order
             $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $this->_user->getCountryId());
 
             //set sandbox mode based on config
             $sandbox = false;
-            if('DE' === $country->getIso())
-            {
+            if('DE' === $country->getIso()) {
                 $sandbox = $this->_config->get('RatePaySandboxDE');
-            } elseif ('AT' === $country->getIso())
-            {
+            } elseif ('AT' === $country->getIso()) {
                 $sandbox = $this->_config->get('RatePaySandboxAT');
             }
 

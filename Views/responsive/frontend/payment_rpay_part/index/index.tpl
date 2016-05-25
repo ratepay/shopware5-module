@@ -3,7 +3,12 @@
 {block name='frontend_index_header_javascript_inline' prepend}
     var ratepayConstantsExists    = true;
 
-    var ratepayUrl                = '{url controller='RpayRatepay' action='saveUserData'}';
+    {if $noServerSecure }
+        var ratepayUrl                = '{url controller='RpayRatepay' action='saveUserData'}';
+    {else}
+        var ratepayUrl                = '{url controller='RpayRatepay' action='saveUserData' forceSecure}';
+    {/if}
+
     var userId                    = '{$sUserData.billingaddress.userID}';
 
     var errorMessageDataComplete  = '{s namespace=RatePAY name=invaliddata}Bitte vervollständigen Sie die Daten.{/s}';
