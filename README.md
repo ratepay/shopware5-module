@@ -11,22 +11,23 @@
 |Installation | see below
 
 ## Installation
-1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `engine/Shopware/Plugins/Default/Frontend`
-2. Integrieren Sie den Inhalt in `engine/Shopware/Plugins/Default/Frontend/RpayRatePay`
+1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `engine/Shopware/Plugins/Community/Frontend`
+2. Integrieren Sie den Inhalt in `engine/Shopware/Plugins/Community/Frontend/RpayRatePay`
 3. Loggen Sie sich in ihr Shopware-Backend ein
 4. Installieren & konfigurieren Sie das Modul
 
 ## Install
-1. Create Directory `RpayRatePay` in `engine/Shopware/Plugins/Default/Frontend`
-2. Merge the content into `engine/Shopware/Plugins/Default/Frontend/RpayRatePay`
+1. Create Directory `RpayRatePay` in `engine/Shopware/Plugins/Community/Frontend`
+2. Merge the content into `engine/Shopware/Plugins/Community/Frontend/RpayRatePay`
 3. Log into your Shopware-backend
 4. Install & configure the module
 
 ## Changelog
 
-### Version Version 4.1.5 - Released 2016-05-26
+### Version Version 4.1.5 - Released 2016-06-06
 * Adjusted frontend controller URL (SSL)
 * Conveyed sUniqueID to checkout controller
+* Changes in dfp template to prevent printed whitespaces
 
 ### Version Version 4.1.4 - Released 2016-04-26
 * Payment information additionally saved in order additional fields
