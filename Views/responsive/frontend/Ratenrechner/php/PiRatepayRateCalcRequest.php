@@ -8,33 +8,33 @@
      * Code by Ratepay GmbH  <http://www.ratepay.com/>
      */
     $pi_calculator = new PiRatepayRateCalc();
-    if ($pi_calculator->getPostParameter('calcValue') != '' && $pi_calculator->getPostParameter('calcMethod') != '') {
-        if ($pi_calculator->getPostParameter('calcMethod') == "calculation-by-time" || $pi_calculator->getPostParameter('calcMethod') == "calculation-by-rate") {
-            if ($pi_calculator->getPostParameter('calcMethod') == "calculation-by-time" && is_numeric($pi_calculator->getPostParameter('calcValue'))) {
-                if (preg_match('/^[0-9]{1,3}$/', $pi_calculator->getPostParameter('calcValue'))) {
-                    $pi_calculator->setRequestCalculationValue($pi_calculator->getPostParameter('calcValue'));
-                    $pi_calculator->setRequestDueDay($pi_calculator->getPostParameter('dueDate'));
-                    $pi_resultArray = $pi_calculator->getRatepayRateDetails($pi_calculator->getPostParameter('calcMethod'));
+    if ($pi_calculator->getGetParameter('calcValue') != '' && $pi_calculator->getGetParameter('calcMethod') != '') {
+        if ($pi_calculator->getGetParameter('calcMethod') == "calculation-by-time" || $pi_calculator->getGetParameter('calcMethod') == "calculation-by-rate") {
+            if ($pi_calculator->getGetParameter('calcMethod') == "calculation-by-time" && is_numeric($pi_calculator->getGetParameter('calcValue'))) {
+                if (preg_match('/^[0-9]{1,3}$/', $pi_calculator->getGetParameter('calcValue'))) {
+                    $pi_calculator->setRequestCalculationValue($pi_calculator->getGetParameter('calcValue'));
+                    $pi_calculator->setRequestDueDay($pi_calculator->getGetParameter('dueDate'));
+                    $pi_resultArray = $pi_calculator->getRatepayRateDetails($pi_calculator->getGetParameter('calcMethod'));
                 }
                 else {
                     $pi_calculator->setErrorMsg('wrongvalue');
                 }
             }
-            else if ($pi_calculator->getPostParameter('calcMethod') == "calculation-by-rate") {
-                if (preg_match('/^[0-9]+(\.[0-9][0-9][0-9])?(,[0-9]{1,2})?$/', $pi_calculator->getPostParameter('calcValue'))) {
-                    $pi_value = $pi_calculator->getPostParameter('calcValue');
+            else if ($pi_calculator->getGetParameter('calcMethod') == "calculation-by-rate") {
+                if (preg_match('/^[0-9]+(\.[0-9][0-9][0-9])?(,[0-9]{1,2})?$/', $pi_calculator->getGetParameter('calcValue'))) {
+                    $pi_value = $pi_calculator->getGetParameter('calcValue');
                     $pi_value = str_replace(".", "", $pi_value);
                     $pi_value = str_replace(",", ".", $pi_value);
                     $pi_calculator->setRequestCalculationValue($pi_value);
-                    $pi_calculator->setRequestDueDay($pi_calculator->getPostParameter('dueDate'));
-                    $pi_resultArray = $pi_calculator->getRatepayRateDetails($pi_calculator->getPostParameter('calcMethod'));
+                    $pi_calculator->setRequestDueDay($pi_calculator->getGetParameter('dueDate'));
+                    $pi_resultArray = $pi_calculator->getRatepayRateDetails($pi_calculator->getGetParameter('calcMethod'));
                 }
-                else if (preg_match('/^[0-9]+(\,[0-9][0-9][0-9])?(.[0-9]{1,2})?$/', $pi_calculator->getPostParameter('calcValue'))) {
-                    $pi_value = $pi_calculator->getPostParameter('calcValue');
+                else if (preg_match('/^[0-9]+(\,[0-9][0-9][0-9])?(.[0-9]{1,2})?$/', $pi_calculator->getGetParameter('calcValue'))) {
+                    $pi_value = $pi_calculator->getGetParameter('calcValue');
                     $pi_value = str_replace(",", "", $pi_value);
                     $pi_calculator->setRequestCalculationValue($pi_value);
-                    $pi_calculator->setRequestDueDay($pi_calculator->getPostParameter('dueDate'));
-                    $pi_resultArray = $pi_calculator->getRatepayRateDetails($pi_calculator->getPostParameter('calcMethod'));
+                    $pi_calculator->setRequestDueDay($pi_calculator->getGetParameter('dueDate'));
+                    $pi_resultArray = $pi_calculator->getRatepayRateDetails($pi_calculator->getGetParameter('calcMethod'));
                 }
                 else {
                     $pi_calculator->setErrorMsg('wrongvalue');
@@ -82,7 +82,7 @@
         }
     }
     else {
-        if ($pi_calculator->getPostParameter('calcValue') != '' && $pi_calculator->getPostParameter('calcMethod') != '') {
+        if ($pi_calculator->getGetParameter('calcValue') != '' && $pi_calculator->getGetParameter('calcMethod') != '') {
             ?>
 
             <div

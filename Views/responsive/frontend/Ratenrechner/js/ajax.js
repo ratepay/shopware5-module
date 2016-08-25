@@ -43,13 +43,17 @@ function piRatepayRateCalculatorAction(mode) {
         }
     }
 
+    var getParams = "?"
+        + "calcValue=" + calcValue
+        + "&calcMethod=" + calcMethod
+        + "&dueDate=" + dueDate;
 
-    xmlhttp.open("POST", pi_ratepay_rate_ajax_path + "calcRequest", false);
+    xmlhttp.open("GET", pi_ratepay_rate_ajax_path + "calcRequest" + getParams, false);
 
     xmlhttp.setRequestHeader("Content-Type",
         "application/x-www-form-urlencoded");
 
-    xmlhttp.send("calcValue=" + calcValue + "&calcMethod=" + calcMethod + "&dueDate=" + dueDate);
+    xmlhttp.send();
 
     if (xmlhttp.responseText != null) {
         html = xmlhttp.responseText;
@@ -70,7 +74,7 @@ function piLoadrateCalculator() {
     } else {// code for IE6, IE5
         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
     }
-    xmlhttp.open("POST", pi_ratepay_rate_ajax_path + "calcDesign", false);
+    xmlhttp.open("GET", pi_ratepay_rate_ajax_path + "calcDesign", false);
 
     xmlhttp.setRequestHeader("Content-Type",
         "application/x-www-form-urlencoded");
@@ -98,7 +102,7 @@ function piLoadrateResult() {
     } else {// code for IE6, IE5
         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
     }
-    xmlhttp.open("POST", pi_ratepay_rate_ajax_path + "calcRequest", false);
+    xmlhttp.open("GET", pi_ratepay_rate_ajax_path + "calcRequest", false);
 
     xmlhttp.setRequestHeader("Content-Type",
         "application/x-www-form-urlencoded");
