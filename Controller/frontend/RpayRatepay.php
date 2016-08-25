@@ -72,12 +72,10 @@
          */
         public function indexAction()
         {
-            Shopware()->Session()->ratepayErrorRatenrechner = false;
+            Shopware()->Session()->RatePAY['errorRatenrechner'] = 'false';
             if (preg_match("/^rpayratepay(invoice|rate|debit)$/", $this->getPaymentShortName())) {
-                if ($this->getPaymentShortName() === 'rpayratepayrate' && !isset(Shopware()->Session(
-                        )->RatePAY['ratenrechner'])
-                ) {
-                    Shopware()->Session()->ratepayErrorRatenrechner = true;
+                if ($this->getPaymentShortName() === 'rpayratepayrate' && !isset(Shopware()->Session()->RatePAY['ratenrechner'])) {
+                    Shopware()->Session()->RatePAY['errorRatenrechner'] = 'true';
                     $this->redirect(
                         Shopware()->Front()->Router()->assemble(
                             array(

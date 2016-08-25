@@ -1358,7 +1358,7 @@
                 $view->ratepayValidateIsBirthdayValid = true;
                 $view->ratepayValidateisAgeValid = true;
 
-                $view->ratepayErrorRatenrechner = Shopware()->Session()->ratepayErrorRatenrechner ? 'true' : 'false';
+                $view->errorRatenrechner = (!Shopware()->Session()->RatePAY['errorRatenrechner']) ? 'false' : Shopware()->Session()->RatePAY['errorRatenrechner'];
 
             }
 
