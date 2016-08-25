@@ -17,7 +17,9 @@
      * @category   RatePAY
      * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
      */
-    class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment
+    use Shopware\Components\CSRFWhitelistAware;
+
+    class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
     {
 
         /**
@@ -299,6 +301,16 @@
             } catch (Exception $exception) {
                 Shopware()->Pluginlogger()->error($exception->getMessage());
             }
+        }
+
+        public function getWhitelistedCSRFActions()
+        {
+            return [
+                'index',
+                'saveUserData',
+                'calcDesign',
+                'calcRequest'
+            ];
         }
 
     }
