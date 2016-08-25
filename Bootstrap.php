@@ -740,31 +740,22 @@
                 `shopId` =?
             ', array(Shopware()->Shop()->getId()));
 
-            //if no DF token is set, receive all the necessary data to set it and extend template
-            if(true == $diConfig['deviceFingerprintStatus'] && !Shopware()->Session()->RatePAY['devicefinterprintident']['token']) {
+                //if no DF token is set, receive all the necessary data to set it and extend template
+                if(true == $config['deviceFingerprintStatus'] && !Shopware()->Session()->RatePAY['dfpToken']) {
+                    $view->assign('snippetId', $config['deviceFingerprintSnippetId']);
 
-                $view->assign('snippetId', $diConfig['deviceFingerprintSnippetId']);
+                    try {
+                        $sId = Shopware()->SessionID();
+                    } catch (Exception $exception) {}
 
-                try {
-                    $sId = Shopware()->SessionID();
-                } catch (Exception $exception) {}
+                    $tokenFirstPart = (!empty($sId)) ? $sId : rand();
 
-                $tokenFirstPart = (!empty($sId)) ? $sId : rand();
+                    $token = md5($tokenFirstPart . microtime());
+                    Shopware()->Session()->RatePAY['dfpToken'] = $token;
+                    $view->assign('token', Shopware()->Session()->RatePAY['dfpToken']);
 
-                $token = md5($tokenFirstPart . microtime());
-                Shopware()->Session()->RatePAY['devicefinterprintident']['token'] = $token;
-                $view->assign('token', Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
-
-                $view->extendsTemplate('frontend/payment_rpay_part/index/dfp.tpl');
-
-            }
-
-            $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
-
-            if('checkout' === $request->getControllerName() && 'confirm' === $request->getActionName())
-            {
-                $view->extendsTemplate('frontend/payment_rpay_part/index/header.tpl');
-                $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
+                    $view->extendsTemplate('frontend/payment_rpay_part/index/dfp.tpl');
+                }
             }
         }
 

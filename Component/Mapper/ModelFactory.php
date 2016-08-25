@@ -132,8 +132,8 @@
             $head->setOrderId($this->_getOrderIdFromTransactionId());
 
             //set device ident token if available
-            if (Shopware()->Session()->RatePAY['devicefinterprintident']['token']) {
-                $head->setDeviceToken(Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
+            if (Shopware()->Session()->RatePAY['dfpToken']) {
+                $head->setDeviceToken(Shopware()->Session()->RatePAY['dfpToken']);
             }
 
             $shopCountry = Shopware()->Models()->find(

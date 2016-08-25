@@ -219,8 +219,8 @@
                         /**
                          * unset DFI token
                          */
-                        if (Shopware()->Session()->RatePAY['devicefinterprintident']['token']) {
-                            unset(Shopware()->Session()->RatePAY['devicefinterprintident']['token']);
+                        if (Shopware()->Session()->RatePAY['dfpToken']) {
+                            unset(Shopware()->Session()->RatePAY['dfpToken']);
                         }
 
                         /*
