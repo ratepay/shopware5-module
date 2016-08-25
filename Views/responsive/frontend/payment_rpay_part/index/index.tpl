@@ -3,7 +3,7 @@
 {block name='frontend_index_header_javascript_inline' prepend}
     var ratepayConstantsExists    = true;
 
-    {if $noServerSecure }
+    {if $smarty.server.HTTPS eq '' || $smarty.server.HTTPS eq 'off'}
         var ratepayUrl                = '{url controller='RpayRatepay' action='saveUserData'}';
     {else}
         var ratepayUrl                = '{url controller='RpayRatepay' action='saveUserData' forceSecure}';

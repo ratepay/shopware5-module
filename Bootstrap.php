@@ -759,9 +759,6 @@
 
             }
 
-            $noServerSecure = (is_null($_SERVER['HTTPS']) || strtolower($_SERVER['HTTPS']) == "off");
-            $view->assign('noServerSecure', $noServerSecure);
-
             $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
 
             if('checkout' === $request->getControllerName() && 'confirm' === $request->getActionName())
