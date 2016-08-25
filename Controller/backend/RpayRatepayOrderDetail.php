@@ -36,9 +36,8 @@
             $orderId = $this->Request()->getParam("orderId");
             if(null !== $orderId)
             {
-                $order = Shopware()->Db()->fetchRow("SELECT * FROM `s_order` WHERE `id`=?", array($orderId));
-                $orderAttributeModel = Shopware()->Db()->fetchRow("SELECT * FROM `s_order_attributes` WHERE `orderID`=?", array($orderId));
-                $shopId = $orderAttributeModel['RatePAY_ShopId'];
+                $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
+                $shopId = $order->getShop()->getId();
 
                 //if shop id is not set then use main shop and set config
                 if(!$shopId) $shopId = 1;

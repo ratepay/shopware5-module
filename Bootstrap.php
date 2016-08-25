@@ -103,7 +103,6 @@
             $this->_createDataBaseTables();
             $this->_createPaymentStati();
             $this->_createDeliveryStati();
-            $this->_createOrderAdditionalAttributes();
             $this->Plugin()->setActive(true);
 
             return array('success' => true, 'invalidateCache' => array('frontend', 'backend'));
@@ -143,41 +142,6 @@
             } catch (Exception $exception) {
                 Shopware()->Pluginlogger()->addNotice('RatePAY', $exception->getMessage());
             }
-        }
-
-        /**
-         * creates additional attributes for ratepay orders in s_order_attributes
-         */
-        public function _createOrderAdditionalAttributes()
-        {
-            try {
-                Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','ShopId','int(5)', true);
-                Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','TransactionId','varchar(255)', true);
-                Shopware()->Models()->addAttribute('s_order_attributes','RatePAY','DgNumber','varchar(255)', true);
-            } catch (Exception $e) {
-            }
-
-            $metaDataCache  = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
-            $metaDataCache->deleteAll();
-            Shopware()->Models()->generateAttributeModels(
-                array('s_order_attributes')
-            );
-        }
-
-        /**
-         * creates additional attributes fields for ratepay orders in s_order_attributes
-         */
-        public function _dropOrderAdditionalAttributes()
-        {
-            Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','ShopId');
-            Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','TransactionId');
-            Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','DgNumber');
-
-            $metaDataCache  = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
-            $metaDataCache->deleteAll();
-            Shopware()->Models()->generateAttributeModels(
-                array('s_order_attributes')
-            );
         }
 
         /**
