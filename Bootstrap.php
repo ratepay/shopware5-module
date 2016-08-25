@@ -158,6 +158,8 @@
 
             $this->_incrementalTableUpdate();
 
+            $this->clearRuleSet();
+
             return array(
                 'success' => true,
                 'invalidateCache' => array(
@@ -174,11 +176,23 @@
          * @throws Exception
          */
         private function _incrementalTableUpdate() {
-
             // Adding device fingerprint columns into config table from version 4.1.0
             $this->_sqlCheckAndExecute("rpay_ratepay_config", "deviceFingerprintStatus", array(
-                "ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintStatus` varchar(3) NOT NULL",
-                "ALTER TABLE `rpay_ratepay_config` ADD `deviceFingerprintSnippetId` varchar(55) NOT NULL"
+                "ALTER TABLE `rpay_ratepay_config` ADD `device-fingerprint-status` varchar(3) NOT NULL",
+                "ALTER TABLE `rpay_ratepay_config` ADD `device-fingerprint-snippet-id` varchar(55) NOT NULL"
+            ));
+
+            // Changing names of fingerprint columns from version 4.2.0
+            $this->_sqlCheckAndExecute("rpay_ratepay_config", "device-fingerprint-status", array(
+                "ALTER TABLE `rpay_ratepay_config` CHANGE `deviceFingerprintStatus` `device-fingerprint-status` VARCHAR(3)",
+                "ALTER TABLE `rpay_ratepay_config` CHANGE `deviceFingerprintSnippetId` `device-fingerprint-snippet-id` VARCHAR(55)"
+            ));
+
+            // Adding currency and country columns into config table from version 4.2.0
+            $this->_sqlCheckAndExecute("rpay_ratepay_config", "currency", array(
+                "ALTER TABLE `rpay_ratepay_config` ADD `country-code-billing` varchar(30) NOT NULL",
+                "ALTER TABLE `rpay_ratepay_config` ADD `country-code-delivery` varchar(30) NOT NULL",
+                "ALTER TABLE `rpay_ratepay_config` ADD `currency` varchar(30) NOT NULL"
             ));
         }
 
@@ -190,7 +204,7 @@
          * @param array $queries
          * @throws Exception
          */
-        private function _sqlCheckAndExecute(string $table, string $column, array $queries) {
+        private function _sqlCheckAndExecute($table, $column, array $queries) {
             try {
                 $columnExists = Shopware()->Db()->fetchRow("
                 SHOW
@@ -225,7 +239,6 @@
         {
             $this->disable();
             $this->_dropDatabaseTables();
-            //$this->_dropOrderAdditionalAttributes();
             return parent::uninstall();
         }
 
@@ -360,6 +373,27 @@
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
                 ));
                 $form->setElement('checkbox', 'RatePaySandboxAT', array(
+                    'label' => 'Testmodus aktivieren ( Test Gateway )',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
+                ));
+
+                /** CH CREDENTIALS **/
+                $form->setElement('button', 'button2', array(
+                    'label' => '<b>Zugangsdaten für die Schweiz:</b>',
+                    'value' => ''
+                ));
+                $form->setElement('text', 'RatePayProfileIDCH', array(
+                    'label' => 'Schweiz Profile-ID',
+                    'value' => '',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                ));
+
+                $form->setElement('text', 'RatePaySecurityCodeCH', array(
+                    'label' => 'Schweiz Security Code',
+                    'value' => '',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                ));
+                $form->setElement('checkbox', 'RatePaySandboxCH', array(
                     'label' => 'Testmodus aktivieren ( Test Gateway )',
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
                 ));
@@ -558,8 +592,11 @@
                          "`limit-invoice-max` int(5) NOT NULL, " .
                          "`limit-debit-max` int(5) NOT NULL, " .
                          "`limit-rate-max` int(5) NOT NULL, " .
-                         "`deviceFingerprintStatus` varchar(3) NOT NULL, " .
-                         "`deviceFingerprintSnippetId` varchar(55) NULL, " .
+                         "`device-fingerprint-status` varchar(3) NOT NULL, " .
+                         "`device-fingerprint-snippet-id` varchar(55) NULL, " .
+                         "`country-code-billing` varchar(30) NULL, " .
+                         "`country-code-delivery` varchar(30) NULL, " .
+                         "`currency` varchar(30) NULL, " .
                          "PRIMARY KEY (`profileId`, `shopId`)" .
                          ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
@@ -863,6 +900,24 @@
                     }
                 }
 
+                //CH
+                if ($element['name'] === 'RatePayProfileIDCH') {
+                    foreach($element['values'] as $element) {
+                        $credentials[$element['shopId']]['ch']['profileID'] = $element['value'];
+                    }
+                }
+                if ($element['name'] === 'RatePaySecurityCodeCH')
+                {
+                    foreach($element['values'] as $element) {
+                        $credentials[$element['shopId']]['ch']['securityCode'] = $element['value'];
+                    }
+                }
+                if ($element['name'] === 'RatePaySandboxCH') {
+                    foreach($element['values'] as $element) {
+                        $credentials[$element['shopId']]['ch']['sandbox'] = $element['value'];
+                    }
+                }
+
             }
 
             //DE Profile Request
@@ -877,7 +932,7 @@
                 )
                 {
                     if ($this->getRatepayConfig($credentials['de']['profileID'], $credentials['de']['securityCode'], $shopId, $credentials['de']['sandbox'])) {
-                        Shopware()->PluginLogger()->addNotice('RatePAY', 'Ruleset for germany successfully updated.');
+                        Shopware()->PluginLogger()->addNotice('RatePAY', 'Ruleset for Germany successfully updated.');
                     }
                 }
 
@@ -891,7 +946,21 @@
                 )
                 {
                     if ($this->getRatepayConfig($credentials['at']['profileID'], $credentials['at']['securityCode'], $shopId, $credentials['at']['sandbox'])) {
-                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for austria successfully updated.');
+                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Austria successfully updated.');
+                    }
+                }
+
+                //CH Profile Request
+                if (
+                    null !== $credentials['ch']['profileID']
+                    &&
+                    null !== $credentials['ch']['securityCode']
+                    &&
+                    null !== $credentials['ch']['sandbox']
+                )
+                {
+                    if ($this->getRatepayConfig($credentials['ch']['profileID'], $credentials['ch']['securityCode'], $shopId, $credentials['ch']['sandbox'])) {
+                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Switzerland successfully updated.');
                     }
                 }
 
@@ -940,14 +1009,8 @@
             $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $order->getCustomer()->getBilling()->getCountryId());
 
             //set sandbox mode based on config
-            $sandbox = false;
-            if('DE' === $country->getIso())
-            {
-                $sandbox = $config->get('RatePaySandboxDE');
-            } elseif ('AT' === $country->getIso())
-            {
-                $sandbox = $this->_config->get('RatePaySandboxAT');
-            }
+            $sandbox = $config->get('RatePaySandbox' . $country->getIso());
+
             $service = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
             $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $history      = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
@@ -1256,7 +1319,6 @@
          */
         public function preValidation(Enlight_Event_EventArgs $arguments)
         {
-
             $request  = $arguments->getSubject()->Request();
             $response = $arguments->getSubject()->Response();
             $view     = $arguments->getSubject()->View();
@@ -1358,7 +1420,6 @@
          */
         public function filterPayments(Enlight_Event_EventArgs $arguments)
         {
-
             $return = $arguments->getReturn();
             $currency = Shopware()->Config()->get('currency');
 
@@ -1391,36 +1452,41 @@
 
             //get current shopId
             $shopId = Shopware()->Shop()->getId();
+            
+            $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
 
-            //fetch correct config for current shop based on user country
-            $profileId = null;
-            if('DE' === $country->getIso())
-            {
-                $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileIDDE');
-            } elseif ('AT' === $country->getIso())
-            {
-                $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileIDAT');
+            $showRate    = $config['rateStatus']    == 2 ? true : false;
+            $showDebit   = $config['debitStatus']   == 2 ? true : false;
+            $showInvoice = $config['invoiceStatus'] == 2 ? true : false;
+
+            $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($config);
+            $validation->setAllowedCurrencies($config['currency']);
+            $validation->setAllowedCountriesBilling($config['country-code-billing']);
+            $validation->setAllowedCountriesDelivery($config['country-code-delivery']);
+
+            //check if payments are hidden by session (not in sandbox mode)
+            if ($validation->isRatepayHidden()) {
+                $showRate    = false;
+                $showDebit   = false;
+                $showInvoice = false;
             }
 
-            //get ratepay config based on shopId and profileId
-            $paymentStati = Shopware()->Db()->fetchRow('
-                SELECT
-                *
-                FROM
-                `rpay_ratepay_config`
-                WHERE
-                `shopId` =?
-                AND
-                `profileId`=?
-            ', array($shopId, $profileId));
+            //check if the country is allowed
+            if (!$validation->isCurrencyValid($currency)) {
+                $showRate    = false;
+                $showDebit   = false;
+                $showInvoice = false;
+            }
 
-            $showRate    = $paymentStati['rateStatus']    == 2 ? true : false;
-            $showDebit   = $paymentStati['debitStatus']   == 2 ? true : false;
-            $showInvoice = $paymentStati['invoiceStatus'] == 2 ? true : false;
+            //check if the billing country is allowed
+            if (!$validation->isBillingCountryValid($countryBilling)) {
+                $showRate    = false;
+                $showDebit   = false;
+                $showInvoice = false;
+            }
 
-            //check if the country is germany or austria
-            $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation();
-            if (!$validation->isCountryValid()) {
+            //check if the delivery country is allowed
+            if (!$validation->isDeliveryCountryValid($countryDelivery)) {
                 $showRate    = false;
                 $showDebit   = false;
                 $showInvoice = false;
@@ -1442,7 +1508,6 @@
 
             //check the limits
             if (Shopware()->Modules()->Basket()) {
-
                 $basket = Shopware()->Modules()->Basket()->sGetAmount();
                 $basket = $basket['totalAmount'];
 
@@ -1459,7 +1524,6 @@
                 if ($basket < $config['limit-rate-min'] || $basket > $config['limit-rate-max']) {
                     $showRate = false;
                 }
-
             }
 
             $paymentModel = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
@@ -1537,6 +1601,9 @@
                     $response->getElementsByTagName('tx-limit-installment-max')->item(0)->nodeValue,
                     $response->getElementsByTagName('eligibility-device-fingerprint')->item(0)->nodeValue ? : 'no',
                     $response->getElementsByTagName('device-fingerprint-snippet-id')->item(0)->nodeValue,
+                    strtoupper($response->getElementsByTagName('country-code-billing')->item(0)->nodeValue),
+                    strtoupper($response->getElementsByTagName('country-code-delivery')->item(0)->nodeValue),
+                    strtoupper($response->getElementsByTagName('currency')->item(0)->nodeValue),
 
                     //shopId always needs be the last line
                     $shopId
@@ -1553,7 +1620,7 @@
                     $activePayments = $activePayments == '' ? '"rpayratepayrate"' : $activePayments . ', "rpayratepayrate"';
                 }
 
-                $updatesql = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in($activePayments)';
+                $updateSql = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . $activePayments . ')';
 
                 $sql = 'REPLACE INTO `rpay_ratepay_config`'
                        . '(`profileId`, `invoiceStatus`,`debitStatus`,`rateStatus`,'
@@ -1561,21 +1628,13 @@
                        . '`address-invoice`, `address-debit`, `address-rate`,'
                        . '`limit-invoice-min`, `limit-debit-min`, `limit-rate-min`,'
                        . '`limit-invoice-max`, `limit-debit-max`, `limit-rate-max`,'
-                       . '`deviceFingerprintStatus`, `deviceFingerprintSnippetId`,'
+                       . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
+                       . '`country-code-billing`, `country-code-delivery`,'
+                       . '`currency`,'
                        . ' `shopId`)'
-                       . 'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+                       . 'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
 
                 try {
-                    $this->clearRuleSet();
-                    $this->setRuleSet(
-                        'rpayratepayinvoice', 'CURRENCIESISOISNOT', 'EUR'
-                    );
-                    $this->setRuleSet(
-                        'rpayratepaydebit', 'CURRENCIESISOISNOT', 'EUR'
-                    );
-                    $this->setRuleSet(
-                        'rpayratepayrate', 'CURRENCIESISOISNOT', 'EUR'
-                    );
                     Shopware()->Db()->query($sql, $data);
                     Shopware()->Db()->query($updatesql);
 
@@ -1593,37 +1652,6 @@
             }
         }
 
-        /**
-         * Sets the Ruleset for the given Payment
-         *
-         * @param string $paymentName
-         * @param string $firstRule
-         * @param string $firstValue
-         */
-        private function setRuleSet($paymentName, $firstRule, $firstValue)
-        {
-            $payment = $this->Payments()->findOneBy(array('name' => $paymentName));
-            $ruleset = new Shopware\Models\Payment\RuleSet;
-            $ruleset->setPayment($payment);
-            $ruleset->setRule1($firstRule);
-            $ruleset->setValue1($firstValue);
-            $ruleset->setRule2('');
-            $ruleset->setValue2(0);
-            Shopware()->Models()->persist($ruleset);
-        }
-
-        /**
-         * Clears the Ruleset for all RatePAY-Payments
-         */
-        private function clearRuleSet()
-        {
-            $sql = "DELETE FROM `s_core_rulesets` "
-                   . "WHERE `paymentID` IN("
-                   . "SELECT `id` FROM `s_core_paymentmeans` "
-                   . "WHERE `name` LIKE 'rpayratepay%'"
-                   . ") AND `rule1` LIKE 'ORDERVALUE%' OR `rule1` = 'CURRENCIESISOISNOT';";
-            Shopware()->Db()->query($sql);
-        }
 
         /**
          * extends the Orderdetailview

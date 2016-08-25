@@ -25,9 +25,30 @@
 
         private $_config;
 
+        private $_countryCode;
+
         public function __construct($config = null)
         {
             $this->_config = $config;
+        }
+
+        /**
+         * Returns country code by customer billing address
+         *
+         * @return string
+         */
+        private function _getCountryCodesByBillingAddress()
+        {
+            // Checkout address ids are set from shopware version >=5.2.0
+            if (isset(Shopware()->Session()->checkoutBillingAddressId) && Shopware()->Session()->checkoutBillingAddressId > 0) {
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
+                return $checkoutAddressBilling->getCountry()->getIso();
+            } else {
+                $shopUser = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
+                $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $shopUser->getBilling()->getCountryId());
+                return $country->getIso();
+            }
         }
 
         /**

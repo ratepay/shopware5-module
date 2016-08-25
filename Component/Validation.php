@@ -35,14 +35,62 @@
         private $_payment;
 
         /**
+         * Allowed currencies from configuration table
+         *
+         * @var array
+         */
+        private $_allowedCurrencies;
+
+        /**
+         * Allowed billing countries from configuration table
+         *
+         * @var array
+         */
+        private $_allowedCountriesBilling;
+
+        /**
+         * Allowed shipping countries from configuration table
+         *
+         * @var array
+         */
+        private $_allowedCountriesDelivery;
+
+        /**
          * Constructor
          *
          * Saves the CustomerModel and initiate the Class
          */
-        public function __construct()
+        public function __construct($config)
         {
             $this->_user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
             $this->_payment = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $this->_user->getPaymentId());
+        }
+
+        /**
+         * Sets array with allowed currencies
+         *
+         * @param $currencyStr
+         */
+        public function setAllowedCurrencies($currenciesStr) {
+            $this->_allowedCurrencies = explode(',', $currenciesStr);
+        }
+
+        /**
+         * Sets array with allowed currencies
+         *
+         * @param $currencyStr
+         */
+        public function setAllowedCountriesBilling($countriesStr) {
+            $this->_allowedCountriesBilling = explode(',', $countriesStr);
+        }
+
+        /**
+         * Sets array with allowed currencies
+         *
+         * @param $currencyStr
+         */
+        public function setAllowedCountriesDelivery($countriesStr) {
+            $this->_allowedCountriesDelivery = explode(',', $countriesStr);
         }
 
         /**
@@ -207,13 +255,34 @@
         /**
          * Checks if the country is germany or austria
          *
+         * @param Shopware\Models\Country\Country $country
          * @return boolean
          */
-        public function isCountryValid()
+        public function isCurrencyValid($currency)
         {
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $this->_user->getBilling()->getCountryId());
+            return array_search($currency, $this->_allowedCurrencies, true) !== false;
+        }
 
-            return ($country->getIso() === "DE") || ($country->getIso() === 'AT');
+        /**
+         * Checks if the billing country valid
+         *
+         * @param Shopware\Models\Country\Country $country
+         * @return boolean
+         */
+        public function isBillingCountryValid($country)
+        {
+            return array_search($country->getIso(), $this->_allowedCountriesBilling, true) !== false;
+        }
+
+        /**
+         * Checks if the delivery country valid
+         *
+         * @param Shopware\Models\Country\Country $country
+         * @return boolean
+         */
+        public function isDeliveryCountryValid($country)
+        {
+            return array_search($country->getIso(), $this->_allowedCountriesDelivery, true) !== false;
         }
 
         /**
@@ -225,7 +294,7 @@
             $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
             $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $this->_user->getBilling()->getCountryId())->getIso();
 
-            if('DE' === $country || 'AT' === $country) {
+            if('DE' === $country || 'AT' === $country || 'CH' === $country) {
                 $sandbox = $config->get('RatePaySandbox' . $country);
             }
 

@@ -35,6 +35,9 @@
             } elseif('AT' === $country->getIso())
             {
                 $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePayProfileIDAT;
+            } elseif('CH' === $country->getIso())
+            {
+                $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePayProfileIDCH; // ToDo! Make config field variable
             }
 
             return $profileId;
@@ -71,6 +74,9 @@
             } elseif('AT' === $country->getIso())
             {
                 $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySecurityCodeAT;
+            } elseif('CH' === $country->getIso())
+            {
+                $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySecurityCodeCH;
             }
 
             return $securityCode;
@@ -95,6 +101,9 @@
             } elseif('AT' === $country->getIso())
             {
                 $isLive = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySandboxAT;
+            } elseif('CH' === $country->getIso())
+            {
+                $isLive = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySandboxCH;
             }
 
             return !$isLive;
