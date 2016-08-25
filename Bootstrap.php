@@ -262,7 +262,7 @@
                 $this->createPayment(
                     array(
                         'name'                  => 'rpayratepayinvoice',
-                        'description'           => 'RatePAY Rechnung',
+                        'description'           => 'Rechnung',
                         'action'                => 'rpay_ratepay',
                         'active'                => 1,
                         'position'              => 1,
@@ -278,11 +278,11 @@
                 $this->createPayment(
                     array(
                         'name'                  => 'rpayratepayrate',
-                        'description'           => 'RatePAY Ratenzahlung',
+                        'description'           => 'Ratenzahlung',
                         'action'                => 'rpay_ratepay',
                         'active'                => 1,
                         'position'              => 2,
-                        'additionaldescription' => 'Kauf mit Ratenzahlung',
+                        'additionaldescription' => 'Kauf per Ratenzahlung',
                         'template'              => 'RatePAYRate.tpl',
                         'pluginID'              => $this->getId(),
                         /*'countries'             => array(
@@ -294,11 +294,11 @@
                 $this->createPayment(
                     array(
                         'name'                  => 'rpayratepaydebit',
-                        'description'           => 'RatePAY SEPA-Lastschrift',
+                        'description'           => 'Lastschrift',
                         'action'                => 'rpay_ratepay',
                         'active'                => 1,
                         'position'              => 3,
-                        'additionaldescription' => 'Kauf mit SEPA Lastschrift',
+                        'additionaldescription' => 'Kauf per SEPA Lastschrift',
                         'template'              => 'RatePAYDebit.tpl',
                         'pluginID'              => $this->getId(),
                         /*'countries'             => array(
