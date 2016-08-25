@@ -28,7 +28,6 @@
          * @var Shopware\Models\Customer\Billing
          */
         private $_config;
-        private $_user;
         private $_service;
         private $_modelFactory;
         private $_logging;
@@ -42,26 +41,25 @@
 
             if (isset(Shopware()->Session()->sUserId)) {
                 $userId = Shopware()->Session()->sUserId;
-            } elseif ($Parameter['userid']) {
+            } elseif (isset($Parameter['userid'])) {
                 $userId = $Parameter['userid'];
             } else { // return if no current user set. e.g. call by crawler
-                return "No user set";
+                return "RatePAY frontend controller: No user set";
             }
 
             $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
-            $this->_user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
-
-            //get country of order
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $this->_user->getCountryId());
+            if (isset($Parameter['checkoutBillingAddressId']) && !is_null($Parameter['checkoutBillingAddressId'])) { // From Shopware 5.2 current billing address is sent by parameter
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $customerAddressBilling = $addressModel->findOneBy(array('id' => $Parameter['checkoutBillingAddressId']));
+                $country = $customerAddressBilling->getCountry();
+            } else {
+                $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
+                $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
+            }
 
             //set sandbox mode based on config
-            $sandbox = false;
-            if('DE' === $country->getIso()) {
-                $sandbox = $this->_config->get('RatePaySandboxDE');
-            } elseif ('AT' === $country->getIso()) {
-                $sandbox = $this->_config->get('RatePaySandboxAT');
-            }
+            $sandbox = $this->_config->get('RatePaySandbox' . $country->getIso());
 
             $this->_service = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
 
@@ -115,33 +113,74 @@
 
             $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
             $userModel = $customerModel->findOneBy(array('id' => Shopware()->Session()->sUserId));
-            $user = $userModel->getBilling();
+
+            if (isset($Parameter['checkoutBillingAddressId']) && !is_null($Parameter['checkoutBillingAddressId'])) { // From Shopware 5.2 current billing address is sent by parameter
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $customerAddressBilling = $addressModel->findOneBy(array('id' => $Parameter['checkoutBillingAddressId']));
+                Shopware()->Session()->RatePAY['checkoutBillingAddressId'] = $Parameter['checkoutBillingAddressId'];
+                if (isset($Parameter['checkoutShippingAddressId']) && !is_null($Parameter['checkoutShippingAddressId'])) {
+                    Shopware()->Session()->RatePAY['checkoutShippingAddressId'] = $Parameter['checkoutShippingAddressId'];
+                } else {
+                    unset(Shopware()->Session()->RatePAY['checkoutShippingAddressId']);
+                }
+            } else {
+                $customerAddressBilling = $userModel->getBilling();
+            }
 
             $return = 'OK';
-            $updateData = array();
+            $updateUserData = array();
+            $updateAddressData = array();
 
-            if (!is_null($user)) {
-                $updateData['phone'] = $Parameter['ratepay_phone'] ? : $user->getPhone();
-                if ($user->getCompany() !== "") {
-                    $updateData['company'] = $Parameter['ratepay_company'] ? : $user->getCompany();
-                    $updateData['ustid'] = $Parameter['ratepay_ustid'] ? : $user->getVatId();
+            if (!is_null($customerAddressBilling)) {
+                if (method_exists($customerAddressBilling, 'getBirthday')) {
+                    $updateAddressData['phone'] = $Parameter['ratepay_phone'] ? : $customerAddressBilling->getPhone();
+                    if ($customerAddressBilling->getCompany() !== "") {
+                        $updateAddressData['company'] = $Parameter['ratepay_company'] ? : $customerAddressBilling->getCompany();
+                        $updateAddressData['ustid'] = $Parameter['ratepay_ustid'] ? : $customerAddressBilling->getVatId();
+                    } else {
+                        $updateAddressData['birthday'] = $Parameter['ratepay_dob'] ? : $customerAddressBilling->getBirthday()->format("Y-m-d");
+                    }
+
+                    try {
+                        Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // ToDo: Why parameter?
+                        Shopware()->Pluginlogger()->info('Kundendaten aktualisiert.');
+                    } catch (Exception $exception) {
+                        Shopware()->Pluginlogger()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
+                        $return = 'NOK';
+                    }
+
+                } elseif (method_exists($userModel, 'getBirthday')) { // From Shopware 5.2 birthday is moved to customer object
+                    $updateAddressData['phone'] = $Parameter['ratepay_phone'] ? : $customerAddressBilling->getPhone();
+                    if (!is_null($customerAddressBilling->getCompany())) {
+                        $updateAddressData['company'] = $Parameter['ratepay_company'] ? : $customerAddressBilling->getCompany();
+                        $updateAddressData['ustid'] = $Parameter['ratepay_ustid'] ? : $customerAddressBilling->getVatId();
+                    } else {
+                        $updateUserData['birthday'] = $Parameter['ratepay_dob'] ? : $userModel->getBirthday()->format("Y-m-d");
+                    }
+
+                    try {
+                        if (count($updateUserData) > 0) {
+                            Shopware()->Db()->update('s_user', $updateUserData, 'id=' . $Parameter['userid']); // ToDo: Why parameter?
+                        }
+                        if (count($updateAddressData) > 0) {
+                            Shopware()->Db()->update('s_user_addresses', $updateAddressData, 'id=' . $Parameter['checkoutBillingAddressId']);
+                        }
+                        Shopware()->Pluginlogger()->info('Kundendaten aktualisiert.');
+                    } catch (Exception $exception) {
+                        Shopware()->Pluginlogger()->error('Fehler beim Updaten der User oder Address daten: ' . $exception->getMessage());
+                        $return = 'NOK';
+                    }
                 } else {
-                    $updateData['birthday'] = $Parameter['ratepay_dob'] ? : $user->getBirthday()->format("Y-m-d");
-                }
-
-                try {
-                    Shopware()->Db()->update('s_user_billingaddress', $updateData, 'userID=' . $Parameter['userid']);
-                    Shopware()->Pluginlogger()->info('Kundendaten aktualisiert.');
-                } catch (Exception $exception) {
-                    Shopware()->Pluginlogger()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
+
+
             }
 
             if ($Parameter['ratepay_debit_updatedebitdata']) {
                 Shopware()->Session()->RatePAY['bankdata']['account']    = $Parameter['ratepay_debit_accountnumber'];
                 Shopware()->Session()->RatePAY['bankdata']['bankcode']   = $Parameter['ratepay_debit_bankcode'];
-                Shopware()->Session()->RatePAY['bankdata']['bankholder'] = $user->getFirstname() . " " . $user->getLastname();
+                Shopware()->Session()->RatePAY['bankdata']['bankholder'] = $customerAddressBilling->getFirstname() . " " . $customerAddressBilling->getLastname();
             }
 
             echo $return;

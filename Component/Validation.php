@@ -114,7 +114,13 @@
          */
         public function isUSTSet()
         {
-            $ust = $this->_user->getBilling()->getVatId();
+            if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 session contains current billing address
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
+                $ust = $checkoutAddressBilling->getVatId();
+            } else {
+                $ust = $this->_user->getBilling()->getVatId();
+            }
 
             return !empty($ust);
         }
@@ -126,7 +132,13 @@
          */
         public function isCompanyNameSet()
         {
-            $companyName = $this->_user->getBilling()->getCompany();
+            if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 session contains current billing address
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
+                $companyName = $checkoutAddressBilling->getCompany();
+            } else {
+                $companyName = $this->_user->getBilling()->getCompany();
+            }
 
             return !empty($companyName);
         }
@@ -138,19 +150,27 @@
          */
         public function isBillingAddressSameLikeShippingAddress()
         {
-            $billingAddress = $this->_user->getBilling();
-            $shippingAddress = $this->_user->getShipping();
+            if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 session contains current billing address
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $billingAddress = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
+                if (Shopware()->Session()->checkoutShippingAddressId > 0) {
+                    $shippingAddress = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
+                } else {
+                    $shippingAddress = $billingAddress;
+                }
+            } else {
+                $billingAddress = $this->_user->getBilling();
+                $shippingAddress = $this->_user->getShipping();
+            }
+
             $classFunctions = array(
-                'getCity',
                 'getCompany',
                 'getCountryId',
-                'getDepartment',
                 'getFirstname',
                 'getLastName',
-                'getSalutation',
-                'getStateId',
                 'getStreet',
-                'getZipCode'
+                'getZipCode',
+                'getCity',
             );
             $return = true;
             if (!is_null($shippingAddress)) {

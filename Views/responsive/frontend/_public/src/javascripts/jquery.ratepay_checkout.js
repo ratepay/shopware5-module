@@ -169,8 +169,21 @@
                         errorMessage = errorMessageValidPhone;
                     }
                 }
-                
-                if($('#ratepay_debit_accountnumber').length) { /* only do the check if bankdata form exists */
+
+                /* check for address editor, only shopware >=5.2.0 */
+                if($(".btn[data-address-editor]").length) {
+                    if($(".btn[data-sessionkey='checkoutBillingAddressId,checkoutShippingAddressId']").length) {
+                        requestParams += '&checkoutBillingAddressId=' + $(".btn[data-sessionkey='checkoutBillingAddressId,checkoutShippingAddressId']").attr("data-id");
+                        differentAddress = false;
+                    } else {
+                        requestParams += '&checkoutBillingAddressId=' + $(".btn[data-sessionkey='checkoutBillingAddressId']").attr("data-id");
+                        requestParams += '&checkoutShippingAddressId=' + $(".btn[data-sessionkey='checkoutShippingAddressId']").attr("data-id");
+                        differentAddress = true;
+                    }
+                }
+
+                /* only do the check if bankdata form exists */
+                if($('#ratepay_debit_accountnumber').length) {
                     if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '') {
                         error = true;
                         userUpdate = false;

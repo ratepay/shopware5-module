@@ -653,7 +653,8 @@
                 $this->subscribeEvent(
                     'Shopware_Controllers_Backend_Order::saveAction::after', 'onBidirectionalSendOrderOperation'
                 );
-                $this->subscribeEvent('Enlight_Controller_Action_PostDispatch', 'onPostDispatch', 110
+                $this->subscribeEvent(
+                    'Enlight_Controller_Action_PostDispatch_Frontend_Checkout', 'extendTemplates'
                 );
                 $this->subscribeEvent(
                     'Enlight_Controller_Dispatcher_ControllerPath_Frontend_RpayRatepay', 'frontendPaymentController'
@@ -712,7 +713,7 @@
         /**
          * @param Enlight_Event_EventArgs $args
          */
-        public function onPostDispatch(Enlight_Event_EventArgs $args)
+        public function extendTemplates(Enlight_Event_EventArgs $args)
         {
             /** @var $action Enlight_Controller_Action */
             $action = $args->getSubject();
@@ -730,15 +731,31 @@
 
             $this->registerMyTemplateDir();
 
-            //get ratepay config based on shopId @toDo: IF DI SNIPPET ID WILL BE VARIABLE BETWEEN SUBSHOPS WE NEED TO SELECT BY SHOPID AND COUNTRY CREDENTIALS!!!
-            $diConfig = Shopware()->Db()->fetchRow('
-                SELECT
-                *
-                FROM
-                `rpay_ratepay_config`
-                WHERE
-                `shopId` =?
-            ', array(Shopware()->Shop()->getId()));
+            //get ratepay config based on shopId @toDo: IF DI SNIPPET ID WILL BE VARIABLE BETWEEN SUBSHOPS WE NEED TO SELECT BY SHOPID AND COUNTRY CREDENTIALS
+            $shopid = Shopware()->Shop()->getId();
+            $config = $this->getRatePayPluginConfig($shopid);
+
+            if (!is_null(Shopware()->Session()->sUserId)) {
+                $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
+                $paymentMethod = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
+            } elseif (!is_null(Shopware()->Session()->sPaymentID)) { // PaymentId is set in case of new/guest customers
+                $paymentMethod = Shopware()->Models()->find('Shopware\Models\Payment\Payment', Shopware()->Session()->sPaymentID);
+            } else {
+                return;
+            }
+
+            if(
+                'checkout' === $request->getControllerName() &&
+                'confirm' === $request->getActionName() &&
+                strstr($paymentMethod->getName(), 'rpayratepay')
+            ) {
+                if (method_exists($user, 'getDefaultBillingAddress')) { // From Shopware 5.2 find current address information in default billing address
+                    $view->assign('ratepayPhone', $user->getDefaultBillingAddress()->getPhone());
+                }
+
+                $view->extendsTemplate('frontend/payment_rpay_part/index/header.tpl');
+                $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
+                $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
 
                 //if no DF token is set, receive all the necessary data to set it and extend template
                 if(true == $config['deviceFingerprintStatus'] && !Shopware()->Session()->RatePAY['dfpToken']) {
@@ -1286,6 +1303,48 @@
         }
 
         /**
+         * Get ratepay plugin config from rpay_ratepay_config table
+         * 
+         * @param $shopId
+         * @return array
+         */
+        private function getRatePayPluginConfig($shopId) {
+            //get ratepay config based on shopId
+            return Shopware()->Db()->fetchRow('
+                SELECT
+                *
+                FROM
+                `rpay_ratepay_config`
+                WHERE
+                `shopId` =?
+            ', array($shopId));
+        }
+
+        /**
+         * Get ratepay plugin config from rpay_ratepay_config table
+         *
+         * @param $shopId
+         * @param $country
+         * @return array
+         */
+        private function getRatePayPluginConfigByCountry($shopId, $country) {
+            //fetch correct config for current shop based on user country
+            $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
+
+            //get ratepay config based on shopId and profileId
+            return Shopware()->Db()->fetchRow('
+                SELECT
+                *
+                FROM
+                `rpay_ratepay_config`
+                WHERE
+                `shopId` =?
+                AND
+                `profileId`=?
+            ', array($shopId, $profileId));
+        }
+
+        /**
          * Filters the shown Payments
          * RatePAY-payments will be hidden, if one of the following requirement is not given
          *  - Delivery Address is not allowed to be not the same as billing address
@@ -1310,7 +1369,25 @@
             $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
 
             //get country of order
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
+            if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 find current address information in default billing address
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $customerAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
+                $countryBilling = $customerAddressBilling->getCountry();
+                if (Shopware()->Session()->checkoutShippingAddressId > 0 && Shopware()->Session()->checkoutShippingAddressId != Shopware()->Session()->checkoutBillingAddressId) {
+                    $customerAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
+                    $countryDelivery = $customerAddressShipping->getCountry();
+                } else {
+                    $countryDelivery = $countryBilling;
+                }
+            } else {
+                $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
+                if (!is_null($user->getShipping()) &&$user->getBilling()->getCountryId() != $user->getShipping()->getCountryId()) {
+                    $countryDelivery = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getShipping()->getCountryId());
+                } else {
+                    $countryDelivery = $countryBilling;
+                }
+
+            }
 
             //get current shopId
             $shopId = Shopware()->Shop()->getId();
@@ -1351,23 +1428,16 @@
 
             //check if it is a b2b transaction
             if ($validation->isCompanyNameSet() || $validation->isUSTSet()) {
-                $showRate    = $paymentStati['b2b-rate']    == 'yes' && $showRate ? true : false;
-                $showDebit   = $paymentStati['b2b-debit']   == 'yes' && $showDebit ? true : false;
-                $showInvoice = $paymentStati['b2b-invoice'] == 'yes' && $showInvoice ? true : false;
+                $showRate    = $config['b2b-rate']    == 'yes' && $showRate ? true : false;
+                $showDebit   = $config['b2b-debit']   == 'yes' && $showDebit ? true : false;
+                $showInvoice = $config['b2b-invoice'] == 'yes' && $showInvoice ? true : false;
             }
 
             //check if there is an alternate delivery address
             if (!$validation->isBillingAddressSameLikeShippingAddress()) {
-                $showRate    = $paymentStati['address-rate']    == 'yes' && $validation->isCountryValid() && $showRate ? true : false;
-                $showDebit   = $paymentStati['address-debit']   == 'yes' && $validation->isCountryValid() && $showDebit ? true : false;
-                $showInvoice = $paymentStati['address-invoice'] == 'yes' && $validation->isCountryValid() && $showInvoice ? true : false;
-            }
-
-            //check if payments are hidden by session (just in sandbox mode)
-            if ($validation->isRatepayHidden()) {
-                $showRate    = false;
-                $showDebit   = false;
-                $showInvoice = false;
+                $showRate    = $config['address-rate']    == 'yes' && $showRate ? true : false;
+                $showDebit   = $config['address-debit']   == 'yes' && $showDebit ? true : false;
+                $showInvoice = $config['address-invoice'] == 'yes' && $showInvoice ? true : false;
             }
 
             //check the limits
@@ -1378,15 +1448,15 @@
 
                 Shopware()->Pluginlogger()->info('BasketAmount: '.$basket);
 
-                if ($basket < $paymentStati['limit-invoice-min'] || $basket > $paymentStati['limit-invoice-max']) {
+                if ($basket < $config['limit-invoice-min'] || $basket > $config['limit-invoice-max']) {
                     $showInvoice = false;
                 }
 
-                if ($basket < $paymentStati['limit-debit-min'] || $basket > $paymentStati['limit-debit-max']) {
+                if ($basket < $config['limit-debit-min'] || $basket > $config['limit-debit-max']) {
                     $showDebit = false;
                 }
 
-                if ($basket < $paymentStati['limit-rate-min'] || $basket > $paymentStati['limit-rate-max']) {
+                if ($basket < $config['limit-rate-min'] || $basket > $config['limit-rate-max']) {
                     $showRate = false;
                 }
 

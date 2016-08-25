@@ -42,12 +42,12 @@
                 //if shop id is not set then use main shop and set config
                 if(!$shopId) $shopId = 1;
                 $config = array();
-                $config['shop'] = Shopware()->Models()->find("Shopware\\Models\\Shop\\Shop", $shopId );
+                $config['shop'] = Shopware()->Models()->find('Shopware\Models\Shop\Shop', $shopId);
                 $config['db'] = Shopware()->Db();
                 $this->_config = new \Shopware_Components_Config($config);
 
                 //get user of current order and set sandbox mode
-                $orderUser    = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $order['userID']);
+                $orderUser    = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $order->getCustomer()->getId());
                 $orderCountry = Shopware()->Models()->find(
                     'Shopware\Models\Country\Country',
                     $orderUser->getBilling()->getCountryId()
@@ -284,7 +284,7 @@
 
                 $subtype = 'partial-cancellation';
                 $this->_modelFactory->setTransactionId($order['transactionID']);
-                $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange());
+                $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange(), $orderId);
                 $head = $paymentChange->getHead();
                 $head->setOperationSubstring($subtype);
                 $paymentChange->setHead($head);
@@ -361,7 +361,7 @@
                 $subtype = 'partial-return';
 
                 $this->_modelFactory->setTransactionId($order['transactionID']);
-                $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange());
+                $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange(), $orderId);
                 $head = $paymentChange->getHead();
                 $head->setOperationSubstring($subtype);
                 $paymentChange->setHead($head);

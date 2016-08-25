@@ -24,6 +24,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydetailorder', {
         if (me.isRatePAYOrder()) {
             tabPanel = me.createRatePAYTabPanel();
         }
+
         return tabPanel;
     },
     isRatePAYOrder: function () {
