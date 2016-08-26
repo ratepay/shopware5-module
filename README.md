@@ -4,8 +4,8 @@
 |Module | RatePAY Module for Shopware
 |------|----------
 |Author | Aarne Welschlau
-|Shop Version | `5.0.x` `5.1.x`
-|Version | `4.1.5`
+|Shop Version | `5.0.x` `5.1.x` `5.2.x`
+|Version | `4.2.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -24,10 +24,17 @@
 
 ## Changelog
 
-### Version Version 4.1.5 - Released 2016-06-06
+### Version Version 4.2.0 - Released 2016-08-29
+* Mapping of new SWAG address management (Compatibility with Shopware 5.2.x)
+* CSRF protection implemented (Compatibility with Shopware 5.2.x)
+* Fixed compatibility with SWAG import/export function
+* Improved DFP creation
+* Compatibility with CH and CHF
+* Further minor changes and fixes
+
+### Version Version 4.1.5 - Released 2016-05-26
 * Adjusted frontend controller URL (SSL)
 * Conveyed sUniqueID to checkout controller
-* Changes in dfp template to prevent printed whitespaces
 
 ### Version Version 4.1.4 - Released 2016-04-26
 * Payment information additionally saved in order additional fields
