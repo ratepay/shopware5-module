@@ -158,8 +158,6 @@
 
             $this->_incrementalTableUpdate();
 
-            $this->clearRuleSet();
-
             return array(
                 'success' => true,
                 'invalidateCache' => array(
@@ -169,42 +167,54 @@
             );
         }
 
-
         /**
          * Starts incremental update/alter queries in case of update
          *
          * @throws Exception
          */
         private function _incrementalTableUpdate() {
-            // Adding device fingerprint columns into config table from version 4.1.0
-            $this->_sqlCheckAndExecute("rpay_ratepay_config", "deviceFingerprintStatus", array(
-                "ALTER TABLE `rpay_ratepay_config` ADD `device-fingerprint-status` varchar(3) NOT NULL",
-                "ALTER TABLE `rpay_ratepay_config` ADD `device-fingerprint-snippet-id` varchar(55) NOT NULL"
-            ));
-
-            // Changing names of fingerprint columns from version 4.2.0
-            $this->_sqlCheckAndExecute("rpay_ratepay_config", "device-fingerprint-status", array(
-                "ALTER TABLE `rpay_ratepay_config` CHANGE `deviceFingerprintStatus` `device-fingerprint-status` VARCHAR(3)",
-                "ALTER TABLE `rpay_ratepay_config` CHANGE `deviceFingerprintSnippetId` `device-fingerprint-snippet-id` VARCHAR(55)"
-            ));
+            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "device-fingerprint-status")) {
+                if ($this->_sqlCheckIfColumnExists("rpay_ratepay_config", "deviceFingerprintStatus")) {
+                    // Changing names of fingerprint columns from version 4.2.0
+                    try {
+                        Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` CHANGE `deviceFingerprintStatus` `device-fingerprint-status` VARCHAR(3)");
+                        Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` CHANGE `deviceFingerprintSnippetId` `device-fingerprint-snippet-id` VARCHAR(55)");
+                    } catch (Exception $exception) {
+                        throw new Exception("Can not change device-fingerprint columns in table `rpay_ratepay_config` - " . $exception->getMessage());
+                    }
+                } else {
+                    // Adding device fingerprint columns into config table from version 4.1.0
+                    try {
+                        Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `device-fingerprint-status` varchar(3) NOT NULL");
+                        Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `device-fingerprint-snippet-id` varchar(55) NOT NULL");
+                    } catch (Exception $exception) {
+                        throw new Exception("Can not add device-fingerprint columns in table `rpay_ratepay_config` - " . $exception->getMessage());
+                    }
+               }
+            }
 
             // Adding currency and country columns into config table from version 4.2.0
-            $this->_sqlCheckAndExecute("rpay_ratepay_config", "currency", array(
-                "ALTER TABLE `rpay_ratepay_config` ADD `country-code-billing` varchar(30) NOT NULL",
-                "ALTER TABLE `rpay_ratepay_config` ADD `country-code-delivery` varchar(30) NOT NULL",
-                "ALTER TABLE `rpay_ratepay_config` ADD `currency` varchar(30) NOT NULL"
-            ));
+            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "currency")) {
+                try {
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `country-code-billing` varchar(30) NOT NULL");
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `country-code-delivery` varchar(30) NOT NULL");
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `currency` varchar(30) NOT NULL");
+                } catch (Exception $exception) {
+                    throw new Exception("Can not add country-code and currency columns in table `rpay_ratepay_config` - " . $exception->getMessage());
+                }
+            }
         }
 
         /**
-         * Checks if column exists and execute queries if not
+         * Checks if column exists
          *
          * @param string $table
          * @param string $column
-         * @param array $queries
          * @throws Exception
+         * @return bool
          */
-        private function _sqlCheckAndExecute($table, $column, array $queries) {
+        private function _sqlCheckIfColumnExists($table, $column)
+        {
             try {
                 $columnExists = Shopware()->Db()->fetchRow("
                 SHOW
@@ -217,18 +227,8 @@
                 throw new Exception("Can not enter table " . $table . " - " . $exception->getMessage());
             }
 
-            if ($columnExists === false) {
-                foreach ($queries AS $query) {
-                    try {
-                        Shopware()->Db()->query($query);
-                    } catch (Exception $exception) {
-                        throw new Exception("Can not execute query '" . $query . "' in table " . $table . " - " . $exception->getMessage());
-                    }
-
-                }
-            }
+            return (bool) $columnExists;
         }
-
 
         /**
          * Uninstalls the Plugin and its components
