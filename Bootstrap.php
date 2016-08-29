@@ -795,8 +795,8 @@
                 $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
 
                 //if no DF token is set, receive all the necessary data to set it and extend template
-                if(true == $config['deviceFingerprintStatus'] && !Shopware()->Session()->RatePAY['dfpToken']) {
-                    $view->assign('snippetId', $config['deviceFingerprintSnippetId']);
+                if(true == $config['device-fingerprint-status'] && !Shopware()->Session()->RatePAY['dfpToken']) {
+                    $view->assign('snippetId', $config['device-fingerprint-snippet-id']);
 
                     try {
                         $sId = Shopware()->SessionID();
