@@ -840,7 +840,6 @@
             }
 
             return false;
-
         }
 
 
@@ -1636,7 +1635,7 @@
 
                 try {
                     Shopware()->Db()->query($sql, $data);
-                    Shopware()->Db()->query($updatesql);
+                    Shopware()->Db()->query($updateSql);
 
                     return true;
                 } catch (Exception $exception) {
