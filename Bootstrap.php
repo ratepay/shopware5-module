@@ -1331,7 +1331,8 @@
                 return;
             }
 
-            if (empty(Shopware()->Session()->sUserId)) {
+            $userId = Shopware()->Session()->sUserId;
+            if (empty($userId)) {
                 Shopware()->Pluginlogger()->warning('RatePAY: sUserId is empty');
 
                 return;
@@ -1421,8 +1422,9 @@
         {
             $return = $arguments->getReturn();
             $currency = Shopware()->Config()->get('currency');
+            $userId = Shopware()->Session()->sUserId;
 
-            if (empty(Shopware()->Session()->sUserId) || empty($currency)) {
+            if (empty($userId) || empty($currency)) {
                 return;
             }
 

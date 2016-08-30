@@ -150,7 +150,8 @@
                 $countryCodeBilling = $checkoutAddressBilling->getCountry()->getIso();
                 $countryCodeShipping = $checkoutAddressShipping->getCountry()->getIso();
 
-                if (empty($checkoutAddressBilling->getCompany())) {
+                $company = $checkoutAddressBilling->getCompany();
+                if (empty($company)) {
                     $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d"); // From Shopware 5.2 date of birth has moved to customer object
                 }
                 $merchantCustomerId = $shopUser->getNumber(); // From Shopware 5.2 billing number has moved to customer object
@@ -198,7 +199,8 @@
             $customer->setFirstName($checkoutAddressBilling->getFirstName());
             $customer->setLastName($checkoutAddressBilling->getLastName());
             $customer->setEmail($shopUser->getEmail());
-            if (!empty($checkoutAddressBilling->getCompany())) {
+            $company = $checkoutAddressBilling->getCompany();
+            if (!empty($company)) {
                 $customer->setCompanyName($checkoutAddressBilling->getCompany());
                 $customer->setVatId($checkoutAddressBilling->getVatId());
             } else {
