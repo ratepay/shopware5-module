@@ -246,6 +246,12 @@
                             Shopware()->Pluginlogger()->error($exception->getMessage());
                         }
 
+                        //set cleared date
+                        $dateTime = new DateTime();
+                        $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
+                        $order->setClearedDate($dateTime);
+                        Shopware()->Models()->flush($order);
+
                         //set payments status to payed
                         $this->savePaymentStatus(
                             Shopware()->Session()->RatePAY['transactionId'],
