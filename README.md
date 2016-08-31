@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `4.2.0`
+|Version | `4.2.1`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,11 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.2.1 - Released 2016-08-31
+* Date of payment is now set automatically (cleareddate)
+* Improved detection of divergent shipping address (Shopware >=5.2.0)
+* Remove deprecated RatePAY additional order attributes on update
 
 ### Version Version 4.2.0 - Released 2016-08-29
 * Mapping of new SWAG address management (Compatibility with Shopware 5.2.x)

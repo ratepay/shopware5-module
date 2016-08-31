@@ -37,10 +37,10 @@
                 'supplier'    => 'RatePAY GmbH',
                 'support'     => 'https://www.ratepay.com/service-center-haendler',
                 'link'        => 'https://www.ratepay.com/',
-                'copyright'   => 'Copyright (c) 2014, RatePAY GmbH',
+                'copyright'   => 'Copyright (c) 2016, RatePAY GmbH',
                 'label'       => 'RatePAY Payment',
                 'description' =>
-                    '<h2>RatePAY Payment plugin for Shopware Community Edition Version 5.0.0</h2>'
+                    '<h2>RatePAY Payment plugin for Shopware Community Edition Version 5</h2>'
                     . '<ul>'
                     . '<li style="list-style: inherit;">RatePAY Payment Module</li>'
                     . '<li style="list-style: inherit;">Payment means: Invoice, Direct Debit (ELV), Rate</li>'
@@ -85,7 +85,7 @@
          */
         public function getVersion()
         {
-            return "4.2.0";
+            return "4.2.1";
         }
 
         /**
