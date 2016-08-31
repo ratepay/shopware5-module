@@ -201,19 +201,19 @@
             if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 session contains current billing address
                 $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
                 $billingAddress = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
-                if (Shopware()->Session()->checkoutShippingAddressId > 0) {
-                    $shippingAddress = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
-                } else {
-                    $shippingAddress = $billingAddress;
-                }
             } else {
                 $billingAddress = $this->_user->getBilling();
+            }
+
+            if (Shopware()->Session()->checkoutShippingAddressId > 0) { // From Shopware 5.2 session contains current shipping address
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $shippingAddress = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
+            } else {
                 $shippingAddress = $this->_user->getShipping();
             }
 
             $classFunctions = array(
                 'getCompany',
-                'getCountryId',
                 'getFirstname',
                 'getLastName',
                 'getStreet',
@@ -223,7 +223,7 @@
             $return = true;
             if (!is_null($shippingAddress)) {
                 foreach ($classFunctions as $function) {
-                    if (call_user_func(array($billingAddress, $function)) !== call_user_func(array($shippingAddress, $function))) {
+                    if (strval(call_user_func(array($billingAddress, $function))) != strval(call_user_func(array($shippingAddress, $function)))) {
                         Shopware()->Pluginlogger()->info('areAddressesEqual-> The value of ' . $function . " differs.");
                         $return = false;
                     }
