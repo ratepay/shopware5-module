@@ -433,7 +433,7 @@
             $basket->setItems($basketItems);
 
             $this->_modelFactory->setTransactionId($order['transactionID']);
-            $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange());
+            $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange(), $orderId);
             $head = $paymentChange->getHead();
             $head->setOperationSubstring($subOperation);
             $paymentChange->setHead($head);
