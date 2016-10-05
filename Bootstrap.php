@@ -1657,20 +1657,31 @@
                     $shopId
                 );
 
-                $activePayments = '';
+                $activePayments = [];
                 if ($response->getElementsByTagName('activation-status-invoice')->item(0)->nodeValue == 2) {
-                    $activePayments = $activePayments == '' ? '"rpayratepayinvoice"' : $activePayments . ', "rpayratepayinvoice"';
+                    $activePayments[] = '"rpayratepayinvoice"';
+                } else {
+                    $inactivePayments[] = '"rpayratepayinvoice"';
                 }
                 if ($response->getElementsByTagName('activation-status-elv')->item(0)->nodeValue == 2) {
-                    $activePayments = $activePayments == '' ? '"rpayratepaydebit"' : $activePayments . ', "rpayratepaydebit"';
+                    $activePayments[] = '"rpayratepaydebit"';
+                } else {
+                    $inactivePayments[] = '"rpayratepaydebit"';
                 }
                 if ($response->getElementsByTagName('activation-status-installment')->item(0)->nodeValue == 2) {
-                    $activePayments = $activePayments == '' ? '"rpayratepayrate"' : $activePayments . ', "rpayratepayrate"';
+                    $activePayments[] = '"rpayratepayrate"';
+                } else {
+                    $inactivePayments[] = '"rpayratepayrate"';
                 }
 
-                $updateSql = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . $activePayments . ')';
+                if (count($activePayments) > 0) {
+                    $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(",", $activePayments) . ') AND `active` <> 0';
+                }
+                if (count($inactivePayments) > 0) {
+                    $updateSqlInactivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 0 WHERE `name` in(' . implode(",", $inactivePayments) . ')';
+                }
 
-                $sql = 'REPLACE INTO `rpay_ratepay_config`'
+                $configSql = 'REPLACE INTO `rpay_ratepay_config`'
                        . '(`profileId`, `invoiceStatus`,`debitStatus`,`rateStatus`,'
                        . '`b2b-invoice`, `b2b-debit`, `b2b-rate`,'
                        . '`address-invoice`, `address-debit`, `address-rate`,'
@@ -1684,8 +1695,13 @@
                        . 'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
 
                 try {
-                    Shopware()->Db()->query($sql, $data);
-                    Shopware()->Db()->query($updateSql);
+                    Shopware()->Db()->query($configSql, $data);
+                    if (count($activePayments) > 0) {
+                        Shopware()->Db()->query($updateSqlActivePaymentMethods);
+                    }
+                    if (count($inactivePayments) > 0) {
+                        Shopware()->Db()->query($updateSqlInactivePaymentMethods);
+                    }
 
                     return true;
                 } catch (Exception $exception) {
