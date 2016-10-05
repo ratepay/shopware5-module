@@ -221,6 +221,17 @@
                     throw new Exception("Can not add country-code and currency columns in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
+
+            // Adding limit max b2b columns into config table from version 4.2.2
+            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "limit-invoice-max-b2b")) {
+                try {
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `limit-invoice-max-b2b` INT(5) NOT NULL AFTER `limit-rate-max`;");
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `limit-debit-max-b2b` INT(5) NOT NULL AFTER `limit-invoice-max-b2b`;");
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `limit-rate-max-b2b` INT(5) NOT NULL AFTER `limit-debit-max-b2b`;");
+                } catch (Exception $exception) {
+                    throw new Exception("Can not add max b2b columns in table `rpay_ratepay_config` - " . $exception->getMessage());
+                }
+            }
         }
 
         /**
@@ -610,6 +621,9 @@
                          "`limit-invoice-max` int(5) NOT NULL, " .
                          "`limit-debit-max` int(5) NOT NULL, " .
                          "`limit-rate-max` int(5) NOT NULL, " .
+                         "`limit-invoice-max-b2b` int(5) NOT NULL, " .
+                         "`limit-debit-max-b2b` int(5) NOT NULL, " .
+                         "`limit-rate-max-b2b` int(5) NOT NULL, " .
                          "`device-fingerprint-status` varchar(3) NOT NULL, " .
                          "`device-fingerprint-snippet-id` varchar(55) NULL, " .
                          "`country-code-billing` varchar(30) NULL, " .
@@ -1511,11 +1525,23 @@
                 $showInvoice = false;
             }
 
+            $limitInvoiceMin = $config['limit-invoice-min'];
+            $limitDebitMin   = $config['limit-debit-min'];
+            $limitRateMin    = $config['limit-rate-min'];
+
             //check if it is a b2b transaction
             if ($validation->isCompanyNameSet() || $validation->isUSTSet()) {
                 $showRate    = $config['b2b-rate']    == 'yes' && $showRate ? true : false;
                 $showDebit   = $config['b2b-debit']   == 'yes' && $showDebit ? true : false;
                 $showInvoice = $config['b2b-invoice'] == 'yes' && $showInvoice ? true : false;
+
+                $limitInvoiceMax = ($config['limit-invoice-max-b2b'] > 0) ? $config['limit-invoice-max-b2b'] : $config['limit-invoice-max'];
+                $limitDebitMax   = ($config['limit-debit-max-b2b'] > 0) ? $config['limit-debit-max-b2b'] : $config['limit-debit-max'];
+                $limitRateMax    = ($config['limit-rate-max-b2b'] > 0) ? $config['limit-rate-max-b2b'] : $config['limit-rate-max'];
+            } else {
+                $limitInvoiceMax = $config['limit-invoice-max'];
+                $limitDebitMax   = $config['limit-debit-max'];
+                $limitRateMax    = $config['limit-rate-max'];
             }
 
             //check if there is an alternate delivery address
@@ -1532,15 +1558,15 @@
 
                 Shopware()->Pluginlogger()->info('BasketAmount: '.$basket);
 
-                if ($basket < $config['limit-invoice-min'] || $basket > $config['limit-invoice-max']) {
+                if ($basket < $limitInvoiceMin || $basket > $limitInvoiceMax) {
                     $showInvoice = false;
                 }
 
-                if ($basket < $config['limit-debit-min'] || $basket > $config['limit-debit-max']) {
+                if ($basket < $limitDebitMin || $basket > $limitDebitMax) {
                     $showDebit = false;
                 }
 
-                if ($basket < $config['limit-rate-min'] || $basket > $config['limit-rate-max']) {
+                if ($basket < $limitRateMin || $basket > $limitRateMax) {
                     $showRate = false;
                 }
             }
@@ -1618,6 +1644,9 @@
                     $response->getElementsByTagName('tx-limit-invoice-max')->item(0)->nodeValue,
                     $response->getElementsByTagName('tx-limit-elv-max')->item(0)->nodeValue,
                     $response->getElementsByTagName('tx-limit-installment-max')->item(0)->nodeValue,
+                    $response->getElementsByTagName('tx-limit-invoice-max-b2b')->item(0)->nodeValue,
+                    $response->getElementsByTagName('tx-limit-elv-max-b2b')->item(0)->nodeValue,
+                    $response->getElementsByTagName('tx-limit-installment-max-b2b')->item(0)->nodeValue,
                     $response->getElementsByTagName('eligibility-device-fingerprint')->item(0)->nodeValue ? : 'no',
                     $response->getElementsByTagName('device-fingerprint-snippet-id')->item(0)->nodeValue,
                     strtoupper($response->getElementsByTagName('country-code-billing')->item(0)->nodeValue),
@@ -1647,11 +1676,12 @@
                        . '`address-invoice`, `address-debit`, `address-rate`,'
                        . '`limit-invoice-min`, `limit-debit-min`, `limit-rate-min`,'
                        . '`limit-invoice-max`, `limit-debit-max`, `limit-rate-max`,'
+                       . '`limit-invoice-max-b2b`, `limit-debit-max-b2b`, `limit-rate-max-b2b`,'
                        . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
                        . '`country-code-billing`, `country-code-delivery`,'
                        . '`currency`,'
                        . ' `shopId`)'
-                       . 'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+                       . 'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
 
                 try {
                     Shopware()->Db()->query($sql, $data);
