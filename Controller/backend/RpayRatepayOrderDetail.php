@@ -176,7 +176,8 @@
         {
             $orderId = $this->Request()->getParam("orderId");
             $items = json_decode($this->Request()->getParam("items"));
-            $order = Shopware()->Db()->fetchRow("SELECT * FROM `s_order` WHERE `id`=?", array($orderId));
+            $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
+            $order = $orderModel->findOneBy(array('id' => $orderId));
             $itemsToDeliver = null;
 
             $basketItems = array();
@@ -223,12 +224,12 @@
 
                 $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
                 $basket->setAmount($this->getRecalculatedAmount($basketItems));
-                $basket->setCurrency($order["currency"]);
+                $basket->setCurrency($order->getCurrency());
                 $basket->setItems($basketItems);
                 $confirmationDeliveryModel->setShoppingBasket($basket);
                 
                 $head = $confirmationDeliveryModel->getHead();
-                $head->setTransactionId($order['transactionID']);
+                $head->setTransactionId($order->getTransactionID());
                 $confirmationDeliveryModel->setHead($head);
                 
                 $response = $this->_service->xmlRequest($confirmationDeliveryModel->toArray());
