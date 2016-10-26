@@ -198,16 +198,39 @@
 
             if ($itemsToDeliver > 0) {
 
+                $confirmationDeliveryModel = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery(), $orderId);
+
+                $documentModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Document\Document');
+                $document = $documentModel->findOneBy(array('orderId' => $orderId, 'type' => 1));
+                if (!is_null($document)) {
+                    $dateObject = new DateTime();
+                    $currentDate = $dateObject->format("Y-m-d");
+                    $currentTime = $dateObject->format("H:m:s");
+                    $currentDateTime = $currentDate . "T" . $currentTime;
+                    /* Add due date after implementation of due date config data
+                     *
+                     * $dueDate = $dateObject->add(new DateInterval("P" . DueDate . "D"))->format("Y-m-d");
+                     * $dueDateTime = $dueDate . "T" . $currentTime;
+                     */
+
+                    $invoicing = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Invoicing();
+                    $invoicing->setInvoiceId($document->getDocumentId());
+                    $invoicing->setInvoiceDate($currentDateTime);
+                    $invoicing->setDeliveryDate($currentDateTime);
+                    //$invoicing->setDueDate($dueDateTime);
+                    $confirmationDeliveryModel->setInvoicing($invoicing);
+                }
+
                 $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
                 $basket->setAmount($this->getRecalculatedAmount($basketItems));
                 $basket->setCurrency($order["currency"]);
                 $basket->setItems($basketItems);
-
-                $confirmationDeliveryModel = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery(), $orderId);
                 $confirmationDeliveryModel->setShoppingBasket($basket);
+                
                 $head = $confirmationDeliveryModel->getHead();
                 $head->setTransactionId($order['transactionID']);
                 $confirmationDeliveryModel->setHead($head);
+                
                 $response = $this->_service->xmlRequest($confirmationDeliveryModel->toArray());
                 $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('CONFIRMATION_DELIVER', $response);
                 if ($result === true) {

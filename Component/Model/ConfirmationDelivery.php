@@ -26,6 +26,11 @@
         private $_head;
 
         /**
+         * @var Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Invoicing
+         */
+        private $_invoicing;
+
+        /**
          * @var Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket
          */
         private $_shoppingBasket;
@@ -48,6 +53,26 @@
         public function setHead(Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Head $head)
         {
             $this->_head = $head;
+        }
+
+        /**
+         * This function returns the value of $_invoicing
+         *
+         * @return Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Invoicing
+         */
+        public function getInvoicing()
+        {
+            return $this->_invoicing;
+        }
+
+        /**
+         * This function sets the value for _invoicing
+         *
+         * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Invoicing $invoicing
+         */
+        public function setInvoicing(Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Invoicing $invoicing)
+        {
+            $this->_invoicing = $invoicing;
         }
 
         /**
@@ -77,14 +102,16 @@
          */
         public function toArray()
         {
-            return array(
+            $return = array(
                 '@version' => '1.0',
                 '@xmlns'   => "urn://www.ratepay.com/payment/1_0",
-                'head'     => $this->getHead()->toArray(),
-                'content'  => array(
-                    'shopping-basket' => $this->getShoppingBasket()->toArray()
-                )
+                'head'     => $this->getHead()->toArray()
             );
+            if (!is_null($this->getInvoicing())) {
+                $return['content']['invoicing'] = $this->getInvoicing()->toArray();
+            }
+            $return['content']['shopping-basket'] = $this->getShoppingBasket()->toArray();
+            return $return;
         }
 
     }
