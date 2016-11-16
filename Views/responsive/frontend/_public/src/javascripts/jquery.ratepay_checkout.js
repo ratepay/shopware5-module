@@ -26,24 +26,6 @@
             }
 
             if(isDebitPayment == true){
-                /* Disable confirmation button if sepadirectdebit tac are not checked */
-                var button = $('button[type=submit]');
-
-                button.attr('disabled', 'disabled');
-                button.css({ opacity: 0.5 });
-                button.attr('title', errorMessageAcceptSepaAGB);
-                $('#ratepay_agb').click(function () {
-                    if ($(this).prop('checked')) {
-                        button.removeAttr('disabled');
-                        button.removeAttr('title');
-                        button.css({ opacity: 1.0 });
-                    } else {
-                        button.attr('disabled', 'disabled');
-                        button.attr('title', errorMessageAcceptSepaAGB);
-                        button.css({ opacity: 0.5 });
-                    }
-                });
-
                 /* Handle BIC Field ( only fade in for AT ) */
 
                 var blzInput       = $(":input#ratepay_debit_bankcode");

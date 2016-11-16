@@ -1,6 +1,8 @@
 <div>
     <p class="none">
-        <input type="checkbox" id="ratepay_agb" required="required" aria-required="true" class="register--checkbox chkbox">
+        <a id="ratepay_sepa_information" onclick="showSepa();">Einwilligungserklärung zum SEPA-Mandat lesen</a>
+        <input type="checkbox" id="ratepay_agb" required="required" checked="checked" aria-required="true" style="display: none;" class="register--checkbox chkbox">
+        <span id="ratepay_sepa" style="display: none;">
         {s namespace=RatePAY name='ratepaySEPAAgbFirst'}Ich willige hiermit in die Weiterleitung meiner Daten an RatePAY GmbH, Schlüterstr. 39, 10629 Berlin gemäß{/s}
 
         <a href='http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach' target="_blank" style="text-decoration: underline !important;">RatePAY-Datenschutzerklärung</a>
@@ -17,7 +19,12 @@
             Es gelten dabei die mit meinem Kreditinstitut vereinbarten Bedingungen.
 
         {/s}
+        </span>
     </p>
-
-
 </div>
+<script type="text/javascript">
+    function showSepa() {
+        document.getElementById('ratepay_sepa_information').style.display = 'none';
+        document.getElementById('ratepay_sepa').style.display = 'block';
+    }
+</script>
