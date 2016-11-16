@@ -232,6 +232,15 @@
                     throw new Exception("Can not add max b2b columns in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
+
+            //Adding error-default message into config table from version 4.2.3
+            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "error_default")) {
+                try {
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `error-default` VARCHAR(535) NOT NULL DEFAULT 'Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href=\"http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach\" target=\"_blank\">RatePAY-Datenschutzerklärung</a>' AFTER `currency`;");
+                } catch (Exception $exception) {
+                    throw new Exception("Can not add max b2b columns in table `rpay_ratepay_config` - " . $exception->getMessage());
+                }
+            }
         }
 
         /**
@@ -629,6 +638,7 @@
                          "`country-code-billing` varchar(30) NULL, " .
                          "`country-code-delivery` varchar(30) NULL, " .
                          "`currency` varchar(30) NULL, " .
+                         "`error-default` VARCHAR(535) NOT NULL DEFAULT 'Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href=\"http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach\" target=\"_blank\">RatePAY-Datenschutzerklärung</a>', " .
                          "PRIMARY KEY (`profileId`, `shopId`)" .
                          ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 

@@ -31,6 +31,7 @@
         private $_service;
         private $_modelFactory;
         private $_logging;
+        private $_customerMessage;
 
         /**
          * Initiates the Object
@@ -281,6 +282,7 @@
                         $this->_error();
                     }
                 } else {
+                    $this->_customerMessage = $result->getElementsByTagName('customer-message')->item(0)->textContent;
                     $this->_error();
                 }
             } else {
@@ -293,9 +295,47 @@
          */
         private function _error()
         {
-            Shopware()->Session()->RatePAY['hidePayment'] = true;
+
 
             $this->View()->loadTemplate("frontend/payment_rpay_part/RatePAYErrorpage.tpl");
+
+            if (!empty($this->_customerMessage)) {
+                $this->View()->assign('rpCustomerMsg', $this->_customerMessage);
+            } else {
+                Shopware()->Session()->RatePAY['hidePayment'] = true;
+
+                $shopId = Shopware()->Shop()->getId();
+                $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
+                $userModel = $customerModel->findOneBy(array('id' => Shopware()->Session()->sUserId));
+                $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $userModel->getBilling()->getCountryId());
+                $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
+
+                $this->View()->assign('rpCustomerMsg', $config['error-default']);
+            }
+        }
+
+        /**
+         * Get ratepay plugin config from rpay_ratepay_config table
+         *
+         * @param $shopId
+         * @param $country
+         * @return array
+         */
+        private function getRatePayPluginConfigByCountry($shopId, $country) {
+            //fetch correct config for current shop based on user country
+            $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
+
+            //get ratepay config based on shopId and profileId
+            return Shopware()->Db()->fetchRow('
+                SELECT
+                *
+                FROM
+                `rpay_ratepay_config`
+                WHERE
+                `shopId` =?
+                AND
+                `profileId`=?
+            ', array($shopId, $profileId));
         }
 
         /**

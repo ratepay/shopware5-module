@@ -5,17 +5,14 @@
             min-height: 0rem;
         }*/
     </style>
+
     <div class="container block-group">
         <div>
             <p style="margin-top: 3rem;" class="center">
                 <span style="color: #999;">
-                    {s namespace=RatePAY name=errorpagetext}
-                        Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten
-                        Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der
-                    {/s}
+                    {$rpCustomerMsg}
                 </span>
 
-                <a href='http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach' target="_blank">RatePAY-Datenschutzerklärung</a>
             </p>
         </div>
         <div class="actions">
