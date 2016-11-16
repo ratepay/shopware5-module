@@ -233,7 +233,7 @@
                 }
             }
 
-            //Adding error-default message into config table from version 4.2.3
+            //Adding error-default message into config table from version 4.2.2
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "error_default")) {
                 try {
                     Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `error-default` VARCHAR(535) NOT NULL DEFAULT 'Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href=\"http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach\" target=\"_blank\">RatePAY-Datenschutzerklärung</a>' AFTER `currency`;");
