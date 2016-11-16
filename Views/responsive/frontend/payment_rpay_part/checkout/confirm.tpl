@@ -25,7 +25,7 @@
                 <div class="account--billing-form">
                     <form name="frmRegister" method="post" action="http://shopware5.dev/account/saveBilling/sTarget/account">
                         <div class="panel register--personal">
-                            <h2 class="panel--title is--underline">RatePAY Stammdaten</h2>
+                            <h2 class="panel--title is--underline">{$sPayment.description}</h2>
                             <div class="panel--body is--wide">
 
                                 {if $sPayment.name == 'rpayratepayinvoice'}

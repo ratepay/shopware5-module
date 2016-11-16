@@ -63,7 +63,7 @@
     $pi_lang_mouseover_duration_month = 'monatlich f&auml;lliger Teilbetrag';
     $pi_lang_mouseover_last_rate = 'im letzten Monat f&auml;lliger Teilbetrag';
     $pi_lang_calculator = 'Ratenrechner';
-    $pi_lang_calculate_rates_now = 'Hier persönliche Rate berechnen:';
+    $pi_lang_calculate_rates_now = 'Persönliche Ratenberechnung:';
     $pi_lang_first_month = 'Zum 1. des Monats';
     $pi_lang_second_month = 'Zum 15. des Monats';
     $pi_lang_third_month = 'Zum 28. des Monats';

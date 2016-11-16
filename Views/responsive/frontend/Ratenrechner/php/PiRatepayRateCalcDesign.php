@@ -48,9 +48,6 @@
         <div id="piRpHeader">
             <div class="piRpFullWidth">
                 <h2 class="piRpH2"><?php echo $pi_lang_calculate_rates_now; ?></h2>
-                <img class="piRpLogoImg"
-                     src="<?php echo $pi_ratepay_rate_calc_path; ?>images/Logo_Ratepay_Ratenrechner_01_Final_RGB_Farbe_01-small_.png"
-                     width="141" height="43" alt="RatePAY Logo">
             </div>
             <br class="piRpClearFix"/>
         </div>
