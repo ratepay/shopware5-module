@@ -832,6 +832,20 @@
                     $view->assign('ratepayPhone', $user->getDefaultBillingAddress()->getPhone());
                 }
 
+                $view->assign('sandbox', 'false');
+                $view->assign('debitSandbox', 'false');
+                $view->assign('rateSandbox', 'false');
+
+                if ($config['invoiceStatus'] ==  2) {
+                    $view->assign('invoiceSandbox', 'true');
+                }
+                if ($config['debitStatus'] ==  2) {
+                    $view->assign('debitSandbox', 'true');
+                }
+                if ($config['rateStatus'] ==  2) {
+                    $view->assign('rateSandbox', 'true');
+                }
+
                 $view->extendsTemplate('frontend/payment_rpay_part/index/header.tpl');
                 $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
                 $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
