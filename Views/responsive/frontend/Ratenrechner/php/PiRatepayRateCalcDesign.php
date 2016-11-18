@@ -115,9 +115,9 @@
                     <br class="piRpClearFix"/>
 
                     <div class="piRpMarginTop">
-                        <span class="piRpVertAlignMiddle"><?php echo $pi_lang_please . " " . $pi_lang_insert_runtime; ?>
-                            :</span>
-                        <select id="runtime" style='position: absolute; top: -4px; left: -14px;'>
+                        <span class="piRpVertAlignMiddle" style="float: left;"><?php echo $pi_lang_please . " " . $pi_lang_insert_runtime; ?>
+                           :</span>
+                        <select id="runtime" style='position: absolute; top: -4px; width: 277px; height: 23px;'>
                             <?php
                                 foreach ($pi_monthAllowedArray as $pi_month) {
                                     echo '<option value="' . $pi_month . '">';
