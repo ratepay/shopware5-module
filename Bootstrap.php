@@ -24,50 +24,6 @@
     {
 
         /**
-         * Get Info for the Pluginmanager
-         *
-         * @return array
-         */
-        public function getInfo()
-        {
-            return array(
-                'version'     => $this->getVersion(),
-                'author'      => 'RatePay GmbH',
-                'source'      => $this->getSource(),
-                'supplier'    => 'RatePAY GmbH',
-                'support'     => 'https://www.ratepay.com/service-center-haendler',
-                'link'        => 'https://www.ratepay.com/',
-                'copyright'   => 'Copyright (c) 2016, RatePAY GmbH',
-                'label'       => 'RatePAY Payment',
-                'description' =>
-                    '<h2>RatePAY Payment plugin for Shopware Community Edition Version 5</h2>'
-                    . '<ul>'
-                    . '<li style="list-style: inherit;">RatePAY Payment Module</li>'
-                    . '<li style="list-style: inherit;">Payment means: Invoice, Direct Debit (ELV), Rate</li>'
-                    . '<li style="list-style: inherit;">Cancellations, Returns, etc. can be created from an additional tab in the order detail view</li>'
-                    . '<li style="list-style: inherit;">Integrated support for multishops</li>'
-                    . '<li style="list-style: inherit;">Improved payment form with visual feedback for your customers</li>'
-                    . '<li style="list-style: inherit;">Supported Languages: German, English</li>'
-                    . '<li style="list-style: inherit;">Backend Log with custom View accessible from your shop backend</li>'
-                    . '</ul>'
-            );
-        }
-
-        /**
-         * Returns all allowed actions
-         *
-         * @return array
-         */
-        public function getCapabilities()
-        {
-            return array(
-                'install' => true,
-                'update'  => true,
-                'enable'  => true
-            );
-        }
-
-        /**
          * Returns the Label of the Plugin
          *
          * @return string
@@ -85,7 +41,26 @@
          */
         public function getVersion()
         {
-            return "4.2.1";
+            $info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .'plugin.json'), true);
+            if ($info) {
+                return $info['currentVersion'];
+            } else {
+                throw new Exception('The plugin has an invalid version file.');
+            }
+        }
+
+        /**
+         * Returns all allowed actions
+         *
+         * @return array
+         */
+        public function getCapabilities()
+        {
+            return array(
+                'install' => true,
+                'update'  => true,
+                'enable'  => true
+            );
         }
 
         /**

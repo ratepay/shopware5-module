@@ -1,0 +1,22 @@
+{
+    "label": {
+        "de": "RatePay Payment",
+        "en": "RatePay Payment"
+    },
+    "copyright": "Copyright (c) 2016, RatePAY GmbH",
+    "license": "MIT",
+    "link": "https://www.ratepay.com",
+    "support": "https://www.ratepay.com/service-center-haendler",
+    "author": "RatePAY GmbH",
+    "supplier": "RatePAY GmbH",
+    "description": "<h2>RatePAY Payment plugin for Shopware Community Edition Version 5</h2><ul><li style='list-style: inherit;'>RatePAY Payment Module</li><li style='list-style: inherit;'>Payment means: Invoice, Direct Debit (ELV), Rate</li><li style='list-style: inherit;'>Cancellations, Returns, etc. can be created from an additional tab in the order detail view</li><li style='list-style: inherit;'>Integrated support for multishops</li><li style='list-style: inherit;'>Improved payment form with visual feedback for your customers</li><li style='list-style: inherit;'>Supported Languages: German, English</li><li style='list-style: inherit;'>Backend Log with custom View accessible from your shop backend</li></ul>",
+
+    "currentVersion": "4.2.2",
+
+    "compatibility": {
+        "minimumVersion": "5.0.0",
+        "maximumVersion": null,
+        "blacklist": [
+        ]
+    }
+}
