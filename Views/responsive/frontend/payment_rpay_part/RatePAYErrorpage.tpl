@@ -20,7 +20,7 @@
                 {s namespace=RatePAY name=errorpagecart}Warenkorb anzeigen{/s}
             </a>
             <a class="btn is--primary is--center is--large" href="{url controller=account action=payment sTarget=checkout}">
-                {s namespace=RatePAY name=errorpagepayment}Zahlart ändern{/s}
+                {s namespace=RatePAY name=errorpagepayment}Zahlungsart ändern{/s}
             </a>
         </div>
     </div>

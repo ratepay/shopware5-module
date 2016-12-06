@@ -20,7 +20,7 @@
     {if ($debitSandbox == true && $sPayment.name == 'rpayratepaydebit') || ($invoiceSandbox == true && $sPayment.name == 'rpayratepayinvoice')
         || ($rateSandbox == true && $sPayment.name == 'rpayratepayrate')}
         <div class="tos--panel" style="border: 1px dashed black; padding: 5px; background-color: yellow">
-            Testmodus aktiv, bitte nutzen Sie diese Zahlart nicht für die Bestellung und informieren Sie den Händler über diese Nachricht
+            Testmodus aktiv, bitte nutzen Sie diese Zahlungsart nicht für die Bestellung und informieren Sie den Händler über diese Nachricht
         </div>
     {/if}
     <div class="content--wrapper">
