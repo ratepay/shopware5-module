@@ -164,7 +164,10 @@
                 $countryShipping = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressShipping->getCountryId());
                 $countryCodeShipping = $countryShipping->getIso();
 
-                $dateOfBirth = $shopUser->getBilling()->getBirthday()->format("Y-m-d");
+                $company = $checkoutAddressBilling->getCompany();
+                if (!empty($company)) {
+                    $dateOfBirth = $shopUser->getBilling()->getBirthday()->format("Y-m-d");
+                }
                 $merchantCustomerId = $shopUser->getBilling()->getNumber();
             }
 
@@ -199,7 +202,7 @@
             $customer->setFirstName($checkoutAddressBilling->getFirstName());
             $customer->setLastName($checkoutAddressBilling->getLastName());
             $customer->setEmail($shopUser->getEmail());
-            $company = $checkoutAddressBilling->getCompany();
+
             if (!empty($company)) {
                 $customer->setCompanyName($checkoutAddressBilling->getCompany());
                 $customer->setVatId($checkoutAddressBilling->getVatId());
