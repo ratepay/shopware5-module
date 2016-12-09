@@ -29,27 +29,23 @@
                 /* Handle BIC Field ( only fade in for AT ) */
 
                 var blzInput       = $(":input#ratepay_debit_bankcode");
-                var blzInputLabel  = $("label[for='ratepay_debit_bankcode']");
+                var blzBlock       = $(".ratepay_debit_bankcode");
                 var accNumberInput = $(":input#ratepay_debit_accountnumber");
 
                 blzInput.prop('disabled', true);
-                blzInput.hide();
-                blzInputLabel.hide();
+                blzBlock.hide();
 
                 accNumberInput.keyup(function () {
                     if ($(this).val().match(/^\d+$/)) {
                         blzInput.prop('disabled', false);
-                        blzInput.show();
-                        blzInputLabel.show();
+                        blzBlock.show();
                     } else if ($(this).val().match(/at/i)) {
                         blzInput.prop('disabled', false);
-                        blzInput.show();
-                        blzInputLabel.show();
+                        blzBlock.show();
                     }
                     else {
                         blzInput.prop('disabled', true);
-                        blzInput.hide();
-                        blzInputLabel.hide();
+                        blzBlock.hide();
                     }
                 })
             }
