@@ -39,25 +39,28 @@
          */
         public function getRatepayRateConfig()
         {
-            try {
-                $this->requestRateConfig();
-            } catch (Exception $e) {
-                $this->setErrorMsg($e->getMessage());
-            }
+            $shopId = Shopware()->Shop()->getId();
+            $userId = Shopware()->Session()->sUserId;
+            $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
+            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
+            $countryIso = $country->getIso();
+
+            //get ratepay config based on shopId
+            $rpRateConfig=Shopware()->Db()->fetchRow('
+                SELECT
+                `month-allowed`, `rate-min-normal`, `interestrate-default`
+                FROM
+                `rpay_ratepay_config`
+                WHERE
+                `shopId` = ' . $shopId . '
+                AND 
+                `country-code-billing` LIKE \'%' . $countryIso . '%\'
+            ');
+
             $installmentConfigArray = array(
-                /* 'interestrate_min' => $this->config_interest_min_config,
-                  'intrestrate_default' => $this->intrestrate_default_config,
-                  'intrestrate_max' => $this->intrestrate_max_config,
-                  'month_number_min' => $this->month_number_min_config,
-                  'month_number_max' => $this->month_number_max_config,
-                  'month_longrun' => $this->month_longrun_config, */
-                'month_allowed' => $this->getConfigMonthAllowed() /* ,
-                  'payment_firstday' => $this->payment_firstday_config,
-                  'payment_amount' => $this->payment_amount_config,
-                  'payment_lastrate' => $this->payment_lastrate_config,
-                  'rate_min_normal' => $this->rate_min_normal_config,
-                  'rate_min_longrun' => $this->rate_min_longrun_config,
-                  'service_charge' => $this->service_charge_config */
+                'interestrate_default' => $rpRateConfig["interestrate-default"],
+                'month_allowed' => $rpRateConfig["month-allowed"],
+                'rate_min_normal' => $rpRateConfig["rate-min-normal"]
             );
 
             return $installmentConfigArray;
@@ -113,70 +116,6 @@
             $resultArray['lastRate'] = number_format((double)$this->getDetailsLastRate(), 2, $decimalSeperator, $thousandSepeartor);
 
             return $resultArray;
-        }
-
-        /**
-         * This method send the config request to RatePAY and set's all response data
-         * if a error occurs the method throws a exception
-         */
-        private function requestRateConfig()
-        {
-            $this->setRequestOperation('CONFIGURATION_REQUEST');
-            $this->setRequestOperationSubtype('');
-            $request = $this->ratepay->getXMLObject();
-
-            $this->setRatepayHead($request);
-
-            $response = $this->ratepay->paymentOperation($request);
-            $request_reason_msg = 'serveroff';
-
-
-            if ($response) {
-
-                $response_result_code = (string)$response->head->processing->result->attributes()->code;
-                $response_reason_code = (string)$response->head->processing->reason->attributes()->code;
-                $response_status_code = (string)$response->head->processing->status->attributes()->code;
-
-                if ($response_result_code == '500' && $response_reason_code == '306' && $response_status_code == 'OK') {
-
-                    $interest_rate_min = (string)$response->content->{'installment-configuration-result'}->{'interestrate-min'};
-                    $interest_rate_default = (string)$response->content->{'installment-configuration-result'}->{'interestrate-default'};
-                    $interest_rate_max = (string)$response->content->{'installment-configuration-result'}->{'interestrate-max'};
-                    $month_number_min = (string)$response->content->{'installment-configuration-result'}->{'month-number-min'};
-                    $month_number_max = (string)$response->content->{'installment-configuration-result'}->{'month-number-max'};
-                    $month_longrun = (string)$response->content->{'installment-configuration-result'}->{'month-longrun'};
-                    $month_allowed = (string)$response->content->{'installment-configuration-result'}->{'month-allowed'};
-                    $payment_firstday = (string)$response->content->{'installment-configuration-result'}->{'payment-firstday'};
-                    $payment_amount = (string)$response->content->{'installment-configuration-result'}->{'payment-amount'};
-                    $payment_lastrate = (string)$response->content->{'installment-configuration-result'}->{'payment-lastrate'};
-                    $rate_min_normal = (string)$response->content->{'installment-configuration-result'}->{'rate-min-normal'};
-                    $rate_min_longrun = (string)$response->content->{'installment-configuration-result'}->{'rate-min-longrun'};
-                    $service_charge = (string)$response->content->{'installment-configuration-result'}->{'service-charge'};
-
-                    $this->setConfigInterestRateMin($interest_rate_min);
-                    $this->setConfigInterestRateDefault($interest_rate_default);
-                    $this->setConfigInterestRateMax($interest_rate_max);
-                    $this->setConfigMonthNumberMin($month_number_min);
-                    $this->setConfigMonthNumberMax($month_number_max);
-                    $this->setConfigMonthLongrun($month_longrun);
-                    $this->setConfigMonthAllowed($month_allowed);
-                    $this->setConfigPaymentFirstday($payment_firstday);
-                    $this->setConfigPaymentAmount($payment_amount);
-                    $this->setConfigPaymentLastrate($payment_lastrate);
-                    $this->setConfigRateMinNormal($rate_min_normal);
-                    $this->setConfigRateMinLongrun($rate_min_longrun);
-                    $this->setConfigServiceCharge($service_charge);
-                }
-                else {
-                    $this->emptyConfigs();
-                    $request_reason_msg = (string)$response->head->processing->reason;
-                    throw new Exception($request_reason_msg);
-                }
-            }
-            else {
-                $this->emptyConfigs();
-                throw new Exception($request_reason_msg);
-            }
         }
 
         /**
@@ -340,26 +279,6 @@
             $this->setDetailsRate('');
             $this->setDetailsLastRate('');
             $this->setDetailsPaymentFirstday('');
-        }
-
-        /**
-         * This method set's the complete config to an empty string
-         */
-        private function emptyConfigs()
-        {
-            $this->setConfigInterestRateMin('');
-            $this->setConfigInterestRateDefault('');
-            $this->setConfigInterestRateMax('');
-            $this->setConfigMonthNumberMin('');
-            $this->setConfigMonthNumberMax('');
-            $this->setConfigMonthLongrun('');
-            $this->setConfigMonthAllowed('');
-            $this->setConfigPaymentFirstday('');
-            $this->setConfigPaymentAmount('');
-            $this->setConfigPaymentLastrate('');
-            $this->setConfigRateMinNormal('');
-            $this->setConfigRateMinLongrun('');
-            $this->setConfigServiceCharge('');
         }
 
     }

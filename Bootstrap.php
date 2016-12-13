@@ -216,6 +216,17 @@
                     throw new Exception("Can not add error default column in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
+
+            //Adding error-default message into config table from version 4.2.2
+            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "month-allowed")) {
+                try {
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `month-allowed` VARCHAR(30) NULL ");
+                    Shopware()->DB()->query("ALTER TABLE `rpay_ratepay_config` ADD `rate-min-normal` float NULL ");
+                    Shopware()->DB()->query("ALTER TABLE `rpay_ratepay_config` ADD `interestrate-default` float NULL ");
+                }catch (Exception $exception) {
+                    throw new Exception("Can not add month-allowed, rate-min-normal and interestrate-default columns in table `rpay_ratepay_config` - " . $exception->getMessage());
+                }
+            }
         }
 
         /**
@@ -608,6 +619,9 @@
                          "`limit-invoice-max-b2b` int(5) NOT NULL, " .
                          "`limit-debit-max-b2b` int(5) NOT NULL, " .
                          "`limit-rate-max-b2b` int(5) NOT NULL, " .
+                         "`month-allowed` varchar(30) NULL, " .
+                         "`rate-min-normal` float NULL, " .
+                         "`interestrate-default` float NULL, " .
                          "`device-fingerprint-status` varchar(3) NOT NULL, " .
                          "`device-fingerprint-snippet-id` varchar(55) NULL, " .
                          "`country-code-billing` varchar(30) NULL, " .
@@ -1646,6 +1660,9 @@
                     $response->getElementsByTagName('tx-limit-invoice-max-b2b')->item(0)->nodeValue,
                     $response->getElementsByTagName('tx-limit-elv-max-b2b')->item(0)->nodeValue,
                     $response->getElementsByTagName('tx-limit-installment-max-b2b')->item(0)->nodeValue,
+                    $response->getElementsByTagName('month-allowed')->item(0)->nodeValue,
+                    $response->getElementsByTagName('rate-min-normal')->item(0)->nodeValue,
+                    $response->getElementsByTagName('interestrate-default')->item(0)->nodeValue,
                     $response->getElementsByTagName('eligibility-device-fingerprint')->item(0)->nodeValue ? : 'no',
                     $response->getElementsByTagName('device-fingerprint-snippet-id')->item(0)->nodeValue,
                     strtoupper($response->getElementsByTagName('country-code-billing')->item(0)->nodeValue),
@@ -1687,12 +1704,12 @@
                        . '`limit-invoice-min`, `limit-debit-min`, `limit-rate-min`,'
                        . '`limit-invoice-max`, `limit-debit-max`, `limit-rate-max`,'
                        . '`limit-invoice-max-b2b`, `limit-debit-max-b2b`, `limit-rate-max-b2b`,'
+                       . '`month-allowed`, `rate-min-normal`, `interestrate-default`,'
                        . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
                        . '`country-code-billing`, `country-code-delivery`,'
                        . '`currency`,'
                        . ' `shopId`)'
-                       . 'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
-
+                       . 'VALUES(' . substr(str_repeat('?,', 28), 0, -1) . ');'; // In case of altering cols change 28 by amount of affected cols
                 try {
                     Shopware()->Db()->query($configSql, $data);
                     if (count($activePayments) > 0) {
