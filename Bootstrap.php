@@ -1371,8 +1371,8 @@
                 return;
             }
 
-            // Check for the right Action
-            if (!in_array('confirm', array($request->get('action'), $view->sTargetAction)) || $request->get('controller') !== 'checkout') {
+            // Check for the right action and controller
+            if ($request->getControllerName() !== 'checkout' || $request->getActionName() !== 'confirm') {
                 return;
             }
 
