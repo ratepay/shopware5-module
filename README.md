@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `4.2.1`
+|Version | `4.2.2`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,18 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.2.2 - Released 2016-12-14
+* Improved payment method activation routine
+* Added invoicing block inside CONFIRMATION DELIVER
+* Improved customer messages in refusals (Extended Response)
+* Few frontend changes
+* Changed controller&action check in preValidation to avoid trouble with third party plugin controllers
+* Transferred rate calc necessary values to DB and removed CONFIGURATION REQUEST
+* Checkout warning in case of sandbox mode
+
+* Implemented additional max limit on b2b orders
+* Fixed payment change credit method
 
 ### Version Version 4.2.1 - Released 2016-08-31
 * Date of payment is now set automatically (cleareddate)
