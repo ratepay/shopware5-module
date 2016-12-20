@@ -165,7 +165,7 @@
                 $countryCodeShipping = $countryShipping->getIso();
 
                 $company = $checkoutAddressBilling->getCompany();
-                if (!empty($company)) {
+                if (empty($company)) {
                     $dateOfBirth = $shopUser->getBilling()->getBirthday()->format("Y-m-d");
                 }
                 $merchantCustomerId = $shopUser->getBilling()->getNumber();
