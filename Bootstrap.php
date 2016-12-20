@@ -801,7 +801,8 @@
 
             //get ratepay config based on shopId @toDo: IF DI SNIPPET ID WILL BE VARIABLE BETWEEN SUBSHOPS WE NEED TO SELECT BY SHOPID AND COUNTRY CREDENTIALS
             $shopid = Shopware()->Shop()->getId();
-            $config = $this->getRatePayPluginConfig($shopid);
+            $configPlugin = $this->getRatePayPluginConfig($shopid);
+            $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();;
 
             if (!is_null(Shopware()->Session()->sUserId)) {
                 $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
@@ -819,29 +820,21 @@
             ) {
                 if (method_exists($user, 'getDefaultBillingAddress')) { // From Shopware 5.2 find current address information in default billing address
                     $view->assign('ratepayPhone', $user->getDefaultBillingAddress()->getPhone());
+                    $country = $user->getDefaultBillingAddress()->getCountry()->getIso();
+                } else {
+                    $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
                 }
 
-                $view->assign('sandbox', 'false');
-                $view->assign('debitSandbox', 'false');
-                $view->assign('rateSandbox', 'false');
-
-                if ($config['invoiceStatus'] ==  2) {
-                    $view->assign('invoiceSandbox', 'true');
-                }
-                if ($config['debitStatus'] ==  2) {
-                    $view->assign('debitSandbox', 'true');
-                }
-                if ($config['rateStatus'] ==  2) {
-                    $view->assign('rateSandbox', 'true');
-                }
+                $sandbox = $configShop->get('RatePaySandbox' . $country);
+                $view->assign('ratepaySandbox', $sandbox);
 
                 $view->extendsTemplate('frontend/payment_rpay_part/index/header.tpl');
                 $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
                 $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
 
                 //if no DF token is set, receive all the necessary data to set it and extend template
-                if(true == $config['device-fingerprint-status'] && !Shopware()->Session()->RatePAY['dfpToken']) {
-                    $view->assign('snippetId', $config['device-fingerprint-snippet-id']);
+                if(true == $configPlugin['device-fingerprint-status'] && !Shopware()->Session()->RatePAY['dfpToken']) {
+                    $view->assign('snippetId', $configPlugin['device-fingerprint-snippet-id']);
 
                     try {
                         $sId = Shopware()->SessionID();
@@ -1493,7 +1486,6 @@
                 } else {
                     $countryDelivery = $countryBilling;
                 }
-
             }
 
             //get current shopId
