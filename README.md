@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `4.2.3`
+|Version | `4.2.4`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.2.4 - Released 2016-12-20
+* Fixed DOB issue
 
 ### Version Version 4.2.3 - Released 2016-12-20
 * Fixed sandbox warning
