@@ -822,7 +822,7 @@
                     $view->assign('ratepayPhone', $user->getDefaultBillingAddress()->getPhone());
                     $country = $user->getDefaultBillingAddress()->getCountry()->getIso();
                 } else {
-                    $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
+                    $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId())->getIso();
                 }
 
                 $sandbox = $configShop->get('RatePaySandbox' . $country);
