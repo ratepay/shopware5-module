@@ -118,8 +118,7 @@
 
                 return array(
                     'owner'     => $this->getOwner(),
-                    'iban'      => $this->getBankAccount(),
-                    'bic-swift' => $this->getBankCode()
+                    'iban'      => $this->getBankAccount()
                 );
 
             }

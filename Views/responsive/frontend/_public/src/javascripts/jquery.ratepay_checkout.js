@@ -39,9 +39,6 @@
                     if ($(this).val().match(/^\d+$/)) {
                         blzInput.prop('disabled', false);
                         blzBlock.show();
-                    } else if ($(this).val().match(/at/i)) {
-                        blzInput.prop('disabled', false);
-                        blzBlock.show();
                     }
                     else {
                         blzInput.prop('disabled', true);
