@@ -107,20 +107,12 @@
         public function toArray()
         {
 
-            if (false !== strpos(strtolower($this->getBankAccount()), 'de')) {
+            if (ctype_alpha(substr($this->getBankAccount(), 0 ,2))) {
 
                 return array(
                     'owner'     => $this->getOwner(),
                     'iban'      => $this->getBankAccount()
                 );
-
-            } elseif(false !== strpos(strtolower($this->getBankAccount()), 'at')) {
-
-                return array(
-                    'owner'     => $this->getOwner(),
-                    'iban'      => $this->getBankAccount()
-                );
-
             }
 
             return array(

@@ -19,10 +19,10 @@
     </div>
 {/block}
 
-{* Bankcode/ BIC *}
+{* Bankcode *}
 {block name='ratepay_frontend_bankcode'}
     <div class="register--accountnumber ratepay_debit_bankcode">
-        <label for="ratepay_debit_accountnumber" class="birthday--label">{s namespace=RatePAY name=bankCode}BIC / Bankleitzahl{/s}*</label>
+        <label for="ratepay_debit_accountnumber" class="birthday--label">{s namespace=RatePAY name=bankCode}Bankleitzahl{/s}*</label>
         <input id="ratepay_debit_bankcode" name="ratepay_debit_bankcode" class="register--field is--required" type="text" required="required" aria-required="true" placeholder="{s namespace=RatePAY name=bankCode}BIC / Bankleitzahl{/s}*" value="{if $smarty.session.Shopware.RatePAY.bankdata.account}{$smarty.session.Shopware.RatePAY.bankdata.bankcode|escape}{/if}">
     </div>
 {/block}
