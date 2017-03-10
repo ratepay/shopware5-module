@@ -213,6 +213,88 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 }
             },
             {
+                iconCls: 'sprite-plus-circle-frame',
+                text: '{s namespace=RatePAY name=adddebit}Nachbelasstung hinzuf&uuml;gen{/s}',
+                handler: function () {
+                    Ext.create('Ext.window.Window', {
+                            title: '{s namespace=RatePAY name=adddebit}Nachbelasstung hinzuf&uuml;gen{/s}',
+                            width: 200,
+                            height: 100,
+                            id: 'debitWindow',
+                            resizable: false,
+                            layout: 'fit',
+                            items: [
+                                {
+                                    xtype: 'numberfield',
+                                    id: 'debitAmount',
+                                    allowBlank: false,
+                                    allowDecimals: true,
+                                    minValue: 0.01,
+                                    value: 1.00
+                            }
+                        ],
+                        buttons: [
+                                {
+                                    text: '{s namespace=RatePAY name=ok}Ok{/s}',
+                                    handler: function () {
+                                        var randomnumber = Math.floor(Math.random() * 10001);
+                                        var debitname = 'Debit' + id + '+' + randomnumber;
+                                        Ext.Ajax.request({
+                                                url: '{url controller=Order action=savePosition}',
+                                                method: 'POST',
+                                                async: false,
+                                                params: {
+                                                    orderId: id,
+                                                    articleId: 0,
+                                                    articleName: debitname,
+                                                    articleNumber: debitname,
+                                                    id: 0,
+                                                    inStock: 0,
+                                                    mode: 0,
+                                                    price: Ext.getCmp('debitAmount').getValue(),
+                                                    quantity: 1,
+                                                    statusDescription: "",
+                                                    statusId: 0,
+                                                    taxDescription: "",
+                                                    taxId: 1,
+                                                    taxRate: 0,
+                                                    total: 0
+                                                },
+                                            success: function (response) {
+                                                var response = Ext.JSON.decode(response.responseText);
+                                                var articleNumber = new Array();
+                                                var insertedIds = new Array();
+                                                var message;
+                                                articleNumber.push(response.data.articleNumber);
+                                                insertedIds.push(response.data.id);
+                                                if (me.initPositions(articleNumber)) {
+                                                    if (me.paymentChange(id, 'credit', insertedIds)) {
+                                                        message = '{s namespace=RatePAY name=messagecreditsuccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
+                                                    } else {
+                                                        me.deletePosition(insertedIds);
+                                                        message = '{s namespace=RatePAY name=messagecreditfailrequest}Nachbelasstung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
+                                                    }
+                                                } else {
+                                                    message = '{s namespace=RatePAY name=messagecreditfailposition}Nachbelasstung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
+                                                }
+                                                Ext.getCmp('debitWindow').close();
+                                                Ext.Msg.alert('{s namespace=RatePAY name=messagecredittitle}Nachbelasstung hinzuf&uuml;gen{/s}', message);
+                                                me.reloadGrid();
+                                            }
+                                        });
+                                    }
+                                },
+                                {
+                                    text: '{s namespace=RatePAY name=abort}Cancel{/s}',
+                                        handler: function () {
+                                            Ext.getCmp('debitWindow').close();
+                                        }
+                                }
+                            ]
+                        }).show();
+                    }
+            },
+            {
                 iconCls: 'sprite-truck',
                 text: '{s namespace=RatePAY name=deliver}Auswahl versenden{/s}',
                 handler: function () {

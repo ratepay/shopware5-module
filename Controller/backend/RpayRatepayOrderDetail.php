@@ -465,8 +465,18 @@
 
             $response = $this->_service->xmlRequest($paymentChange->toArray());
             $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
+
             if ($result) {
-                $event = $subOperation === 'credit' ? 'Nachlass wurde hinzugefügt' : 'Artikel wurde hinzugefügt';
+                if ($subOperation === 'credit') {
+                    if ($row['price'] < 0) {
+                        $event = 'Nachbelastunglass wurde hinzugefügt';
+                    } else {
+                        $event = 'Nachlass wurde hinzugefügt';
+                    }
+                } else {
+                    $event = 'Artikel wurde hinzugefügt';
+                }
+
                 foreach ($insertedIds as $id) {
                     $newItems = Shopware()->Db()->fetchRow("SELECT * FROM `s_order_details` WHERE `id`=?", array($id));
                     if ($newItems['quantity'] <= 0) {
