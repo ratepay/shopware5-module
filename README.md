@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau, Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `4.2.5`
+|Version | `4.2.6`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,14 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.2.6 - Released 2017-03-10
+* add debit backend function
+* add functionality to refill the inventory after cancellation/retour
+* Fix no debit/credit after retour/cancellation
+* Fix no shipping after cancellation
+* Fix no cancellation after shipping
+* Fix no retour before shipping
 
 ### Version Version 4.2.5 - Released 2017-03-02
 * SEPA - BIC field removed
