@@ -307,6 +307,13 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 handler: function () {
                     me.toolbarCancel();
                 }
+            },
+            {
+                iconCls: 'sprite-minus-circle-frame',
+                text: '{s namespace=RatePAY name=cancelStock}Auswahl stornieren, Inventar aktualisieren{/s}',
+                handler: function () {
+                    me.toolbarCancelStock();
+                }
             }
         ];
     },
@@ -397,6 +404,55 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 async: false,
                 params: {
                     orderId: id,
+                    articleStock: false,
+                    items: Ext.encode(items)
+                },
+                success: function () {
+                    me.reloadGrid();
+                }
+            });
+        }
+    },
+    toolbarCancelStock: function () {
+        var me = this;
+        var items = new Array();
+        var id = me.record.get('id');
+        var error = false;
+        for (i = 0; i < me.store.data.items.length; i++) {
+            var row = me.store.data.items[i].data;
+            var item = new Object();
+
+            if (row.quantityDeliver > (row.quantity - row.cancelled)) {
+                error = true;
+            }
+
+            if (row.quantity - row.quantityDeliver - row.cancelled - row.delivered < 0) {
+                error = true;
+            }
+            item['id'] = row.articleID;
+            item['articlenumber'] = row.articleordernumber;
+            item['name'] = row.name;
+            item['price'] = row.price;
+            item['taxRate'] = row.tax_rate;
+            item['quantity'] = row.quantity - row.quantityDeliver - row.cancelled - row.delivered;
+            item['delivered'] = row.delivered;
+            item['returned'] = row.returned;
+            item['cancelled'] = row.cancelled;
+            item['cancelledItems'] = row.quantityDeliver;
+            items.push(item);
+        }
+        if (error == true) {
+            Ext.Msg.alert('{s namespace=RatePAY name=messagecanceltitle}Stornierung fehlgeschlagen{/s}',
+                '{s namespace=RatePAY name=messagecanceltext}Es k&ouml;nnen nicht mehr Artikel storniert werden als bestellt wurden!{/s}');
+            return false;
+        } else {
+            Ext.Ajax.request({
+                url: '{url controller=RpayRatepayOrderDetail action=cancelItems}',
+                method: 'POST',
+                async: false,
+                params: {
+                    orderId: id,
+                    articleStock: 1,
                     items: Ext.encode(items)
                 },
                 success: function () {

@@ -127,6 +127,13 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
                 handler: function () {
                     me.toolbarReturn();
                 }
+            },
+            {
+                iconCls: 'sprite-minus-circle-frame',
+                text: '{s namespace=RatePAY name=returnStock}Auswahl retournieren, Inventar aktuallisieren{/s}',
+                handler: function () {
+                    me.toolbarReturnStock();
+                }
             }
         ];
     },
@@ -142,7 +149,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
             if (row.quantityReturn > (row.quantity - row.returned) || row.delivered == 0) {
                 error = true;
             }
-            
+
             item['id'] = row.articleID;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
@@ -167,7 +174,61 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
                 async: false,
                 params: {
                     orderId: id,
-                    items: Ext.encode(items)
+                    items: Ext.encode(items),
+                    articleStock: false
+                },
+                success: function () {
+                    var positionStore = Ext.create('Shopware.apps.Order.store.ratepaypositions');
+                    me.store = positionStore.load({
+                        params: {
+                            'orderId': id
+                        }
+                    });
+
+                    me.reconfigure(me.store);
+                }
+            });
+        }
+    },
+    toolbarReturnStock: function () {
+        var me = this;
+        var items = new Array();
+        var id = me.record.get('id');
+        var error = false;
+        for (i = 0; i < me.store.data.items.length; i++) {
+            var row = me.store.data.items[i].data;
+            var item = new Object();
+
+            if (row.quantityReturn > (row.quantity - row.returned) || row.delivered == 0) {
+                error = true;
+            }
+
+            item['id'] = row.articleID;
+            item['articlenumber'] = row.articleordernumber;
+            item['name'] = row.name;
+            item['price'] = row.price;
+            item['taxRate'] = row.tax_rate;
+            item['quantity'] = row.delivered - row.returned - row.quantityReturn;
+            item['delivered'] = row.delivered;
+            item['returned'] = row.returned;
+            item['cancelled'] = row.cancelled;
+            item['returnedItems'] = row.quantityReturn;
+            items.push(item);
+        }
+
+        if (error == true) {
+            Ext.Msg.alert('{s namespace=RatePAY name=messagereturntitle}Retoure fehlgeschlagen{/s}',
+                '{s namespace=RatePAY name=messagereturntext}Es k&ouml;nnen nicht mehr Artikel retourniert werden als versand wurden!{/s}');
+            return false;
+        } else {
+            Ext.Ajax.request({
+                url: '{url controller=RpayRatepayOrderDetail action=returnItems}',
+                method: 'POST',
+                async: false,
+                params: {
+                    orderId: id,
+                    items: Ext.encode(items),
+                    articleStock: 1
                 },
                 success: function () {
                     var positionStore = Ext.create('Shopware.apps.Order.store.ratepaypositions');

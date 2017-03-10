@@ -319,6 +319,11 @@
                         if ($item->cancelledItems <= 0) {
                             continue;
                         }
+
+                        if ($this->Request()->getParam('articleStock') == 1) {
+                            $this->_updateArticleStock($item->articlenumber, $item->cancelledItems);
+                        }
+
                         $this->_history->logHistory($orderId, "Artikel wurde storniert.", $item->name, $item->articlenumber, $item->cancelledItems);
                     }
                 }
@@ -396,6 +401,11 @@
                         if ($item->returnedItems <= 0) {
                             continue;
                         }
+
+                        if ($this->Request()->getParam('articleStock') == 1) {
+                            $this->_updateArticleStock($item->articlenumber, $item->returnedItems);
+                        }
+
                         $this->_history->logHistory($orderId, "Artikel wurde retourniert.", $item->name, $item->articlenumber, $item->returnedItems);
                     }
                 }
@@ -509,6 +519,20 @@
                 $positionId = Shopware()->Db()->fetchOne("SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?", array($orderID, $articleordernumber));
                 Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
             }
+        }
+
+        /**
+         * update the stock of an article
+         *
+         * @param $article
+         * @param $count
+         */
+        protected function _updateArticleStock($article, $count) {
+            $repository = Shopware()->Models()->getRepository('Shopware\Models\Article\Detail');
+            $article = $repository->findOneBy(array('number' => $article));
+            $article->setInStock($article->getInStock() + $count);
+            Shopware()->Models()->persist($article);
+            Shopware()->Models()->flush();
         }
 
         /**
