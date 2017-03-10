@@ -431,6 +431,7 @@
          */
         public function addAction()
         {
+            $onlyDebit = true;
             $orderId = $this->Request()->getParam("orderId");
             $insertedIds = json_decode($this->Request()->getParam("insertedIds"));
             $subOperation = $this->Request()->getParam("suboperation");
@@ -442,6 +443,11 @@
             foreach ($orderItems as $row) {
                 if ($row['quantityDeliver'] == 0) {
                     continue;
+                }
+                if (strpos($row['articleordernumber'], 'Debit') === false
+                    && strpos($row['articleordernumber'], 'Credit') === false
+                ) {
+                    $onlyDebit = false;
                 }
                 $basketItem = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item();
                 $basketItem->setArticleName($row['name']);
@@ -461,38 +467,41 @@
                 $basketItem->setUnitPriceGross($shippingRow['price']);
                 $basketItems[] = $basketItem;
             }
-            $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
-            $basket->setAmount($this->getRecalculatedAmount($basketItems));
-            $basket->setCurrency($order['currency']);
-            $basket->setItems($basketItems);
+            
+            if ($onlyDebit == false) {
+                $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
+                $basket->setAmount($this->getRecalculatedAmount($basketItems));
+                $basket->setCurrency($order['currency']);
+                $basket->setItems($basketItems);
 
-            $this->_modelFactory->setTransactionId($order['transactionID']);
-            $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange(), $orderId);
-            $head = $paymentChange->getHead();
-            $head->setOperationSubstring($subOperation);
-            $paymentChange->setHead($head);
-            $paymentChange->setShoppingBasket($basket);
+                $this->_modelFactory->setTransactionId($order['transactionID']);
+                $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange(), $orderId);
+                $head = $paymentChange->getHead();
+                $head->setOperationSubstring($subOperation);
+                $paymentChange->setHead($head);
+                $paymentChange->setShoppingBasket($basket);
 
-            $response = $this->_service->xmlRequest($paymentChange->toArray());
-            $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
+                $response = $this->_service->xmlRequest($paymentChange->toArray());
+                $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
 
-            if ($result) {
-                if ($subOperation === 'credit') {
-                    if ($row['price'] < 0) {
-                        $event = 'Nachbelastunglass wurde hinzugefügt';
+                if ($result) {
+                    if ($subOperation === 'credit') {
+                        if ($row['price'] < 0) {
+                            $event = 'Nachbelastunglass wurde hinzugefügt';
+                        } else {
+                            $event = 'Nachlass wurde hinzugefügt';
+                        }
                     } else {
-                        $event = 'Nachlass wurde hinzugefügt';
+                        $event = 'Artikel wurde hinzugefügt';
                     }
-                } else {
-                    $event = 'Artikel wurde hinzugefügt';
-                }
 
-                foreach ($insertedIds as $id) {
-                    $newItems = Shopware()->Db()->fetchRow("SELECT * FROM `s_order_details` WHERE `id`=?", array($id));
-                    if ($newItems['quantity'] <= 0) {
-                        continue;
+                    foreach ($insertedIds as $id) {
+                        $newItems = Shopware()->Db()->fetchRow("SELECT * FROM `s_order_details` WHERE `id`=?", array($id));
+                        if ($newItems['quantity'] <= 0) {
+                            continue;
+                        }
+                        $this->_history->logHistory($orderId, $event, $newItems['name'], $newItems['articleordernumber'], $newItems['quantity']);
                     }
-                    $this->_history->logHistory($orderId, $event, $newItems['name'], $newItems['articleordernumber'], $newItems['quantity']);
                 }
             }
             $this->setNewOrderState($orderId);
