@@ -281,9 +281,14 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
+
             if (row.quantityDeliver > (row.quantity - row.cancelled)) {
                 error = true;
             }
+            if (row.quantity - row.quantityDeliver - row.cancelled - row.delivered < 0) {
+                error = true;
+            }
+
             item['id'] = row.articleID;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
