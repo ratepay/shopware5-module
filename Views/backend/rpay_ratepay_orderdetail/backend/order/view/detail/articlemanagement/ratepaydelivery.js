@@ -164,7 +164,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                         params: {
                                             orderId: id,
                                             articleId: 0,
-                                            articleName: creditname,
+                                            articleName: 'Nachlass',
                                             articleNumber: creditname,
                                             id: 0,
                                             inStock: 0,
@@ -214,10 +214,10 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             },
             {
                 iconCls: 'sprite-plus-circle-frame',
-                text: '{s namespace=RatePAY name=adddebit}Nachbelasstung hinzuf&uuml;gen{/s}',
+                text: '{s namespace=RatePAY name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
                 handler: function () {
                     Ext.create('Ext.window.Window', {
-                            title: '{s namespace=RatePAY name=adddebit}Nachbelasstung hinzuf&uuml;gen{/s}',
+                            title: '{s namespace=RatePAY name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
                             width: 200,
                             height: 100,
                             id: 'debitWindow',
@@ -246,7 +246,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                                 params: {
                                                     orderId: id,
                                                     articleId: 0,
-                                                    articleName: debitname,
+                                                    articleName: 'Nachbelastung',
                                                     articleNumber: debitname,
                                                     id: 0,
                                                     inStock: 0,
@@ -272,13 +272,13 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                                         message = '{s namespace=RatePAY name=messagecreditsuccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
                                                     } else {
                                                         me.deletePosition(insertedIds);
-                                                        message = '{s namespace=RatePAY name=messagecreditfailrequest}Nachbelasstung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
+                                                        message = '{s namespace=RatePAY name=messagecreditfailrequest}Nachbelastung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
                                                     }
                                                 } else {
-                                                    message = '{s namespace=RatePAY name=messagecreditfailposition}Nachbelasstung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
+                                                    message = '{s namespace=RatePAY name=messagecreditfailposition}Nachbelastung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
                                                 }
                                                 Ext.getCmp('debitWindow').close();
-                                                Ext.Msg.alert('{s namespace=RatePAY name=messagecredittitle}Nachbelasstung hinzuf&uuml;gen{/s}', message);
+                                                Ext.Msg.alert('{s namespace=RatePAY name=messagecredittitle}Nachbelastung hinzuf&uuml;gen{/s}', message);
                                                 me.reloadGrid();
                                             }
                                         });
