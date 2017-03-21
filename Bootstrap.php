@@ -231,7 +231,7 @@
             //Adding error-default message into config table from version 4.2.2
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "payment-firstdate")) {
                 try {
-                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `payment-firstdate` VARCHAR(30) NULL ");
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `payment-firstday` VARCHAR(2) NULL ");
                 } catch (Exception $exception) {
                     throw new Exception("Can not add payment-firstdate column in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
@@ -630,7 +630,7 @@
                          "`limit-rate-max-b2b` int(5) NOT NULL, " .
                          "`month-allowed` varchar(30) NULL, " .
                          "`rate-min-normal` float NULL, " .
-                         "`payment-firstday` float NULL, " .
+                         "`payment-firstday` varchar(5) NULL, " .
                          "`interestrate-default` float NULL, " .
                          "`device-fingerprint-status` varchar(3) NOT NULL, " .
                          "`device-fingerprint-snippet-id` varchar(55) NULL, " .
