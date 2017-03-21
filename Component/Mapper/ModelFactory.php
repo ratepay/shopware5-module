@@ -188,8 +188,10 @@
 
             $customer = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Customer();
 
-            // only for elv and sepa elv
-            if ($method === 'ELV') {
+            // only for elv and sepa elv, or for rate elv
+            if ($method === 'ELV' ||
+                ($method === 'INSTALLMENT' && Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 2)
+            ) {
                 $bankAccount = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_BankAccount();
 
                 $bankAccount->setBankAccount(Shopware()->Session()->RatePAY['bankdata']['account']);
@@ -244,9 +246,17 @@
             $payment->setAmount($this->getAmount());
             $payment->setCurrency(Shopware()->Currency()->getShortName());
             $payment->setMethod($method);
+
             if ($method === 'INSTALLMENT') {
                 $payment->setAmount(Shopware()->Session()->RatePAY['ratenrechner']['total_amount']);
-                $payment->setDirectPayType('BANK-TRANSFER');
+
+                if (Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 2) {
+                    $payment->setDirectPayType('DIRECT-DEBIT');
+                } else {
+                    $payment->setDirectPayType('BANK-TRANSFER');
+                }
+
+                $payment->setPaymentFirstday(Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday']);
                 $payment->setInstallmentAmount(Shopware()->Session()->RatePAY['ratenrechner']['rate']);
                 $payment->setInstallmentNumber(Shopware()->Session()->RatePAY['ratenrechner']['number_of_rates']);
                 $payment->setInterestRate(Shopware()->Session()->RatePAY['ratenrechner']['interest_rate']);

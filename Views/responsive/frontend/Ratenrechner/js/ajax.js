@@ -10,6 +10,7 @@
 function piRatepayRateCalculatorAction(mode) {
     var calcValue;
     var calcMethod;
+    var paymentFirstday;
 
     var html;
 
@@ -25,28 +26,20 @@ function piRatepayRateCalculatorAction(mode) {
         calcMethod = 'calculation-by-rate';
         document.getElementById('piRpInput-button').className = "piRpInput-button  ajaxloader";
         document.getElementById('piRpInput-button').value = 'wird geladen ...';
-        if (document.getElementById('debitSelect')) {
-            dueDate = document.getElementById('debitSelect').value;
-        } else {
-            dueDate = '';
-        }
+        paymentFirstday = document.getElementById('paymentFirstday').value;
+
     } else if (mode == 'runtime') {
         calcValue = document.getElementById('runtime').value;
         calcMethod = 'calculation-by-time';
         document.getElementById('piRpInput-buttonRuntime').className = "piRpInput-button  ajaxloader";
-
         document.getElementById('piRpInput-buttonRuntime').value = 'wird geladen ...';
-        if (document.getElementById('debitSelectRuntime')) {
-            dueDate = document.getElementById('debitSelectRuntime').value;
-        } else {
-            dueDate = '';
-        }
+        paymentFirstday = document.getElementById('paymentFirstday').value;
     }
 
     var getParams = "?"
         + "calcValue=" + calcValue
         + "&calcMethod=" + calcMethod
-        + "&dueDate=" + dueDate;
+        + "&paymentFirstday=" + paymentFirstday;
 
     xmlhttp.open("GET", pi_ratepay_rate_ajax_path + "calcRequest" + getParams, false);
 

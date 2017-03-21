@@ -48,7 +48,7 @@
             //get ratepay config based on shopId
             $rpRateConfig=Shopware()->Db()->fetchRow('
                 SELECT
-                `month-allowed`, `rate-min-normal`, `interestrate-default`
+                `month-allowed`, `rate-min-normal`, `interestrate-default`, `payment-firstday`
                 FROM
                 `rpay_ratepay_config`
                 WHERE
@@ -60,7 +60,8 @@
             $installmentConfigArray = array(
                 'interestrate_default' => $rpRateConfig["interestrate-default"],
                 'month_allowed' => $rpRateConfig["month-allowed"],
-                'rate_min_normal' => $rpRateConfig["rate-min-normal"]
+                'rate_min_normal' => $rpRateConfig["rate-min-normal"],
+                'payment_firstday' => $rpRateConfig["payment-firstday"],
             );
 
             return $installmentConfigArray;
@@ -250,8 +251,9 @@
             }
 
             $installment->addChild('amount', $this->getRequestAmount());
-            if ($this->getRequestDueDate()) {
-                $installment->addChild('payment-firstday', $this->getRequestDueDate());
+
+            if ($this->getRequestFirstday()) {
+                $installment->addChild('payment-firstday', $this->getRequestFirstday());
             }
 
             if ($this->getRequestOperationSubtype() == 'calculation-by-rate') {

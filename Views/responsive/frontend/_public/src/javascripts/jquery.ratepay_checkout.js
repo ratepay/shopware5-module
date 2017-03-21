@@ -25,7 +25,17 @@
                 $("#ratepay_error").parent().removeClass("is--hidden");
             }
 
-            if(isDebitPayment == true){
+            if ($("#paymentFirstday").val() == 28) {
+                var debitDetails = $("#debitDetails");
+
+                debitDetails.remove();
+            }
+
+            if ($("#paymentFirstday").val() == 2 && $("#firstdaySwitch").val() == 1) {
+                $("#changeFirstday").show();
+            }
+
+            if ($(":input#ratepay_debit_bankcode")) {
                 /* Handle BIC Field ( only fade in for AT ) */
 
                 var blzInput       = $(":input#ratepay_debit_bankcode");
@@ -46,7 +56,6 @@
                     }
                 })
             }
-
         },
 
         /**

@@ -167,6 +167,16 @@
         }
 
         /**
+         * This method set the payment firstday
+         *
+         * @param $paymentFirstday
+         */
+        public function setRequestPaymentFirstday($paymentFirstday)
+        {
+            $this->request_payment_firstday = $paymentFirstday;
+        }
+
+        /**
          * This method set the request interest-rate
          *
          * @param float $interest_rate
@@ -513,6 +523,7 @@
          */
         public function getRequestFirstday()
         {
+            //return 2;
             return $this->request_payment_firstday;
         }
 
@@ -936,6 +947,7 @@
             $this->setDetailsNumberOfRates($array['number_of_rates']);
             $this->setDetailsRate($array['rate']);
             $this->setDetailsLastRate($array['last_rate']);
+            $this->setDetailsPaymentFirstday($array['payment_firstday']);
         }
 
         /**

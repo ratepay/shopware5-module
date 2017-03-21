@@ -10,6 +10,7 @@
 <script type="text/javascript" src="{link file='frontend/Ratenrechner/js/mouseaction.js' fullPath}"></script>
 <script type="text/javascript" src="{link file='frontend/Ratenrechner/js/layout.js' fullPath}"></script>
 <script type="text/javascript" src="{link file='frontend/Ratenrechner/js/ajax.js' fullPath}"></script>
+<script type="text/javascript" src="{link file='frontend/Ratenrechner/js/rateswitch.js' fullPath}"></script>
 <div id="pirpmain-cont" name="pirpratenrechnerContent"></div>
 <script type="text/javascript">
     if (document.getElementById('pirpmain-cont')) {

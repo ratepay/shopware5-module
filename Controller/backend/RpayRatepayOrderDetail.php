@@ -467,7 +467,7 @@
                 $basketItem->setUnitPriceGross($shippingRow['price']);
                 $basketItems[] = $basketItem;
             }
-            
+
             if ($onlyDebit == false) {
                 $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
                 $basket->setAmount($this->getRecalculatedAmount($basketItems));

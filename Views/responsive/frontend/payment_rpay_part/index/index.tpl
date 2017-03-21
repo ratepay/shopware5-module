@@ -24,10 +24,14 @@
 
     var ratepayAgeNotValid        = false;
     var isDebitPayment            = false;
+    var isInstallmentPayment      = false;
     var ratepayCalcRateError      = {$errorRatenrechner};
 
     {if $sUserData.additional.payment.name == 'rpayratepaydebit' }
         var isDebitPayment = true;
+    {/if}
+    {if $sUserData.additional.payment.name == 'rpayratepayinstallment' }
+        var isInstallmentPayment = true;
     {/if}
 
     {if $ratepayValidateisAgeValid != 'true'}

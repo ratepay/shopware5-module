@@ -237,6 +237,7 @@
             Shopware()->Session()->RatePAY['ratenrechner']['number_of_rates'] = $number_of_rates;
             Shopware()->Session()->RatePAY['ratenrechner']['rate'] = $rate;
             Shopware()->Session()->RatePAY['ratenrechner']['last_rate'] = $last_rate;
+            Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] = $payment_firstday;
             Shopware()->Session()->RatePAY['dueDate'] = $payment_firstday;
         }
 

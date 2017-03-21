@@ -42,8 +42,7 @@
         }
     }
     else {
-        ?>
-
+?>
 
         <div id="piRpHeader">
             <div class="piRpFullWidth">
@@ -67,23 +66,11 @@
                 </label>
 
                 <div id="piRpContentTerm" class="piRpContent" style="display: none;">
-                    <?php if ($pi_firstday) { ?>
-                        <div id="piRpDueDate" class="piRpDueDate">
-                            <div class="piRpDueText"><?php echo $pi_lang_due_date; ?></div>
-                            <select name="piRpDueDateSelect" id="debitSelect" size="3">
-                                <option value="1" selected="selected">Zum 1. des Monats</option>
-                                <option value="15">Zum 15. des Monats</option>
-                                <option value="28">Zum 28. des Monats</option>
-                            </select>
-                            <br class="piRpClearFix"/>
-                        </div>
-                    <?php } ?>
-                    <br class="piRpClearFix"/>
-
                     <div class="piRpMarginTop">
                         <span
-                            class="piRpVertAlignMiddle"><?php echo $pi_lang_please . " " . $pi_lang_insert_wishrate; ?>
-                            :</span>
+                            class="piRpVertAlignMiddle">
+                            <?php echo $pi_lang_please . " " . $pi_lang_insert_wishrate; ?>:
+                        </span>
                         <input name="" id="rate" class="piRpInput-amount" type="text">
                         <span class="piRpCurrency"> &euro;</span>
                         <input name="" onclick="piRatepayRateCalculatorAction('rate');"
@@ -101,22 +88,10 @@
                 </label>
 
                 <div id="piRpContentRuntime" class="piRpContent" style="display: none;">
-                    <?php if ($pi_firstday) { ?>
-                        <div id="piRpDueDate" class="piRpDueDate">
-                            <div class="piRpDueText"><?php echo $pi_lang_due_date; ?></div>
-                            <select name="piRpDueDateSelect" class="piRpDueDateSelect" id="debitSelectRuntime" size="3">
-                                <option value="1" selected="selected"><?php echo $pi_lang_first_month; ?></option>
-                                <option value="15"><?php echo $pi_lang_second_month; ?></option>
-                                <option value="28"><?php echo $pi_lang_third_month; ?></option>
-                            </select>
-                            <br class="piRpClearFix"/>
-                        </div>
-                    <?php } ?>
-                    <br class="piRpClearFix"/>
-
                     <div class="piRpMarginTop">
-                        <span class="piRpVertAlignMiddle" style="float: left;"><?php echo $pi_lang_please . " " . $pi_lang_insert_runtime; ?>
-                           :</span>
+                        <span class="piRpVertAlignMiddle" style="float: left;">
+                            <?php echo $pi_lang_please . " " . $pi_lang_insert_runtime; ?>:
+                        </span>
                         <select id="runtime" style='position: absolute; top: -4px; width: 277px; height: 23px;'>
                             <?php
                                 foreach ($pi_monthAllowedArray as $pi_month) {
@@ -134,25 +109,33 @@
                 <br class="piRpClearFix"/>
 
                 <div class="piRpContentSwitchDiv" id="piRpSwitchToTerm" class="piRpActive" style="display: none">
-            <span id="pirpspanrate">
-                <?php echo $pi_lang_insert_wishrate; ?> <?php echo $pi_lang_calculate_runtime; ?>
-            </span>
+                    <span id="pirpspanrate">
+                        <?php echo $pi_lang_insert_wishrate; ?> <?php echo $pi_lang_calculate_runtime; ?>
+                    </span>
                     <input name="" value="<?php echo $pi_lang_calculate_runtime; ?>" type="button"
                            class="piRpInput-button piRpContentSwitchInput ">
                 </div>
                 <div class="piRpContentSwitchDiv" id="piRpSwitchToRuntime" style="display: none">
-            <span id="pirpspanruntime" class="pirpactive">
-                <?php echo $pi_lang_choose_runtime; ?> <?php echo $pi_lang_calculate_rate; ?>
-            </span>
+                    <span id="pirpspanruntime" class="pirpactive">
+                        <?php echo $pi_lang_choose_runtime; ?> <?php echo $pi_lang_calculate_rate; ?>
+                    </span>
                     <input name="" value="<?php echo $pi_lang_calculate_rate; ?>" type="button"
                            class="piRpInput-button piRpContentSwitchInput ">
                 </div>
                 <div id="piRpResultContainer"></div>
             </div>
         </div>
-
         <br class="piRpClearFix"/>
-
-    <?php
+<?php
+        if ($pi_config['payment_firstday'] == '2,28') {
+?>
+            <input type="hidden" id="paymentFirstday" name="paymentFirstday" value="2">
+            <input type="hidden" id="firstdaySwitch" value="1">
+<?php
+        } else {
+?>
+            <input type="hidden" id="paymentFirstday" value="<?php echo $pi_config['payment_firstday']; ?>">
+<?php
+        }
     }
 ?>

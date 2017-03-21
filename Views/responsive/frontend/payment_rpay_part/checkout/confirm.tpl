@@ -48,6 +48,13 @@
                                     {include file='frontend/payment_rpay_part/RatePAYErrorMessage.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYFormElements.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYRatenrechner.tpl'}
+                                    <div id="debitDetails">
+                                        {include file='frontend/payment_rpay_part/RatePAYSEPAInformationHeader.tpl'}
+                                        {include file='frontend/payment_rpay_part/RatePAYDebitFormElements.tpl'}
+                                        {include file='frontend/payment_rpay_part/RatePAYSEPAAGBs.tpl'}
+                                    </div>
+                                    <a id="changeFirstday" style="display: none;" onclick="changeFirstday(28);">Ich möchte die Ratenzahlung selbst vornehmen und nicht per Lastschrift begleichen</a>
+                                    <a id="changeFirstday2" style="display: none;" onclick="changeFirstday(2);">Ich möchte die Ratenzahlung per Lastschrift begleichen</a>
                                 {/if}
 
                             </div>
