@@ -168,17 +168,19 @@
 
                 /* only do the check if bankdata form exists */
                 if($('#ratepay_debit_accountnumber').length) {
-                    if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '') {
-                        error = true;
-                        userUpdate = false;
-                        errorMessage = errorMessageValidBankData;
-                    } else if (!$("#ratepay_debit_accountnumber").val().replace(/ /g,'').match(/^\d+$/)) {
-                        if($('#ratepay_debit_accountnumber').val().replace(/ /g,'').length < 18) {
+                    if ((!$("#paymentFirstday")) || $("#paymentFirstday").val() == 2) {
+                        if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '') {
                             error = true;
                             userUpdate = false;
                             errorMessage = errorMessageValidBankData;
-                        }
+                        } else if (!$("#ratepay_debit_accountnumber").val().replace(/ /g, '').match(/^\d+$/)) {
+                            if ($('#ratepay_debit_accountnumber').val().replace(/ /g, '').length < 18) {
+                                error = true;
+                                userUpdate = false;
+                                errorMessage = errorMessageValidBankData;
+                            }
 
+                        }
                     }
                 }
 
