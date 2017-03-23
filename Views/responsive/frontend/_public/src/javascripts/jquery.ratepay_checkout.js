@@ -31,6 +31,10 @@
                 debitDetails.remove();
             }
 
+            if ($("#paymentFirstday").val() == 2) {
+                $("#debitDetails").hide();
+            }
+
             if ($("#paymentFirstday").val() == 2 && $("#firstdaySwitch").val() == 1) {
                 $("#changeFirstday").show();
             }

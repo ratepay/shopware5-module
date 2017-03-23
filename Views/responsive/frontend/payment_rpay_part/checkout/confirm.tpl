@@ -53,6 +53,9 @@
                                         {include file='frontend/payment_rpay_part/RatePAYDebitFormElements.tpl'}
                                         {include file='frontend/payment_rpay_part/RatePAYSEPAAGBs.tpl'}
                                     </div>
+                                    <div id="switchInformation" style="display:none;font-weight:bold;">
+                                        Die Ratenberechnung wurde aufgrund der geänderten Zahlungsweise angepasst
+                                    </div>
                                     <a id="changeFirstday" style="display: none;cursor: pointer;" onclick="changeFirstday(28);">Ich möchte die Ratenzahlung selbst vornehmen und nicht per Lastschrift begleichen</a>
                                     <a id="changeFirstday2" style="display: none;cursor: pointer;" onclick="changeFirstday(2);">Ich möchte die Ratenzahlung per Lastschrift begleichen</a>
                                 {/if}

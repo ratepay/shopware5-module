@@ -7,27 +7,32 @@
  * Code by Ratepay GmbH  <http://www.ratepay.com/>
  */
 function changeFirstday(firstday) {
-    document.getElementById('paymentFirstday').value = firstday;
-    var bankcode = document.getElementById('ratepay_debit_bankcode');
-    var accountnumber = document.getElementById('ratepay_debit_accountnumber');
+    $('#paymentFirstday').val(firstday);
 
     if (firstday == 28) {
-        document.getElementById('debitDetails').style.display = 'none';
-        document.getElementById('piRpResultContainer').style.display = 'none';
-        document.getElementById('changeFirstday').style.display = 'none';
-        document.getElementById('changeFirstday2').style.display = 'block';
-        //$('#ratepay_debit_bankcode').clone()
+        $('#debitDetails').hide();
+        $('#piRpResultContainer').hide();
+        $('#changeFirstday').hide();
+        $('#changeFirstday2').show();
 
         $(':input#ratepay_debit_bankcode').prop('disabled', true);
         $(':input#ratepay_debit_accountnumber').prop('disabled', true);
 
     } else {
-        document.getElementById('debitDetails').style.display = 'block';
-        document.getElementById('piRpResultContainer').style.display = 'none';
-        document.getElementById('changeFirstday2').style.display = 'none';
-        document.getElementById('changeFirstday').style.display = 'block';
+        $('#debitDetails').show();
+        $('#piRpResultContainer').hide();
+        $('#changeFirstday2').hide()
+        $('#changeFirstday').show();
 
         $(':input#ratepay_debit_bankcode').prop('disabled', false);
         $(':input#ratepay_debit_accountnumber').prop('disabled', false);
+    }
+
+    if ($('#secondInput').is(':checked')) {
+        piRatepayRateCalculatorAction('runtime');
+        $('#switchInformation').show();
+    } else if ($('#firstInput').is(':checked')) {
+        piRatepayRateCalculatorAction('wishrate');
+        $('#switchInformation').show();
     }
 }
