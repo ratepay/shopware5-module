@@ -14,6 +14,10 @@ function piRatepayRateCalculatorAction(mode) {
 
     var html;
 
+    if (document.getElementById('paymentFirstday') && document.getElementById('paymentFirstday').value == 2) {
+        document.getElementById('debitDetails').style.display = 'block';
+    }
+
     if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
         xmlhttp = new XMLHttpRequest();
     } else {// code for IE6, IE5
