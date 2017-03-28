@@ -133,6 +133,9 @@
             <input type="hidden" id="firstdaySwitch" value="1">
 <?php
         } else {
+            if (!$pi_config['payment_firstday'] || empty($pi_config['payment_firstday'])) {
+                $pi_config['payment_firstday'] = 28;
+            }
 ?>
             <input type="hidden" id="paymentFirstday" value="<?php echo $pi_config['payment_firstday']; ?>">
 <?php
