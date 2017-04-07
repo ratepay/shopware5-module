@@ -20,7 +20,8 @@
     {block name='ratepay_frontend_birthday'}
         <div class="register--birthdate">
             <label for="register_personal_birthdate" class="birthday--label">{s namespace=RatePAY name=birthday}Geburtsdatum{/s}*</label>
-            <div class="register--birthday field--select" id="foo">
+            <br/>
+            <div class="rp-birthday field--select" id="foo">
                 <select id="ratepay_birthday" name="ratepay[personal][birthday]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if}>
                     <option value="">{s namespace=RatePAY name=dob_day}Tag{/s}</option>
                     {section name="birthdate" start=1 loop=32 step=1}
@@ -30,7 +31,7 @@
                 </select>
             </div>
 
-            <div class="register--birthmonth field--select">
+            <div class="rp-birthmonth field--select">
                 <select id="ratepay_birthmonth" name="ratepay[personal][birthmonth]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if}>
                     <option value="">{s namespace=RatePAY name=dob_month}Monat{/s}</option>
                     {section name="birthmonth" start=1 loop=13 step=1}
@@ -40,7 +41,7 @@
                 </select>
             </div>
 
-            <div class="register--birthyear field--select">
+            <div class="rp-birthyear field--select">
                 <select id="ratepay_birthyear" name="ratepay[personal][birthyear]"{if {config name=requireBirthdayField}} required="required" aria-required="true"{/if}>
                     <option value="">{s namespace=RatePAY name=dob_year}Jahr{/s}</option>
                     {section name="birthyear" start=$smarty.now|date_format:"%Y"-18 loop=2000 max=100 step=-1}
@@ -49,7 +50,7 @@
                     {/section}
                 </select>
             </div>
-
+            <br style="clear: both"><br>
             <p>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um mit RatePAY bezahlen zu können.{/s}</p>
         </div>
     {/block}
