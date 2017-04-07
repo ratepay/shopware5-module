@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau, Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `4.2.7`
+|Version | `4.2.8`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.2.7 - Released 2017-04-07
+* fix responsive mobile view
 
 ### Version Version 4.2.7 - Released 2017-03-21
 * add payment method installment elv
