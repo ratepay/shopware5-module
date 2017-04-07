@@ -30,3 +30,15 @@
 .ratepay-modal p {
     margin-top: 30px !important;
 }
+.rp-birthday, .rp-birthmonth, .rp-birthyear {
+    float: left;
+    width: 33%;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    min-width: 145px;
+}
+.rp-birthday .js--fancy-select,
+.rp-birthmonth .js--fancy-select,
+.rp-birthyear .js--fancy-select {
+    width: 95%
+}
