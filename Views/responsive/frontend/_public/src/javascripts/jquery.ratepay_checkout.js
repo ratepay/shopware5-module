@@ -27,12 +27,24 @@
 
             if ($("#paymentFirstday").val() == 28) {
                 var debitDetails = $("#debitDetails");
-
+                $("#paywire").hide();
+                $("#wicAGB").hide();
                 debitDetails.remove();
             }
 
             if ($("#paymentFirstday").val() == 2) {
                 $("#debitDetails").hide();
+                $("#paywire").show();
+                $("#wicAGB").show();
+                $("#payrp").remove();
+                $("#ratepay_agb").prop('checked', false);
+                $("#rpAGB").remove();
+
+            }
+
+            if ($(":input#ratepay_debit_bankcode") && !$("#paymentFirstday").val()) {
+                $("#paywire").remove();
+                $("#wicAGB").remove();
             }
 
             if ($("#paymentFirstday").val() == 2 && $("#firstdaySwitch").val() == 1) {
@@ -40,7 +52,32 @@
             }
 
             if ($(":input#ratepay_debit_bankcode")) {
-                /* Handle BIC Field ( only fade in for AT ) */
+                /* Disable confirmation button if sepadirectdebit tac are not checked */
+                var button = $('button[type=submit]');
+
+                button.attr('disabled', 'disabled');
+                button.css({ opacity: 0.5 });
+                button.attr('title', errorMessageAcceptSepaAGB);
+
+                if ($('#ratepay_agb').is(':checked')) {
+                    button.removeAttr('disabled');
+                    button.removeAttr('title');
+                    button.css({ opacity: 1.0 });
+                } else {
+                    $('#ratepay_agb').click(function () {
+                        if ($(this).prop('checked')) {
+                            button.removeAttr('disabled');
+                            button.removeAttr('title');
+                            button.css({ opacity: 1.0 });
+                        } else {
+                            button.attr('disabled', 'disabled');
+                            button.attr('title', errorMessageAcceptSepaAGB);
+                            button.css({ opacity: 0.5 });
+                        }
+                    });
+                }
+
+
 
                 var blzInput       = $(":input#ratepay_debit_bankcode");
                 var blzBlock       = $(".ratepay_debit_bankcode");
