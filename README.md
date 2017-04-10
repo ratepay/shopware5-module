@@ -24,7 +24,10 @@
 
 ## Changelog
 
-### Version Version 4.2.7 - Released 2017-04-07
+### Version Version 4.2.9 - Released 2017-04-07
+* change installment elv payment information
+
+### Version Version 4.2.8 - Released 2017-04-07
 * fix responsive mobile view
 
 ### Version Version 4.2.7 - Released 2017-03-21
