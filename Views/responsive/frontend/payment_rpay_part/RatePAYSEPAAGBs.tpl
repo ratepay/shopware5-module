@@ -1,4 +1,4 @@
-<div>
+<div id="rpAGB">
     <p class="none">
         <a id="ratepay_sepa_information" onclick="showSepa();" style="cursor: pointer">Einwilligungserklärung zum SEPA-Mandat lesen</a>
         <input type="checkbox" id="ratepay_agb" required="required" checked="checked" aria-required="true" style="display: none;" class="register--checkbox chkbox">
@@ -22,6 +22,23 @@
         </span>
     </p>
 </div>
+
+<div id="wicAGB">
+    <p class="none">
+        <input type="checkbox" id="ratepay_agb" required="required" aria-required="true" class="register--checkbox chkbox">
+        <span>
+            Ich ermächtige die Wirecard Bank AG von meinem Konto mittels Lastschrift einzuziehen.
+            Zugleich weise ich mein Kreditinstitut an, die von der Wirecard Bank AG auf mein Konto gezogenen Lastschriften einzulösen.
+            <br/>
+            <br/>
+            Hinweis:
+            <br/>
+            Hinweis: Ich kann innerhalb von acht Wochen, beginnend mit dem Belastungsdatum, die
+            Erstattung des belasteten Betrages verlangen.Es gelten dabei die mit dem Kreditinstitut vereinbarten Bedingungen.
+        </span>
+    </p>
+</div>
+
 <script type="text/javascript">
     function showSepa() {
         document.getElementById('ratepay_sepa_information').style.display = 'none';
