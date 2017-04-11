@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau, Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `4.2.8`
+|Version | `4.2.9`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
