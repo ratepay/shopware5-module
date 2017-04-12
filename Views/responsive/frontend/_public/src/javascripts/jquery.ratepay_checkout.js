@@ -51,7 +51,7 @@
                 $("#changeFirstday").show();
             }
 
-            if ($(":input#ratepay_debit_bankcode")) {
+            if ($(":input#ratepay_debit_bankcode").length) {
                 /* Disable confirmation button if sepadirectdebit tac are not checked */
                 var button = $('button[type=submit]');
 
