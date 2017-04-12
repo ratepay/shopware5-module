@@ -229,7 +229,7 @@
             }
 
             //Adding error-default message into config table from version 4.2.2
-            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "payment-firstdate")) {
+            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "payment-firstday")) {
                 try {
                     Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `payment-firstday` VARCHAR(2) NULL ");
                 } catch (Exception $exception) {
