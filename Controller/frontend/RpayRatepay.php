@@ -197,15 +197,9 @@
                 Shopware()->Session()->RatePAY['transactionId'] = $transactionId;
 
                 $this->_modelFactory->setTransactionId(Shopware()->Session()->RatePAY['transactionId']);
-                $paymentRequestModel = $this->_modelFactory->getModel(
-                    new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentRequest()
-                );
-                $result = $this->_service->xmlRequest($paymentRequestModel->toArray());
-                if (Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse(
-                    'PAYMENT_REQUEST',
-                    $result
-                )
-                ) {
+                $resultRequest = $this->_modelFactory->doOperation('PaymentRequest');
+
+                if ($resultRequest->isSuccessful()) {
                     $uniqueId = $this->createPaymentUniqueId();
                     $orderNumber = $this->saveOrder(Shopware()->Session()->RatePAY['transactionId'], $uniqueId, 17);
                     $paymentConfirmModel = $this->_modelFactory->getModel(
@@ -275,7 +269,7 @@
                         $this->_error();
                     }
                 } else {
-                    $this->_customerMessage = $result->getElementsByTagName('customer-message')->item(0)->textContent;
+                    $this->_customerMessage = $resultRequest->getCustomerMessage();
                     $this->_error();
                 }
             } else {

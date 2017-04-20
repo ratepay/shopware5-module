@@ -82,9 +82,6 @@
         public function getModel($modelName, $orderId = null)
         {
             switch ($modelName) {
-                case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentRequest'):
-                    $this->fillPaymentRequest($modelName);
-                    break;
                 case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentConfirm'):
                     $this->fillPaymentConfirm($modelName);
                     break;
@@ -109,16 +106,214 @@
          *
          * @return bool|array
          */
-        public function doOperation($operationType, $operationData) {
+        public function doOperation($operationType, array $operationData) {
             Shopware()->Pluginlogger()->error('doOperation ' . $operationType);
             switch ($operationType) {
                 case 'ProfileRequest':
                     return $this->makeProfileRequest($operationData);
                     break;
                 case 'PaymentInit':
-                    return $this->makePaymentInit($operationData);
+                    return $this->makePaymentInit();
+                    break;
+                case 'PaymentRequest':
+                    return $this->makePaymentRequest();
                     break;
             }
+        }
+
+        private function getHead() {
+            $systemId = $this->getSystemId();
+            $mbHead = new \RatePAY\ModelBuilder();
+            $mbHead->setArray([
+                'SystemId' => $systemId,
+                'Credential' => [
+                    'ProfileId' => $this->getProfileId(),
+                    'Securitycode' => $this->getSecurityCode()
+                ]
+            ]);
+
+            return $mbHead;
+        }
+
+        /**
+         * make payment request
+         *
+         * @return mixed
+         */
+        private function makePaymentRequest()
+        {
+            $mbHead = $this->getHead();
+            $mbHead->setTransactionId($this->_transactionId);
+            $mbHead->setCustomerDevice(
+                $mbHead->CustomerDevice()->setDeviceToken(Shopware()->Session()->RatePAY['dfpToken'])
+            );
+
+            $method = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
+                Shopware()->Session()->sOrderVariables['sUserData']['additional']['payment']['name']
+            );
+
+            $shopUser = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
+
+            // Checkout address ids are set in RP session from shopware version >=5.2.0
+            if (isset(Shopware()->Session()->RatePAY['checkoutBillingAddressId']) && Shopware()->Session()->RatePAY['checkoutBillingAddressId'] > 0) {
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->RatePAY['checkoutBillingAddressId']));
+                $checkoutAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->RatePAY['checkoutShippingAddressId'] ? Shopware()->Session()->RatePAY['checkoutShippingAddressId'] : Shopware()->Session()->RatePAY['checkoutBillingAddressId']));
+
+                $countryCodeBilling = $checkoutAddressBilling->getCountry()->getIso();
+                $countryCodeShipping = $checkoutAddressShipping->getCountry()->getIso();
+
+                $company = $checkoutAddressBilling->getCompany();
+                if (empty($company)) {
+                    $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d"); // From Shopware 5.2 date of birth has moved to customer object
+                }
+                $merchantCustomerId = $shopUser->getNumber(); // From Shopware 5.2 billing number has moved to customer object
+            } else {
+                $checkoutAddressBilling = $shopUser->getBilling();
+                $checkoutAddressShipping = $shopUser->getShipping() !== null ? $shopUser->getShipping() : $shopUser->getBilling();
+
+                $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressBilling->getCountryId());
+                $countryCodeBilling = $countryBilling->getIso();
+                $countryShipping = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressShipping->getCountryId());
+                $countryCodeShipping = $countryShipping->getIso();
+
+                $company = $checkoutAddressBilling->getCompany();
+                if (empty($company)) {
+                    $dateOfBirth = $shopUser->getBilling()->getBirthday()->format("Y-m-d");
+                }
+                $merchantCustomerId = $shopUser->getBilling()->getNumber();
+            }
+
+            $mbHead->setArray([
+                'External' => [
+                    'MerchantConsumerId' => $merchantCustomerId,
+                    'OrderId' => $this->_getOrderIdFromTransactionId()
+                ]
+            ]);
+
+            $gender = 'u';
+            if ($checkoutAddressBilling->getSalutation() === 'mr') {
+                $gender = 'm';
+                $salutation = 'Herr';
+            } elseif ($checkoutAddressBilling->getSalutation() === 'ms') {
+                $gender = 'f';
+                $salutation = 'Frau';
+            } else {
+                $salutation = $checkoutAddressBilling->getSalutation();
+            }
+            Shopware()->Pluginlogger()->error('Method ' . $method);
+            if ($method === 'INSTALLMENT') {
+                $installmentDetails = $this->getPaymentDetails($method);
+            }
+
+            $shoppingBasket = array();
+            $shopItems = Shopware()->Session()->sOrderVariables['sBasket']['content'];
+            foreach ($shopItems AS $shopItem) {
+                $item = array(
+                    'Description' => $shopItem['articlename'],
+                    'ArticleNumber' => $shopItem['ordernumber'],
+                    'Quantity' => $shopItem['quantity'],
+                    'UnitPriceGross' => $shopItem['priceNumeric'],
+                    'TaxRate' => $shopItem['tax_rate'],
+                    //'Discount' => 10
+                );
+                $shoppingBasket['Items'] = array(array('Item' => $item));
+            }
+
+            if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
+                $shoppingBasket['Shipping'] = array(
+                    'Description' => "Shipping costs",
+                    'UnitPriceGross' => Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'],
+                    'TaxRate' => Shopware()->Session()->sOrderVariables['sBasket']['sShippingcostsTaxRate'],
+                );
+            }
+
+            $mbContent = new RatePAY\ModelBuilder('Content');
+            $contentArr = [
+                'Customer' => [
+                    'Gender' => $gender,
+                    'Salutation' => $salutation,
+                    'FirstName' => $checkoutAddressBilling->getFirstName(),
+                    'LastName' => $checkoutAddressBilling->getLastName(),
+                    'DateOfBirth' => $dateOfBirth,
+                    'Nationality' => $this->_countryCode,
+                    'IpAddress' => $this->_getCustomerIP(),
+                    'Addresses' => [
+                        [
+                            'Address' => $this->_getCheckoutAddress($checkoutAddressBilling, 'BILLING', $countryCodeBilling)
+                        ], [
+                            'Address' => $this->_getCheckoutAddress($checkoutAddressShipping, 'DELIVERY', $countryCodeShipping)
+                            ]
+
+                    ],
+                    'Contacts' => [
+                        'Email' => $shopUser->getEmail(),
+                        'Phone' => [
+                            'DirectDial' => $checkoutAddressBilling->getPhone()
+                        ],
+                    ],
+                ],
+                'ShoppingBasket' => $shoppingBasket,
+                'Payment' => [
+                    'Method' => strtolower($method),
+                    'Amount' => $this->getAmount(),
+                ]
+            ];
+
+            if (!empty($company)) {
+                $contentArr['Customer']['CompanyName'] = $checkoutAddressBilling->getCompany();
+                $contentArr['Customer']['VatId'] = $checkoutAddressBilling->getVatId();
+            }
+            $elv = false;
+            if (!empty($installmentDetails)) {
+                if (Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 2) {
+                    $contentArr['Payment']['DebitPayType']= 'BANK-TRANSFER';
+                } else {
+                    $contentArr['Payment']['DebitPayType'] = 'DIRECT-DEBIT';
+                    $elv = true;
+                }
+                $contentArr['Payment']['Amount'] = Shopware()->Session()->RatePAY['ratenrechner']['total_amount'];
+                $contentArr['Payment']['InstallmentDetails'] = $installmentDetails;
+            }
+
+            if ($method === 'ELV' || ($method == 'INSTALLMENT' && $elv == true)) {
+                $contentArr['Customer']['BankAccount']['Owner'] = Shopware()->Session()->RatePAY['bankdata']['bankholder'];
+
+                $bankCode = Shopware()->Session()->RatePAY['bankdata']['bankcode'];
+                if (!empty($bankCode)) {
+                    $contentArr['Customer']['BankAccount']['BankAccountNumber'] = Shopware()->Session()->RatePAY['bankdata']['account'];
+                    $contentArr['Customer']['BankAccount']['BankCode'] = Shopware()->Session()->RatePAY['bankdata']['bankcode'];
+                } else {
+                    $contentArr['Customer']['BankAccount']['Iban'] = Shopware()->Session()->RatePAY['bankdata']['account'];
+                }
+            }
+
+            $mbContent->setArray($contentArr);
+
+            $rb = new RatePAY\RequestBuilder(true); // Sandbox mode = true
+            $paymentRequest = $rb->callPaymentRequest($mbHead, $mbContent);
+
+            return $paymentRequest;
+        }
+
+        /**
+         * get payment details
+         *
+         * @param $method
+         * @return array
+         */
+        private function getPaymentDetails($method) {
+            $paymentDetails = array();
+
+                Shopware()->Pluginlogger()->error('INSTALLMENT');
+                $paymentDetails['InstallmentNumber'] = Shopware()->Session()->RatePAY['ratenrechner']['number_of_rates'];
+                $paymentDetails['InstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['rate'];
+                $paymentDetails['LastInstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['last_rate'];
+                $paymentDetails['InterestRate'] = Shopware()->Session()->RatePAY['ratenrechner']['interest_rate'];
+                $paymentDetails['PaymentFirstday'] = Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'];
+
+
+            return $paymentDetails;
         }
 
         /**
@@ -189,193 +384,16 @@
          * @param $operationData
          * @return bool
          */
-        private function makePaymentInit($operationData)
+        private function makePaymentInit()
         {
-            $systemId = $this->getSystemId();
-            $mbHead = new \RatePAY\ModelBuilder();
-            $mbHead->setArray([
-                'SystemId' => $systemId,
-                'Credential' => [
-                    'ProfileId' => $this->getProfileId(),
-                    'Securitycode' => $this->getSecurityCode()
-                ]
-            ]);
-
             $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
 
-            $profileRequest = $rb->callPaymentInit($mbHead);
+            $profileRequest = $rb->callPaymentInit($this->getHead());
 
             if ($profileRequest->isSuccessful()) {
-                Shopware()->Pluginlogger()->error('TransactionId ' . $profileRequest->getTransactionId());
                 return $profileRequest->getTransactionId();
             }
             return false;
-        }
-
-        /**
-         * Fills an object of the class Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentRequest
-         *
-         * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentRequest $paymentRequestModel
-         */
-        private function fillPaymentRequest(
-            Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentRequest &$paymentRequestModel
-        ) {
-
-            $method = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
-                Shopware()->Session()->sOrderVariables['sUserData']['additional']['payment']['name']
-            );
-
-            $shopUser = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
-
-            // Checkout address ids are set in RP session from shopware version >=5.2.0
-            if (isset(Shopware()->Session()->RatePAY['checkoutBillingAddressId']) && Shopware()->Session()->RatePAY['checkoutBillingAddressId'] > 0) {
-                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-                $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->RatePAY['checkoutBillingAddressId']));
-                $checkoutAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->RatePAY['checkoutShippingAddressId'] ? Shopware()->Session()->RatePAY['checkoutShippingAddressId'] : Shopware()->Session()->RatePAY['checkoutBillingAddressId']));
-
-                $countryCodeBilling = $checkoutAddressBilling->getCountry()->getIso();
-                $countryCodeShipping = $checkoutAddressShipping->getCountry()->getIso();
-
-                $company = $checkoutAddressBilling->getCompany();
-                if (empty($company)) {
-                    $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d"); // From Shopware 5.2 date of birth has moved to customer object
-                }
-                $merchantCustomerId = $shopUser->getNumber(); // From Shopware 5.2 billing number has moved to customer object
-            } else {
-                $checkoutAddressBilling = $shopUser->getBilling();
-                $checkoutAddressShipping = $shopUser->getShipping() !== null ? $shopUser->getShipping() : $shopUser->getBilling();
-
-                $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressBilling->getCountryId());
-                $countryCodeBilling = $countryBilling->getIso();
-                $countryShipping = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressShipping->getCountryId());
-                $countryCodeShipping = $countryShipping->getIso();
-
-                $company = $checkoutAddressBilling->getCompany();
-                if (empty($company)) {
-                    $dateOfBirth = $shopUser->getBilling()->getBirthday()->format("Y-m-d");
-                }
-                $merchantCustomerId = $shopUser->getBilling()->getNumber();
-            }
-
-            $head = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Head();
-            $head->setTransactionId(Shopware()->Session()->RatePAY['transactionId']);
-            $head->setOperation('PAYMENT_REQUEST');
-            $head->setProfileId($this->getProfileId());
-            $head->setSecurityCode($this->getSecurityCode());
-            $head->setSystemId(Shopware()->Shop()->getHost() ? : $_SERVER['SERVER_ADDR']);
-            $head->setSystemVersion($this->_getVersion());
-            $head->setOrderId($this->_getOrderIdFromTransactionId());
-            $head->setMerchantConsumerId($merchantCustomerId);
-
-            //set device ident token if available
-            if (Shopware()->Session()->RatePAY['dfpToken']) {
-                $head->setDeviceToken(Shopware()->Session()->RatePAY['dfpToken']);
-            }
-
-            $customer = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Customer();
-
-            // only for elv and sepa elv, or for rate elv
-            if ($method === 'ELV' ||
-                ($method === 'INSTALLMENT' && Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 2)
-            ) {
-                $bankAccount = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_BankAccount();
-
-                $bankAccount->setBankAccount(Shopware()->Session()->RatePAY['bankdata']['account']);
-                $bankAccount->setBankCode(Shopware()->Session()->RatePAY['bankdata']['bankcode']);
-                $bankAccount->setOwner(Shopware()->Session()->RatePAY['bankdata']['bankholder']);
-
-                $customer->setBankAccount($bankAccount);
-            }
-
-            $customer->setFirstName($checkoutAddressBilling->getFirstName());
-            $customer->setLastName($checkoutAddressBilling->getLastName());
-            $customer->setEmail($shopUser->getEmail());
-
-            if (!empty($company)) {
-                $customer->setCompanyName($checkoutAddressBilling->getCompany());
-                $customer->setVatId($checkoutAddressBilling->getVatId());
-            } else {
-                $customer->setDateOfBirth($dateOfBirth);
-            }
-
-            /**
-             * set gender and salutation based on the given billingaddress salutation
-             */
-            $gender = 'U';
-            if ($checkoutAddressBilling->getSalutation() === 'mr') {
-                $gender = 'M';
-                $customer->setSalutation('Herr');
-            } elseif ($checkoutAddressBilling->getSalutation() === 'ms') {
-                $gender = 'F';
-                $customer->setSalutation('Frau');
-            } else {
-                $customer->setSalutation($checkoutAddressBilling->getSalutation());
-            }
-
-            $customer->setGender($gender);
-            $customer->setPhone($checkoutAddressBilling->getPhone());
-            $customer->setNationality($this->_countryCode);
-            $customer->setIpAddress($this->_getCustomerIP());
-
-            $customer->setBillingAddresses($this->_getCheckoutAddress(
-                $checkoutAddressBilling,
-                'BILLING',
-                $countryCodeBilling
-            ));
-            $customer->setShippingAddresses($this->_getCheckoutAddress(
-                $checkoutAddressShipping,
-                'DELIVERY',
-                $countryCodeShipping
-            ));
-
-            $payment = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Payment();
-            $payment->setAmount($this->getAmount());
-            $payment->setCurrency(Shopware()->Currency()->getShortName());
-            $payment->setMethod($method);
-
-            if ($method === 'INSTALLMENT') {
-                $payment->setAmount(Shopware()->Session()->RatePAY['ratenrechner']['total_amount']);
-
-                if (Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 2) {
-                    $payment->setDirectPayType('DIRECT-DEBIT');
-                } else {
-                    $payment->setDirectPayType('BANK-TRANSFER');
-                }
-
-                $payment->setPaymentFirstday(Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday']);
-                $payment->setInstallmentAmount(Shopware()->Session()->RatePAY['ratenrechner']['rate']);
-                $payment->setInstallmentNumber(Shopware()->Session()->RatePAY['ratenrechner']['number_of_rates']);
-                $payment->setInterestRate(Shopware()->Session()->RatePAY['ratenrechner']['interest_rate']);
-                $payment->setLastInstallmentAmount(Shopware()->Session()->RatePAY['ratenrechner']['last_rate']);
-            }
-
-            $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
-            $basket->setAmount($this->getAmount());
-            $basket->setCurrency(Shopware()->Currency()->getShortName());
-            $shopItems = Shopware()->Session()->sOrderVariables['sBasket']['content'];
-            $items = array();
-            foreach ($shopItems as $shopItem) {
-                $item = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item();
-                $item->setArticleName($shopItem['articlename']);
-                $item->setArticleNumber($shopItem['ordernumber']);
-                $item->setQuantity($shopItem['quantity']);
-                $item->setTaxRate($shopItem['tax_rate']);
-                $item->setUnitPriceGross($shopItem['priceNumeric']);
-                $items[] = $item;
-            }
-            if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
-                $items[] = $this->getShippingAsItem(
-                    Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'],
-                    Shopware()->Session()->sOrderVariables['sBasket']['sShippingcostsTax']
-                );
-            }
-            $basket->setItems($items);
-
-            $paymentRequestModel->setHead($head);
-            $paymentRequestModel->setCustomer($customer);
-            $paymentRequestModel->setPayment($payment);
-            $paymentRequestModel->setShoppingBasket($basket);
-
         }
 
         /**
@@ -548,18 +566,25 @@
          * @param $checkoutAddress
          * @param $type
          * @param $countryCode
-         * @return Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Address
+         * @return array
          */
         function _getCheckoutAddress($checkoutAddress, $type, $countryCode) {
-            $address = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Address();
-            $address->setType($type);
-            $address->setFirstName($checkoutAddress->getFirstName());
-            $address->setLastName($checkoutAddress->getLastName());
-            $address->setCompany($checkoutAddress->getCompany());
-            $address->setCity($checkoutAddress->getCity());
-            $address->setStreet($checkoutAddress->getStreet());
-            $address->setZipCode($checkoutAddress->getZipCode());
-            $address->setCountryCode($countryCode);
+             $address = array(
+                'Type' => strtolower($type),
+                'Street' => $checkoutAddress->getStreet(),
+                'ZipCode' => $checkoutAddress->getZipCode(),
+                'City' => $checkoutAddress->getCity(),
+                'CountryCode' => $countryCode,
+            );
+
+             if ($type == 'DELIVERY') {
+                 $address['FirstName'] = $checkoutAddress->getFirstName();
+                 $address['LastName'] = $checkoutAddress->getLastName();
+             }
+
+             if (!empty($checkoutAddress->getCompany())) {
+                 $address['Company'] = $checkoutAddress->getCompany();
+             }
             return $address;
         }
 
