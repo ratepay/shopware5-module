@@ -65,6 +65,7 @@
             $this->_service = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
 
             $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+            $this->_modelFactory->setSandboxMode($sandbox);
             $this->_logging      = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
         }
 
@@ -190,19 +191,11 @@
          */
         private function _proceedPayment()
         {
-            $paymentInitModel = $this->_modelFactory->getModel(
-                new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentInit()
-            );
+            $transactionId = $this->_modelFactory->doOperation('PaymentInit', array());
 
-            $result = $this->_service->xmlRequest($paymentInitModel->toArray());
-            if (Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse(
-                'PAYMENT_INIT',
-                $result
-            )
-            ) {
-                Shopware()->Session()->RatePAY['transactionId'] = $result->getElementsByTagName('transaction-id')->item(
-                    0
-                )->nodeValue;
+            if (!empty($transactionId)) {
+                Shopware()->Session()->RatePAY['transactionId'] = $transactionId;
+
                 $this->_modelFactory->setTransactionId(Shopware()->Session()->RatePAY['transactionId']);
                 $paymentRequestModel = $this->_modelFactory->getModel(
                     new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentRequest()

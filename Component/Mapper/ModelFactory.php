@@ -19,13 +19,13 @@
      */
     class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
     {
-
-
         private $_transactionId;
 
         private $_config;
 
         private $_countryCode;
+
+        private $_sandboxMode;
 
         public function __construct($config = null)
         {
@@ -82,17 +82,11 @@
         public function getModel($modelName, $orderId = null)
         {
             switch ($modelName) {
-                case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentInit'):
-                    $this->fillPaymentInit($modelName);
-                    break;
                 case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentRequest'):
                     $this->fillPaymentRequest($modelName);
                     break;
                 case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentConfirm'):
                     $this->fillPaymentConfirm($modelName);
-                    break;
-                case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ProfileRequest'):
-                    $this->fillProfileRequest($modelName);
                     break;
                 case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery'):
                     $this->fillConfirmationDelivery($modelName, $orderId);
@@ -108,22 +102,114 @@
         }
 
         /**
-         * Fills an object of the class Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentInit
+         * make operation
          *
-         * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentInit $paymentInitModel
+         * @param string $operationType
+         * @param array $operationData
+         *
+         * @return bool|array
          */
-        private function fillPaymentInit(
-            Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentInit &$paymentInitModel
-        ) {
-            $head = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Head();
-            $head->setOperation('PAYMENT_INIT');
+        public function doOperation($operationType, $operationData) {
+            Shopware()->Pluginlogger()->error('doOperation ' . $operationType);
+            switch ($operationType) {
+                case 'ProfileRequest':
+                    return $this->makeProfileRequest($operationData);
+                    break;
+                case 'PaymentInit':
+                    return $this->makePaymentInit($operationData);
+                    break;
+            }
+        }
 
-            $head->setProfileId($this->getProfileId());
-            $head->setSecurityCode($this->getSecurityCode());
+        /**
+         * @param $operationData
+         * @return bool|array
+         */
+        private function makeProfileRequest($operationData)
+        {
+            $systemId = $this->getSystemId();
 
-            $head->setSystemId(Shopware()->Shop()->getHost() ? : $_SERVER['SERVER_ADDR']);
-            $head->setSystemVersion($this->_getVersion());
-            $paymentInitModel->setHead($head);
+            $mbHead = new \RatePAY\ModelBuilder();
+            $mbHead->setArray([
+                'SystemId' => $systemId,
+                'Credential' => [
+                    'ProfileId' => $operationData['profileId'],
+                    'Securitycode' => $operationData['securityCode']
+                ]
+            ]);
+
+            $rb = new \RatePAY\RequestBuilder(true); // Sandbox mode = true
+
+            $profileRequest = $rb->callProfileRequest($mbHead);
+
+            if ($profileRequest->isSuccessful()) {
+                return $profileRequest->getResult();
+            }
+            return false;
+        }
+
+        /**
+         * set the sandbox mode
+         *
+         * @param $value
+         */
+        public function setSandboxMode($value)
+        {
+            $this->_sandboxMode = $value;
+        }
+
+        /**
+         * is sandbox mode
+         *
+         * @return bool
+         */
+        public function isSandboxMode()
+        {
+            if ($this->_sandboxMode == 1) {
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * get system id
+         *
+         * @return mixed
+         */
+        private function getSystemId()
+        {
+            $systemId = Shopware()->Shop()->getHost() ? : $_SERVER['SERVER_ADDR'];
+
+            return $systemId;
+        }
+
+        /**
+         * make payment init
+         *
+         * @param $operationData
+         * @return bool
+         */
+        private function makePaymentInit($operationData)
+        {
+            $systemId = $this->getSystemId();
+            $mbHead = new \RatePAY\ModelBuilder();
+            $mbHead->setArray([
+                'SystemId' => $systemId,
+                'Credential' => [
+                    'ProfileId' => $this->getProfileId(),
+                    'Securitycode' => $this->getSecurityCode()
+                ]
+            ]);
+
+            $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
+
+            $profileRequest = $rb->callPaymentInit($mbHead);
+
+            if ($profileRequest->isSuccessful()) {
+                Shopware()->Pluginlogger()->error('TransactionId ' . $profileRequest->getTransactionId());
+                return $profileRequest->getTransactionId();
+            }
+            return false;
         }
 
         /**
@@ -309,27 +395,6 @@
             $head->setSystemVersion($this->_getVersion());
             $head->setOrderId($this->_getOrderIdFromTransactionId());
             $paymentConfirmModel->setHead($head);
-        }
-
-        /**
-         * Fills an object of the class Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ProfileRequest
-         *
-         * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ProfileRequest $profileRequestModel
-         */
-        private function fillProfileRequest(
-            Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ProfileRequest &$profileRequestModel, $profileId = null, $securityCode = null
-        ) {
-            $head = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Head();
-            $head->setOperation('PROFILE_REQUEST');
-            $head->setProfileId($profileId);
-            $head->setSecurityCode($securityCode);
-            $head->setSystemId(
-                Shopware()->Db()->fetchOne(
-                    "SELECT `host` FROM `s_core_shops` WHERE `default`=1"
-                ) ? : $_SERVER['SERVER_ADDR']
-            );
-            $head->setSystemVersion($this->_getVersion());
-            $profileRequestModel->setHead($head);
         }
 
         /**

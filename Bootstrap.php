@@ -33,6 +33,10 @@
             return 'RatePay Payment';
         }
 
+        public function afterInit()
+        {
+            $this->get('Loader')->registerNamespace('RatePAY', $this->Path() . 'Component/Core/src/');
+        }
 
         /**
          * Returns the Pluginversion
@@ -1634,62 +1638,59 @@
         private function getRatepayConfig($profileId, $securityCode, $shopId, $sandbox)
         {
             $factory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
-            $profileRequestModel = $factory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ProfileRequest());
-            $head = $profileRequestModel->getHead();
-            $head->setProfileId($profileId);
-            $head->setSecurityCode($securityCode);
-            $profileRequestModel->setHead($head);
-            $requestService = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
+            $data = array(
+                'profileId' => $profileId,
+                'securityCode' => $securityCode,
+                'sandbox' => $sandbox);
+            $response = $factory->doOperation('ProfileRequest', $data);
 
-            $response = $requestService->xmlRequest($profileRequestModel->toArray());
-
-            if (Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PROFILE_REQUEST', $response)) {
+            if (is_array($response) && $response !== false) {
                 $data = array(
-                    $response->getElementsByTagName('profile-id')->item(0)->nodeValue,
-                    $response->getElementsByTagName('activation-status-invoice')->item(0)->nodeValue,
-                    $response->getElementsByTagName('activation-status-elv')->item(0)->nodeValue,
-                    $response->getElementsByTagName('activation-status-installment')->item(0)->nodeValue,
-                    $response->getElementsByTagName('b2b-invoice')->item(0)->nodeValue ? : 'no',
-                    $response->getElementsByTagName('b2b-elv')->item(0)->nodeValue ? : 'no',
-                    $response->getElementsByTagName('b2b-installment')->item(0)->nodeValue ? : 'no',
-                    $response->getElementsByTagName('delivery-address-invoice')->item(0)->nodeValue ? : 'no',
-                    $response->getElementsByTagName('delivery-address-elv')->item(0)->nodeValue ? : 'no',
-                    $response->getElementsByTagName('delivery-address-installment')->item(0)->nodeValue ? : 'no',
-                    $response->getElementsByTagName('tx-limit-invoice-min')->item(0)->nodeValue,
-                    $response->getElementsByTagName('tx-limit-elv-min')->item(0)->nodeValue,
-                    $response->getElementsByTagName('tx-limit-installment-min')->item(0)->nodeValue,
-                    $response->getElementsByTagName('tx-limit-invoice-max')->item(0)->nodeValue,
-                    $response->getElementsByTagName('tx-limit-elv-max')->item(0)->nodeValue,
-                    $response->getElementsByTagName('tx-limit-installment-max')->item(0)->nodeValue,
-                    $response->getElementsByTagName('tx-limit-invoice-max-b2b')->item(0)->nodeValue,
-                    $response->getElementsByTagName('tx-limit-elv-max-b2b')->item(0)->nodeValue,
-                    $response->getElementsByTagName('tx-limit-installment-max-b2b')->item(0)->nodeValue,
-                    $response->getElementsByTagName('month-allowed')->item(0)->nodeValue,
-                    $response->getElementsByTagName('valid-payment-firstdays')->item(0)->nodeValue,
-                    $response->getElementsByTagName('rate-min-normal')->item(0)->nodeValue,
-                    $response->getElementsByTagName('interestrate-default')->item(0)->nodeValue,
-                    $response->getElementsByTagName('eligibility-device-fingerprint')->item(0)->nodeValue ? : 'no',
-                    $response->getElementsByTagName('device-fingerprint-snippet-id')->item(0)->nodeValue,
-                    strtoupper($response->getElementsByTagName('country-code-billing')->item(0)->nodeValue),
-                    strtoupper($response->getElementsByTagName('country-code-delivery')->item(0)->nodeValue),
-                    strtoupper($response->getElementsByTagName('currency')->item(0)->nodeValue),
+                    $response['merchantConfig']['profile-id'],
+                    $response['merchantConfig']['activation-status-invoice'],
+                    $response['merchantConfig']['activation-status-elv'],
+                    $response['merchantConfig']['activation-status-installment'],
+                    $response['merchantConfig']['b2b-invoice'] ? : 'no',
+                    $response['merchantConfig']['b2b-elv'] ? : 'no',
+                    $response['merchantConfig']['b2b-installment'] ? : 'no',
+                    $response['merchantConfig']['delivery-address-invoice'] ? : 'no',
+                    $response['merchantConfig']['delivery-address-elv'] ? : 'no',
+                    $response['merchantConfig']['delivery-address-installment'] ? : 'no',
+                    $response['merchantConfig']['tx-limit-invoice-min'],
+                    $response['merchantConfig']['tx-limit-elv-min'],
+                    $response['merchantConfig']['tx-limit-installment-min'],
+                    $response['merchantConfig']['tx-limit-invoice-max'],
+                    $response['merchantConfig']['tx-limit-elv-max'],
+                    $response['merchantConfig']['tx-limit-installment-max'],
+                    $response['merchantConfig']['tx-limit-invoice-max-b2b'],
+                    $response['merchantConfig']['tx-limit-elv-max-b2b'],
+                    $response['merchantConfig']['tx-limit-installment-max-b2b'],
+                    $response['installmentConfig']['month-allowed'],
+                    $response['installmentConfig']['valid-payment-firstdays'],
+                    $response['installmentConfig']['rate-min-normal'],
+                    $response['installmentConfig']['interestrate-default'],
+                    $response['merchantConfig']['eligibility-device-fingerprint'] ? : 'no',
+                    $response['merchantConfig']['device-fingerprint-snippet-id'],
+                    strtoupper($response['merchantConfig']['country-code-billing']),
+                    strtoupper($response['merchantConfig']['country-code-delivery']),
+                    strtoupper($response['merchantConfig']['currency']),
 
                     //shopId always needs be the last line
                     $shopId
                 );
 
                 $activePayments = [];
-                if ($response->getElementsByTagName('activation-status-invoice')->item(0)->nodeValue == 2) {
+                if ($response['merchantConfig']['activation-status-invoice'] == 2) {
                     $activePayments[] = '"rpayratepayinvoice"';
                 } else {
                     $inactivePayments[] = '"rpayratepayinvoice"';
                 }
-                if ($response->getElementsByTagName('activation-status-elv')->item(0)->nodeValue == 2) {
+                if ($response['merchantConfig']['activation-status-elv'] == 2) {
                     $activePayments[] = '"rpayratepaydebit"';
                 } else {
                     $inactivePayments[] = '"rpayratepaydebit"';
                 }
-                if ($response->getElementsByTagName('activation-status-installment')->item(0)->nodeValue == 2) {
+                if ($response['merchantConfig']['activation-status-installment'] == 2) {
                     $activePayments[] = '"rpayratepayrate"';
                 } else {
                     $inactivePayments[] = '"rpayratepayrate"';
