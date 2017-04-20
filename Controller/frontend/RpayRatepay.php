@@ -202,18 +202,9 @@
                 if ($resultRequest->isSuccessful()) {
                     $uniqueId = $this->createPaymentUniqueId();
                     $orderNumber = $this->saveOrder(Shopware()->Session()->RatePAY['transactionId'], $uniqueId, 17);
-                    $paymentConfirmModel = $this->_modelFactory->getModel(
-                        new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentConfirm()
-                    );
-                    $matches = array();
-                    preg_match("/<descriptor.*>(.*)<\/descriptor>/", $this->_service->getLastResponse(), $matches);
-                    $dgNumber = $matches[1];
-                    $result = $this->_service->xmlRequest($paymentConfirmModel->toArray());
-                    if (Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse(
-                        'PAYMENT_CONFIRM',
-                        $result
-                    )
-                    ) {
+                    $dgNumber = $resultRequest->getDescriptor();
+
+                    if ($this->_modelFactory->doOperation('PaymentConfirm')) {
                         if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
                             $this->initShipping($orderNumber);
                         }

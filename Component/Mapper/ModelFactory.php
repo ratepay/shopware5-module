@@ -82,9 +82,6 @@
         public function getModel($modelName, $orderId = null)
         {
             switch ($modelName) {
-                case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentConfirm'):
-                    $this->fillPaymentConfirm($modelName);
-                    break;
                 case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery'):
                     $this->fillConfirmationDelivery($modelName, $orderId);
                     break;
@@ -118,6 +115,10 @@
                 case 'PaymentRequest':
                     return $this->makePaymentRequest();
                     break;
+                case 'PaymentConfirm':
+                    return $this->makePaymentConfirm();
+                    break;
+
             }
         }
 
@@ -396,23 +397,26 @@
             return false;
         }
 
-        /**
-         * Fills an object of the class Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentConfirm
-         *
-         * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentConfirm $paymentConfirmModel
-         */
-        private function fillPaymentConfirm(
-            Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentConfirm &$paymentConfirmModel
-        ) {
-            $head = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Head();
-            $head->setOperation('PAYMENT_CONFIRM');
-            $head->setProfileId($this->getProfileId());
-            $head->setSecurityCode($this->getSecurityCode());
-            $head->setSystemId(Shopware()->Shop()->getHost() ? : $_SERVER['SERVER_ADDR']);
-            $head->setTransactionId($this->getTransactionId());
-            $head->setSystemVersion($this->_getVersion());
-            $head->setOrderId($this->_getOrderIdFromTransactionId());
-            $paymentConfirmModel->setHead($head);
+        private function makePaymentConfirm()
+        {
+            $mbHead = new RatePAY\ModelBuilder();
+            $mbHead->setArray([
+                'SystemId' => $this->getSystemId(),
+                'Credential' => [
+                    'ProfileId' => $this->getProfileId(),
+                    'Securitycode' => $this->getSecurityCode()
+                ],
+                'TransactionId' => $this->getTransactionId()
+            ]);
+
+            $rb = new RatePAY\RequestBuilder(true); // Sandbox mode = true
+
+            $paymentConfirm = $rb->callPaymentConfirm($mbHead);
+
+            if ($paymentConfirm->isSuccessful()) {
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -487,26 +491,6 @@
             } else {
                 return $basket['AmountNetNumeric'];
             }
-        }
-
-        /**
-         * Returns the Shippingcosts as Item
-         *
-         * @param string $amount
-         * @param string $tax
-         *
-         * @return \Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item
-         */
-        private function getShippingAsItem($amount, $tax)
-        {
-            $item = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item();
-            $item->setArticleName('shipping');
-            $item->setArticleNumber('shipping');
-            $item->setQuantity(1);
-            $item->setTaxRate($tax);
-            $item->setUnitPriceGross($amount);
-
-            return $item;
         }
 
         /**
