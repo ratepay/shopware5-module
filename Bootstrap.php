@@ -1083,23 +1083,13 @@
                 }
 
                 if (null != $count) {
-
-                    $basketItems = $this->getBasket($order);
-                    $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
-                    $basket->setAmount($order->getInvoiceAmount());
-                    $basket->setCurrency($order->getCurrency());
-                    $basket->setItems($basketItems);
-
-                    $confirmationDeliveryModel = $modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery(), $order->getId());
-                    $confirmationDeliveryModel->setShoppingBasket($basket);
-                    $head = $confirmationDeliveryModel->getHead();
-                    $head->setTransactionId($order->getTransactionID());
-                    $confirmationDeliveryModel->setHead($head);
-                    $response = $service->xmlRequest($confirmationDeliveryModel->toArray());
-                    $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('CONFIRMATION_DELIVER', $response);
+                    $modelFactory->setSandboxMode($sandbox);
+                    $operationData['orderId'] = $order->getId();
+                    $operationData['items'] = $order->getDetails();
+                    $result = $modelFactory->doOperation('ConfirmationDelivery', $operationData);
 
                     if ($result === true) {
-                        foreach ($basketItems as $item) {
+                        foreach ($items = $order->getDetails() as $item) {
                             $bind = array(
                                 'delivered' => $item->getQuantity()
                             );

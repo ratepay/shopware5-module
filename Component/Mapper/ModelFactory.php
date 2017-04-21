@@ -82,9 +82,6 @@
         public function getModel($modelName, $orderId = null)
         {
             switch ($modelName) {
-                case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery'):
-                    $this->fillConfirmationDelivery($modelName, $orderId);
-                    break;
                 case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange'):
                     $this->fillPaymentChange($modelName, $orderId);
                     break;
@@ -104,7 +101,6 @@
          * @return bool|array
          */
         public function doOperation($operationType, array $operationData) {
-            Shopware()->Pluginlogger()->error('doOperation ' . $operationType);
             switch ($operationType) {
                 case 'ProfileRequest':
                     return $this->makeProfileRequest($operationData);
@@ -118,20 +114,34 @@
                 case 'PaymentConfirm':
                     return $this->makePaymentConfirm();
                     break;
+                case 'ConfirmationDeliver':
+                    return $this->makeConfirmationDeliver($operationData);
+                    break;
 
             }
         }
 
-        private function getHead() {
+        /**
+         * get request head
+         *
+         * @param bool $countryCode
+         * @return \RatePAY\ModelBuilder
+         */
+        private function getHead($countryCode = false) {
             $systemId = $this->getSystemId();
-            $mbHead = new \RatePAY\ModelBuilder();
+
+            $mbHead = new \RatePAY\ModelBuilder('head');
             $mbHead->setArray([
                 'SystemId' => $systemId,
                 'Credential' => [
-                    'ProfileId' => $this->getProfileId(),
-                    'Securitycode' => $this->getSecurityCode()
+                    'ProfileId' => $this->getProfileId($countryCode),
+                    'Securitycode' => $this->getSecurityCode($countryCode)
                 ]
             ]);
+
+            if (!empty($this->_transactionId)) {
+                $mbHead->setTransactionId($this->_transactionId);
+            }
 
             return $mbHead;
         }
@@ -144,7 +154,6 @@
         private function makePaymentRequest()
         {
             $mbHead = $this->getHead();
-            $mbHead->setTransactionId($this->_transactionId);
             $mbHead->setCustomerDevice(
                 $mbHead->CustomerDevice()->setDeviceToken(Shopware()->Session()->RatePAY['dfpToken'])
             );
@@ -202,24 +211,13 @@
             } else {
                 $salutation = $checkoutAddressBilling->getSalutation();
             }
-            Shopware()->Pluginlogger()->error('Method ' . $method);
+
             if ($method === 'INSTALLMENT') {
-                $installmentDetails = $this->getPaymentDetails($method);
+                $installmentDetails = $this->getPaymentDetails();
             }
 
-            $shoppingBasket = array();
             $shopItems = Shopware()->Session()->sOrderVariables['sBasket']['content'];
-            foreach ($shopItems AS $shopItem) {
-                $item = array(
-                    'Description' => $shopItem['articlename'],
-                    'ArticleNumber' => $shopItem['ordernumber'],
-                    'Quantity' => $shopItem['quantity'],
-                    'UnitPriceGross' => $shopItem['priceNumeric'],
-                    'TaxRate' => $shopItem['tax_rate'],
-                    //'Discount' => 10
-                );
-                $shoppingBasket['Items'] = array(array('Item' => $item));
-            }
+            $shoppingBasket = $this->createBasketArray($shopItems);
 
             if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
                 $shoppingBasket['Shipping'] = array(
@@ -229,7 +227,7 @@
                 );
             }
 
-            $mbContent = new RatePAY\ModelBuilder('Content');
+            $mbContent = new \RatePAY\ModelBuilder('Content');
             $contentArr = [
                 'Customer' => [
                     'Gender' => $gender,
@@ -291,7 +289,7 @@
 
             $mbContent->setArray($contentArr);
 
-            $rb = new RatePAY\RequestBuilder(true); // Sandbox mode = true
+            $rb = new \RatePAY\RequestBuilder(true); // Sandbox mode = true
             $paymentRequest = $rb->callPaymentRequest($mbHead, $mbContent);
 
             return $paymentRequest;
@@ -300,19 +298,16 @@
         /**
          * get payment details
          *
-         * @param $method
          * @return array
          */
-        private function getPaymentDetails($method) {
+        private function getPaymentDetails() {
             $paymentDetails = array();
 
-                Shopware()->Pluginlogger()->error('INSTALLMENT');
-                $paymentDetails['InstallmentNumber'] = Shopware()->Session()->RatePAY['ratenrechner']['number_of_rates'];
-                $paymentDetails['InstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['rate'];
-                $paymentDetails['LastInstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['last_rate'];
-                $paymentDetails['InterestRate'] = Shopware()->Session()->RatePAY['ratenrechner']['interest_rate'];
-                $paymentDetails['PaymentFirstday'] = Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'];
-
+            $paymentDetails['InstallmentNumber'] = Shopware()->Session()->RatePAY['ratenrechner']['number_of_rates'];
+            $paymentDetails['InstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['rate'];
+            $paymentDetails['LastInstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['last_rate'];
+            $paymentDetails['InterestRate'] = Shopware()->Session()->RatePAY['ratenrechner']['interest_rate'];
+            $paymentDetails['PaymentFirstday'] = Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'];
 
             return $paymentDetails;
         }
@@ -374,7 +369,8 @@
          */
         private function getSystemId()
         {
-            $systemId = Shopware()->Shop()->getHost() ? : $_SERVER['SERVER_ADDR'];
+
+            $systemId = Shopware()->Db()->fetchOne("SELECT `host` FROM `s_core_shops` WHERE `default`=1") ? : $_SERVER['SERVER_ADDR'];
 
             return $systemId;
         }
@@ -399,17 +395,9 @@
 
         private function makePaymentConfirm()
         {
-            $mbHead = new RatePAY\ModelBuilder();
-            $mbHead->setArray([
-                'SystemId' => $this->getSystemId(),
-                'Credential' => [
-                    'ProfileId' => $this->getProfileId(),
-                    'Securitycode' => $this->getSecurityCode()
-                ],
-                'TransactionId' => $this->getTransactionId()
-            ]);
+            $mbHead = $this->getHead();
 
-            $rb = new RatePAY\RequestBuilder(true); // Sandbox mode = true
+            $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
 
             $paymentConfirm = $rb->callPaymentConfirm($mbHead);
 
@@ -420,31 +408,86 @@
         }
 
         /**
-         * Fills an object of the class Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery
+         * create basket array
          *
-         * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery $confirmationDeliveryModel
+         * @param $items
+         * @return array
          */
-        private function fillConfirmationDelivery(
-            Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery &$confirmationDeliveryModel, $orderId
-        ) {
-            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
-            $countryCode = $order->getBilling()->getCountry()->getIso();
+        private function createBasketArray($items) {
+            $shoppingBasket = array();
+            foreach ($items AS $shopItem) {
+                if (is_array($shopItem)) {
+                    $item = array(
+                        'Description' => $shopItem['articlename'],
+                        'ArticleNumber' => $shopItem['ordernumber'],
+                        'Quantity' => $shopItem['quantity'],
+                        'UnitPriceGross' => $shopItem['priceNumeric'],
+                        'TaxRate' => $shopItem['tax_rate'],
+                        //'Discount' => 10
+                    );
+                } elseif (is_object($shopItem)) {
+                    $item = array(
+                        'Description' => $shopItem->name,
+                        'ArticleNumber' => $shopItem->articlenumber,
+                        'Quantity' => $shopItem->quantity,
+                        'UnitPriceGross' => $shopItem->price,
+                        'TaxRate' => $shopItem->taxRate,
+                        //'Discount' => 10
+                    );
+                }
 
-            $head = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Head();
-            $head->setOperation('CONFIRMATION_DELIVER');
-            $head->setProfileId($this->getProfileId($countryCode));
-            $head->setSecurityCode($this->getSecurityCode($countryCode));
-            $head->setSystemId(
-                Shopware()->Db()->fetchOne(
-                    "SELECT `host` FROM `s_core_shops` WHERE `default`=1"
-                ) ? : $_SERVER['SERVER_ADDR']
-            );
-            $head->setSystemVersion($this->_getVersion());
-            $confirmationDeliveryModel->setHead($head);
+                $shoppingBasket['Items'] = array(array('Item' => $item));
+            }
+            return $shoppingBasket;
+        }
+
+
+        private function makeConfirmationDeliver($operationData)
+        {
+            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
+            $countryCode = $order->getBilling()->getCountry()->getIso();
+            $mbHead = $this->getHead($countryCode);
+            $shoppingItems = $this->createBasketArray($operationData['items']);
+
+            $shoppingBasket = [
+                'ShoppingBasket' => $shoppingItems,
+            ];
+
+            $mbContent = new \RatePAY\ModelBuilder('Content');
+
+            $mbContent->setArray($shoppingBasket);
+
+            $documentModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Document\Document');
+            $document = $documentModel->findOneBy(array('orderId' => $operationData['orderId'], 'type' => 1));
+
+            if (!is_null($document)) {
+                $dateObject = new DateTime();
+                $currentDate = $dateObject->format("Y-m-d");
+                $currentTime = $dateObject->format("H:m:s");
+                $currentDateTime = $currentDate . "T" . $currentTime;
+
+                $invoicing = [
+                    'Invoicing' => [
+                        'InvoiceId' => $document->getDocumentId(),
+                        'InvoiceDate' => $currentDateTime,
+                        'DeliveryDate' => $currentDateTime,
+                        'DueDate' => date('Y-m-d\Th:m:s'),
+                    ]
+                ];
+                $mbContent->setArray($invoicing);
+            }
+
+            $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
+            $confirmationDeliver = $rb->callConfirmationDeliver($mbHead, $mbContent);
+
+            if ($confirmationDeliver->isSuccessful()) {
+                return true;
+            }
+            return false;
         }
 
         /**
-         * Fills an object of the class Shopware_Plugins_Frontend_RpayRatePay_Component_Model_ConfirmationDelivery
+         * Fills an object of the class Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange
          *
          * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange $paymentChangeModel
          */
