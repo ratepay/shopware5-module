@@ -227,48 +227,28 @@
         {
             $orderId = $this->Request()->getParam("orderId");
             $items = json_decode($this->Request()->getParam("items"));
-
-            $order = Shopware()->Db()->fetchRow("SELECT * FROM `s_order` WHERE `id`=?", array($orderId));
-            $basketItems = array();
-
+            $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
+            $order = $orderModel->findOneBy(array('id' => $orderId));
+            $this->_modelFactory->setTransactionId($order->getTransactionID());
             $itemsToCancel = null;
-            foreach ($items as $item) {
-                $basketItem = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item();
 
+            foreach ($items as $item) {
                 // count all item which are in cancellation process
                 $itemsToCancel += $item->cancelledItems;
 
                 if ($item->quantity <= 0) {
                     continue;
                 }
-
-                $basketItem->setArticleName($item->name);
-                $basketItem->setArticleNumber($item->articlenumber);
-                $basketItem->setQuantity($item->quantity);
-                $basketItem->setTaxRate($item->taxRate);
-                $basketItem->setUnitPriceGross($item->price);
-                $basketItems[] = $basketItem;
             }
 
             //only call the logic if there are items to cancel
             if($itemsToCancel > 0)
             {
+                $operationData['orderId'] = $orderId;
+                $operationData['items'] = $items;
+                $operationData['subtype'] = 'cancellation';
+                $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
-                $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
-                $basket->setAmount($this->getRecalculatedAmount($basketItems));
-                $basket->setCurrency($order['currency']);
-                $basket->setItems($basketItems);
-
-                $subtype = 'partial-cancellation';
-                $this->_modelFactory->setTransactionId($order['transactionID']);
-                $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange(), $orderId);
-                $head = $paymentChange->getHead();
-                $head->setOperationSubstring($subtype);
-                $paymentChange->setHead($head);
-                $paymentChange->setShoppingBasket($basket);
-
-                $response = $this->_service->xmlRequest($paymentChange->toArray());
-                $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
                 if ($result === true) {
                     foreach ($items as $item) {
                         $bind = array(
@@ -310,47 +290,27 @@
         {
             $orderId = $this->Request()->getParam("orderId");
             $items = json_decode($this->Request()->getParam("items"));
-            $order = Shopware()->Db()->fetchRow("SELECT * FROM `s_order` WHERE `id`=?", array($orderId));
+            $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
+            $order = $orderModel->findOneBy(array('id' => $orderId));
+            $this->_modelFactory->setTransactionId($order->getTransactionID());
             $itemsToReturn = null;
-            $basketItems = array();
 
             foreach ($items as $item) {
-                $basketItem = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item();
-
                 // count all item which are in returning process
                 $itemsToReturn += $item->returnedItems;
-
                 if ($item->quantity <= 0) {
                     continue;
                 }
-                $basketItem->setArticleName($item->name);
-                $basketItem->setArticleNumber($item->articlenumber);
-                $basketItem->setQuantity($item->quantity);
-                $basketItem->setTaxRate($item->taxRate);
-                $basketItem->setUnitPriceGross($item->price);
-                $basketItems[] = $basketItem;
             }
 
             //only call the logic if there are items to return
             if($itemsToReturn > 0)
             {
+                $operationData['orderId'] = $orderId;
+                $operationData['items'] = $items;
+                $operationData['subtype'] = 'return';
+                $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
-                $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
-                $basket->setAmount($this->getRecalculatedAmount($basketItems));
-                $basket->setCurrency($order['currency']);
-                $basket->setItems($basketItems);
-
-                $subtype = 'partial-return';
-
-                $this->_modelFactory->setTransactionId($order['transactionID']);
-                $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange(), $orderId);
-                $head = $paymentChange->getHead();
-                $head->setOperationSubstring($subtype);
-                $paymentChange->setHead($head);
-                $paymentChange->setShoppingBasket($basket);
-
-                $response = $this->_service->xmlRequest($paymentChange->toArray());
-                $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
                 if ($result === true) {
                     foreach ($items as $item) {
                         $bind = array(
@@ -398,55 +358,35 @@
             $orderItems = Shopware()->Db()->fetchAll("SELECT *, (`quantity` - `delivered` - `cancelled`) AS `quantityDeliver` FROM `s_order_details` "
                                                      . "INNER JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
                                                      . "WHERE `orderID`=?", array($orderId));
-            $basketItems = array();
             foreach ($orderItems as $row) {
                 if ($row['quantityDeliver'] == 0) {
                     continue;
                 }
-                if (strpos($row['articleordernumber'], 'Debit') === false
-                    && strpos($row['articleordernumber'], 'Credit') === false
+
+                if ((substr($row['articleordernumber'], 0, 5) == 'Debit')
+                    || (substr($row['articleordernumber'], 0, 6) == 'Credit')
                 ) {
                     $onlyDebit = false;
                 }
-                $basketItem = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item();
-                $basketItem->setArticleName($row['name']);
-                $basketItem->setArticleNumber($row['articleordernumber']);
-                $basketItem->setQuantity($row['quantityDeliver']);
-                $basketItem->setTaxRate($row['tax_rate']);
-                $basketItem->setUnitPriceGross($row['price']);
-                $basketItems[] = $basketItem;
+                $items = $row;
             }
+
             $shippingRow = $this->getShippingFromDBAsItem($orderId);
             if (!is_null($shippingRow) && $shippingRow['quantityDeliver'] != 0) {
-                $basketItem = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item();
-                $basketItem->setArticleName($shippingRow['name']);
-                $basketItem->setArticleNumber($shippingRow['articleordernumber']);
-                $basketItem->setQuantity($shippingRow['quantityDeliver']);
-                $basketItem->setTaxRate($shippingRow['tax_rate']);
-                $basketItem->setUnitPriceGross($shippingRow['price']);
-                $basketItems[] = $basketItem;
+                $items = $shippingRow;
             }
 
             if ($onlyDebit == false) {
-                $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
-                $basket->setAmount($this->getRecalculatedAmount($basketItems));
-                $basket->setCurrency($order['currency']);
-                $basket->setItems($basketItems);
-
                 $this->_modelFactory->setTransactionId($order['transactionID']);
-                $paymentChange = $this->_modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange(), $orderId);
-                $head = $paymentChange->getHead();
-                $head->setOperationSubstring($subOperation);
-                $paymentChange->setHead($head);
-                $paymentChange->setShoppingBasket($basket);
+                $operationData['orderId'] = $orderId;
+                $operationData['items'] = $items;
+                $operationData['subtype'] = 'credit';
+                $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
-                $response = $this->_service->xmlRequest($paymentChange->toArray());
-                $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
-
-                if ($result) {
+                if ($result === true) {
                     if ($subOperation === 'credit') {
-                        if ($row['price'] < 0) {
-                            $event = 'Nachbelastunglass wurde hinzugefügt';
+                        if ($row['price'] > 0) {
+                            $event = 'Nachbelastung wurde hinzugefügt';
                         } else {
                             $event = 'Nachlass wurde hinzugefügt';
                         }

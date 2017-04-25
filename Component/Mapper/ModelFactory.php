@@ -72,27 +72,6 @@
         }
 
         /**
-         * Expects an instance of a paymentmodel and fill it with shopdata
-         *
-         * @param ObjectToBeFilled $modelName
-         *
-         * @return filledObjectGivenToTheFunction
-         * @throws Exception The submitted Class is not supported!
-         */
-        public function getModel($modelName, $orderId = null)
-        {
-            switch ($modelName) {
-                case is_a($modelName, 'Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange'):
-                    $this->fillPaymentChange($modelName, $orderId);
-                    break;
-                default:
-                    throw new Exception('The submitted Class is not supported!');
-                    break;
-            }
-            return $modelName;
-        }
-
-        /**
          * make operation
          *
          * @param string $operationType
@@ -117,7 +96,9 @@
                 case 'ConfirmationDeliver':
                     return $this->makeConfirmationDeliver($operationData);
                     break;
-
+                case 'PaymentChange':
+                    return $this->makePaymentChange($operationData);
+                    break;
             }
         }
 
@@ -378,7 +359,6 @@
         /**
          * make payment init
          *
-         * @param $operationData
          * @return bool
          */
         private function makePaymentInit()
@@ -393,6 +373,11 @@
             return false;
         }
 
+        /**
+         * make payment confirm
+         *
+         * @return bool
+         */
         private function makePaymentConfirm()
         {
             $mbHead = $this->getHead();
@@ -411,10 +396,13 @@
          * create basket array
          *
          * @param $items
+         * @param $type
          * @return array
          */
-        private function createBasketArray($items) {
+        private function createBasketArray($items, $type = false) {
             $shoppingBasket = array();
+            $item = array();
+
             foreach ($items AS $shopItem) {
                 if (is_array($shopItem)) {
                     $item = array(
@@ -434,6 +422,16 @@
                         'TaxRate' => $shopItem->taxRate,
                         //'Discount' => 10
                     );
+
+                    if (!empty($type)) {
+                        switch ($type) {
+                            case 'return':
+                                $item['Quantity'] = $shopItem->returnedItems;
+                                break;
+                            case 'cancellation':
+                                $item['Quantity'] = $shopItem->cancelledItems;
+                        }
+                    }
                 }
 
                 $shoppingBasket['Items'] = array(array('Item' => $item));
@@ -441,7 +439,12 @@
             return $shoppingBasket;
         }
 
-
+        /**
+         * make confirmation deliver
+         *
+         * @param $operationData
+         * @return bool
+         */
         private function makeConfirmationDeliver($operationData)
         {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
@@ -487,37 +490,41 @@
         }
 
         /**
-         * Fills an object of the class Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange
+         * make a payment change (return, cancellation, order change)
          *
-         * @param Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange $paymentChangeModel
+         * @param $operationData
+         * @return bool
          */
-        private function fillPaymentChange(
-            Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange &$paymentChangeModel, $orderId
-        ) {
-
-            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
+        private function makePaymentChange($operationData)
+        {
+            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
             $countryCode = $order->getBilling()->getCountry()->getIso();
+            $mbHead = $this->getHead($countryCode);
 
-            $head = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_Head();
-            $head->setOperation('PAYMENT_CHANGE');
-            $head->setTransactionId($this->_transactionId);
-            $head->setProfileId($this->getProfileId($countryCode));
-            $head->setSecurityCode($this->getSecurityCode($countryCode));
-            $head->setSystemId(
-                Shopware()->Db()->fetchOne(
-                    "SELECT `host` FROM `s_core_shops` WHERE `default`=1"
-                ) ? : $_SERVER['SERVER_ADDR']
-            );
-            $head->setSystemVersion($this->_getVersion());
+            if ($operationData['subtype'] == 'credit') {
+                $shoppingItems = array('Discount' => $item = array(
+                                        'Description' => $operationData['items']['name'],
+                                        'UnitPriceGross' => $operationData['items']['price'],
+                                        'TaxRate' => $operationData['items']['tax_rate']
+                                    ));
+            } else {
+                $shoppingItems = $this->createBasketArray($operationData['items'], $operationData['subtype']);
+            }
 
-            $order = Shopware()->Db()->fetchRow(
-                "SELECT `name`,`currency` FROM `s_order` "
-                . "INNER JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id` = `s_order`.`paymentID` "
-                . "WHERE `s_order`.`transactionID`=?;",
-                array($this->_transactionId)
-            );
+            $shoppingBasket = [
+                'ShoppingBasket' => $shoppingItems,
+            ];
 
-            $paymentChangeModel->setHead($head);
+            $mbContent = new \RatePAY\ModelBuilder('Content');
+            $mbContent->setArray($shoppingBasket);
+
+            $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
+            $paymentChange = $rb->callPaymentChange($mbHead, $mbContent)->subtype($operationData['subtype']);
+
+            if ($paymentChange->isSuccessful()) {
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -554,18 +561,6 @@
             }
 
             return $returnValue;
-        }
-
-        /**
-         * Returns the Version for this Payment-Plugin
-         *
-         * @return string
-         */
-        private function _getVersion()
-        {
-            $boostrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
-
-            return Shopware()->Config()->get('version') . '_' . $boostrap->getVersion();
         }
 
         /**
@@ -615,6 +610,12 @@
             return $address;
         }
 
+        /**
+         * get profile id
+         *
+         * @param bool $countryCode
+         * @return mixed
+         */
         public function getProfileId($countryCode = false)
         {
             if (!$countryCode) {
@@ -630,6 +631,12 @@
             return $profileId;
         }
 
+        /**
+         * get security code
+         *
+         * @param bool $countryCode
+         * @return mixed
+         */
         public function getSecurityCode($countryCode = false)
         {
             if (!$countryCode) {

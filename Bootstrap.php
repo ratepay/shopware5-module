@@ -1084,6 +1084,7 @@
 
                 if (null != $count) {
                     $modelFactory->setSandboxMode($sandbox);
+                    $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $order->getDetails();
                     $result = $modelFactory->doOperation('ConfirmationDelivery', $operationData);
@@ -1117,20 +1118,13 @@
 
                 if (null != $count) {
                     $basketItems = $this->getBasket($order);
-                    $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
-                    $basket->setAmount($order->getInvoiceAmount());
-                    $basket->setCurrency($order->getCurrency());
-                    $basket->setItems($basketItems);
-
+                    $modelFactory->setSandboxMode($sandbox);
                     $modelFactory->setTransactionId($order->getTransactionID());
-                    $paymentChange = $modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange());
-                    $head = $paymentChange->getHead();
-                    $head->setOperationSubstring('partial-cancellation');
-                    $paymentChange->setHead($head);
-                    $paymentChange->setShoppingBasket($basket);
+                    $operationData['orderId'] = $order->getId();
+                    $operationData['items'] = $basketItems;
+                    $operationData['subtype'] = 'cancellation';
+                    $result = $modelFactory->doOperation('PaymentChange', $operationData);
 
-                    $response = $service->xmlRequest($paymentChange->toArray());
-                    $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
                     if ($result === true) {
                         foreach ($basketItems as $item) {
                             $bind = array(
@@ -1146,7 +1140,6 @@
                 }
 
             }  elseif ($newOrderStatus == $config['RatePayFullReturn']) {
-
                 $sqlShipping = "SELECT COUNT(*) "
                                . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
                                . "WHERE `returned` = 0 AND `shipping`.`s_order_id` = ?";
@@ -1158,23 +1151,15 @@
                 }
 
                 if (null != $count) {
-                    $basketItems = $this->getBasket($order);
-                    $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
-                    $basket->setAmount($order->getInvoiceAmount());
-                    $basket->setCurrency($order->getCurrency());
-                    $basket->setItems($basketItems);
-
                     $modelFactory->setTransactionId($order->getTransactionID());
-                    $paymentChange = $modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange());
-                    $head = $paymentChange->getHead();
-                    $head->setOperationSubstring('partial-return');
-                    $paymentChange->setHead($head);
-                    $paymentChange->setShoppingBasket($basket);
+                    $modelFactory->setSandboxMode($sandbox);
+                    $operationData['orderId'] = $order->getId();
+                    $operationData['items'] = $order->getDetails();
+                    $operationData['subtype'] = 'return';
+                    $result = $modelFactory->doOperation('PaymentChange', $operationData);
 
-                    $response = $service->xmlRequest($paymentChange->toArray());
-                    $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
                     if ($result === true) {
-                        foreach ($basketItems as $item) {
+                        foreach ($order->getDetails() as $item) {
                             $bind = array(
                                 'returned' => $item->getQuantity()
                             );
