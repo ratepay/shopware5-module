@@ -170,7 +170,7 @@
 
                 $company = $checkoutAddressBilling->getCompany();
                 if (empty($company)) {
-                    $dateOfBirth = $shopUser->getBilling()->getBirthday()->format("Y-m-d");
+                    $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d");
                 }
                 $merchantCustomerId = $shopUser->getBilling()->getNumber();
             }
@@ -204,7 +204,8 @@
                 $shoppingBasket['Shipping'] = array(
                     'Description' => "Shipping costs",
                     'UnitPriceGross' => Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'],
-                    'TaxRate' => Shopware()->Session()->sOrderVariables['sBasket']['sShippingcostsTaxRate'],
+                    'TaxRate' => Shopware()->Session()->sOrderVariables['sBasket']['sShippingcostsTax'],
+
                 );
             }
 
@@ -404,37 +405,44 @@
             $item = array();
 
             foreach ($items AS $shopItem) {
-                if (is_array($shopItem)) {
-                    $item = array(
-                        'Description' => $shopItem['articlename'],
-                        'ArticleNumber' => $shopItem['ordernumber'],
-                        'Quantity' => $shopItem['quantity'],
-                        'UnitPriceGross' => $shopItem['priceNumeric'],
-                        'TaxRate' => $shopItem['tax_rate'],
-                        //'Discount' => 10
-                    );
-                } elseif (is_object($shopItem)) {
-                    $item = array(
-                        'Description' => $shopItem->name,
-                        'ArticleNumber' => $shopItem->articlenumber,
-                        'Quantity' => $shopItem->quantity,
+                if ($shopItem->articlenumber == 'shipping') {
+                    $shoppingBasket['Shipping'] = array(
+                        'Description' => "Shipping costs",
                         'UnitPriceGross' => $shopItem->price,
                         'TaxRate' => $shopItem->taxRate,
-                        //'Discount' => 10
                     );
+                } else {
+                    if (is_array($shopItem)) {
+                        $item = array(
+                            'Description' => $shopItem['articlename'],
+                            'ArticleNumber' => $shopItem['ordernumber'],
+                            'Quantity' => $shopItem['quantity'],
+                            'UnitPriceGross' => $shopItem['priceNumeric'],
+                            'TaxRate' => $shopItem['tax_rate'],
+                            //'Discount' => 10
+                        );
+                    } elseif (is_object($shopItem)) {
+                        $item = array(
+                            'Description' => $shopItem->name,
+                            'ArticleNumber' => $shopItem->articlenumber,
+                            'Quantity' => $shopItem->quantity,
+                            'UnitPriceGross' => $shopItem->price,
+                            'TaxRate' => $shopItem->taxRate,
+                            //'Discount' => 10
+                        );
 
-                    if (!empty($type)) {
-                        switch ($type) {
-                            case 'return':
-                                $item['Quantity'] = $shopItem->returnedItems;
-                                break;
-                            case 'cancellation':
-                                $item['Quantity'] = $shopItem->cancelledItems;
+                        if (!empty($type)) {
+                            switch ($type) {
+                                case 'return':
+                                    $item['Quantity'] = $shopItem->returnedItems;
+                                    break;
+                                case 'cancellation':
+                                    $item['Quantity'] = $shopItem->cancelledItems;
+                            }
                         }
                     }
+                    $shoppingBasket['Items'][] = array('Item' => $item);
                 }
-
-                $shoppingBasket['Items'] = array(array('Item' => $item));
             }
             return $shoppingBasket;
         }

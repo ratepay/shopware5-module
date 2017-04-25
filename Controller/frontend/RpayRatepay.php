@@ -28,7 +28,6 @@
          * @var Shopware\Models\Customer\Billing
          */
         private $_config;
-        private $_service;
         private $_modelFactory;
         private $_logging;
         private $_customerMessage;
@@ -61,8 +60,6 @@
 
             //set sandbox mode based on config
             $sandbox = $this->_config->get('RatePaySandbox' . $country->getIso());
-
-            $this->_service = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
 
             $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $this->_modelFactory->setSandboxMode($sandbox);
