@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau, Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `4.2.91`
+|Version | `5.0.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 5.0.0 - Released 2017-04-26
+* change the requests to ne new ratepay library
 
 ### Version Version 4.2.91 - Released 2017-04-12
 * fix for checkout javascript problem
