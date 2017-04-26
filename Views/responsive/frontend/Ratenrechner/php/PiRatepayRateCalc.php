@@ -9,7 +9,6 @@
      * Code by Ratepay GmbH  <http://www.ratepay.com/>
      */
     require_once 'PiRatepayRateCalcBase.php';
-    require_once 'pi_ratepay_xml_service.php';
 
     /**
      * This is for the communication with RatePAY
@@ -28,7 +27,6 @@
         public function PiRatepayRateCalc()
         {
             parent::PiRatepayRateCalcBase();
-            $this->ratepay = new pi_ratepay_xml_service($this->getLive());
         }
 
         /**
@@ -125,144 +123,75 @@
          */
         private function requestRateDetails($subtype)
         {
-            $this->setRequestOperation('CALCULATION_REQUEST');
-            $this->setRequestOperationSubtype($subtype);
-            $request = $this->ratepay->getXMLObject();
+            if (isset(Shopware()->Session()->sUserId)) {
+                $userId = Shopware()->Session()->sUserId;
+            } elseif (isset($Parameter['userid'])) {
+                $userId = $Parameter['userid'];
+            } else { // return if no current user set. e.g. call by crawler
+                return "RatePAY frontend controller: No user set";
+            }
 
-            $this->setRatepayHead($request);
-            $this->setRatepayContentCalculation($request);
-            $response = $this->ratepay->paymentOperation($request);
-            $request_reason_msg = 'serveroff';
+            $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
-            if ($response) {
+            if (isset($Parameter['checkoutBillingAddressId']) && !is_null($Parameter['checkoutBillingAddressId'])) { // From Shopware 5.2 current billing address is sent by parameter
+                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+                $customerAddressBilling = $addressModel->findOneBy(array('id' => $Parameter['checkoutBillingAddressId']));
+                $country = $customerAddressBilling->getCountry();
+            } else {
+                $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
+                $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
+            }
 
-                $response_result_code = (string)$response->head->processing->result->attributes()->code;
-                $response_reason_code = (string)$response->head->processing->reason->attributes()->code;
-                $response_status_code = (string)$response->head->processing->status->attributes()->code;
-                $success_codes = array('603', '671', '688', '689', '695', '696', '697', '698', '699');
-                if ($response_result_code == '502' && in_array($response_reason_code, $success_codes) && $response_status_code == 'OK') {
+            //set sandbox mode based on config
+            $sandbox = $config->get('RatePaySandbox' . $country->getIso());
 
-                    $total_amount = (string)$response->content->{'installment-calculation-result'}->{'total-amount'};
-                    $amount = (string)$response->content->{'installment-calculation-result'}->{'amount'};
-                    $interest_rate = (string)$response->content->{'installment-calculation-result'}->{'interest-rate'};
-                    $interest_amount = (string)$response->content->{'installment-calculation-result'}->{'interest-amount'};
-                    $service_charge = (string)$response->content->{'installment-calculation-result'}->{'service-charge'};
-                    $annual_percentage_rate = (string)$response->content->{'installment-calculation-result'}->{'annual-percentage-rate'};
-                    $monthly_debit_interest = (string)$response->content->{'installment-calculation-result'}->{'monthly-debit-interest'};
-                    $number_of_rates = (string)$response->content->{'installment-calculation-result'}->{'number-of-rates'};
-                    $rate = (string)$response->content->{'installment-calculation-result'}->{'rate'};
-                    $last_rate = (string)$response->content->{'installment-calculation-result'}->{'last-rate'};
-                    $payment_firstday = (string)$response->content->{'installment-calculation-result'}->{'payment-firstday'};
+            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+            $modelFactory->setSandboxMode($sandbox);
 
-                    $this->setDetailsTotalAmount($total_amount);
-                    $this->setDetailsAmount($amount);
-                    $this->setDetailsInterestRate($interest_rate);
-                    $this->setDetailsInterestAmount($interest_amount);
-                    $this->setDetailsServiceCharge($service_charge);
-                    $this->setDetailsAnnualPercentageRate($annual_percentage_rate);
-                    $this->setDetailsMonthlyDebitInterest($monthly_debit_interest);
-                    $this->setDetailsNumberOfRates($number_of_rates);
-                    $this->setDetailsRate($rate);
-                    $this->setDetailsLastRate($last_rate);
-                    $this->setDetailsPaymentFirstday($payment_firstday);
+            $operationData['payment']['amount'] = $this->getRequestAmount();
+            $operationData['payment']['paymentFirstday'] = $this->getRequestFirstday();
+            $operationData['payment']['month'] = $this->getRequestCalculationValue();
+            $operationData['payment']['rate'] = $this->getRequestCalculationValue();
+            $operationData['subtype'] = $subtype;
 
-                    $request_reason_msg = (string)$response->head->processing->reason;
-                    $this->setMsg($request_reason_msg);
-                    $this->setCode($response_reason_code);
+            $result = $modelFactory->doOperation('CalculationRequest', $operationData);
+
+            if ($result->isSuccessful()) {
+                    $resultArray = $result->getResult();
+                    if ($subtype == 'calculation-by-time') {
+                        if ($this->getRequestCalculationValue() == $resultArray['numberOfRatesFull']) {
+                            $reasonCode = 603;
+                        } else {
+                            $reasonCode = 671;
+                        }
+                    } else {
+                        if ($this->getRequestCalculationValue() == $resultArray['rate']) {
+                            $reasonCode = 603;
+                        } else {
+                            $reasonCode = 697;
+                        }
+                    }
+
+                    $this->setDetailsTotalAmount($result->getPaymentAmount());
+                    $this->setDetailsAmount($this->getRequestAmount());
+                    $this->setDetailsInterestRate($result->getInterestRate());
+                    $this->setDetailsInterestAmount($resultArray['interestAmount']);
+                    $this->setDetailsServiceCharge($resultArray['serviceCharge']);
+                    $this->setDetailsAnnualPercentageRate($resultArray['annualPercentageRate']);
+                    $this->setDetailsMonthlyDebitInterest($resultArray['monthlyDebitInterest']);
+                    $this->setDetailsNumberOfRates($resultArray['numberOfRatesFull']);
+                    $this->setDetailsRate($resultArray['rate']);
+                    $this->setDetailsLastRate($resultArray['lastRate']);
+                    $this->setDetailsPaymentFirstday($result->getPaymentFirstday());
+
+                    $this->setMsg($result->getReasonMessage());
+                    $this->setCode($reasonCode);
                     $this->setErrorMsg('');
-
-                }
-                else {
-                    $this->setMsg('');
-                    $request_reason_msg = (string)$response->head->processing->reason;
-                    $this->emptyDetails();
-                    throw new Exception($request_reason_msg);
-                }
             }
             else {
                 $this->setMsg('');
                 $this->emptyDetails();
-                throw new Exception($request_reason_msg);
-            }
-        }
-
-        /**
-         * This method set's the head element of the request xml
-         */
-        private function setRatepayHead($request)
-        {
-            $head = $request->addChild('head');
-
-            $head->addChild('system-id', $this->getRequestSystemId());
-
-            if ($this->getRequestTransactionId() != "")
-                $head->addChild('transaction-id', $this->getRequestTransactionId());
-            if ($this->getRequestTransactionShortId() != "")
-                $head->addChild('transaction-short-id', $this->getRequestTransactionShortId());
-
-            $operation = $head->addChild('operation', $this->getRequestOperation());
-
-            if ($this->getRequestOperationSubtype() != "")
-                $operation->addAttribute('subtype', $this->getRequestOperationSubtype());
-
-            $this->setRatepayHeadCredentials($head);
-            $this->setRatepayHeadExternal($head);
-        }
-
-        /**
-         * This method set's the credential element of the request xml
-         */
-        private function setRatepayHeadCredentials($head)
-        {
-            $credential = $head->addChild('credential');
-
-            $credential->addChild('profile-id', $this->getRequestProfileId());
-            $credential->addChild('securitycode', $this->getRequestSecurityCode());
-        }
-
-        /**
-         * This method set's the external element of the request xml
-         */
-        private function setRatepayHeadExternal($head)
-        {
-            if ($this->getRequestOrderId() != "" || $this->getRequestMerchantConsumerId() != "" || $this->getRequestMerchantConsumerClassification() != "") {
-                $external = $head->addChild('external');
-
-                if ($this->getRequestOrderId() != "")
-                    $external->addChild('order-id', $this->getRequestOrderId());
-                if ($this->getRequestMerchantConsumerId() != "")
-                    $external->addChild('merchant-consumer-id', $this->getRequestMerchantConsumerId());
-                if ($this->getRequestMerchantConsumerClassification() != "")
-                    $external->addChild('merchant-consumer-classification', $this->getRequestMerchantConsumerClassification());
-            }
-        }
-
-        /**
-         * This method set's the installment-calculation element of the request xml
-         */
-        private function setRatepayContentCalculation($request)
-        {
-            $content = $request->addChild('content');
-            $installment = $content->addChild('installment-calculation');
-
-            if ($this->getRequestInterestRate() != "") {
-                $configuration = $installment->addChild('configuration');
-                $configuration->addChild('interest-rate', $this->getRequestInterestRate());
-            }
-
-            $installment->addChild('amount', $this->getRequestAmount());
-
-            if ($this->getRequestFirstday()) {
-                $installment->addChild('payment-firstday', $this->getRequestFirstday());
-            }
-
-            if ($this->getRequestOperationSubtype() == 'calculation-by-rate') {
-                $calc_rate = $installment->addChild('calculation-rate');
-                $calc_rate->addChild('rate', $this->getRequestCalculationValue());
-            }
-            else if ($this->getRequestOperationSubtype() == 'calculation-by-time') {
-                $calc_time = $installment->addChild('calculation-time');
-                $calc_time->addChild('month', $this->getRequestCalculationValue());
+                throw new Exception($result->getReasonMessage());
             }
         }
 

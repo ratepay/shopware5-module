@@ -1709,8 +1709,7 @@
             }
             else {
                 Shopware()->Pluginlogger()->error('RatePAY: Profile_Request failed!');
-
-                return false;
+                throw new Exception('RatePAY: Profile_Request failed!');
             }
         }
 

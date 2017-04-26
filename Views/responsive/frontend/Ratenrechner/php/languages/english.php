@@ -43,14 +43,8 @@
     $pi_lang_error = '<b>Fehler</b>';
     $pi_lang_info = array();
     $pi_lang_info['603'] = 'Die Wunschrate entspricht den vorgegebenen Bedingungen.';
-    $pi_lang_info['671'] = 'Die letzte Rate war niedriger als erlaubt. Laufzeit und/oder Rate wurden angepasst.';
-    $pi_lang_info['688'] = 'Die Rate war niedriger als f&uuml;r Ratenpl&auml;ne mit langer Laufzeit erlaubt. Die Laufzeit wurde angepasst.';
-    $pi_lang_info['689'] = 'Die Rate war niedriger als f&uuml;r Ratenpl&auml;ne mit kurzer Laufzeit erlaubt. Die Laufzeit wurde angepasst.';
-    $pi_lang_info['695'] = 'Die Rate ist zu hoch f&uuml;r die minimal verf&uuml;gbare Laufzeit. Die Rate wurde verringert.';
-    $pi_lang_info['696'] = 'Die Wunschrate ist zu niedrig. Die Rate wurde erh&ouml;ht.';
+    $pi_lang_info['671'] = 'Laufzeit wurde angepasst.';
     $pi_lang_info['697'] = 'F&uuml;r die gew&auml;hlte Ratenh&ouml;he ist keine entsprechende Laufzeit verf&uuml;gbar. Die Ratenh&ouml;he wurde angepasst.';
-    $pi_lang_info['698'] = 'Die Rate war zu niedrig f&uuml;r die maximal verf&uuml;gbare Laufzeit. Die Rate wurde erh&ouml;ht.';
-    $pi_lang_info['699'] = 'Die Rate ist zu hoch f&uuml;r die minimal verf&uuml;gbare Laufzeit. Die Rate wurde verringert.';
     $pi_lang_due_date = "Gew&uuml;nschter Tag der F&auml;lligkeit: ";
     $pi_lang_individual_rate_calculation = 'Individuelle Ratenberechnung*';
     $pi_lang_mouseover_cash_payment_price = 'Summe aller Artikel Ihres Warenkorbs, incl. Versandkosten etc.';

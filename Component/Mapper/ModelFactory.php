@@ -99,7 +99,30 @@
                 case 'PaymentChange':
                     return $this->makePaymentChange($operationData);
                     break;
+                case 'CalculationRequest':
+                    return $this->makeCalculationRequest($operationData);
+                    break;
+
             }
+        }
+
+        private function makeCalculationRequest($operationData) {
+            $mbHead = $this->getHead();
+            $mbContent = new RatePAY\ModelBuilder('Content');
+
+            $calcArray['Amount'] = $operationData['payment']['amount'];
+            $calcArray['PaymentFirstday'] = $operationData['payment']['paymentFirstday'];
+            if ($operationData['subtype'] == 'calculation-by-time') {
+                $calcArray['CalculationTime']['Month'] = $operationData['payment']['month'];
+            } else {
+                $calcArray['CalculationRate']['Rate'] = $operationData['payment']['rate'];
+            }
+
+            $mbContent->setArray(['InstallmentCalculation' => $calcArray]);
+            $rb = new RatePAY\RequestBuilder($this->isSandboxMode());
+
+            $calculationRequest = $rb->callCalculationRequest($mbHead, $mbContent)->subtype($operationData['subtype']);
+            return $calculationRequest;
         }
 
         /**
@@ -110,7 +133,6 @@
          */
         private function getHead($countryCode = false) {
             $systemId = $this->getSystemId();
-
             $mbHead = new \RatePAY\ModelBuilder('head');
             $mbHead->setArray([
                 'SystemId' => $systemId,
@@ -247,11 +269,12 @@
             }
             $elv = false;
             if (!empty($installmentDetails)) {
-                if (Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 2) {
+                if (Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 28) {
                     $contentArr['Payment']['DebitPayType']= 'BANK-TRANSFER';
                 } else {
                     $contentArr['Payment']['DebitPayType'] = 'DIRECT-DEBIT';
                     $elv = true;
+
                 }
                 $contentArr['Payment']['Amount'] = Shopware()->Session()->RatePAY['ratenrechner']['total_amount'];
                 $contentArr['Payment']['InstallmentDetails'] = $installmentDetails;
@@ -271,7 +294,7 @@
 
             $mbContent->setArray($contentArr);
 
-            $rb = new \RatePAY\RequestBuilder(true); // Sandbox mode = true
+            $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
             $paymentRequest = $rb->callPaymentRequest($mbHead, $mbContent);
 
             return $paymentRequest;

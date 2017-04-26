@@ -47,7 +47,7 @@ function changeFirstday(firstday) {
         piRatepayRateCalculatorAction('runtime');
         $('#switchInformation').show();
     } else if ($('#firstInput').is(':checked')) {
-        piRatepayRateCalculatorAction('wishrate');
+        piRatepayRateCalculatorAction('rate');
         $('#switchInformation').show();
     }
 }
