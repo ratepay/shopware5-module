@@ -442,17 +442,26 @@
                             'Quantity' => $shopItem['quantity'],
                             'UnitPriceGross' => $shopItem['priceNumeric'],
                             'TaxRate' => $shopItem['tax_rate'],
-                            //'Discount' => 10
                         );
                     } elseif (is_object($shopItem)) {
-                        $item = array(
-                            'Description' => $shopItem->name,
-                            'ArticleNumber' => $shopItem->articlenumber,
-                            'Quantity' => $shopItem->quantity,
-                            'UnitPriceGross' => $shopItem->price,
-                            'TaxRate' => $shopItem->taxRate,
-                            //'Discount' => 10
-                        );
+                        if (!isset($shopItem->name)) {
+                            $item = array(
+                                'Description' => $shopItem->getArticleName(),
+                                'ArticleNumber' => $shopItem->getArticleNumber(),
+                                'Quantity' => $shopItem->getQuantity(),
+                                'UnitPriceGross' => $shopItem->getPrice(),
+                                'TaxRate' => $shopItem->getTaxRate(),
+                            );
+                            $type = false;
+                        } else {
+                            $item = array(
+                                'Description' => $shopItem->name,
+                                'ArticleNumber' => $shopItem->articlenumber,
+                                'Quantity' => $shopItem->quantity,
+                                'UnitPriceGross' => $shopItem->price,
+                                'TaxRate' => $shopItem->taxRate,
+                            );
+                        }
 
                         if (!empty($type)) {
                             switch ($type) {
@@ -481,8 +490,8 @@
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
             $countryCode = $order->getBilling()->getCountry()->getIso();
             $mbHead = $this->getHead($countryCode);
-            $shoppingItems = $this->createBasketArray($operationData['items']);
 
+            $shoppingItems = $this->createBasketArray($operationData['items']);
             $shoppingBasket = [
                 'ShoppingBasket' => $shoppingItems,
             ];
@@ -490,7 +499,6 @@
             $mbContent = new \RatePAY\ModelBuilder('Content');
 
             $mbContent->setArray($shoppingBasket);
-
             $documentModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Document\Document');
             $document = $documentModel->findOneBy(array('orderId' => $operationData['orderId'], 'type' => 1));
 

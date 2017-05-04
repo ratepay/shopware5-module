@@ -436,23 +436,17 @@
                 ));
 
                 /** BIDIRECTIONAL ORDER SETTINGS **/
-                /*$form->setElement('button', 'button2', array(
-                    'label' => '<b>Bidirektionale RatePAY-Bestellungen:</b>',
+                $form->setElement('button', 'button3', array(
+                    'label' => '<b>Bidirektionalität RatePAY-Bestellungen:</b>',
                     'value' => ''
-                ));*/
+                ));
 
-                /*$form->setElement('checkbox', 'RatePayBidirectional', array(
-                    'label' => 'Bidirektionalität aktivieren ( Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert )',
+                $form->setElement('checkbox', 'RatePayBidirectional', array(
+                    'label' => 'Bidirektionalität aktivieren ( Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert)',
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
-                ));*/
+                ));
 
-                /** ORDERSTATUS **/
-                /*$form->setElement('button', 'button3', array(
-                    'label' => '<b>Bestellstati:</b>',
-                    'value' => ''
-                ));*/
-
-                /*$form->setElement(
+                $form->setElement(
                     'select',
                     'RatePayFullDelivery',
                     array(
@@ -463,22 +457,9 @@
                         'valueField' => 'id',
                         'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
                     )
-                );*/
+                );
 
-                /*$form->setElement(
-                    'select',
-                    'RatePayPartialDelivery',
-                    array(
-                        'label' => 'Status für Teillieferung',
-                        'value' => 6,
-                        'store' => 'base.OrderStatus',
-                        'displayField' => 'description',
-                        'valueField' => 'id',
-                        'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
-                    )
-                );*/
-
-                /*$form->setElement(
+                $form->setElement(
                     'select',
                     'RatePayFullCancellation',
                     array(
@@ -489,47 +470,21 @@
                         'valueField' => 'id',
                         'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
                     )
-                );*/
+                );
 
-                /*$form->setElement(
+
+                $form->setElement(
                     'select',
-                    'RatePayPartialCancellation',
+                    'RatePayFullReturn',
                     array(
-                        'label' => 'Status für Teilstornierung',
+                        'label' => 'Status für Vollretournierung',
                         'value' => 265,
                         'store' => 'base.OrderStatus',
                         'displayField' => 'description',
                         'valueField' => 'id',
                         'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
                     )
-                );*/
-
-                /*$form->setElement(
-                    'select',
-                    'RatePayFullReturn',
-                    array(
-                        'label' => 'Status für Vollretournierung',
-                        'value' => 255,
-                        'store' => 'base.OrderStatus',
-                        'displayField' => 'description',
-                        'valueField' => 'id',
-                        'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
-                    )
-                );*/
-
-                /*$form->setElement(
-                    'select',
-                    'RatePayPartialReturn',
-                    array(
-                        'label' => 'Status für Vollretournierung',
-                        'value' => 255,
-                        'store' => 'base.OrderStatus',
-                        'displayField' => 'description',
-                        'valueField' => 'id',
-                        'scope' => \Shopware\Models\Config\Element::SCOPE_SHOP
-                    )
-                );*/
-
+                );
 
             } catch (Exception $exception) {
                 $this->uninstall();
@@ -1064,20 +1019,21 @@
             //set sandbox mode based on config
             $sandbox = $config->get('RatePaySandbox' . $country->getIso());
 
-            $service = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
             $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $history      = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
 
             $newOrderStatus = $parameter['status'];
-
             if ($newOrderStatus == $config['RatePayFullDelivery']) {
 
-                $sqlShipping = "SELECT COUNT(*) "
-                               . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-                               . "WHERE `delivered` = 0 AND `cancelled` = 0 AND `returned` = 0 AND `shipping`.`s_order_id` = ?";
+                $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
+                $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
+
+                $sql = "SELECT COUNT(*) "
+                               . "FROM `rpay_ratepay_order_positions` AS `shipping` "
+                               . "WHERE `delivered` = 0 AND `cancelled` = 0 AND `returned` = 0 AND `shipping`.`s_order_details_id` = ?";
 
                 try {
-                    $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
+                    $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
                 } catch (Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
@@ -1087,7 +1043,7 @@
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $order->getDetails();
-                    $result = $modelFactory->doOperation('ConfirmationDelivery', $operationData);
+                    $result = $modelFactory->doOperation('ConfirmationDeliver', $operationData);
 
                     if ($result === true) {
                         foreach ($items = $order->getDetails() as $item) {
@@ -1095,7 +1051,7 @@
                                 'delivered' => $item->getQuantity()
                             );
 
-                            $this->updateItem($order->getId(), 'shipping', $bind);
+                            $this->updateItem($order->getId(), $bind);
                             if ($item->getQuantity() <= 0) {
                                 continue;
                             }
@@ -1105,32 +1061,36 @@
 
                 }
 
-            } elseif ($newOrderStatus == $config['RatePayFullCancellation']) {
+            }
+            if ($newOrderStatus == $config['RatePayFullCancellation']) {
 
-                $sqlShipping = "SELECT COUNT(*) "
-                               . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-                               . "WHERE `cancelled` = 0 AND `shipping`.`s_order_id` = ?";
+                $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
+                $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
+
+                $sql = "SELECT COUNT(*) "
+                    . "FROM `rpay_ratepay_order_positions` AS `shipping` "
+                    . "WHERE `cancelled` = 0 AND `delivered` = 0 AND `shipping`.`s_order_details_id` = ?";
+
                 try {
-                    $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
+                    $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
                 } catch (Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
 
                 if (null != $count) {
-                    $basketItems = $this->getBasket($order);
                     $modelFactory->setSandboxMode($sandbox);
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
-                    $operationData['items'] = $basketItems;
+                    $operationData['items'] = $order->getDetails();
                     $operationData['subtype'] = 'cancellation';
                     $result = $modelFactory->doOperation('PaymentChange', $operationData);
 
                     if ($result === true) {
-                        foreach ($basketItems as $item) {
+                        foreach ($order->getDetails() as $item) {
                             $bind = array(
                                 'cancelled' => $item->getQuantity()
                             );
-                            $this->updateItem($order->getId(), $item->getArticlenumber(), $bind);
+                            $this->updateItem($order->getId(), $bind);
                             if ($item->getQuantity() <= 0) {
                                 continue;
                             }
@@ -1138,14 +1098,17 @@
                         }
                     }
                 }
+            }
+            if ($newOrderStatus == $config['RatePayFullReturn']) {
+                $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
+                $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
-            }  elseif ($newOrderStatus == $config['RatePayFullReturn']) {
-                $sqlShipping = "SELECT COUNT(*) "
-                               . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-                               . "WHERE `returned` = 0 AND `shipping`.`s_order_id` = ?";
+                $sql = "SELECT COUNT(*) "
+                    . "FROM `rpay_ratepay_order_positions` AS `shipping` "
+                    . "WHERE `returned` = 0 AND `delivered` > 0 AND `shipping`.`s_order_details_id` = ?";
 
                 try {
-                    $count = Shopware()->Db()->fetchOne($sqlShipping, array($order->getId()));
+                    $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
                 } catch (Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
@@ -1163,7 +1126,7 @@
                             $bind = array(
                                 'returned' => $item->getQuantity()
                             );
-                            $this->updateItem($order->getId(), $item->getArticlenumber(), $bind);
+                            $this->updateItem($order->getId(), $bind);
                             if ($item->getQuantity() <= 0) {
                                 continue;
                             }
@@ -1180,18 +1143,14 @@
          * Updates the given binding for the given article
          *
          * @param string $orderID
-         * @param string $articleordernumber
          * @param array  $bind
          */
-        private function updateItem($orderID, $articleordernumber, $bind)
+        private function updateItem($orderID, $bind)
         {
-            if ($articleordernumber === 'shipping') {
-                Shopware()->Db()->update('rpay_ratepay_order_shipping', $bind, '`s_order_id`=' . $orderID);
-            }
-            else {
-                $positionId = Shopware()->Db()->fetchOne("SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?", array($orderID, $articleordernumber));
-                Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
-            }
+
+            $positionId = Shopware()->Db()->fetchOne("SELECT `id` FROM `s_order_details` WHERE `orderID`=?", array($orderID));
+            Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
+
         }
 
         /**
