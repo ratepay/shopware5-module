@@ -27,6 +27,8 @@
 
         private $_sandboxMode;
 
+        private $_logging;
+
         public function __construct($config = null)
         {
             $this->_config = $config;
@@ -80,6 +82,8 @@
          * @return bool|array
          */
         public function doOperation($operationType, array $operationData) {
+            $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
+
             switch ($operationType) {
                 case 'ProfileRequest':
                     return $this->makeProfileRequest($operationData);
@@ -122,6 +126,8 @@
             $rb = new RatePAY\RequestBuilder($this->isSandboxMode());
 
             $calculationRequest = $rb->callCalculationRequest($mbHead, $mbContent)->subtype($operationData['subtype']);
+            $this->_logging->logRequest($calculationRequest->getRequestRaw(), $calculationRequest->getResponseRaw());
+
             return $calculationRequest;
         }
 
@@ -296,6 +302,7 @@
 
             $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
             $paymentRequest = $rb->callPaymentRequest($mbHead, $mbContent);
+            $this->_logging->logRequest($paymentRequest->getRequestRaw(), $paymentRequest->getResponseRaw());
 
             return $paymentRequest;
         }
@@ -337,6 +344,7 @@
             $rb = new \RatePAY\RequestBuilder(true); // Sandbox mode = true
 
             $profileRequest = $rb->callProfileRequest($mbHead);
+            $this->_logging->logRequest($profileRequest->getRequestRaw(), $profileRequest->getResponseRaw());
 
             if ($profileRequest->isSuccessful()) {
                 return $profileRequest->getResult();
@@ -389,10 +397,11 @@
         {
             $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
 
-            $profileRequest = $rb->callPaymentInit($this->getHead());
+            $paymentInit = $rb->callPaymentInit($this->getHead());
+            $this->_logging->logRequest($paymentInit->getRequestRaw(), $paymentInit->getResponseRaw());
 
-            if ($profileRequest->isSuccessful()) {
-                return $profileRequest->getTransactionId();
+            if ($paymentInit->isSuccessful()) {
+                return $paymentInit->getTransactionId();
             }
             return false;
         }
@@ -409,6 +418,7 @@
             $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
 
             $paymentConfirm = $rb->callPaymentConfirm($mbHead);
+            $this->_logging->logRequest($paymentConfirm->getRequestRaw(), $paymentConfirm->getResponseRaw());
 
             if ($paymentConfirm->isSuccessful()) {
                 return true;
@@ -521,6 +531,7 @@
 
             $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
             $confirmationDeliver = $rb->callConfirmationDeliver($mbHead, $mbContent);
+            $this->_logging->logRequest($confirmationDeliver->getRequestRaw(), $confirmationDeliver->getResponseRaw());
 
             if ($confirmationDeliver->isSuccessful()) {
                 return true;
@@ -559,6 +570,7 @@
 
             $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
             $paymentChange = $rb->callPaymentChange($mbHead, $mbContent)->subtype($operationData['subtype']);
+            $this->_logging->logRequest($paymentChange->getRequestRaw(), $paymentChange->getResponseRaw());
 
             if ($paymentChange->isSuccessful()) {
                 return true;
