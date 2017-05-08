@@ -194,14 +194,14 @@
                 Shopware()->Session()->RatePAY['transactionId'] = $transactionId;
 
                 $this->_modelFactory->setTransactionId(Shopware()->Session()->RatePAY['transactionId']);
-                $resultRequest = $this->_modelFactory->doOperation('PaymentRequest');
+                $resultRequest = $this->_modelFactory->doOperation('PaymentRequest', array());
 
                 if ($resultRequest->isSuccessful()) {
                     $uniqueId = $this->createPaymentUniqueId();
                     $orderNumber = $this->saveOrder(Shopware()->Session()->RatePAY['transactionId'], $uniqueId, 17);
                     $dgNumber = $resultRequest->getDescriptor();
 
-                    if ($this->_modelFactory->doOperation('PaymentConfirm')) {
+                    if ($this->_modelFactory->doOperation('PaymentConfirm', array())) {
                         if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
                             $this->initShipping($orderNumber);
                         }
