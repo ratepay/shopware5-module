@@ -26,6 +26,8 @@
 
 ### Version Version 5.0.0 - Released 2017-04-26
 * change the requests to ne new ratepay library
+* add php 7 compatibility
+* add bidirectional function
 
 ### Version Version 4.2.91 - Released 2017-04-12
 * fix for checkout javascript problem
