@@ -464,7 +464,7 @@
                     'RatePayFullCancellation',
                     array(
                         'label' => 'Status für Vollstornierung',
-                        'value' => 265,
+                        'value' => 4,
                         'store' => 'base.OrderStatus',
                         'displayField' => 'description',
                         'valueField' => 'id',
@@ -478,7 +478,7 @@
                     'RatePayFullReturn',
                     array(
                         'label' => 'Status für Vollretournierung',
-                        'value' => 265,
+                        'value' => 4,
                         'store' => 'base.OrderStatus',
                         'displayField' => 'description',
                         'valueField' => 'id',
