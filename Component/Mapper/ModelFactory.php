@@ -256,7 +256,6 @@
                     'FirstName' => $checkoutAddressBilling->getFirstName(),
                     'LastName' => $checkoutAddressBilling->getLastName(),
                     'DateOfBirth' => $dateOfBirth,
-                    'Nationality' => $this->_countryCode,
                     'IpAddress' => $this->_getCustomerIP(),
                     'Addresses' => [
                         [
