@@ -139,12 +139,23 @@
          */
         private function getHead($countryCode = false) {
             $systemId = $this->getSystemId();
+            $boostrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+
+
             $mbHead = new \RatePAY\ModelBuilder('head');
             $mbHead->setArray([
                 'SystemId' => $systemId,
                 'Credential' => [
                     'ProfileId' => $this->getProfileId($countryCode),
                     'Securitycode' => $this->getSecurityCode($countryCode)
+                ],
+                'Meta' => [
+                    'Systems' => [
+                        'System' => [
+                            'Name' => 'Shopware',
+                            'Version' => Shopware()->Config()->get('version') . '_' . $boostrap->getVersion()
+                        ]
+                    ]
                 ]
             ]);
 
@@ -331,6 +342,7 @@
         private function makeProfileRequest($operationData)
         {
             $systemId = $this->getSystemId();
+            $boostrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
 
             $mbHead = new \RatePAY\ModelBuilder();
             $mbHead->setArray([
@@ -338,6 +350,14 @@
                 'Credential' => [
                     'ProfileId' => $operationData['profileId'],
                     'Securitycode' => $operationData['securityCode']
+                ],
+                'Meta' => [
+                    'Systems' => [
+                        'System' => [
+                            'Name' => 'Shopware',
+                            'Version' => Shopware()->Config()->get('version') . '_' . $boostrap->getVersion()
+                        ]
+                    ]
                 ]
             ]);
 

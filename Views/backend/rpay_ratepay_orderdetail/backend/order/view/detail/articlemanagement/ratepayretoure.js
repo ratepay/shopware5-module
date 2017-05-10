@@ -146,7 +146,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
             var row = me.store.data.items[i].data;
             var item = new Object();
 
-            if (row.quantityReturn > (row.quantity - row.returned) || row.delivered == 0) {
+            if (row.quantityReturn > ((row.quantity - row.returned) || row.delivered == 0)) {
                 error = true;
             }
 
