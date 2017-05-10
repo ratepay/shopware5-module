@@ -33,7 +33,7 @@
             <br/>
             Hinweis:
             <br/>
-            Hinweis: Ich kann innerhalb von acht Wochen, beginnend mit dem Belastungsdatum, die
+            Ich kann innerhalb von acht Wochen, beginnend mit dem Belastungsdatum, die
             Erstattung des belasteten Betrages verlangen.Es gelten dabei die mit dem Kreditinstitut vereinbarten Bedingungen.
         </span>
     </p>

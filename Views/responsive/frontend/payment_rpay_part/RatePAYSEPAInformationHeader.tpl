@@ -8,10 +8,18 @@
     {/s}
 </p>
 
-<p class="none" id="paywire">
-    Wirecard Bank AG, Einsteinring 35, 85609Aschheim
+<div id="paywire">
+    <p class="none">
+        Wirecard Bank AG, Einsteinring 35, 85609Aschheim
+        <br/>
+        Gläubiger-ID: DE49ZZZ00000002773
+        <br/>
+        Mandatsreferenz: (wird nach Kaufabschluss übermittelt)
+    </p>
     <br/>
-    Gläubiger-ID: DE49ZZZ00000002773
+    <div>
+        Bitte geben Sie ihre Bankverbindung für den monatlichen Einzug zum jeweils 2. des Kalendermonats an.
+        Liegt dieser auf einem Sonn-oder Feiertag, so erfolgt der Einzug am darauffolgenden Werktag:
+    </div>
     <br/>
-    Mandatsreferenz: (wird nach Kaufabschluss übermittelt)
-</p>
+</div>
