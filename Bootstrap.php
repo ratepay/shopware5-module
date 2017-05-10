@@ -1022,15 +1022,38 @@
             $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $history      = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
 
+            $sqlShipping = "SELECT invoice_shipping FROM s_order WHERE id = ?";
+            $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, array($parameter['id']));
+
+            $items = array();
+            $i = 0;
+            foreach ($order->getDetails() as $item) {
+                $items[$i]['articlename'] = $item->getArticlename();
+                $items[$i]['ordernumber'] = $item->getArticlenumber();
+                $items[$i]['quantity'] = $item->getQuantity();
+                $items[$i]['priceNumeric'] = $item->getPrice();
+                $items[$i]['tax_rate'] = $item->getTaxRate();
+                $taxRate = $item->getTaxRate();
+                $i++;
+            }
+            if (!empty($shippingCosts)) {
+                $items['Shipping']['articlename'] = 'Shipping';
+                $items['Shipping']['ordernumber'] = 'shipping';
+                $items['Shipping']['quantity'] = 1;
+                $items['Shipping']['priceNumeric'] = $shippingCosts;
+                $items['Shipping']['tax_rate'] = $taxRate;
+            }
+
             $newOrderStatus = $parameter['status'];
+
             if ($newOrderStatus == $config['RatePayFullDelivery']) {
 
                 $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
                 $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
                 $sql = "SELECT COUNT(*) "
-                               . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                               . "WHERE `delivered` = 0 AND `cancelled` = 0 AND `returned` = 0 AND `shipping`.`s_order_details_id` = ?";
+                        . "FROM `rpay_ratepay_order_positions` AS `shipping` "
+                        . "WHERE `delivered` = 0 AND `cancelled` = 0 AND `returned` = 0 AND `shipping`.`s_order_details_id` = ?";
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -1042,20 +1065,20 @@
                     $modelFactory->setSandboxMode($sandbox);
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
-                    $operationData['items'] = $order->getDetails();
+                    $operationData['items'] = $items;
                     $result = $modelFactory->doOperation('ConfirmationDeliver', $operationData);
 
                     if ($result === true) {
-                        foreach ($items = $order->getDetails() as $item) {
+                        foreach ($items as $item) {
                             $bind = array(
-                                'delivered' => $item->getQuantity()
+                                'delivered' => $item['quantity']
                             );
 
-                            $this->updateItem($order->getId(), $bind);
-                            if ($item->getQuantity() <= 0) {
+                            $this->updateItem($order->getId(), $item['ordernumber'], $bind);
+                            if ($item['quantity'] <= 0) {
                                 continue;
                             }
-                            $history->logHistory($order->getId(), "Artikel wurde versand.", $item->getArticleName(), $item->getArticlenumber(), $item->getQuantity());
+                            $history->logHistory($order->getId(), "Artikel wurde versand.", $item['articlename'], $item['ordernumber'], $item['quantity']);
                         }
                     }
 
@@ -1063,13 +1086,12 @@
 
             }
             if ($newOrderStatus == $config['RatePayFullCancellation']) {
-
                 $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
                 $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
                 $sql = "SELECT COUNT(*) "
-                    . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                    . "WHERE `cancelled` = 0 AND `delivered` = 0 AND `shipping`.`s_order_details_id` = ?";
+                        . "FROM `rpay_ratepay_order_positions` AS `shipping` "
+                        . "WHERE `cancelled` = 0 AND `delivered` = 0 AND `shipping`.`s_order_details_id` = ?";
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -1081,20 +1103,20 @@
                     $modelFactory->setSandboxMode($sandbox);
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
-                    $operationData['items'] = $order->getDetails();
+                    $operationData['items'] = $items;
                     $operationData['subtype'] = 'cancellation';
                     $result = $modelFactory->doOperation('PaymentChange', $operationData);
 
                     if ($result === true) {
-                        foreach ($order->getDetails() as $item) {
+                        foreach ($items as $item) {
                             $bind = array(
-                                'cancelled' => $item->getQuantity()
+                                'cancelled' => $item['quantity']
                             );
-                            $this->updateItem($order->getId(), $bind);
-                            if ($item->getQuantity() <= 0) {
+                            $this->updateItem($order->getId(), $item['ordernumber'], $bind);
+                            if ($item['quantity'] <= 0) {
                                 continue;
                             }
-                            $history->logHistory($order->getId(), "Artikel wurde storniert.", $item->getArticleName(), $item->getArticlenumber(), $item->getQuantity());
+                            $history->logHistory($order->getId(), "Artikel wurde storniert.", $item['articlename'], $item['ordernumber'], $item['quantity']);
                         }
                     }
                 }
@@ -1104,8 +1126,8 @@
                 $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
                 $sql = "SELECT COUNT(*) "
-                    . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                    . "WHERE `returned` = 0 AND `delivered` > 0 AND `shipping`.`s_order_details_id` = ?";
+                        . "FROM `rpay_ratepay_order_positions` AS `shipping` "
+                        . "WHERE `returned` = 0 AND `delivered` > 0 AND `shipping`.`s_order_details_id` = ?";
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -1117,20 +1139,20 @@
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $modelFactory->setSandboxMode($sandbox);
                     $operationData['orderId'] = $order->getId();
-                    $operationData['items'] = $order->getDetails();
+                    $operationData['items'] = $items;
                     $operationData['subtype'] = 'return';
                     $result = $modelFactory->doOperation('PaymentChange', $operationData);
 
                     if ($result === true) {
-                        foreach ($order->getDetails() as $item) {
+                        foreach ($items as $item) {
                             $bind = array(
-                                'returned' => $item->getQuantity()
+                                'returned' => $item['quantity']
                             );
-                            $this->updateItem($order->getId(), $bind);
-                            if ($item->getQuantity() <= 0) {
+                            $this->updateItem($order->getId(), $item['ordernumber'], $bind);
+                            if ($item['quantity'] <= 0) {
                                 continue;
                             }
-                            $history->logHistory($order->getId(), "Artikel wurde retourniert.", $item->getArticleName(), $item->getArticlenumber(), $item->getQuantity());
+                            $history->logHistory($order->getId(), "Artikel wurde retourniert.", $item['articlename'], $item['ordernumber'], $item['quantity']);
                         }
                     }
                 }
@@ -1145,12 +1167,15 @@
          * @param string $orderID
          * @param array  $bind
          */
-        private function updateItem($orderID, $bind)
+        private function updateItem($orderID, $articleordernumber, $bind)
         {
 
-            $positionId = Shopware()->Db()->fetchOne("SELECT `id` FROM `s_order_details` WHERE `orderID`=?", array($orderID));
-            Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
-
+            if ($articleordernumber === 'shipping') {
+                Shopware()->Db()->update('rpay_ratepay_order_shipping', $bind, '`s_order_id`=' . $orderID);
+            } else {
+                $positionId = Shopware()->Db()->fetchOne("SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?", array($orderID, $articleordernumber));
+                Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
+            }
         }
 
         /**

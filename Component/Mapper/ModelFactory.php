@@ -466,15 +466,30 @@
                     );
                 } else {
                     if (is_array($shopItem)) {
-                        $item = array(
-                            'Description' => $shopItem['articlename'],
-                            'ArticleNumber' => $shopItem['ordernumber'],
-                            'Quantity' => $shopItem['quantity'],
-                            'UnitPriceGross' => $shopItem['priceNumeric'],
-                            'TaxRate' => $shopItem['tax_rate'],
-                        );
+                        if ($shopItem['quantity'] == 0 && empty($type)) {
+                            continue;
+                        }
+                        if ($shopItem['articlename'] == 'Shipping') {
+                            $shoppingBasket['Shipping'] = array(
+                                'Description' => "Shipping costs",
+                                'UnitPriceGross' => $shopItem['priceNumeric'],
+                                'TaxRate' => $shopItem['tax_rate'],
+                            );
+                            continue;
+                        } else {
+                            $item = array(
+                                'Description' => $shopItem['articlename'],
+                                'ArticleNumber' => $shopItem['ordernumber'],
+                                'Quantity' => $shopItem['quantity'],
+                                'UnitPriceGross' => $shopItem['priceNumeric'],
+                                'TaxRate' => $shopItem['tax_rate'],
+                            );
+                        }
                     } elseif (is_object($shopItem)) {
                         if (!isset($shopItem->name)) {
+                            if ($shopItem->getQuantity() == 0 && empty($type)) {
+                                continue;
+                            }
                             $item = array(
                                 'Description' => $shopItem->getArticleName(),
                                 'ArticleNumber' => $shopItem->getArticleNumber(),
@@ -484,6 +499,9 @@
                             );
                             $type = false;
                         } else {
+                            if ($shopItem->quantity == 0 && empty($type)) {
+                                continue;
+                            }
                             $item = array(
                                 'Description' => $shopItem->name,
                                 'ArticleNumber' => $shopItem->articlenumber,
@@ -527,7 +545,6 @@
             ];
 
             $mbContent = new \RatePAY\ModelBuilder('Content');
-
             $mbContent->setArray($shoppingBasket);
             $documentModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Document\Document');
             $document = $documentModel->findOneBy(array('orderId' => $operationData['orderId'], 'type' => 1));
@@ -548,7 +565,6 @@
                 ];
                 $mbContent->setArray($invoicing);
             }
-
             $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
             $confirmationDeliver = $rb->callConfirmationDeliver($mbHead, $mbContent);
             $this->_logging->logRequest($confirmationDeliver->getRequestRaw(), $confirmationDeliver->getResponseRaw());
