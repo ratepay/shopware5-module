@@ -1179,30 +1179,6 @@
         }
 
         /**
-         * returns basket items as an array
-         *
-         * @param \Shopware\Models\Order\Order $order
-         *
-         * @return array
-         */
-        public function getBasket(Shopware\Models\Order\Order $order)
-        {
-            $basketItems = array();
-            foreach ($items = $order->getDetails() as $item) {
-                $basketItem = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_item();
-
-                $basketItem->setArticleName($item->getArticleName());
-                $basketItem->setArticleNumber($item->getArticlenumber());
-                $basketItem->setQuantity($item->getQuantity());
-                $basketItem->setTaxRate($item->getTaxRate());
-                $basketItem->setUnitPriceGross($item->getPrice());
-                $basketItems[] = $basketItem;
-            }
-
-            return $basketItems;
-        }
-
-        /**
          * Stops Orderdeletation, when any article has been send
          *
          * @param Enlight_Hook_HookArgs $arguments
@@ -1226,21 +1202,46 @@
             }
             else {
                 $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-                $request = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($config->get('RatePaySandbox'));
+                $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
+
+                //get country of order
+                $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $order->getCustomer()->getBilling()->getCountryId());
+
+                //set sandbox mode based on config
+                $sandbox = $config->get('RatePaySandbox' . $country->getIso());
+
+                $sqlShipping = "SELECT invoice_shipping FROM s_order WHERE id = ?";
+                $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, array($parameter['id']));
+
+                $items = array();
+                $i = 0;
+                foreach ($order->getDetails() as $item) {
+                    $items[$i]['articlename'] = $item->getArticlename();
+                    $items[$i]['ordernumber'] = $item->getArticlenumber();
+                    $items[$i]['quantity'] = $item->getQuantity();
+                    $items[$i]['priceNumeric'] = $item->getPrice();
+                    $items[$i]['tax_rate'] = $item->getTaxRate();
+                    $taxRate = $item->getTaxRate();
+                    $i++;
+                }
+                if (!empty($shippingCosts)) {
+                    $items['Shipping']['articlename'] = 'Shipping';
+                    $items['Shipping']['ordernumber'] = 'shipping';
+                    $items['Shipping']['quantity'] = 1;
+                    $items['Shipping']['priceNumeric'] = $shippingCosts;
+                    $items['Shipping']['tax_rate'] = $taxRate;
+                }
 
                 $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
                 $modelFactory->setTransactionId($parameter['transactionId']);
-                $paymentChange = $modelFactory->getModel(new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_PaymentChange());
-                $head = $paymentChange->getHead();
-                $head->setOperationSubstring('full-cancellation');
-                $paymentChange->setHead($head);
-                $basket = new Shopware_Plugins_Frontend_RpayRatePay_Component_Model_SubModel_ShoppingBasket();
-                $basket->setAmount(0);
-                $basket->setCurrency($parameter['currency']);
-                $paymentChange->setShoppingBasket($basket);
-                $response = $request->xmlRequest($paymentChange->toArray());
-                $result = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::validateResponse('PAYMENT_CHANGE', $response);
-                if (!$result) {
+                $modelFactory->setSandboxMode($sandbox);
+                $modelFactory->setTransactionId($order->getTransactionID());
+                $operationData['orderId'] = $order->getId();
+                $operationData['items'] = $items;
+                $operationData['subtype'] = 'cancellation';
+                $result = $modelFactory->doOperation('PaymentChange', $operationData);
+
+                if ($result !== true) {
                     Shopware()->Pluginlogger()->warning('Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');
                     $arguments->stop();
                 }
