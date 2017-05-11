@@ -201,61 +201,58 @@
                     $orderNumber = $this->saveOrder(Shopware()->Session()->RatePAY['transactionId'], $uniqueId, 17);
                     $dgNumber = $resultRequest->getDescriptor();
 
-                    if ($this->_modelFactory->doOperation('PaymentConfirm', array())) {
-                        if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
-                            $this->initShipping($orderNumber);
-                        }
-                        try {
-                            $orderId = Shopware()->Db()->fetchOne(
-                                'SELECT `id` FROM `s_order` WHERE `ordernumber`=?',
-                                array($orderNumber)
-                            );
-                            Shopware()->Db()->update(
-                                's_order_attributes',
-                                array(
-                                    'attribute5' => $dgNumber,
-                                    'attribute6' => Shopware()->Session()->RatePAY['transactionId'],
-                                ),
-                                'orderID=' . $orderId
-                            );
-                        } catch (Exception $exception) {
-                            Shopware()->Pluginlogger()->error($exception->getMessage());
-                        }
-
-                        //set cleared date
-                        $dateTime = new DateTime();
-                        $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
-                        $order->setClearedDate($dateTime);
-                        Shopware()->Models()->flush($order);
-
-                        //set payments status to payed
-                        $this->savePaymentStatus(
-                            Shopware()->Session()->RatePAY['transactionId'],
-                            $uniqueId,
-                            12
-                        );
-
-                        /**
-                         * unset DFI token
-                         */
-                        if (Shopware()->Session()->RatePAY['dfpToken']) {
-                            unset(Shopware()->Session()->RatePAY['dfpToken']);
-                        }
-
-                        /*
-                         * redirect to success page
-                         */
-                        $this->redirect(
-                            array(
-                                'controller'  => 'checkout',
-                                'action'      => 'finish',
-                                'sUniqueID' => $uniqueId,
-                                'forceSecure' => true
-                            )
-                        );
-                    } else {
-                        $this->_error();
+                    if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
+                        $this->initShipping($orderNumber);
                     }
+                    try {
+                        $orderId = Shopware()->Db()->fetchOne(
+                            'SELECT `id` FROM `s_order` WHERE `ordernumber`=?',
+                            array($orderNumber)
+                        );
+                        Shopware()->Db()->update(
+                            's_order_attributes',
+                            array(
+                                'attribute5' => $dgNumber,
+                                'attribute6' => Shopware()->Session()->RatePAY['transactionId'],
+                            ),
+                            'orderID=' . $orderId
+                        );
+                    } catch (Exception $exception) {
+                        Shopware()->Pluginlogger()->error($exception->getMessage());
+                    }
+
+                    //set cleared date
+                    $dateTime = new DateTime();
+
+                    $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
+                    $order->setClearedDate($dateTime);
+                    Shopware()->Models()->flush($order);
+
+                    //set payments status to payed
+                    $this->savePaymentStatus(
+                        Shopware()->Session()->RatePAY['transactionId'],
+                        $uniqueId,
+                        12
+                    );
+
+                    /**
+                     * unset DFI token
+                     */
+                    if (Shopware()->Session()->RatePAY['dfpToken']) {
+                        unset(Shopware()->Session()->RatePAY['dfpToken']);
+                    }
+
+                    /*
+                     * redirect to success page
+                     */
+                    $this->redirect(
+                        array(
+                            'controller'  => 'checkout',
+                            'action'      => 'finish',
+                            'sUniqueID' => $uniqueId,
+                            'forceSecure' => true
+                        )
+                    );
                 } else {
                     $this->_customerMessage = $resultRequest->getCustomerMessage();
                     $this->_error();
