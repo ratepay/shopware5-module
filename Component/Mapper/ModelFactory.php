@@ -23,15 +23,20 @@
 
         private $_config;
 
-        private $_countryCode;
-
         private $_sandboxMode;
 
         private $_logging;
 
+        private $_orderId = false;
+
         public function __construct($config = null)
         {
             $this->_config = $config;
+        }
+
+        public function setOrderId($orderId)
+        {
+            $this->_orderId = $orderId;
         }
 
         /**
@@ -141,23 +146,28 @@
             $systemId = $this->getSystemId();
             $boostrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
 
+            $head = [
+                        'SystemId' => $systemId,
+                        'Credential' => [
+                            'ProfileId' => $this->getProfileId($countryCode),
+                            'Securitycode' => $this->getSecurityCode($countryCode)
+                        ],
+                        'Meta' => [
+                            'Systems' => [
+                                'System' => [
+                                    'Name' => 'Shopware',
+                                    'Version' => Shopware()->Config()->get('version') . '_' . $boostrap->getVersion()
+                                ]
+                            ]
+                        ]
+                    ];
+
+            if (!empty($this->_orderId)) {
+                $head['External']['OrderId'] = $this->_orderId;
+            }
 
             $mbHead = new \RatePAY\ModelBuilder('head');
-            $mbHead->setArray([
-                'SystemId' => $systemId,
-                'Credential' => [
-                    'ProfileId' => $this->getProfileId($countryCode),
-                    'Securitycode' => $this->getSecurityCode($countryCode)
-                ],
-                'Meta' => [
-                    'Systems' => [
-                        'System' => [
-                            'Name' => 'Shopware',
-                            'Version' => Shopware()->Config()->get('version') . '_' . $boostrap->getVersion()
-                        ]
-                    ]
-                ]
-            ]);
+            $mbHead->setArray($head);
 
             if (!empty($this->_transactionId)) {
                 $mbHead->setTransactionId($this->_transactionId);

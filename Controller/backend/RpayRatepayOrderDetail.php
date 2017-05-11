@@ -181,6 +181,7 @@
             $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
             $order = $orderModel->findOneBy(array('id' => $orderId));
             $this->_modelFactory->setTransactionId($order->getTransactionID());
+            $this->_modelFactory->setOrderId($orderId);
             $itemsToDeliver = null;
 
             $basketItems = array();
@@ -247,6 +248,7 @@
                 $operationData['orderId'] = $orderId;
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'cancellation';
+                $this->_modelFactory->setOrderId($orderId);
                 $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
                 if ($result === true) {
@@ -309,6 +311,7 @@
                 $operationData['orderId'] = $orderId;
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'return';
+                $this->_modelFactory->setOrderId($orderId);
                 $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
                 if ($result === true) {
@@ -381,6 +384,7 @@
                 $operationData['orderId'] = $orderId;
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'credit';
+                $this->_modelFactory->setOrderId($orderId);
                 $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
                 if ($result === true) {
@@ -535,32 +539,6 @@
         }
 
         /**
-         * Recalculates the Amount for the given items
-         *
-         * @param array $items
-         *
-         * @return float
-         */
-        private function getRecalculatedAmount($items)
-        {
-            $basket = array();
-            foreach ($items as $item) {
-                $detailModel = new \Shopware\Models\Order\Detail();
-                $detailModel->setQuantity($item->getQuantity());
-                $detailModel->setPrice($item->getUnitPriceGross());
-                $detailModel->setTaxRate($item->getTaxRate());
-                $detailModel->setArticleName($item->getArticleName());
-                $detailModel->setArticleNumber($item->getArticleNumber());
-                $basket[] = $detailModel;
-            }
-            $orderModel = new \Shopware\Models\Order\Order();
-            $orderModel->setDetails($basket);
-            $orderModel->calculateInvoiceAmount();
-
-            return $orderModel->getInvoiceAmount();
-        }
-
-        /**
          * Returns the whole Basket
          *
          * @param string $orderId
@@ -593,113 +571,6 @@
             }
 
             return $data;
-        }
-
-        /**
-         * Counts the open Positions
-         *
-         * @param string $column
-         * @param string $orderId
-         *
-         * @return int
-         */
-        private function countOpenPositions($column, $orderId)
-        {
-            $count = null;
-            $sql = "SELECT COUNT(*)"
-                   . "FROM `s_order_details` AS `detail` "
-                   . "INNER JOIN `rpay_ratepay_order_positions` ON `detail`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-                   . "WHERE `$column` != 0 AND `detail`.`orderID` = ?";
-            $sqlShipping = "SELECT COUNT(*) "
-                           . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-                           . "WHERE `$column` != 0 AND `shipping`.`s_order_id` = ?";
-            try {
-                $count = Shopware()->Db()->fetchOne($sql, array($orderId));
-                $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
-                $count += $temp;
-            } catch (Exception $exception) {
-                Shopware()->Pluginlogger()->error($exception->getMessage());
-            }
-
-            return $count;
-        }
-
-        /**
-         * return counted cancelled positions
-         *
-         * @param $orderId
-         *
-         * @return null|string
-         */
-        private function countReturnedPositions($orderId)
-        {
-            $count = null;
-            $sql = "SELECT sum(returned)"
-                   . "FROM `s_order_details` AS `detail` "
-                   . "INNER JOIN `rpay_ratepay_order_positions` ON `detail`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-                   . "WHERE `returned` != 0 AND `detail`.`orderID` = ?";
-            $sqlShipping = "SELECT COUNT(*) "
-                           . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-                           . "WHERE `returned` != 0 AND `shipping`.`s_order_id` = ?";
-            try {
-                $count = Shopware()->Db()->fetchOne($sql, array($orderId));
-                $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
-                $count += $temp;
-            } catch (Exception $exception) {
-                Shopware()->Pluginlogger()->error($exception->getMessage());
-            }
-
-            return $count;
-        }
-
-        /**
-         * return counted cancelled positions
-         *
-         * @param $orderId
-         *
-         * @return null|string
-         */
-        private function countCancelledPositions($orderId)
-        {
-            $count = null;
-            $sql = "SELECT sum(cancelled)"
-                   . "FROM `s_order_details` AS `detail` "
-                   . "INNER JOIN `rpay_ratepay_order_positions` ON `detail`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-                   . "WHERE `cancelled` != 0 AND `detail`.`orderID` = ?";
-            $sqlShipping = "SELECT COUNT(*) "
-                           . "FROM `rpay_ratepay_order_shipping` AS `shipping` "
-                           . "WHERE `cancelled` != 0 AND `shipping`.`s_order_id` = ?";
-            try {
-                $count = Shopware()->Db()->fetchOne($sql, array($orderId));
-                $temp = Shopware()->Db()->fetchOne($sqlShipping, array($orderId));
-                $count += $temp;
-            } catch (Exception $exception) {
-                Shopware()->Pluginlogger()->error($exception->getMessage());
-            }
-
-            return $count;
-        }
-
-        /**
-         * Counts all Positions of an order
-         *
-         * @param $orderId
-         *
-         * @return null|string
-         */
-        private function countOrderPositions($orderId)
-        {
-            $count = null;
-            $sql      = "SELECT sum(quantity) FROM `s_order_details` WHERE orderID = ?";
-            $shipping = "SELECT COUNT(*) FROM `rpay_ratepay_order_shipping` AS `shipping`WHERE `shipping`.`s_order_id` = ?";
-            try {
-                $count    = Shopware()->Db()->fetchOne($sql, array($orderId));
-                $shipping = Shopware()->Db()->fetchOne($shipping, array($orderId));
-            } catch (Exception $exception) {
-                Shopware()->Pluginlogger()->error($exception->getMessage());
-            }
-
-            return $shipping + $count;
         }
 
         /**

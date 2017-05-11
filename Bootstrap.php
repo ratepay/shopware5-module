@@ -1066,6 +1066,7 @@
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
+                    $modelFactory->setOrderId($order->getId());
                     $result = $modelFactory->doOperation('ConfirmationDeliver', $operationData);
 
                     if ($result === true) {
@@ -1105,6 +1106,7 @@
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
                     $operationData['subtype'] = 'cancellation';
+                    $modelFactory->setOrderId($order->getId());
                     $result = $modelFactory->doOperation('PaymentChange', $operationData);
 
                     if ($result === true) {
@@ -1141,6 +1143,7 @@
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
                     $operationData['subtype'] = 'return';
+                    $modelFactory->setOrderId($order->getId());
                     $result = $modelFactory->doOperation('PaymentChange', $operationData);
 
                     if ($result === true) {
