@@ -445,11 +445,16 @@
 
             foreach ($items AS $shopItem) {
                 if ($shopItem->articlenumber == 'shipping') {
-                    $shoppingBasket['Shipping'] = array(
-                        'Description' => "Shipping costs",
-                        'UnitPriceGross' => $shopItem->price,
-                        'TaxRate' => $shopItem->taxRate,
-                    );
+                    if ($shopItem->delivered == 0 && $shopItem->cancelled == 0 && $shopItem->returned == 0) {
+                        $shoppingBasket['Shipping'] = array(
+                            'Description' => "Shipping costs",
+                            'UnitPriceGross' => $shopItem->price,
+                            'TaxRate' => $shopItem->taxRate,
+                        );
+                    }
+                    if (!empty($type) && $shopItem->cancelledItems == 0 && $shopItem->returnedItems == 0 && $shopItem->deliveredItems == 0) {
+                        unset($shoppingBasket['Shipping']);
+                    }
                 } else {
                     if (is_array($shopItem)) {
                         if ($shopItem['quantity'] == 0 && empty($type)) {
@@ -500,14 +505,25 @@
                         if (!empty($type)) {
                             switch ($type) {
                                 case 'return':
+                                    if ($shopItem->returnedItems == 0) {
+                                        $item['Quantity'] = 0;
+                                        continue;
+                                    }
                                     $item['Quantity'] = $shopItem->returnedItems;
                                     break;
                                 case 'cancellation':
+                                    if ($shopItem->cancelledItems == 0) {
+                                        $item['Quantity'] = 0;
+                                        continue;
+                                    }
                                     $item['Quantity'] = $shopItem->cancelledItems;
                             }
                         }
                     }
-                    $shoppingBasket['Items'][] = array('Item' => $item);
+
+                    if ($item['Quantity'] != 0) {
+                        $shoppingBasket['Items'][] = array('Item' => $item);
+                    }
                 }
             }
             return $shoppingBasket;
@@ -525,7 +541,7 @@
             $countryCode = $order->getBilling()->getCountry()->getIso();
             $mbHead = $this->getHead($countryCode);
 
-            $shoppingItems = $this->createBasketArray($operationData['items']);
+            $shoppingItems = $this->createBasketArray($operationData['items'], 'shipping');
             $shoppingBasket = [
                 'ShoppingBasket' => $shoppingItems,
             ];

@@ -181,7 +181,7 @@
             $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
             $order = $orderModel->findOneBy(array('id' => $orderId));
             $this->_modelFactory->setTransactionId($order->getTransactionID());
-            $this->_modelFactory->setOrderId($orderId);
+            $this->_modelFactory->setOrderId($order->getNumber());
             $itemsToDeliver = null;
 
             $basketItems = array();
@@ -248,7 +248,7 @@
                 $operationData['orderId'] = $orderId;
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'cancellation';
-                $this->_modelFactory->setOrderId($orderId);
+                $this->_modelFactory->setOrderId($order->getNumber());
                 $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
                 if ($result === true) {
@@ -311,7 +311,7 @@
                 $operationData['orderId'] = $orderId;
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'return';
-                $this->_modelFactory->setOrderId($orderId);
+                $this->_modelFactory->setOrderId($order->getNumber());
                 $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
                 if ($result === true) {
@@ -384,7 +384,7 @@
                 $operationData['orderId'] = $orderId;
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'credit';
-                $this->_modelFactory->setOrderId($orderId);
+                $this->_modelFactory->setOrderId($order->getNumber());
                 $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
                 if ($result === true) {

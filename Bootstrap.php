@@ -35,7 +35,7 @@
 
         public function afterInit()
         {
-            $this->get('Loader')->registerNamespace('RatePAY', $this->Path() . 'Component/Core/src/');
+            $this->get('Loader')->registerNamespace('RatePAY', $this->Path() . 'Component/Library/src/');
         }
 
         /**
@@ -1066,7 +1066,7 @@
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
-                    $modelFactory->setOrderId($order->getId());
+                    $modelFactory->setOrderId($order->getNumber());
                     $result = $modelFactory->doOperation('ConfirmationDeliver', $operationData);
 
                     if ($result === true) {
@@ -1106,7 +1106,7 @@
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
                     $operationData['subtype'] = 'cancellation';
-                    $modelFactory->setOrderId($order->getId());
+                    $modelFactory->setOrderId($order->getNumber());
                     $result = $modelFactory->doOperation('PaymentChange', $operationData);
 
                     if ($result === true) {
@@ -1143,7 +1143,7 @@
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
                     $operationData['subtype'] = 'return';
-                    $modelFactory->setOrderId($order->getId());
+                    $modelFactory->setOrderId($order->getNumber());
                     $result = $modelFactory->doOperation('PaymentChange', $operationData);
 
                     if ($result === true) {
