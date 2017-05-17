@@ -240,6 +240,36 @@
                     throw new Exception("Can not add payment-firstdate column in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
+            //adding unique index for rp config
+            if (!$this->_sqlCheckIfColumnIsUnique('rpay_ratepay_config', 'country-code-billing')) {
+                try {
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD UNIQUE( `country-code-billing`);");
+                } catch (Exception $exception) {
+                    throw new Exception("Can not change column index` - " . $exception->getMessage());
+                }
+            }
+        }
+
+        /**
+         * check if the column index is unique
+         *
+         * @param $table
+         * @param $column
+         * @return bool
+         * @throws Exception
+         */
+        private function _sqlCHeckIfColumnIsUnique($table, $column) {
+            try {
+                $qry = 'SHOW INDEX FROM `' . $table . '` WHERE Column_name = "' . $column . '"';
+                $column = Shopware()->Db()->fetchRow($qry);
+            } catch (Exception $exception) {
+                throw new Exception("Can not enter table " . $table . " - " . $exception->getMessage());
+            }
+
+            if ($column['Non_unique'] == 0)  {
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -593,7 +623,7 @@
                          "`interestrate-default` float NULL, " .
                          "`device-fingerprint-status` varchar(3) NOT NULL, " .
                          "`device-fingerprint-snippet-id` varchar(55) NULL, " .
-                         "`country-code-billing` varchar(30) NULL, " .
+                         "`country-code-billing` varchar(30) NULL UNIQUE, " .
                          "`country-code-delivery` varchar(30) NULL, " .
                          "`currency` varchar(30) NULL, " .
                          "`error-default` VARCHAR(535) NOT NULL DEFAULT 'Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href=\"http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach\" target=\"_blank\">RatePAY-Datenschutzerklärung</a>', " .
