@@ -365,7 +365,6 @@
                 if ($row['quantityDeliver'] == 0) {
                     continue;
                 }
-
                 if ((substr($row['articleordernumber'], 0, 5) == 'Debit')
                     || (substr($row['articleordernumber'], 0, 6) == 'Credit')
                 ) {
@@ -384,7 +383,7 @@
                 $operationData['orderId'] = $orderId;
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'credit';
-                $this->_modelFactory->setOrderId($order->getNumber());
+                $this->_modelFactory->setOrderId($order['ordernumber']);
                 $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
 
                 if ($result === true) {
