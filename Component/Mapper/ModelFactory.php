@@ -247,12 +247,24 @@
             $shoppingBasket = $this->createBasketArray($shopItems);
 
             if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
+                $system = Shopware()->System();
+                $usergroup = Shopware()->Db()->fetchRow('
+                SELECT * FROM s_core_customergroups
+                WHERE groupkey = ?
+            ', [$system->sUSERGROUP]);
+
                 $shoppingBasket['Shipping'] = array(
                     'Description' => "Shipping costs",
                     'UnitPriceGross' => Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'],
                     'TaxRate' => Shopware()->Session()->sOrderVariables['sBasket']['sShippingcostsTax'],
 
                 );
+
+                if ($usergroup['tax'] == 0) {
+                    $cost =  Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'];
+                    $tax = Shopware()->Session()->sOrderVariables['sBasket']['sShippingcostsTax'];
+                    $shoppingBasket['Shipping']['UnitPriceGross'] = number_format($cost / 100 * $tax +  $cost , 2);
+                }
             }
 
             $mbContent = new \RatePAY\ModelBuilder('Content');
@@ -442,10 +454,22 @@
         private function createBasketArray($items, $type = false) {
             $shoppingBasket = array();
             $item = array();
+            $net = false;
+
+            $system = Shopware()->System();
+            $usergroup = Shopware()->Db()->fetchRow('
+                SELECT * FROM s_core_customergroups
+                WHERE groupkey = ?
+            ', [$system->sUSERGROUP]);
+
+            if ($usergroup['tax'] === 0) {
+                $net = true;
+            }
+
 
             foreach ($items AS $shopItem) {
                 if ($shopItem->articlenumber == 'shipping') {
-                    if ($shopItem->delivered == 0 && $shopItem->cancelled == 0 && $shopItem->returned == 0) {
+                    if ($shopItem->delivered == 0 || $shopItem->cancelled == 0 || $shopItem->returned == 0) {
                         $shoppingBasket['Shipping'] = array(
                             'Description' => "Shipping costs",
                             'UnitPriceGross' => $shopItem->price,
@@ -475,6 +499,10 @@
                                 'UnitPriceGross' => $shopItem['priceNumeric'],
                                 'TaxRate' => $shopItem['tax_rate'],
                             );
+                            if ($net == true) {
+                                $price = $shopItem['priceNumeric']/100 * $shopItem['tax_rate'] +  $shopItem['priceNumeric'];
+                                $item['UnitPriceGross'] = number_format($price, 2);
+                            }
                         }
                     } elseif (is_object($shopItem)) {
                         if (!isset($shopItem->name)) {
@@ -488,6 +516,10 @@
                                 'UnitPriceGross' => $shopItem->getPrice(),
                                 'TaxRate' => $shopItem->getTaxRate(),
                             );
+                            if ($net == true) {
+                                $price = $shopItem->getPrice() / 100 * $shopItem->getTaxRate() +  $shopItem->getPrice();
+                                $item['UnitPriceGross'] = number_format($price, 2);
+                            }
                             $type = false;
                         } else {
                             if ($shopItem->quantity == 0 && empty($type)) {
@@ -500,6 +532,10 @@
                                 'UnitPriceGross' => $shopItem->price,
                                 'TaxRate' => $shopItem->taxRate,
                             );
+                            if ($net == true) {
+                                $price = $shopItem->price / 100 * $shopItem->taxRate + $shopItem->price;
+                                $item['UnitPriceGross'] = number_format($price, 2);
+                            }
                         }
 
                         if (!empty($type)) {
