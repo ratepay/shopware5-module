@@ -462,7 +462,7 @@
                 WHERE groupkey = ?
             ', [$system->sUSERGROUP]);
 
-            if ($usergroup['tax'] === 0) {
+            if ((int)$usergroup['tax'] === 0) {
                 $net = true;
             }
 
