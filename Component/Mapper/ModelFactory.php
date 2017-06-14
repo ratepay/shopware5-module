@@ -251,7 +251,7 @@
                 $usergroup = Shopware()->Db()->fetchRow('
                 SELECT * FROM s_core_customergroups
                 WHERE groupkey = ?
-            ', [$system->sUSERGROUP]);
+                ', [$system->sUSERGROUP]);
 
                 $shoppingBasket['Shipping'] = array(
                     'Description' => "Shipping costs",
@@ -456,16 +456,30 @@
             $item = array();
             $net = false;
 
-            $system = Shopware()->System();
-            $usergroup = Shopware()->Db()->fetchRow('
-                SELECT * FROM s_core_customergroups
-                WHERE groupkey = ?
-            ', [$system->sUSERGROUP]);
+            if (empty($this->_orderId)) {
+                $system = Shopware()->System();
+                $usergroup = Shopware()->Db()->fetchRow('
+                    SELECT * FROM s_core_customergroups
+                    WHERE groupkey = ?
+                    ', [$system->sUSERGROUP]);
+            } else {
+                $user = Shopware()->Db()->fetchRow('
+                    SELECT * FROM s_order
+                    WHERE ordernumber = ?
+                    ', $this->_orderId);
+                $usergroupId = Shopware()->Db()->fetchRow('
+                    SELECT * FROM s_user
+                    WHERE id = ?
+                    ', $user['userID']);
+                $usergroup = Shopware()->Db()->fetchRow('
+                    SELECT * FROM s_core_customergroups
+                    WHERE groupkey = ?
+                    ', $usergroupId['customergroup']);
+            }
 
             if ((int)$usergroup['tax'] === 0) {
                 $net = true;
             }
-
 
             foreach ($items AS $shopItem) {
                 if ($shopItem->articlenumber == 'shipping') {
