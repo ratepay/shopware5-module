@@ -311,24 +311,24 @@
         }
 
         /**
-         * calcDesign-function for Ratenrechner
+         * calcDesign-function for installment
          */
         public function calcDesignAction()
         {
             Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
-            $calcPath = realpath(dirname(__FILE__) . '/../../Views/responsive/frontend/Ratenrechner/php/');
+            $calcPath = realpath(dirname(__FILE__) . '/../../Views/responsive/frontend/installment/php/');
             require_once $calcPath . '/PiRatepayRateCalc.php';
             require_once $calcPath . '/path.php';
             require_once $calcPath . '/PiRatepayRateCalcDesign.php';
         }
 
         /**
-         * calcRequest-function for Ratenrechner
+         * calcRequest-function for installment
          */
         public function calcRequestAction()
         {
             Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
-            $calcPath = realpath(dirname(__FILE__) . '/../../Views/responsive/frontend/Ratenrechner/php/');
+            $calcPath = realpath(dirname(__FILE__) . '/../../Views/responsive/frontend/installment/php/');
             require_once $calcPath . '/PiRatepayRateCalc.php';
             require_once $calcPath . '/path.php';
             require_once $calcPath . '/PiRatepayRateCalcRequest.php';

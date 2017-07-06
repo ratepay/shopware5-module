@@ -44,10 +44,11 @@ function changeFirstday(firstday) {
     }
 
     if ($('#secondInput').is(':checked')) {
+        month = $('#month').value();
         piRatepayRateCalculatorAction('runtime');
         $('#switchInformation').show();
     } else if ($('#firstInput').is(':checked')) {
-        piRatepayRateCalculatorAction('rate');
+        piRatepayRateCalculatorAction('rate', 0);
         $('#switchInformation').show();
     }
 }

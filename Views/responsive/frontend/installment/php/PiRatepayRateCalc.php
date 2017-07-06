@@ -107,6 +107,7 @@
             $resultArray['amount'] = number_format((double)$this->getDetailsAmount(), 2, $decimalSeperator, $thousandSepeartor);
             $resultArray['interestAmount'] = number_format((double)$this->getDetailsInterestAmount(), 2, $decimalSeperator, $thousandSepeartor);
             $resultArray['serviceCharge'] = number_format((double)$this->getDetailsServiceCharge(), 2, $decimalSeperator, $thousandSepeartor);
+            $resultArray['interestRate'] = number_format((double) $this->getDetailsInterestRate(), 2, $decimalSeperator, $thousandSepeartor);
             $resultArray['annualPercentageRate'] = number_format((double)$this->getDetailsAnnualPercentageRate(), 2, $decimalSeperator, $thousandSepeartor);
             $resultArray['monthlyDebitInterest'] = number_format((double)$this->getDetailsMonthlyDebitInterest(), 2, $decimalSeperator, $thousandSepeartor);
             $resultArray['numberOfRatesFull'] = (int)$this->getDetailsNumberOfRates();

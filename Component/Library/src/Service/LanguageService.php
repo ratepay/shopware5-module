@@ -102,7 +102,7 @@ class LanguageService
             'rp_mouseover_duration_time' => "Dauer des Ratenplans (kann durch Sondertilgungen verk&uuml;rzt werden).",
             'rp_mouseover_duration_month' => "Monatlich f&auml;lliger Teilbetrag.",
             'rp_mouseover_last_rate' => "Im letzten Monat f&auml;lliger Teilbetrag.",
-            'rp_calculator' => "Ratenrechner",
+            'rp_calculator' => "installment",
             'rp_personal_calculation' => "Pers&Ouml;nliche Ratenberechnung",
             'rp_reason_code_translation_603' => "Die Wunschrate entspricht den vorgegebenen Bedingungen.",
             'rp_reason_code_translation_671' => "Die letzte Rate war niedriger als erlaubt. Laufzeit und/oder Rate wurden angepasst.",

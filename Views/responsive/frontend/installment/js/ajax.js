@@ -7,7 +7,7 @@
  * Code by Ratepay GmbH  <http://www.ratepay.com/>
  */
 
-function piRatepayRateCalculatorAction(mode) {
+function piRatepayRateCalculatorAction(mode, month) {
     var calcValue;
     var calcMethod;
     var paymentFirstday;
@@ -23,17 +23,17 @@ function piRatepayRateCalculatorAction(mode) {
     } else {// code for IE6, IE5
         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
     }
-    piRpInputValue = document.getElementById('piRpInput-button').value;
-    piRpInputValueRuntime = document.getElementById('piRpInput-buttonRuntime').value;
+    //piRpInputValue = document.getElementById('piRpInput-button').value;
+    //piRpInputValueRuntime = document.getElementById('piRpInput-buttonRuntime').value;
     if (mode == 'rate') {
-        calcValue = document.getElementById('rate').value;
+        calcValue = document.getElementById('rp-rate-value').value;
         calcMethod = 'calculation-by-rate';
-        document.getElementById('piRpInput-button').className = "piRpInput-button  ajaxloader";
-        document.getElementById('piRpInput-button').value = 'wird geladen ...';
+       /* document.getElementById('piRpInput-button').className = "piRpInput-button  ajaxloader";
+        document.getElementById('piRpInput-button').value = 'wird geladen ...';*/
         paymentFirstday = document.getElementById('paymentFirstday').value;
 
     } else if (mode == 'runtime') {
-        calcValue = document.getElementById('runtime').value;
+        calcValue = month;
         calcMethod = 'calculation-by-time';
         document.getElementById('piRpInput-buttonRuntime').className = "piRpInput-button  ajaxloader";
         document.getElementById('piRpInput-buttonRuntime').value = 'wird geladen ...';
@@ -57,7 +57,7 @@ function piRatepayRateCalculatorAction(mode) {
         document.getElementById('piRpResultContainer').innerHTML = html;
         document.getElementById('piRpResultContainer').style.display = 'block';
         document.getElementById('piRpResultContainer').style.padding = '3px 0 0 0';
-        document.getElementById('piRpSwitchToTerm').style.display = 'none';
+        //document.getElementById('piRpSwitchToTerm').style.display = 'none';
         setTimeout("piSetLoaderBack()", 300);
 
     }
@@ -85,10 +85,10 @@ function piLoadrateCalculator() {
 }
 
 function piSetLoaderBack() {
-    document.getElementById('piRpInput-buttonRuntime').className = 'piRpInput-button';
+    /*document.getElementById('piRpInput-buttonRuntime').className = 'piRpInput-button';
     document.getElementById('piRpInput-button').className = 'piRpInput-button';
     document.getElementById('piRpInput-buttonRuntime').value = piRpInputValueRuntime;
-    document.getElementById('piRpInput-button').value = piRpInputValue;
+    document.getElementById('piRpInput-button').value = piRpInputValue;*/
 }
 
 function piLoadrateResult() {
