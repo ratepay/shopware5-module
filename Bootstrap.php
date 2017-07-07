@@ -132,12 +132,28 @@
          */
         public function update($version)
         {
+            $countrys = array('DE', 'AT', 'CH');
+            Shopware()->PluginLogger()->addNotice('test');
+            $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();;
+
             $this->_subscribeEvents();
             $this->_createForm();
 
             $this->_incrementalTableUpdate();
 
             $this->_dropOrderAdditionalAttributes();
+
+            foreach ($countrys AS $country) {
+                $profile = $configShop->get('RatePayProfileID' . $country);
+                $security = $configShop->get('RatePaySecurityCode' . $country);
+                $sandbox = $configShop->get('RatePaySandbox' . $country);
+                $shop = Shopware()->Db()->query("SELECT `shopId` FROM `rpay_ratepay_config` WHERE `profileId` = '". $profile ."'");
+                if (!empty($profile)) {
+                    $this->getRatepayConfig($profile, $security, $shop ,$sandbox);
+                }
+            }
+
+            Shopware()->PluginLogger()->addNotice('Successful module update');
 
             return array(
                 'success' => true,
