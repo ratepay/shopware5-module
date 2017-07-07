@@ -86,7 +86,19 @@
                 blzInput.prop('disabled', true);
                 blzBlock.hide();
 
-                accNumberInput.keyup(function () {
+                 $(document).ready(function() {
+                    if (accNumberInput.val().match(/^\d+$/)) {
+                        blzInput.prop('disabled', false);
+                        blzBlock.show();
+                    }
+                    else {
+                        blzInput.prop('disabled', true);
+                        blzBlock.hide();
+                    }
+                })
+
+
+                accNumberInput.on('blur keyup change click', function () {
                     if ($(this).val().match(/^\d+$/)) {
                         blzInput.prop('disabled', false);
                         blzBlock.show();
