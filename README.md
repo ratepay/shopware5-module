@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau, Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `5.0.0`
+|Version | `5.0.1`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,10 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 5.0.1 - Released 2017-04-26
+* new installment calculator design
+* make automatic profile request after module update
 
 ### Version Version 5.0.0 - Released 2017-04-26
 * change the requests to ne new ratepay library

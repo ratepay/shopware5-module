@@ -134,7 +134,7 @@
         {
             $countrys = array('DE', 'AT', 'CH');
             Shopware()->PluginLogger()->addNotice('test');
-            $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();;
+            $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
             $this->_subscribeEvents();
             $this->_createForm();
@@ -817,7 +817,7 @@
             //get ratepay config based on shopId @toDo: IF DI SNIPPET ID WILL BE VARIABLE BETWEEN SUBSHOPS WE NEED TO SELECT BY SHOPID AND COUNTRY CREDENTIALS
             $shopid = Shopware()->Shop()->getId();
             $configPlugin = $this->getRatePayPluginConfig($shopid);
-            $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();;
+            $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
             if (!is_null(Shopware()->Session()->sUserId)) {
                 $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);

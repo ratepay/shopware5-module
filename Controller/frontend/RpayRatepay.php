@@ -267,8 +267,6 @@
          */
         private function _error()
         {
-
-
             $this->View()->loadTemplate("frontend/payment_rpay_part/RatePAYErrorpage.tpl");
 
             if (!empty($this->_customerMessage)) {
