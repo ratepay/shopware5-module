@@ -24,11 +24,12 @@
 
 ## Changelog
 
-### Version Version 5.0.1 - Released 2017-04-26
+### Version Version 5.0.1 - Released 2017-07-14
 * new installment calculator design
 * make automatic profile request after module update
+* fix bank account autofill problem
 
-### Version Version 5.0.0 - Released 2017-04-26
+### Version Version 5.0.0 - Released 2017-06-26
 * change the requests to ne new ratepay library
 * add php 7 compatibility
 * add bidirectional function
