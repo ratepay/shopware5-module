@@ -393,12 +393,17 @@
                         } else {
                             $event = 'Nachlass wurde hinzugefügt';
                         }
+                        $bind = array(
+                            'delivered' => 1
+                        );
                     } else {
                         $event = 'Artikel wurde hinzugefügt';
                     }
 
                     foreach ($insertedIds as $id) {
+
                         $newItems = Shopware()->Db()->fetchRow("SELECT * FROM `s_order_details` WHERE `id`=?", array($id));
+                        $this->updateItem($orderId, $newItems['articleordernumber'], $bind);
                         if ($newItems['quantity'] <= 0) {
                             continue;
                         }

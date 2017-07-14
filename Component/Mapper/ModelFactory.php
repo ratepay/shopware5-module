@@ -493,6 +493,14 @@
                     if (!empty($type) && $shopItem->cancelledItems == 0 && $shopItem->returnedItems == 0 && $shopItem->deliveredItems == 0) {
                         unset($shoppingBasket['Shipping']);
                     }
+                } elseif ((substr($shopItem->articlenumber, 0, 5) == 'Debit')
+                        || (substr($shopItem->articlenumber, 0, 6) == 'Credit')) {
+                    $shoppingBasket['Discount'] = array(
+                        'Description' => $shopItem->articlenumber,
+                        'UnitPriceGross' => $shopItem->price,
+                        'TaxRate' => $shopItem->taxRate,
+                    );
+
                 } else {
                     if (is_array($shopItem)) {
                         if ($shopItem['quantity'] == 0 && empty($type)) {
