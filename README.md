@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version Version 4.2.92 - Released 2017-07-26
+* fix credit/debit bug
+
 ### Version Version 4.2.91 - Released 2017-04-12
 * fix for checkout javascript problem
 
