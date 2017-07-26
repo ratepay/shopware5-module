@@ -444,8 +444,8 @@
                 if ($row['quantityDeliver'] == 0) {
                     continue;
                 }
-                if (strpos($row['articleordernumber'], 'Debit') === false
-                    && strpos($row['articleordernumber'], 'Credit') === false
+                if ((substr($row['articleordernumber'], 0, 5) == 'Debit')
+                    || (substr($row['articleordernumber'], 0, 6) == 'Credit')
                 ) {
                     $onlyDebit = false;
                 }
