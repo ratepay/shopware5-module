@@ -141,7 +141,7 @@
          */
         private function getHead($countryCode = false) {
             $systemId = $this->getSystemId();
-            $boostrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+            $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
 
             $head = [
                         'SystemId' => $systemId,
@@ -153,7 +153,7 @@
                             'Systems' => [
                                 'System' => [
                                     'Name' => 'Shopware',
-                                    'Version' => Shopware()->Config()->get('version') . '_' . $boostrap->getVersion()
+                                    'Version' => Shopware()->Config()->get('version') . '_' . $bootstrap->getVersion()
                                 ]
                             ]
                         ]
@@ -362,7 +362,7 @@
         private function makeProfileRequest($operationData)
         {
             $systemId = $this->getSystemId();
-            $boostrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+            $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
 
             $mbHead = new \RatePAY\ModelBuilder();
             $mbHead->setArray([
@@ -375,7 +375,7 @@
                     'Systems' => [
                         'System' => [
                             'Name' => 'Shopware',
-                            'Version' => Shopware()->Config()->get('version') . '_' . $boostrap->getVersion()
+                            'Version' => Shopware()->Config()->get('version') . '_' . $bootstrap->getVersion()
                         ]
                     ]
                 ]

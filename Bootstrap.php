@@ -132,7 +132,7 @@
          */
         public function update($version)
         {
-            $countrys = array('DE', 'AT', 'CH');
+            $countries = array('DE', 'AT', 'CH');
             Shopware()->PluginLogger()->addNotice('test');
             $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
@@ -143,7 +143,7 @@
 
             $this->_dropOrderAdditionalAttributes();
 
-            foreach ($countrys AS $country) {
+            foreach ($countries AS $country) {
                 $profile = $configShop->get('RatePayProfileID' . $country);
                 $security = $configShop->get('RatePaySecurityCode' . $country);
                 $sandbox = $configShop->get('RatePaySandbox' . $country);
