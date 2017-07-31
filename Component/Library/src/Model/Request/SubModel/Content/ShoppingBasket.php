@@ -38,16 +38,24 @@ class ShoppingBasket extends AbstractModel
         ],
         'Items' => [
             'mandatory' => false,
-            'instanceOf' => __NAMESPACE__ . "\\ShoppingBasket\\Items"
+            'instanceOf' => "Content\\ShoppingBasket\\Items"
         ],
         'Shipping' => [
             'mandatory' => false,
-            'instanceOf' => __NAMESPACE__ . "\\ShoppingBasket\\Shipping"
+            'instanceOf' => "Content\\ShoppingBasket\\Shipping"
         ],
         'Discount' => [
             'mandatory' => false,
-            'instanceOf' => __NAMESPACE__ . "\\ShoppingBasket\\Discount"
+            'instanceOf' => "Content\\ShoppingBasket\\Discount"
         ],
+    ];
+
+    /*
+     * List of settings.
+     * In addition to API fields there are settings possible to control library behavior.
+     */
+    public $settings = [
+        'AutoDelivery' => false
     ];
 
     /**
@@ -62,11 +70,13 @@ class ShoppingBasket extends AbstractModel
 
             if (key_exists('value', $this->admittedFields['Items'])) {
                 $items = $this->admittedFields['Items']['value']->toArray();
-                foreach ($items['item'] as $item) {
-                    $unitPriceGross = floatval($item['attributes']['unit-price-gross']['value']);
-                    $quantity = intval($item['attributes']['quantity']['value']);
-                    $discount = (key_exists('discount', $item['attributes'])) ? floatval($item['attributes']['discount']['value']) : 0;
-                    $amount += ($unitPriceGross + $discount) * $quantity;
+                if (key_exists('item', $items)) { // If item list is not empty
+                    foreach ($items['item'] as $item) {
+                        $unitPriceGross = floatval($item['attributes']['unit-price-gross']['value']);
+                        $quantity = intval($item['attributes']['quantity']['value']);
+                        $discount = (key_exists('discount', $item['attributes'])) ? floatval($item['attributes']['discount']['value']) : 0;
+                        $amount += ($unitPriceGross + $discount) * $quantity;
+                    }
                 }
             }
             

@@ -28,7 +28,7 @@ class Items extends AbstractModel
     public $admittedFields = [
         'Item' => [
             'mandatoryByRule' => true,
-            'instanceOf' => __NAMESPACE__ . "\\Items\\Item",
+            'instanceOf' => "Content\\ShoppingBasket\\Items\\Item",
             'multiple' => true
         ]
     ];
@@ -42,17 +42,19 @@ class Items extends AbstractModel
     {
         $articleNumbers = [];
 
-        foreach ($this->admittedFields['Item']['value'] as $item) {
-            $articleNumber = $item->admittedFields['ArticleNumber']['value'];
-            if (key_exists('value', $item->admittedFields['UniqueArticleNumber'])) {
-                $articleNumber .= $item->admittedFields['UniqueArticleNumber']['value'];
-            }
+        if (key_exists('value', $this->admittedFields['Item'])) {
+            foreach ($this->admittedFields['Item']['value'] as $item) {
+                $articleNumber = $item->admittedFields['ArticleNumber']['value'];
+                if (key_exists('value', $item->admittedFields['UniqueArticleNumber'])) {
+                    $articleNumber .= $item->admittedFields['UniqueArticleNumber']['value'];
+                }
 
-            if (in_array($articleNumber, $articleNumbers)) {
-                $this->setErrorMsg("Identical article numbers on different items are not allowed. Please specify with UniqueArticleNumber.");
-                return false;
-            } else {
-                $articleNumbers[] = $articleNumber;
+                if (in_array($articleNumber, $articleNumbers)) {
+                    $this->setErrorMsg("Identical article numbers on different items are not allowed. Please specify with UniqueArticleNumber.");
+                    return false;
+                } else {
+                    $articleNumbers[] = $articleNumber;
+                }
             }
         }
 

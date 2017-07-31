@@ -23,6 +23,16 @@ abstract class AbstractModel
      */
     private $errorMsg = "";
 
+    public function __construct()
+    {
+        array_walk($this->admittedFields, function (&$value) {
+            if (key_exists('instanceOf', $value)) {
+                $namespace = __NAMESPACE__;
+                $value['instanceOf'] = __NAMESPACE__ . "\\" . $value['instanceOf'];
+            }
+        });
+    }
+
     /**
      * Collecting call function to validate action+field and split in getter and setter
      *
@@ -30,20 +40,23 @@ abstract class AbstractModel
      * @param $arguments
      * @return bool|null
      */
-
     public function __call($name, $arguments) {
         $action = substr($name, 0, 3);
         $field = substr($name, 3);
 
-        if ($action != 'set') {
+        if (!key_exists($field, $this->admittedFields) && (property_exists($this, "settings") && !key_exists($field, $this->settings))) {
+            throw new RequestException("Field '" . $field . "' invalid");
+        }
+
+        if ($action == "set") {
+            return $this->commonSetter($field, $arguments);
+        } elseif ($action == "get") {
+            return $this->commonGetter($field);
+        } else {
             throw new RequestException("Action invalid");
         }
 
-        if (!key_exists($field, $this->admittedFields)) {
-            throw new RequestException("Field invalid");
-        }
 
-        return $this->commonSetter($field, $arguments);
     }
 
     /**
@@ -55,7 +68,11 @@ abstract class AbstractModel
      */
     public function commonSetter($field, $arguments) {
         if (is_array($arguments) && $arguments[0] !== "") {
-            if (!key_exists($field, $this->admittedFields)) {
+            if (property_exists($this, 'settings') && key_exists($field, $this->settings)) { // If it's a setting, save argument into settings
+                // @ToDo: find a better structure
+                $this->settings[$field] = $arguments[0];
+                return $this;
+            } elseif (!key_exists($field, $this->admittedFields)) {
                 throw new ModelException("Invalid field '" . $field . "'");
             }
 
@@ -71,6 +88,22 @@ abstract class AbstractModel
 
         }
         return $this;
+    }
+
+    /**
+     * Common getter
+     *
+     * @param $field
+     * @return mixed
+     */
+    public function commonGetter($field) {
+        if (property_exists($this, "settings") && key_exists($field, $this->settings)) {
+            return $this->settings[$field];
+        } elseif (key_exists("value", $this->admittedFields[$field])) {
+            return $this->admittedFields[$field]['value'];
+        }
+
+        return null;
     }
 
     /**
@@ -94,26 +127,26 @@ abstract class AbstractModel
                 $fieldSettings['value'] = strtoupper($fieldSettings['value']);
             }
 
-            if (key_exists('mandatory', $fieldSettings) && $fieldSettings['mandatory'] === true) {    // If field is mandatory
-                if (key_exists('value', $fieldSettings)) {                                            // If value is not empty
+            if (key_exists('mandatory', $fieldSettings) && $fieldSettings['mandatory'] === true) { // If field is mandatory
+                if (key_exists('value', $fieldSettings)) {                                         // If value is not empty
                     $returnPush = true;
-                } elseif (key_exists('default', $fieldSettings)) {                                    // If value is empty but default is defined
+                } elseif (key_exists('default', $fieldSettings)) {                                 // If value is empty but default is defined
                     $fieldSettings['value'] = $fieldSettings['default'];
                     $returnPush = true;
                 } else {
                     throw new ModelException("Field '" . $fieldName . "' is required");
                 }
-            } elseif(key_exists('mandatoryByRule', $fieldSettings)) {                                 // If field is mandatory by rule
-                if ($this->rule() === true) {                                                               // If rule is passed
-                    if (key_exists('value', $fieldSettings)) {                                        // If value is not empty
+            } elseif(key_exists('mandatoryByRule', $fieldSettings)) {                              // If field is mandatory by rule
+                if ($this->rule() === true) {                                                      // If rule is passed
+                    if (key_exists('value', $fieldSettings)) {                                     // If value is not empty
                         $returnPush = true;
                     }
                 } else {
                     throw new RuleSetException($this->getErrorMsg());
                 }
-            } else {                                                                                        // If field is optional
-                if (key_exists('value', $fieldSettings)) {                                            // If value is not empty
-                    if (key_exists('optionalByRule', $fieldSettings) && $this->rule() !== true) {     // If field is optional by rule but rule isn't passed
+            } else {                                                                               // If field is optional
+                if (key_exists('value', $fieldSettings)) {                                         // If value is not empty
+                    if (key_exists('optionalByRule', $fieldSettings) && $this->rule() !== true) {  // If field is optional by rule but rule isn't passed
                         continue;
                     }
                     $returnPush = true;
@@ -121,7 +154,7 @@ abstract class AbstractModel
             }
 
             if ($returnPush) {
-                if (key_exists('instanceOf', $fieldSettings)) {                                       // If value is a submodel object call toArray function
+                if (key_exists('instanceOf', $fieldSettings)) {                                    // If value is a submodel object call toArray function
                     if (!key_exists('instanceAsAttributes', $fieldSettings)) {
                         if (key_exists('multiple', $fieldSettings)) {
                             foreach ($fieldSettings['value'] as $fieldSettingSingle) {
@@ -130,19 +163,19 @@ abstract class AbstractModel
                         } else {
                             $return[$xmlField] = $this->changeDescriptionToValue($fieldSettings['value']);
                         }
-                    } else {                                                                                // If instanced submodel should be an attribute to current field
+                    } else {                                                                       // If instanced submodel should be an attribute to current field
                         $return[$xmlField]['attributes'] = $fieldSettings['value']->toArray();
                     }
                 } else {
-                    if (key_exists('cdata', $fieldSettings)) {                                        // If value should be encapsulated inside CDATA tag
-                        if (!mb_detect_encoding($fieldSettings['value'], 'UTF-8', true)) {
+                    if (key_exists('cdata', $fieldSettings)) {                                     // If value should be encapsulated inside CDATA tag
+                        if (function_exists("mb_detect_encoding") && !mb_detect_encoding($fieldSettings['value'], 'UTF-8', true)) { // Check only if php mdstring extension is loaded
                             throw new ModelException("Value of '" . $fieldName . "' has to be encoded in UTF-8");
                         }
                     }
 
                     if (key_exists('isAttribute', $fieldSettings)) {
                         $return['attributes'][$xmlField]['value'] = $fieldSettings['value'];
-                    } elseif (key_exists('isAttributeTo', $fieldSettings)) {                                                                                // If current field should be an attribute to another field
+                    } elseif (key_exists('isAttributeTo', $fieldSettings)) {                          // If current field should be an attribute to another field
                         $return[Util::changeCamelCaseToDash($fieldSettings['isAttributeTo'])]['attributes'][$xmlField]['value'] = $fieldSettings['value'];
                     } else {
                         if (key_exists('cdata', $fieldSettings)) {
