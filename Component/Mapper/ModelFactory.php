@@ -159,14 +159,16 @@
                         ]
                     ];
 
-            if (!empty($this->_orderId)) {
+            $orderId = $this->_orderId;
+            if (!empty($orderId)) {
                 $head['External']['OrderId'] = $this->_orderId;
             }
 
             $mbHead = new \RatePAY\ModelBuilder('head');
             $mbHead->setArray($head);
 
-            if (!empty($this->_transactionId)) {
+            $transactionId = $this->_transactionId;
+            if (!empty($transactionId)) {
                 $mbHead->setTransactionId($this->_transactionId);
             }
 
@@ -455,8 +457,9 @@
             $shoppingBasket = array();
             $item = array();
             $net = false;
+            $orderId = $this->_orderId;
 
-            if (empty($this->_orderId)) {
+            if (empty($orderId)) {
                 $system = Shopware()->System();
                 $usergroup = Shopware()->Db()->fetchRow('
                     SELECT * FROM s_core_customergroups
@@ -698,12 +701,14 @@
         private function _getOrderIdFromTransactionId()
         {
             $returnValue = null;
-            if (!empty($this->_transactionId)) {
+            $transactionId = $this->_transactionId;
+
+            if (!empty($transactionId)) {
                 $returnValue = Shopware()->Db()->fetchOne(
                     "SELECT `ordernumber` FROM `s_order` "
                     . "INNER JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id` = `s_order`.`paymentID` "
                     . "WHERE `s_order`.`transactionID`=?;",
-                    array($this->_transactionId)
+                    array($transactionId)
                 );
             }
 
@@ -738,7 +743,7 @@
          * @return array
          */
         function _getCheckoutAddress($checkoutAddress, $type, $countryCode) {
-             $address = array(
+            $address = array(
                 'Type' => strtolower($type),
                 'Street' => $checkoutAddress->getStreet(),
                 'ZipCode' => $checkoutAddress->getZipCode(),
@@ -746,14 +751,16 @@
                 'CountryCode' => $countryCode,
             );
 
-             if ($type == 'DELIVERY') {
-                 $address['FirstName'] = $checkoutAddress->getFirstName();
-                 $address['LastName'] = $checkoutAddress->getLastName();
-             }
+            if ($type == 'DELIVERY') {
+                $address['FirstName'] = $checkoutAddress->getFirstName();
+                $address['LastName'] = $checkoutAddress->getLastName();
+            }
 
-             if (!empty($checkoutAddress->getCompany())) {
-                 $address['Company'] = $checkoutAddress->getCompany();
-             }
+            $company = $checkoutAddress->getCompany();
+            if (!empty($company)) {
+                $address['Company'] = $checkoutAddress->getCompany();
+            }
+
             return $address;
         }
 

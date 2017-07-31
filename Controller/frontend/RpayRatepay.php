@@ -268,9 +268,10 @@
         private function _error()
         {
             $this->View()->loadTemplate("frontend/payment_rpay_part/RatePAYErrorpage.tpl");
+            $customerMessage = $this->_customerMessage;
 
-            if (!empty($this->_customerMessage)) {
-                $this->View()->assign('rpCustomerMsg', $this->_customerMessage);
+            if (!empty($customerMessage)) {
+                $this->View()->assign('rpCustomerMsg', $customerMessage);
             } else {
                 Shopware()->Session()->RatePAY['hidePayment'] = true;
 
