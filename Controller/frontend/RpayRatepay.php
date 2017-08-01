@@ -188,7 +188,7 @@
          */
         private function _proceedPayment()
         {
-            $resultRequest = $this->_modelFactory->doOperation('PaymentRequest');
+            $resultRequest = $this->_modelFactory->callRequest('PaymentRequest');
 
             if ($resultRequest->isSuccessful()) {
                 Shopware()->Session()->RatePAY['transactionId'] = $resultRequest->getTransactionId();

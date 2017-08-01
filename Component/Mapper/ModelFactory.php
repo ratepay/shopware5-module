@@ -79,36 +79,36 @@
         }
 
         /**
-         * make operation
+         * call operation
          *
          * @param string $operationType
          * @param array $operationData
          *
          * @return bool|array
          */
-        public function doOperation($operationType, array $operationData = []) {
+        public function callRequest($operationType, array $operationData = []) {
             $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
 
             switch ($operationType) {
                 case 'ProfileRequest':
-                    return $this->makeProfileRequest($operationData);
+                    return $this->callProfileRequest($operationData);
                     break;
                 case 'PaymentRequest':
-                    return $this->makePaymentRequest();
+                    return $this->callPaymentRequest();
                     break;
                 case 'ConfirmationDeliver':
-                    return $this->makeConfirmationDeliver($operationData);
+                    return $this->callConfirmationDeliver($operationData);
                     break;
                 case 'PaymentChange':
-                    return $this->makePaymentChange($operationData);
+                    return $this->callPaymentChange($operationData);
                     break;
                 case 'CalculationRequest':
-                    return $this->makeCalculationRequest($operationData);
+                    return $this->callCalculationRequest($operationData);
                     break;
             }
         }
 
-        private function makeCalculationRequest($operationData) {
+        private function callCalculationRequest($operationData) {
             $mbHead = $this->getHead();
             $mbContent = new RatePAY\ModelBuilder('Content');
 
@@ -172,11 +172,11 @@
         }
 
         /**
-         * make payment request
+         * call payment request
          *
          * @return mixed
          */
-        private function makePaymentRequest()
+        private function callPaymentRequest()
         {
             $mbHead = $this->getHead();
             $mbHead->setCustomerDevice(
@@ -355,7 +355,7 @@
          * @param $operationData
          * @return bool|array
          */
-        private function makeProfileRequest($operationData)
+        private function callProfileRequest($operationData)
         {
             $systemId = $this->getSystemId();
             $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
@@ -569,12 +569,12 @@
         }
 
         /**
-         * make confirmation deliver
+         * call confirmation deliver
          *
          * @param $operationData
          * @return bool
          */
-        private function makeConfirmationDeliver($operationData)
+        private function callConfirmationDeliver($operationData)
         {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
             $countryCode = $order->getBilling()->getCountry()->getIso();
@@ -617,12 +617,12 @@
         }
 
         /**
-         * make a payment change (return, cancellation, order change)
+         * call a payment change (return, cancellation, order change)
          *
          * @param $operationData
          * @return bool
          */
-        private function makePaymentChange($operationData)
+        private function callPaymentChange($operationData)
         {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
             $countryCode = $order->getBilling()->getCountry()->getIso();

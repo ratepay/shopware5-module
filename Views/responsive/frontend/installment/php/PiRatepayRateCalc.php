@@ -155,7 +155,7 @@
             $operationData['payment']['rate'] = $this->getRequestCalculationValue();
             $operationData['subtype'] = $subtype;
 
-            $result = $modelFactory->doOperation('CalculationRequest', $operationData);
+            $result = $modelFactory->callRequest('CalculationRequest', $operationData);
 
             if ($result->isSuccessful()) {
                     $resultArray = $result->getResult();

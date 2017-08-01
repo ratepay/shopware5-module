@@ -192,7 +192,7 @@
             if ($itemsToDeliver > 0) {
                 $operationData['orderId'] = $orderId;
                 $operationData['items'] = $items;
-                $result = $this->_modelFactory->doOperation('ConfirmationDeliver', $operationData);
+                $result = $this->_modelFactory->callRequest('ConfirmationDeliver', $operationData);
 
                 if ($result === true) {
                     foreach ($items as $item) {
@@ -249,7 +249,7 @@
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'cancellation';
                 $this->_modelFactory->setOrderId($order->getNumber());
-                $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
+                $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
 
                 if ($result === true) {
                     foreach ($items as $item) {
@@ -312,7 +312,7 @@
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'return';
                 $this->_modelFactory->setOrderId($order->getNumber());
-                $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
+                $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
 
                 if ($result === true) {
                     foreach ($items as $item) {
@@ -384,7 +384,7 @@
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'credit';
                 $this->_modelFactory->setOrderId($order['ordernumber']);
-                $result = $this->_modelFactory->doOperation('PaymentChange', $operationData);
+                $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
 
                 if ($result === true) {
                     if ($subOperation === 'credit') {

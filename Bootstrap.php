@@ -1113,7 +1113,7 @@
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
                     $modelFactory->setOrderId($order->getNumber());
-                    $result = $modelFactory->doOperation('ConfirmationDeliver', $operationData);
+                    $result = $modelFactory->callRequest('ConfirmationDeliver', $operationData);
 
                     if ($result === true) {
                         foreach ($items as $item) {
@@ -1153,7 +1153,7 @@
                     $operationData['items'] = $items;
                     $operationData['subtype'] = 'cancellation';
                     $modelFactory->setOrderId($order->getNumber());
-                    $result = $modelFactory->doOperation('PaymentChange', $operationData);
+                    $result = $modelFactory->callRequest('PaymentChange', $operationData);
 
                     if ($result === true) {
                         foreach ($items as $item) {
@@ -1190,7 +1190,7 @@
                     $operationData['items'] = $items;
                     $operationData['subtype'] = 'return';
                     $modelFactory->setOrderId($order->getNumber());
-                    $result = $modelFactory->doOperation('PaymentChange', $operationData);
+                    $result = $modelFactory->callRequest('PaymentChange', $operationData);
 
                     if ($result === true) {
                         foreach ($items as $item) {
@@ -1288,7 +1288,7 @@
                 $operationData['orderId'] = $order->getId();
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'cancellation';
-                $result = $modelFactory->doOperation('PaymentChange', $operationData);
+                $result = $modelFactory->callRequest('PaymentChange', $operationData);
 
                 if ($result !== true) {
                     Shopware()->Pluginlogger()->warning('Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');
@@ -1651,7 +1651,7 @@
                 'profileId' => $profileId,
                 'securityCode' => $securityCode,
                 'sandbox' => $sandbox);
-            $response = $factory->doOperation('ProfileRequest', $data);
+            $response = $factory->callRequest('ProfileRequest', $data);
 
             if (is_array($response) && $response !== false) {
                 $data = array(
