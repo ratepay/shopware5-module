@@ -214,9 +214,9 @@
 
                 $company = $checkoutAddressBilling->getCompany();
                 if (empty($company)) {
-                    $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d");
+                    $dateOfBirth = $checkoutAddressBilling->getBirthday()->format("Y-m-d");
                 }
-                $merchantCustomerId = $shopUser->getBilling()->getNumber();
+                $merchantCustomerId = $checkoutAddressBilling->getNumber();
             }
 
             $mbHead->setArray([
