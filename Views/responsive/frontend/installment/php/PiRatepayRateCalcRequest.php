@@ -127,7 +127,7 @@
                     </p>
                 </div>
                 <div class="text-right">
-                    <?php echo $pi_resultArray['amount']; ?>
+                    <?php echo $pi_resultArray['amount']; ?> &euro;
                 </div>
             </div>
 
@@ -139,7 +139,7 @@
                     </p>
                 </div>
                 <div class="text-right">
-                    <?php echo $pi_resultArray['serviceCharge']; ?>
+                    <?php echo $pi_resultArray['serviceCharge']; ?> &euro;
                 </div>
             </div>
 
@@ -169,7 +169,7 @@
                     <p id="interestAmount" class="rp-installment-plan-description small"><?php echo $rp_mouseover_interest_amount; ?></p>
                 </div>
                 <div class="text-right">
-                    <?php echo $pi_resultArray['interestAmount']; ?>
+                    <?php echo $pi_resultArray['interestAmount']; ?> &euro;
                 </div>
             </div>
 
@@ -184,7 +184,7 @@
                     <p id="rate" class="rp-installment-plan-description small"><?php echo $rp_mouseover_duration_month; ?></p>
                 </div>
                 <div class="text-right">
-                    <?php echo $pi_resultArray['rate']; ?>
+                    <?php echo $pi_resultArray['rate']; ?> &euro;
                 </div>
             </div>
 
@@ -194,7 +194,7 @@
                     <p id="lastRate" class="rp-installment-plan-description small"><?php echo $rp_mouseover_last_rate; ?></p>
                 </div>
                 <div class="text-right">
-                    <?php echo $pi_resultArray['lastRate']; ?>
+                    <?php echo $pi_resultArray['lastRate']; ?> &euro;
                 </div>
             </div>
         </div>
@@ -206,7 +206,7 @@
                     <p id="rate2" class="rp-installment-plan-description small"><?php echo $rp_mouseover_duration_month; ?></p>
                 </div>
                 <div class="text-right">
-                    <?php echo $pi_resultArray['rate']; ?>
+                    <?php echo $pi_resultArray['rate']; ?> &euro;
                 </div>
             </div>
         </div>
@@ -216,7 +216,7 @@
                 <p id="totalAmount" class="rp-installment-plan-description small"><?php echo $rp_mouseover_total_amount; ?></p>
             </div>
             <div class="text-right">
-                <?php echo $pi_resultArray['totalAmount']; ?>
+                <?php echo $pi_resultArray['totalAmount']; ?> &euro;
             </div>
         </div>
         </div>

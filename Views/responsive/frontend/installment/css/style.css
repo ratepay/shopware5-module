@@ -41,7 +41,7 @@
 .rp-details-icon {
     float: right;
     padding: 5px;
-
+    height: 20px;
 }
 .rp-installment-plan-title {
     float: left;
@@ -73,7 +73,8 @@
     margin-left: 5px;
 }
 .rp-link {
-    margin-left: 20px
+    margin-left: 20px;
+    cursor: pointer;
 }
 #rp-sepa-agreement {
     margin-left: 5px
