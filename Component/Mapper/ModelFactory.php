@@ -86,15 +86,12 @@
          *
          * @return bool|array
          */
-        public function doOperation($operationType, array $operationData) {
+        public function doOperation($operationType, array $operationData = []) {
             $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
 
             switch ($operationType) {
                 case 'ProfileRequest':
                     return $this->makeProfileRequest($operationData);
-                    break;
-                case 'PaymentInit':
-                    return $this->makePaymentInit();
                     break;
                 case 'PaymentRequest':
                     return $this->makePaymentRequest();
@@ -108,7 +105,6 @@
                 case 'CalculationRequest':
                     return $this->makeCalculationRequest($operationData);
                     break;
-
             }
         }
 
@@ -331,7 +327,7 @@
 
             $mbContent->setArray($contentArr);
 
-            $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
+            $rb = new \RatePAY\RequestBuilder($this->isSandboxMode());
             $paymentRequest = $rb->callPaymentRequest($mbHead, $mbContent);
             $this->_logging->logRequest($paymentRequest->getRequestRaw(), $paymentRequest->getResponseRaw());
 
@@ -426,24 +422,6 @@
             $systemId = Shopware()->Db()->fetchOne("SELECT `host` FROM `s_core_shops` WHERE `default`=1") ? : $_SERVER['SERVER_ADDR'];
 
             return $systemId;
-        }
-
-        /**
-         * make payment init
-         *
-         * @return bool
-         */
-        private function makePaymentInit()
-        {
-            $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
-
-            $paymentInit = $rb->callPaymentInit($this->getHead());
-            $this->_logging->logRequest($paymentInit->getRequestRaw(), $paymentInit->getResponseRaw());
-
-            if ($paymentInit->isSuccessful()) {
-                return $paymentInit->getTransactionId();
-            }
-            return false;
         }
 
         /**
