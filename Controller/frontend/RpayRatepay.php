@@ -260,6 +260,9 @@
             } else {
                 $this->_error();
             }
+
+	    // Clear RatePAY session after call for authorization
+            Shopware()->Session()->RatePAY = [];
         }
 
         /**
