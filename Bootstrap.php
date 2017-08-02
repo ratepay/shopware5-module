@@ -169,10 +169,6 @@
         */
         public function _dropOrderAdditionalAttributes()
         {
-            Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','ShopId');
-            Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','TransactionId');
-            Shopware()->Models()->removeAttribute('s_order_attributes','RatePAY','DgNumber');
-
             $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
             $metaDataCache->deleteAll();
             Shopware()->Models()->generateAttributeModels(
