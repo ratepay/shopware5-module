@@ -377,7 +377,7 @@
                 ]
             ]);
 
-            $rb = new \RatePAY\RequestBuilder(true); // Sandbox mode = true
+            $rb = new \RatePAY\RequestBuilder((bool)$operationData['sandbox']);
 
             $profileRequest = $rb->callProfileRequest($mbHead);
             $this->_logging->logRequest($profileRequest->getRequestRaw(), $profileRequest->getResponseRaw());
