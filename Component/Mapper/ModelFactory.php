@@ -166,7 +166,7 @@
 
                 $company = $checkoutAddressBilling->getCompany();
                 if (empty($company)) {
-                    $dateOfBirth = $shopUser->getBilling()->getBirthday()->format("Y-m-d");
+                    $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d"); // doesn't work from shopware 5.2 onwards. See line 155.
                 }
                 $merchantCustomerId = $shopUser->getBilling()->getNumber();
             }
