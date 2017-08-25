@@ -139,6 +139,7 @@
             $this->_subscribeEvents();
             $this->_createForm();
 
+            $this->_truncateConfigTable();
             $this->_incrementalTableUpdate();
 
             $this->_dropOrderAdditionalAttributes();
@@ -162,6 +163,23 @@
                     'backend'
                 )
             );
+        }
+
+        /**
+         * Truncate config table
+         *
+         * @return bool
+         */
+        private function _truncateConfigTable()
+        {
+            $configSql = 'TRUNCATE TABLE `rpay_ratepay_config`;'; 
+            try {
+                Shopware()->Db()->query($configSql);
+            } catch (Exception $exception) {
+                Shopware()->Pluginlogger()->info($exception->getMessage());
+                return false;
+            }
+            return true;
         }
 
         /**
@@ -260,6 +278,14 @@
                     throw new Exception("Can not change column index` - " . $exception->getMessage());
                 }
             }
+            //adding unique index for rp config
+            if (!$this->_sqlCheckIfColumnIsPrimary('rpay_ratepay_config', 'profileId')) {
+                try {
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` DROP INDEX `profileId`;");
+                } catch (Exception $exception) {
+                    throw new Exception("Can not change column index` - " . $exception->getMessage());
+                }
+            }
         }
 
         /**
@@ -279,6 +305,28 @@
             }
 
             if ($column['Non_unique'] == 0)  {
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * check if the column index is unique
+         *
+         * @param $table
+         * @param $column
+         * @return bool
+         * @throws Exception
+         */
+        private function _sqlCHeckIfColumnIsPrimary($table, $column) {
+            try {
+                $qry = 'SHOW INDEX FROM `' . $table . '` WHERE Column_name = "' . $column . '"';
+                $column = Shopware()->Db()->fetchRow($qry);
+            } catch (Exception $exception) {
+                throw new Exception("Can not enter table " . $table . " - " . $exception->getMessage());
+            }
+
+            if ($column['Key_name'] == 'PRIMARY')  {
                 return true;
             }
             return false;
@@ -639,7 +687,7 @@
                          "`country-code-delivery` varchar(30) NULL, " .
                          "`currency` varchar(30) NULL, " .
                          "`error-default` VARCHAR(535) NOT NULL DEFAULT 'Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href=\"http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach\" target=\"_blank\">RatePAY-Datenschutzerklärung</a>', " .
-                         "PRIMARY KEY (`profileId`, `shopId`)" .
+                         "PRIMARY KEY (`shopId`)" .
                          ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $sqlOrderPositions = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_order_positions` (" .
@@ -913,6 +961,9 @@
 
             $credentials = array();
 
+            //Remove old configs
+            $this->_truncateConfigTable();
+
             foreach ($parameter['elements'] as $element) {
 
                 //DE
@@ -967,7 +1018,6 @@
                         $credentials[$element['shopId']]['ch']['sandbox'] = $element['value'];
                     }
                 }
-
             }
 
             //DE Profile Request
@@ -1013,10 +1063,7 @@
                         Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Switzerland successfully updated.');
                     }
                 }
-
             }
-
-
         }
 
         /**
@@ -1511,7 +1558,8 @@
 
             //get current shopId
             $shopId = Shopware()->Shop()->getId();
-            
+
+            Shopware()->Pluginlogger()->info('ShopId ' . $shopId);
             $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
 
             $showRate    = $config['rateStatus']    == 2 ? true : false;
@@ -1582,7 +1630,7 @@
                 $basket = Shopware()->Modules()->Basket()->sGetAmount();
                 $basket = $basket['totalAmount'];
 
-                Shopware()->Pluginlogger()->info('BasketAmount: '.$basket);
+                Shopware()->Pluginlogger()->info('BasketAmount: ' . $basket);
 
                 if ($basket < $limitInvoiceMin || $basket > $limitInvoiceMax) {
                     $showInvoice = false;
@@ -1621,7 +1669,6 @@
             }
 
             if ($setToDefaultPayment) {
-                Shopware()->Pluginlogger()->info($user->getPaymentId());
                 $user->setPaymentId(Shopware()->Config()->get('paymentdefault'));
                 Shopware()->Models()->persist($user);
                 Shopware()->Models()->flush();
@@ -1732,7 +1779,7 @@
 
                     return true;
                 } catch (Exception $exception) {
-                    Shopware()->Pluginlogger()->info($exception->getMessage());
+                    Shopware()->Pluginlogger()->error($exception->getMessage());
 
                     return false;
                 }
