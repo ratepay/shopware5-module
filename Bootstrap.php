@@ -135,7 +135,6 @@
             $countries = array('DE', 'AT', 'CH');
             Shopware()->PluginLogger()->addNotice('test');
             $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-
             $this->_subscribeEvents();
             $this->_createForm();
 
@@ -148,9 +147,12 @@
                 $profile = $configShop->get('RatePayProfileID' . $country);
                 $security = $configShop->get('RatePaySecurityCode' . $country);
                 $sandbox = $configShop->get('RatePaySandbox' . $country);
-                $shop = Shopware()->Db()->query("SELECT `shopId` FROM `rpay_ratepay_config` WHERE `profileId` = '". $profile ."'");
+
                 if (!empty($profile)) {
-                    $this->getRatepayConfig($profile, $security, $shop ,$sandbox);
+                    $shops = Shopware()->Db()->query("SELECT `shop_id` FROM `s_core_config_values` WHERE `value` LIKE '%" . $profile . "%'");
+                    foreach ($shops AS $shop) {
+                        $this->getRatepayConfig($profile, $security, $shop['shop_id'] ,$sandbox, $country);
+                    }
                 }
             }
 
@@ -172,7 +174,7 @@
          */
         private function _truncateConfigTable()
         {
-            $configSql = 'TRUNCATE TABLE `rpay_ratepay_config`;'; 
+            $configSql = 'TRUNCATE TABLE `rpay_ratepay_config`;';
             try {
                 Shopware()->Db()->query($configSql);
             } catch (Exception $exception) {
@@ -270,44 +272,16 @@
                     throw new Exception("Can not add payment-firstdate column in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
-            //adding unique index for rp config
-            if (!$this->_sqlCheckIfColumnIsUnique('rpay_ratepay_config', 'country-code-billing')) {
+            //adding primary index for rp config
+            if ($this->_sqlCheckIfColumnIsPrimary('rpay_ratepay_config', 'profileId')) {
                 try {
-                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD UNIQUE( `country-code-billing`);");
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `country` VARCHAR(30) NOT NULL AFTER `currency`;");
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` DROP PRIMARY KEY;");
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD PRIMARY KEY( `shopId`, `country`);");
                 } catch (Exception $exception) {
                     throw new Exception("Can not change column index` - " . $exception->getMessage());
                 }
             }
-            //adding unique index for rp config
-            if (!$this->_sqlCheckIfColumnIsPrimary('rpay_ratepay_config', 'profileId')) {
-                try {
-                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` DROP INDEX `profileId`;");
-                } catch (Exception $exception) {
-                    throw new Exception("Can not change column index` - " . $exception->getMessage());
-                }
-            }
-        }
-
-        /**
-         * check if the column index is unique
-         *
-         * @param $table
-         * @param $column
-         * @return bool
-         * @throws Exception
-         */
-        private function _sqlCHeckIfColumnIsUnique($table, $column) {
-            try {
-                $qry = 'SHOW INDEX FROM `' . $table . '` WHERE Column_name = "' . $column . '"';
-                $column = Shopware()->Db()->fetchRow($qry);
-            } catch (Exception $exception) {
-                throw new Exception("Can not enter table " . $table . " - " . $exception->getMessage());
-            }
-
-            if ($column['Non_unique'] == 0)  {
-                return true;
-            }
-            return false;
         }
 
         /**
@@ -683,11 +657,12 @@
                          "`interestrate-default` float NULL, " .
                          "`device-fingerprint-status` varchar(3) NOT NULL, " .
                          "`device-fingerprint-snippet-id` varchar(55) NULL, " .
-                         "`country-code-billing` varchar(30) NULL UNIQUE, " .
+                         "`country-code-billing` varchar(30) NULL, " .
                          "`country-code-delivery` varchar(30) NULL, " .
                          "`currency` varchar(30) NULL, " .
+                         "`country` varchar(30) NOT NULL, " .
                          "`error-default` VARCHAR(535) NOT NULL DEFAULT 'Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href=\"http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach\" target=\"_blank\">RatePAY-Datenschutzerklärung</a>', " .
-                         "PRIMARY KEY (`shopId`)" .
+                         "PRIMARY KEY (`shopId`, `country`)" .
                          ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $sqlOrderPositions = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_order_positions` (" .
@@ -1031,7 +1006,7 @@
                     null !== $credentials['de']['sandbox']
                 )
                 {
-                    if ($this->getRatepayConfig($credentials['de']['profileID'], $credentials['de']['securityCode'], $shopId, $credentials['de']['sandbox'])) {
+                    if ($this->getRatepayConfig($credentials['de']['profileID'], $credentials['de']['securityCode'], $shopId, $credentials['de']['sandbox'], 'de')) {
                         Shopware()->PluginLogger()->addNotice('Ruleset for Germany successfully updated.');
                     }
                 }
@@ -1045,7 +1020,7 @@
                     null !== $credentials['at']['sandbox']
                 )
                 {
-                    if ($this->getRatepayConfig($credentials['at']['profileID'], $credentials['at']['securityCode'], $shopId, $credentials['at']['sandbox'])) {
+                    if ($this->getRatepayConfig($credentials['at']['profileID'], $credentials['at']['securityCode'], $shopId, $credentials['at']['sandbox'], 'at')) {
                         Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Austria successfully updated.');
                     }
                 }
@@ -1059,7 +1034,7 @@
                     null !== $credentials['ch']['sandbox']
                 )
                 {
-                    if ($this->getRatepayConfig($credentials['ch']['profileID'], $credentials['ch']['securityCode'], $shopId, $credentials['ch']['sandbox'])) {
+                    if ($this->getRatepayConfig($credentials['ch']['profileID'], $credentials['ch']['securityCode'], $shopId, $credentials['ch']['sandbox'], 'ch')) {
                         Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Switzerland successfully updated.');
                     }
                 }
@@ -1687,7 +1662,7 @@
          *
          * @return boolean
          */
-        private function getRatepayConfig($profileId, $securityCode, $shopId, $sandbox)
+        private function getRatepayConfig($profileId, $securityCode, $shopId, $sandbox, $country)
         {
             $factory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $data = array(
@@ -1726,7 +1701,7 @@
                     strtoupper($response['merchantConfig']['country-code-billing']),
                     strtoupper($response['merchantConfig']['country-code-delivery']),
                     strtoupper($response['merchantConfig']['currency']),
-
+                    strtoupper($country),
                     //shopId always needs be the last line
                     $shopId
                 );
@@ -1765,9 +1740,9 @@
                        . '`month-allowed`, `payment-firstday`, `rate-min-normal`, `interestrate-default`,'
                        . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
                        . '`country-code-billing`, `country-code-delivery`,'
-                       . '`currency`,'
+                       . '`currency`,`country`,'
                        . ' `shopId`)'
-                       . 'VALUES(' . substr(str_repeat('?,', 29), 0, -1) . ');'; // In case of altering cols change 29 by amount of affected cols
+                       . 'VALUES(' . substr(str_repeat('?,', 30), 0, -1) . ');'; // In case of altering cols change 29 by amount of affected cols
                 try {
                     Shopware()->Db()->query($configSql, $data);
                     if (count($activePayments) > 0) {

@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau, Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `5.0.1`
+|Version | `5.0.2`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 5.0.2 - Released 2017-08-31
+* fix multishops
 
 ### Version Version 5.0.1 - Released 2017-07-14
 * new installment calculator design
