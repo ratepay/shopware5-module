@@ -11,8 +11,7 @@
 
     $pi_calculator->unsetData();
     $pi_config = $pi_calculator->getRatepayRateConfig();
-    $pi_monthAllowed = $pi_config['month_allowed'];
-    $pi_monthAllowedArray = explode(',', $pi_monthAllowed);
+    $pi_monthAllowedArray = $pi_config['month_allowed'];
 
     $pi_amount = $pi_calculator->getRequestAmount();
     $pi_language = $pi_calculator->getLanguage();

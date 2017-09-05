@@ -42,6 +42,7 @@
             $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
             $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
             $countryIso = $country->getIso();
+            $basketAmount = $this->getRequestAmount();
 
             //get ratepay config based on shopId
             $rpRateConfig=Shopware()->Db()->fetchRow('
@@ -55,9 +56,19 @@
                 `country-code-billing` LIKE \'%' . $countryIso . '%\'
             ');
 
+            $interestRate = ((float)$rpRateConfig["interestrate-default"] / 12) / 100;
+            $monthAllowed = explode(',', $rpRateConfig["month-allowed"]);
+
+            foreach ($monthAllowed AS $month) {
+                $rateAmount = ceil($basketAmount * (($interestRate * pow((1 + $interestRate), $month)) / (pow((1 + $interestRate), $month) - 1)));
+                if($rateAmount >= $rpRateConfig["rate-min-normal"]) {
+                    $allowedRuntimes[] = $month;
+                }
+            }
+
             $installmentConfigArray = array(
                 'interestrate_default' => $rpRateConfig["interestrate-default"],
-                'month_allowed' => $rpRateConfig["month-allowed"],
+                'month_allowed' => $allowedRuntimes,
                 'rate_min_normal' => $rpRateConfig["rate-min-normal"],
                 'payment_firstday' => $rpRateConfig["payment-firstday"],
             );
