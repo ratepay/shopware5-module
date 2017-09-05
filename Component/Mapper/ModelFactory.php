@@ -149,7 +149,7 @@
                             'Systems' => [
                                 'System' => [
                                     'Name' => 'Shopware',
-                                    'Version' => Shopware()->Config()->get('version') . '_' . $bootstrap->getVersion()
+                                    'Version' => Shopware()->Config()->get('version') . '/' . $bootstrap->getVersion()
                                 ]
                             ]
                         ]
@@ -371,7 +371,7 @@
                     'Systems' => [
                         'System' => [
                             'Name' => 'Shopware',
-                            'Version' => Shopware()->Config()->get('version') . '_' . $bootstrap->getVersion()
+                            'Version' => Shopware()->Config()->get('version') . '/' . $bootstrap->getVersion()
                         ]
                     ]
                 ]

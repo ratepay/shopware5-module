@@ -133,7 +133,7 @@
         public function update($version)
         {
             $countries = array('DE', 'AT', 'CH');
-            Shopware()->PluginLogger()->addNotice('test');
+
             $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
             $this->_subscribeEvents();
             $this->_createForm();
