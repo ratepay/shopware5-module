@@ -601,7 +601,7 @@
                         'InvoiceId' => $document->getDocumentId(),
                         'InvoiceDate' => $currentDateTime,
                         'DeliveryDate' => $currentDateTime,
-                        'DueDate' => date('Y-m-d\Th:m:s'),
+                        //'DueDate' => date('Y-m-d\Th:m:s'),
                     ]
                 ];
                 $mbContent->setArray($invoicing);
