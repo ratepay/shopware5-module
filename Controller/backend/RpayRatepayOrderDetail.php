@@ -34,7 +34,6 @@
         {
             //set correct subshop for backend processes
             $orderId = $this->Request()->getParam("orderId");
-            $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
 
             if(null !== $orderId)
             {
@@ -47,6 +46,7 @@
                 $config['shop'] = Shopware()->Models()->find('Shopware\Models\Shop\Shop', $shopId);
                 $config['db'] = Shopware()->Db();
                 $this->_config = new \Shopware_Components_Config($config);
+                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
 
                 //get user of current order and set sandbox mode
                 $orderUser    = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $order->getCustomer()->getId());
@@ -61,6 +61,8 @@
                 //$this->_service = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
                 $this->_modelFactory->setSandboxMode($sandbox);
 
+            } else {
+                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
             }
 
             $this->_history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();

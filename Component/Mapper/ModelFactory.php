@@ -757,7 +757,12 @@
             if(null !== $this->_config) {
                 $profileId = $this->_config->get('RatePayProfileID' . $countryCode);
             } else{
-                $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $countryCode);
+                if (!empty($this->_transactionId)) {
+                    $shopId = Shopware()->Db()->fetchOne(
+                        "SELECT `subshopID` FROM `s_order` WHERE `transactionID`= '" . $this->_transactionId . "'"
+                    );
+                }
+                $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $countryCode, $shopId);
             }
 
             return $profileId;
@@ -778,7 +783,12 @@
             if(null !== $this->_config) {
                 $securityCode = $this->_config->get('RatePaySecurityCode' . $countryCode);
             } else {
-                $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePaySecurityCode' . $countryCode);
+                if (!empty($this->_transactionId)) {
+                    $shopId = Shopware()->Db()->fetchOne(
+                        "SELECT `subshopID` FROM `s_order` WHERE `transactionID`= '" . $this->_transactionId . "'"
+                    );
+                }
+                $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePaySecurityCode' . $countryCode, $shopId);
             }
 
             return $securityCode;
