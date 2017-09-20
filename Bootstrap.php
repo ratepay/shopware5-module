@@ -132,7 +132,7 @@
          */
         public function update($version)
         {
-            $countries = array('DE', 'AT', 'CH');
+            $countries = array('DE', 'AT', 'CH', 'BE', 'NL');
 
             $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
             $this->_subscribeEvents();
@@ -499,11 +499,55 @@
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
                 ));
 
+                /** BE CREDENTIALS **/
+                $form->setElement('button', 'button4', array(
+                    'label' => '<b>Zugangsdaten für Belgien:</b>',
+                    'value' => ''
+                ));
+                $form->setElement('text', 'RatePayProfileIDBE', array(
+                    'label' => 'Belgien Profile-ID',
+                    'value' => '',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                ));
+
+                $form->setElement('text', 'RatePaySecurityCodeBE', array(
+                    'label' => 'Belgien Security Code',
+                    'value' => '',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                ));
+                $form->setElement('checkbox', 'RatePaySandboxBE', array(
+                    'label' => 'Testmodus aktivieren ( Test Gateway )',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
+                ));
+
+                /** NL CREDENTIALS **/
+                $form->setElement('button', 'button5', array(
+                    'label' => '<b>Zugangsdaten für die Niederlande:</b>',
+                    'value' => ''
+                ));
+                $form->setElement('text', 'RatePayProfileIDNL', array(
+                    'label' => 'Niederlande Profile-ID',
+                    'value' => '',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                ));
+
+                $form->setElement('text', 'RatePaySecurityCodeNL', array(
+                    'label' => 'Niederlande Security Code',
+                    'value' => '',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                ));
+                $form->setElement('checkbox', 'RatePaySandboxNL', array(
+                    'label' => 'Testmodus aktivieren ( Test Gateway )',
+                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
+                ));
+
                 /** BIDIRECTIONAL ORDER SETTINGS **/
                 $form->setElement('button', 'button3', array(
                     'label' => '<b>Bidirektionalität RatePAY-Bestellungen:</b>',
                     'value' => ''
                 ));
+
+
 
                 $form->setElement('checkbox', 'RatePayBidirectional', array(
                     'label' => 'Bidirektionalität aktivieren ( Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert)',
@@ -570,8 +614,20 @@
                         'RatePayProfileIDAT'    => 'Österreich Profile-ID',
                         'RatePaySecurityCodeAT' => 'Österreich Security Code',
                         'RatePaySandboxDE'      => 'Testmodus aktivieren ( Test Gateway )',
+                        'RatePayProfileIDNL'    => 'Niederlande Profile-ID',
+                        'RatePaySecurityCodeNL' => 'Niederlande Security Code',
+                        'RatePaySandboxNL'      => 'Testmodus aktivieren ( Test Gateway )',
+                        'RatePayProfileIDBE'    => 'Belgien Profile-ID',
+                        'RatePaySecurityCodeBE' => 'Belgien Security Code',
+                        'RatePaySandboxBE'      => 'Testmodus aktivieren ( Test Gateway )',
+                        'RatePayProfileIDCH'    => 'Schweitz Profile-ID',
+                        'RatePaySecurityCodeCH' => 'Schweitz Security Code',
+                        'RatePaySandboxCH'      => 'Testmodus aktivieren ( Test Gateway )',
                         'button0'               => 'Zugangsdaten für Deutschland',
                         'button1'               => 'Zugangsdaten für Österreich',
+                        'button2'               => 'Zugangsdaten für die Schweiz',
+                        'button4'               => 'Zugangsdaten für Belgien',
+                        'button5'               => 'Zugangsdaten für die Niederlande',
                     ),
                     'en_EN' => array(
                         'RatePayProfileIDDE'    => 'Profile-ID for Germany',
@@ -579,8 +635,20 @@
                         'RatePayProfileIDAT'    => 'Profile-ID for Austria',
                         'RatePaySecurityCodeAT' => 'Security Code for Austria',
                         'RatePaySandboxDE'      => 'Sandbox ( Test Gateway )',
+                        'RatePayProfileIDNL'    => 'Profile-ID for the Netherlands',
+                        'RatePaySecurityCodeNL' => 'Security Code for the Netherlands',
+                        'RatePaySandboxNL'      => 'Sandbox ( Test Gateway )',
+                        'RatePayProfileIDBE'    => 'Profile-ID for Belgium',
+                        'RatePaySecurityCodeBE' => 'Security Code for Belgium',
+                        'RatePaySandboxBE'      => 'Sandbox ( Test Gateway )',
+                        'RatePayProfileIDCH'    => 'Profile-ID for Switzerland',
+                        'RatePaySecurityCodeCH' => 'Security Code for Switzerland',
+                        'RatePaySandboxCH'      => 'Sandbox ( Test Gateway )',
                         'button0'               => 'Credentials for Germany',
                         'button1'               => 'Credentials for Austria',
+                        'button2'               => 'Credentials for Switzerland',
+                        'button4'               => 'Credentials for Belgium',
+                        'button5'               => 'Credentials for the Netherlands',
                     )
                 );
 
@@ -993,6 +1061,40 @@
                         $credentials[$element['shopId']]['ch']['sandbox'] = $element['value'];
                     }
                 }
+                //BE
+                if ($element['name'] === 'RatePayProfileIDBE') {
+                    foreach($element['values'] as $element) {
+                        $credentials[$element['shopId']]['be']['profileID'] = $element['value'];
+                    }
+                }
+                if ($element['name'] === 'RatePaySecurityCodeBE')
+                {
+                    foreach($element['values'] as $element) {
+                        $credentials[$element['shopId']]['be']['securityCode'] = $element['value'];
+                    }
+                }
+                if ($element['name'] === 'RatePaySandboxBE') {
+                    foreach($element['values'] as $element) {
+                        $credentials[$element['shopId']]['be']['sandbox'] = $element['value'];
+                    }
+                }
+                //NL
+                if ($element['name'] === 'RatePayProfileIDNL') {
+                    foreach($element['values'] as $element) {
+                        $credentials[$element['shopId']]['nl']['profileID'] = $element['value'];
+                    }
+                }
+                if ($element['name'] === 'RatePaySecurityCodeNL')
+                {
+                    foreach($element['values'] as $element) {
+                        $credentials[$element['shopId']]['nl']['securityCode'] = $element['value'];
+                    }
+                }
+                if ($element['name'] === 'RatePaySandboxNL') {
+                    foreach($element['values'] as $element) {
+                        $credentials[$element['shopId']]['nl']['sandbox'] = $element['value'];
+                    }
+                }
             }
 
             //DE Profile Request
@@ -1036,6 +1138,32 @@
                 {
                     if ($this->getRatepayConfig($credentials['ch']['profileID'], $credentials['ch']['securityCode'], $shopId, $credentials['ch']['sandbox'], 'ch')) {
                         Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Switzerland successfully updated.');
+                    }
+                }
+                //NL Profile Request
+                if (
+                    null !== $credentials['nl']['profileID']
+                    &&
+                    null !== $credentials['nl']['securityCode']
+                    &&
+                    null !== $credentials['nl']['sandbox']
+                )
+                {
+                    if ($this->getRatepayConfig($credentials['nl']['profileID'], $credentials['nl']['securityCode'], $shopId, $credentials['nl']['sandbox'], 'nl')) {
+                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for the Netherlands successfully updated.');
+                    }
+                }
+                //BE Profile Request
+                if (
+                    null !== $credentials['be']['profileID']
+                    &&
+                    null !== $credentials['be']['securityCode']
+                    &&
+                    null !== $credentials['be']['sandbox']
+                )
+                {
+                    if ($this->getRatepayConfig($credentials['be']['profileID'], $credentials['be']['securityCode'], $shopId, $credentials['be']['sandbox'], 'be')) {
+                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Belgium successfully updated.');
                     }
                 }
             }

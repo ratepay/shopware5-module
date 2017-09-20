@@ -265,6 +265,10 @@
                 }
             }
 
+            $shopContext =Shopware()->Container()->get('shopware_storefront.context_service')->getShopContext();
+            $lang = $shopContext->getShop()->getLocale()->getLocale();
+            $lang = substr($lang, 0, 2);
+
             $mbContent = new \RatePAY\ModelBuilder('Content');
             $contentArr = [
                 'Customer' => [
@@ -272,6 +276,7 @@
                     'Salutation' => $salutation,
                     'FirstName' => $checkoutAddressBilling->getFirstName(),
                     'LastName' => $checkoutAddressBilling->getLastName(),
+                    'Language' => strtolower($lang),
                     'DateOfBirth' => $dateOfBirth,
                     'IpAddress' => $this->_getCustomerIP(),
                     'Addresses' => [
