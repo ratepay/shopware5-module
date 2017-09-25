@@ -64,7 +64,7 @@
                         </div>
 
                         <div class="register--required-info required_fields">
-                            <strong>* hierbei handelt es sich um ein Pflichtfeld</strong>
+                            <strong>{s namespace=frontend/register/personal_fieldset name=RegisterPersonalRequiredText}* hierbei handelt es sich um ein Pflichtfeld{/s}</strong>
                         </div>
                     </form>
                 </div>
@@ -84,11 +84,11 @@
                     {* Submit order button *}
                     {if $sPayment.embediframe || $sPayment.action}
                         <button type="submit" class="btn is--primary is--large right is--icon-right" form="confirm--form" data-preloader-button="false">
-                            {s name='ConfirmDoPayment'}Zahlungspflichtig bestellen{/s}<i class="icon--arrow-right"></i>
+                            {s namespace=frontend/checkout/confirm name=ConfirmActionSubmit}Zahlungspflichtig bestellen{/s}<i class="icon--arrow-right"></i>
                         </button>
                     {else}
                         <button type="submit" class="btn is--primary is--large right is--icon-right" form="confirm--form" data-preloader-button="false">
-                            {s name='ConfirmActionSubmit'}Zahlungspflichtig bestellen{/s}<i class="icon--arrow-right"></i>
+                            {s namespace=frontend/checkout/confirm name=ConfirmActionSubmit}Zahlungspflichtig bestellen{/s}<i class="icon--arrow-right"></i>
                         </button>
                     {/if}
                 {/block}

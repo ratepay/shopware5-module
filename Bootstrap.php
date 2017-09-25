@@ -82,6 +82,7 @@
             $this->_createDataBaseTables();
             $this->_createPaymentStati();
             $this->_createDeliveryStati();
+            $this->_languageUpdate();
             $this->Plugin()->setActive(true);
 
             return array('success' => true, 'invalidateCache' => array('frontend', 'backend'));
@@ -141,6 +142,8 @@
             $this->_truncateConfigTable();
             $this->_incrementalTableUpdate();
 
+            $this->_languageUpdate();
+
             $this->_dropOrderAdditionalAttributes();
 
             foreach ($countries AS $country) {
@@ -165,6 +168,33 @@
                     'backend'
                 )
             );
+        }
+
+        /**
+         * Update Languages for EN, FR and NL
+         */
+        private function _languageUpdate() {
+            $locales = array(2, 108, 176);
+            $german = Shopware()->Db()->query("SELECT `name` FROM `s_core_snippets` WHERE `namespace` LIKE 'RatePay' AND `localeID` = 1");
+
+            foreach ($german AS $de) {
+                foreach ($locales AS $locale) {
+                    $lang = Shopware()->Db()->fetchRow("SELECT `name` FROM `s_core_snippets` WHERE `namespace` LIKE 'RatePay' AND `localeID` = " . $locale . " AND `name` = '" . $de['name'] . "'");
+
+                    if (empty($lang)) {
+                        $translation = $this->_getTranslation($locale, $de['name']);
+                        if (!empty($translation)) {
+                            Shopware()->Db()->insert('s_core_snippets', array(
+                                'namespace' => 'RatePay',
+                                'localeID' => $locale,
+                                'shopID' => 1,
+                                'name' => $de['name'],
+                                'value' => $translation,
+                            ));
+                        }
+                    }
+                }
+            }
         }
 
         /**
@@ -1780,6 +1810,82 @@
             }
 
             return $payments;
+        }
+
+
+        /**
+         * get translations
+         *
+         * @param int $locale
+         * @param string $name
+         * @return string
+         */
+        private function _getTranslation($locale, $name) {
+            $translation = [
+                2 => [
+                    'accountNumber' => ['value' => 'IBAN'],
+                    'bankCode' => ['value' => 'BIC'],
+                    'bankdatanotvalid' => ['value' => 'Please enter a valid IBAN'],
+                    'dob_info' => ['value' => 'Please enter a Date of Birth'],
+                    'dobtooyoung' => ['value' => 'For the chosen payment method you have to be at least 18 years old."'],
+                    'invalidAge' => ['value' => 'For the chosen payment method you have to be at least 18 years old."'],
+                    'invaliddata' => ['value' => 'Please check your data'],
+                    'phonenumbernotvalid' => ['value' => 'Please enter a valid telephone number.'],
+                    'ratepayAgbMouseover' => ['value' => 'Um RatePAY nutzen zu können müssen sie den AGBs von RatePAY zustimmen'],
+                    'ratepaySEPAAgbFirst' => ['value' => 'Ich willige hiermit in die Weiterleitung meiner Daten an RatePAY GmbH, Schlüterstr. 39, 10629 Berlin gemäß'],
+                    'ratepaySEPAAgbLast' => ['value' => 'ein und ermächtige diese, mit diesem Kaufvertrag in Zusammenhang stehende Zahlungen von meinem'],
+                    'ratepaySEPAInformationHeader' => ['value' => 'RatePAY GmbH, Schlüterstr. 39, 10629 Berlin<br/>Gläubiger-ID: DE39RPY00000568463<br/>Mandatsreferenz: (wird nach Kaufabschluss übermittelt)'],
+                    'transactionid' => ['value' => 'Transaction-ID'],
+                    'vatId' => ['value' => 'Vat Id'],
+                    'version' => ['value' => 'Version']
+                ],
+                108 => [
+                    'accountNumber' => ['value' => 'IBAN'],
+                    'bankCode' => ['value' => 'BIC'],
+                    'bankdatanotvalid' => ['value' => 'Veuillez vérifier les informations fournies.'],
+                    'dob_info' => ['value' => 'Date de naissance'],
+                    'dobtooyoung' => ['value' => 'Veuillez vérifier les informations fournies. Pour utiliser le moyen de paiement sélectionné, vous devez être âgé de plus de 18 ans et la date de naissance doit être renseignée selon le format TT.MM.JJJJ.\')'],
+                    'invalidAge' => ['value' => 'Veuillez vérifier les informations fournies. Pour utiliser le moyen de paiement sélectionné, vous devez être âgé de plus de 18 ans et la date de naissance doit être renseignée selon le format TT.MM.JJJJ.'],
+                    'invaliddata' => ['value' => 'Afin de procéder à l\'achat, veuillez indiquer le moyen de paiement et fournir les informations suivantes :'],
+                    'ok' => ['value' => 'ok'],
+                    'phonenumbernotvalid' => ['value' => 'Veuillez fournir un numéro de téléphone valide pour le moyen de paiement choisi.'],
+                    'ratepayAgbMouseover' => ['value' => 'Veuillez vérifier les informations fournies.'],
+                    'ratepaySEPAAgbFirst' => ['value' => 'Je consens par la présente à ce que mes données soient transmises à RatePAY GmbH, Schlüterstr. 39, 
+                                                    10629 Berlin conformément à la politique de confidentialité RatePAY et autorise ainsi le prélèvement automatique depuis mon 
+                                                    compte mentionné ci-dessus des paiements relatifs au présent contrat. J’enjoins également mon établissement de crédit à acquitter les prélèvements automatiques depuis 
+                                                    mon compte par RatePAY GmbH.'],
+                    'ratepaySEPAAgbLast' => ['value' => 'Indication : 
+                                                              après formation du contrat, ma référence de mandat me sera transmise par RatePAY. Je dispose de huit semaines à compter de la date de prélèvement pour exiger le remboursement du montant prélevé.
+                                                              Je dispose de huit semaines à compter de la date de prélèvement pour exiger le remboursement du montant prélevé.
+                                                              Les conditions ayant fait l’objet d’un accord avec mon établissement de crédit s’appliquent.
+                                                              '],
+                    'ratepaySEPAInformationHeader' => ['value' => 'RatePAY GmbH, Schlüterstr. 39, 10629 Berlin
+                                                                        Identifiant du créancier : DE39RPY00000568463
+                                                                        Référence de mandat : (conforme à la référence transmise après conclusion de la vente
+                                                                        '],
+                    'transactionid' => ['value' => 'Transaction-ID'],
+                    'vatId' => ['value' => 'Numéro de TVA'],
+                    'version' => ['value' => 'Version']
+                ],
+                176 => [
+                    'accountNumber' =>  ['value' => 'IBAN'],
+                    'bankCode' =>  ['value' => 'BIC'],
+                    'bankdatanotvalid' =>  ['value' => '"Om een betaling via RatePAY SEPA-incasso door te voeren, gelieve hier de IBAN invoeren'],
+                    'dob_info' =>  ['value' => 'Om door RatePAY een betaling op rekening door te kunnen voeren, gelieve hier uw geboortedatum invoeren.'],
+                    'dobtooyoung' =>  ['value' => 'Om door RatePAY een betaling op rekening door te kunnen, voeren moet u ten minste 18 jaar of ouder zijn.'],
+                    'invalidAge' =>  ['value' => 'Om door RatePAY een betaling op rekening door te kunnen voeren, gelieve hier uw geboortedatum invoeren.'],
+                    'invaliddata' =>  ['value' => 'Om door RatePAY een betaling op rekening door te kunnen voeren'],
+                    'phonenumbernotvalid' =>  ['value' => 'Om door RatePAY een betaling op rekening door te kunnen voeren, gelieve hier uw telefoonnummer invoeren.'],
+                    'ratepayAgbMouseover' =>  ['value' => ''],
+                    'ratepaySEPAAgbFirst' =>  ['value' => 'Ik ga hiermee akkoord met het overdragen van mijn gegevens aan RatePAY GmbH, Schlüterstr. 39, 10629 Berlin volgens het'],
+                    'ratepaySEPAAgbLast' =>  ['value' => 'en machtig hen de betalingen in samenhang met deze koopovereenkomst middels een incasso van bovengenoemde rekening af te boeken. Gelijktijdig geef ik mijn kredietinstelling opdracht de incasso’s van RatePAY GmbH op mijn rekening te honoreren. '],
+                    'ratepaySEPAInformationHeader' =>  ['value' => 'Opmerking. Na het tot stand komen van deze overeenkomst wordt u het RatePAY machtigingskenmerk medegedeeld. Ik kan binnen acht weken, na afschrijving, het bedrag laten terugboeken. Hierbij gelden de met mijn kredietinstelling overeengekomen voorwaarden.'],
+                    'transactionid' =>  ['value' => 'Transaction-ID'],
+                    'vatId' =>  ['value' => 'BTW-nummer'],
+                    'version' =>  ['value' => 'Version'],
+                ],
+            ];
+            return $translation[$locale][$name]['value'];
         }
 
         /**

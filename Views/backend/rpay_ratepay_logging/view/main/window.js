@@ -47,7 +47,7 @@ Ext.define('Shopware.apps.RpayRatepayLogging.view.main.Window', {
             width: '100%',
             columns: [
                 {
-                    header: '{s namespace=RatePAY name=date}Datum{/s}',
+                    header: '{s namespace=backend/index/view/widgets name=orders/headers/date}Datum{/s}',
                     dataIndex: 'date',
                     flex: 2
                 },
@@ -59,7 +59,7 @@ Ext.define('Shopware.apps.RpayRatepayLogging.view.main.Window', {
                 },
 
                 {
-                    header: '{s namespace=RatePAY name=operation}Operation{/s}',
+                    header: '{s namespace=backend/article_list/main name=multiEdit/operation}Operation{/s}',
                     dataIndex: 'operation',
                     flex: 2
                 },
@@ -77,13 +77,13 @@ Ext.define('Shopware.apps.RpayRatepayLogging.view.main.Window', {
                 },
 
                 {
-                    header: '{s namespace=RatePAY name=firstname}FirstName{/s}',
+                    header: '{s namespace=backend/customer/view/detail name=base/firstname}Firstname{/s}',
                     dataIndex: 'firstname',
                     flex: 1
                 },
 
                 {
-                    header: '{s namespace=RatePAY name=lastname}LastName{/s}',
+                    header: '{s namespace=backend/customer/view/detail name=base/lastname}Lastname{/s}',
                     dataIndex: 'lastname',
                     flex: 1
                 }
@@ -120,7 +120,7 @@ Ext.define('Shopware.apps.RpayRatepayLogging.view.main.Window', {
                     xtype: 'textareafield',
                     border: false,
                     layout: 'fit',
-                    title: '{s namespace=RatePAY name=request}Request{/s}',
+                    title: '{s namespace=backend/application/main name=progress_window/request_header}Request{/s}',
                     value: 'N/A',
                     id: 'requestPanel',
                     autoScroll: true,

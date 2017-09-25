@@ -17,10 +17,10 @@
         </div>
         <div class="actions">
             <a class="btn is--center is--large" href="{url controller=checkout action=cart}">
-                {s namespace=RatePAY name=errorpagecart}Warenkorb anzeigen{/s}
+                {s namespace=frontend/checkout/ajax_add_article name=AjaxAddLinkCart}Warenkorb anzeigen{/s}
             </a>
             <a class="btn is--primary is--center is--large" href="{url controller=account action=payment sTarget=checkout}">
-                {s namespace=RatePAY name=errorpagepayment}Zahlungsart ändern{/s}
+                {s namespace=frontend/account/index name=AccountLinkChangePayment}Zahlungsart ändern{/s}
             </a>
         </div>
     </div>

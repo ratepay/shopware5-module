@@ -60,7 +60,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
     getColumns: function () {
         return [
             {
-                header: '{s namespace=RatePAY name=quantity}Anzahl{/s}',
+                header: '{s namespace=backend/order/main name=column/quantity}Anzahl{/s}',
                 dataIndex: 'quantityReturn',
                 editor: {
                     xtype: 'numberfield',
@@ -71,15 +71,15 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
                 }
             },
             {
-                header: '{s namespace=RatePAY name=articlename}ArticleName{/s}',
+                header: '{s namespace=backend/order/main name=column/article_name}Articlename{/s}',
                 dataIndex: 'name'
             },
             {
-                header: '{s namespace=RatePAY name=articlenumber}Artikelnummer{/s}',
+                header: '{s namespace=backend/order/main name=column/article_number}Artikelnummer{/s}',
                 dataIndex: 'articleordernumber'
             },
             {
-                header: '{s namespace=RatePAY name=price}Preis{/s}',
+                header: '{s namespace=backend/article/view/main name=detail/price/price}Preis{/s}',
                 dataIndex: 'price',
                 renderer: Ext.util.Format.numberRenderer('0.00')
             },
@@ -88,7 +88,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
                 dataIndex: 'quantity'
             },
             {
-                header: '{s namespace=RatePAY name=delivered}Versand{/s}',
+                header: '{s namespace=backend/order/main name=overview/shipping/title}Versand{/s}',
                 dataIndex: 'delivered'
             },
             {

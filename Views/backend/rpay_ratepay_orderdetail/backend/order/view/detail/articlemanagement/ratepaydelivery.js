@@ -59,7 +59,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
     getColumns: function () {
         return [
             {
-                header: '{s namespace=RatePAY name=quantity}Anzahl{/s}',
+                header: '{s namespace=backend/order/main name=column/quantity}Anzahl{/s}',
                 dataIndex: 'quantityDeliver',
                 editor: {
                     xtype: 'numberfield',
@@ -70,15 +70,15 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 }
             },
             {
-                header: '{s namespace=RatePAY name=articlename}Artikelname{/s}',
+                header: '{s namespace=backend/order/main name=column/article_name}Artikelname{/s}',
                 dataIndex: 'name'
             },
             {
-                header: '{s namespace=RatePAY name=articlenumber}Artikelnummer{/s}',
+                header: '{s namespace=backend/order/main name=column/article_number}Artikelnummer{/s}',
                 dataIndex: 'articleordernumber'
             },
             {
-                header: '{s namespace=RatePAY name=price}Preis{/s}',
+                header: '{s namespace=backend/article/view/main name=detail/price/price}Preis{/s}',
                 dataIndex: 'price',
                 renderer: Ext.util.Format.numberRenderer('0.00')
             },
@@ -87,7 +87,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 dataIndex: 'quantity'
             },
             {
-                header: '{s namespace=RatePAY name=delivered}Versand{/s}',
+                header: '{s namespace=backend/order/main name=overview/shipping/title}Versand{/s}',
                 dataIndex: 'delivered'
             },
             {
@@ -203,7 +203,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                 }
                             },
                             {
-                                text: '{s namespace=RatePAY name=abort}Cancel{/s}',
+                                text: '{s namespace=backend/application/main name=detail_window/cancel_button_text}Cancel{/s}',
                                 handler: function () {
                                     Ext.getCmp('creditWindow').close();
                                 }
@@ -285,7 +285,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                     }
                                 },
                                 {
-                                    text: '{s namespace=RatePAY name=abort}Cancel{/s}',
+                                    text: '{s namespace=backend/application/main name=detail_window/cancel_button_text}Cancel{/s}',
                                         handler: function () {
                                             Ext.getCmp('debitWindow').close();
                                         }

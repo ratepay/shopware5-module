@@ -53,7 +53,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayhistory', {
     getColumns: function () {
         return [
             {
-                header: '{s namespace=RatePAY name=date}Datum{/s}',
+                header: '{s namespace=backend/index/view/widgets name=orders/headers/date}Datum{/s}',
                 dataIndex: 'date',
                 flex: 1
             },
@@ -65,19 +65,19 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayhistory', {
             },
 
             {
-                header: '{s namespace=RatePAY name=name}Name{/s}',
+                header: '{s namespace=backend/article_list/main name=columns/product/Article_name}Name{/s}',
                 dataIndex: 'articlename',
                 flex: 2
             },
 
             {
-                header: '{s namespace=RatePAY name=number}Nummer{/s}',
+                header: '{s namespace=backend/article/view/main name=list/column_number}Nummer{/s}',
                 dataIndex: 'articlenumber',
                 flex: 1
             },
 
             {
-                header: '{s namespace=RatePAY name=quantity}Anzahl{/s}',
+                header: '{s namespace=frontend/checkout/cart_header name=CartColumnQuantity}Anzahl{/s}',
                 dataIndex: 'quantity',
                 flex: 1
             }

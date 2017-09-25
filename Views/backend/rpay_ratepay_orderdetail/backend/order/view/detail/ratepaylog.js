@@ -58,7 +58,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaylog', {
     getColumns: function () {
         return [
             {
-                header: '{s namespace=RatePAY name=date}Datum{/s}',
+                header: '{s namespace=backend/index/view/widgets name=orders/headers/date}Datum{/s}',
                 dataIndex: 'date',
                 flex: 2
             },
@@ -70,7 +70,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaylog', {
             },
 
             {
-                header: '{s namespace=RatePAY name=operation}Operation{/s}',
+                header: '{s namespace=backend/article_list/main name=multiEdit/operation}Operation{/s}',
                 dataIndex: 'operation',
                 flex: 2
             },
@@ -88,18 +88,18 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaylog', {
             },
 
             {
-                header: '{s namespace=RatePAY name=firstname}FirstName{/s}',
+                header: '{s namespace=backend/customer/view/detail name=base/firstname}FirstName{/s}',
                 dataIndex: 'firstname',
                 flex: 1
             },
 
             {
-                header: '{s namespace=RatePAY name=lastname}LastName{/s}',
+                header: '{s namespace=backend/customer/view/detail name=base/lastname}Lastname{/s}',
                 dataIndex: 'lastname',
                 flex: 1
             },
             {
-                header: '{s namespace=RatePAY name=request}Request{/s}',
+                header: '{s namespace=backend/application/main name=progress_window/request_header}Request{/s}',
                 xtype: 'actioncolumn',
                 flex: 1,
                 items: [

@@ -99,7 +99,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayadditemwindow', {
                     }
                 },
                 {
-                    text: '{s namespace=RatePAY name=dialogbuttoncancel}Abbrechen{/s}',
+                    text: '{s namespace=backend/order/main name=detail/cancel}Abbrechen{/s}',
                     handler: function () {
                         me.close();
                     }
@@ -114,16 +114,16 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayadditemwindow', {
         return [
             {
                 dataIndex: 'articleordernumber',
-                header: '{s namespace=RatePAY name=articlenumber}Artikelnummer{/s}',
+                header: '{s namespace=backend/order/main name=column/article_number}Artikelnummer{/s}',
                 flex: 1
             },
             {
                 dataIndex: 'name',
-                header: '{s namespace=RatePAY name=articlename}Artikelname{/s}',
+                header: '{s namespace=backend/order/main name=column/article_name}Artikelname{/s}',
                 flex: 2
             },
             {
-                header: '{s namespace=RatePAY name=quantity}Anzahl{/s}',
+                header: '{s namespace=backend/order/main name=column/quantity}Anzahl{/s}',
                 dataIndex: 'quantity',
                 editor: {
                     xtype: 'numberfield',
@@ -137,7 +137,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayadditemwindow', {
             },
             {
                 dataIndex: 'price',
-                header: '{s namespace=RatePAY name=price}Preis{/s}',
+                header: '{s namespace=backend/article/view/main name=detail/price/price}Preis{/s}',
                 flex: 2,
                 editor: {
                     xtype: 'numberfield',
@@ -149,7 +149,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayadditemwindow', {
             },
             {
                 xtype: 'actioncolumn',
-                header: '{s namespace=RatePAY name=action}Action{/s}',
+                header: '{s namespace=backend/payment/payment name=formpanel_action_label}Action{/s}',
                 width: 60,
                 items: [
                     {
