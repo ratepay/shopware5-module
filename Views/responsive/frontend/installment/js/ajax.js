@@ -34,6 +34,7 @@ function piRatepayRateCalculatorAction(mode, month) {
 
     } else if (mode == 'runtime') {
         calcValue = month;
+        document.getElementById('month').value = month;
         calcMethod = 'calculation-by-time';
         document.getElementById('piRpInput-buttonRuntime').className = "piRpInput-button  ajaxloader";
         document.getElementById('piRpInput-buttonRuntime').value = 'wird geladen ...';

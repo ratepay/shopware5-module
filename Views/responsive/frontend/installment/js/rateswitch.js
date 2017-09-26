@@ -43,12 +43,10 @@ function changeFirstday(firstday) {
         button.css({ opacity: 0.5 });
     }
 
-    if ($('#secondInput').is(':checked')) {
-        month = $('#month').value();
-        piRatepayRateCalculatorAction('runtime');
-        $('#switchInformation').show();
-    } else if ($('#firstInput').is(':checked')) {
+    if ($('#rp-rate-value').val() == "") {
+        month = $('#month').val();
+        piRatepayRateCalculatorAction('runtime', month);
+    } else {
         piRatepayRateCalculatorAction('rate', 0);
-        $('#switchInformation').show();
     }
 }
