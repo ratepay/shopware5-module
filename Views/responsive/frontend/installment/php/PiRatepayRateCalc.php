@@ -153,12 +153,8 @@
                 $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
                 $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
             }
-
-            //set sandbox mode based on config
-            $sandbox = $config->get('RatePaySandbox' . $country->getIso());
-
+            
             $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
-            $modelFactory->setSandboxMode($sandbox);
 
             $operationData['payment']['amount'] = $this->getRequestAmount();
             $operationData['payment']['paymentFirstday'] = $this->getRequestFirstday();

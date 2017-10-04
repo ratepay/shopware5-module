@@ -160,6 +160,8 @@
                 $head['External']['OrderId'] = $this->_orderId;
             }
 
+            $this->_sandboxMode = $this->getSandboxMode($countryCode);
+
             $mbHead = new \RatePAY\ModelBuilder('head');
             $mbHead->setArray($head);
 
@@ -169,6 +171,18 @@
             }
 
             return $mbHead;
+        }
+
+        /**
+         * get sandbox mode
+         *
+         * @param $countryCode
+         * @return int
+         */
+        public function getSandboxMode($countryCode) {
+            $qry = 'SELECT sandbox FROM rpay_ratepay_config WHERE profileId = "'. $this->getProfileId($countryCode) .'"';
+            $sandbox = Shopware()->Db()->fetchOne($qry);
+            return $sandbox;
         }
 
         /**
@@ -363,7 +377,14 @@
         private function callProfileRequest($operationData)
         {
             $systemId = $this->getSystemId();
+            $sandbox = true;
             $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+
+            if (strpos($operationData['profileId'], '_TE_')) {
+                $sandbox = true;
+            } elseif (strpos($operationData['profileId'], '_PR_')) {
+                $sandbox = false;
+            }
 
             $mbHead = new \RatePAY\ModelBuilder();
             $mbHead->setArray([
@@ -382,25 +403,29 @@
                 ]
             ]);
 
-            $rb = new \RatePAY\RequestBuilder((bool)$operationData['sandbox']);
+            $rb = new \RatePAY\RequestBuilder($sandbox);
 
             $profileRequest = $rb->callProfileRequest($mbHead);
             $this->_logging->logRequest($profileRequest->getRequestRaw(), $profileRequest->getResponseRaw());
 
+            if ($sandbox == true && $profileRequest->getReasonCode() == 120) {
+                $sandbox = false;
+
+                $rb = new \RatePAY\RequestBuilder($sandbox);
+
+                $profileRequest = $rb->callProfileRequest($mbHead);
+                $this->_logging->logRequest($profileRequest->getRequestRaw(), $profileRequest->getResponseRaw());
+
+            }
             if ($profileRequest->isSuccessful()) {
-                return $profileRequest->getResult();
+                if ($sandbox == true) {
+                    $sandbox = 1;
+                } else {
+                    $sandbox = 0;
+                }
+                return array('result' =>$profileRequest->getResult(), 'sandbox' => $sandbox);
             }
             return false;
-        }
-
-        /**
-         * set the sandbox mode
-         *
-         * @param $value
-         */
-        public function setSandboxMode($value)
-        {
-            $this->_sandboxMode = $value;
         }
 
         /**

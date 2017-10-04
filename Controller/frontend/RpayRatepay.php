@@ -58,11 +58,7 @@
                 $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
             }
 
-            //set sandbox mode based on config
-            $sandbox = $this->_config->get('RatePaySandbox' . $country->getIso());
-
             $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
-            $this->_modelFactory->setSandboxMode($sandbox);
             $this->_logging      = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
         }
 

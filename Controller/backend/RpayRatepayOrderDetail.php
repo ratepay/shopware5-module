@@ -54,13 +54,6 @@
                     'Shopware\Models\Country\Country',
                     $orderUser->getBilling()->getCountryId()
                 );
-
-                $sandbox = $this->_config['RatePaySandbox' . $orderCountry->getIso()];
-
-                //set sandbox mode in model
-                //$this->_service = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
-                $this->_modelFactory->setSandboxMode($sandbox);
-
             } else {
                 $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
             }

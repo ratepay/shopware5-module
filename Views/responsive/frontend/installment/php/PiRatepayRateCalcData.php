@@ -94,19 +94,10 @@
 
             $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $customer->getBilling()->getCountryId());
 
-            $isLive = true;
-            if('DE' === $country->getIso())
-            {
-                $isLive = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySandboxDE;
-            } elseif('AT' === $country->getIso())
-            {
-                $isLive = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySandboxAT;
-            } elseif('CH' === $country->getIso())
-            {
-                $isLive = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySandboxCH;
-            }
+            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+            $sandbox = $modelFactory->getSandboxMode($country->getIso());
 
-            return !$isLive;
+            return (bool)$sandbox;
         }
 
         /**

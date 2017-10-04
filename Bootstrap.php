@@ -22,6 +22,8 @@
 
     class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Components_Plugin_Bootstrap
     {
+        protected $_countries = array('de', 'at', 'ch', 'nl', 'be');
+
 
         /**
          * Returns the Label of the Plugin
@@ -133,13 +135,13 @@
          */
         public function update($version)
         {
-            $countries = array('DE', 'AT', 'CH', 'BE', 'NL');
+            $countries = $this->_countries;
 
             $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
             $this->_subscribeEvents();
             $this->_createForm();
 
-            $this->_truncateConfigTable();
+
             $this->_incrementalTableUpdate();
 
             $this->_languageUpdate();
@@ -147,17 +149,27 @@
             $this->_dropOrderAdditionalAttributes();
 
             foreach ($countries AS $country) {
-                $profile = $configShop->get('RatePayProfileID' . $country);
-                $security = $configShop->get('RatePaySecurityCode' . $country);
-                $sandbox = $configShop->get('RatePaySandbox' . $country);
+                $profile = $configShop->get('RatePayProfileID' . strtoupper($country));
+                $security = $configShop->get('RatePaySecurityCode' . strtoupper($country));
 
                 if (!empty($profile)) {
-                    $shops = Shopware()->Db()->query("SELECT `shop_id` FROM `s_core_config_values` WHERE `value` LIKE '%" . $profile . "%'");
-                    foreach ($shops AS $shop) {
-                        $this->getRatepayConfig($profile, $security, $shop['shop_id'] ,$sandbox, $country);
+                    $shops[$country]['profile'] = $profile;
+                    $shops[$country]['security'] = $security;
+                    $shops[$country]['id'] = Shopware()->Db()->query("SELECT `shop_id` FROM `s_core_config_values` WHERE `value` LIKE '%" . $profile . "%'");
+                }
+            }
+
+            $this->_truncateConfigTable();
+            $this->_incrementalTableUpdate();
+
+            if (!empty($shops)) {
+                foreach ($shops AS $county => $shop) {
+                    foreach ($shop['id'] as $item) {
+                        $this->getRatepayConfig($shop['profile'], $shop['security'], $item['shop_id'], $country);
                     }
                 }
             }
+
 
             Shopware()->PluginLogger()->addNotice('Successful module update');
 
@@ -310,6 +322,14 @@
                     Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD PRIMARY KEY( `shopId`, `country`);");
                 } catch (Exception $exception) {
                     throw new Exception("Can not change column index` - " . $exception->getMessage());
+                }
+            }
+            //adding sandbox index for rp config
+            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "sandbox")) {
+                try {
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `sandbox` TINYINT NOT NULL AFTER `error-default`;");
+                } catch (Exception $exception) {
+                    throw new Exception("Can not add sandbox column in table rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
         }
@@ -481,11 +501,6 @@
                     'value' => '',
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
                 ));
-                $form->setElement('checkbox', 'RatePaySandboxDE', array(
-                    'label' => 'Testmodus aktivieren ( Test Gateway )',
-                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
-                ));
-
 
                 /** AT CREDENTIALS **/
                 $form->setElement('button', 'button1', array(
@@ -502,10 +517,6 @@
                     'label' => 'Österreich Security Code',
                     'value' => '',
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
-                ));
-                $form->setElement('checkbox', 'RatePaySandboxAT', array(
-                    'label' => 'Testmodus aktivieren ( Test Gateway )',
-                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
                 ));
 
                 /** CH CREDENTIALS **/
@@ -524,10 +535,6 @@
                     'value' => '',
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
                 ));
-                $form->setElement('checkbox', 'RatePaySandboxCH', array(
-                    'label' => 'Testmodus aktivieren ( Test Gateway )',
-                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
-                ));
 
                 /** BE CREDENTIALS **/
                 $form->setElement('button', 'button4', array(
@@ -545,10 +552,6 @@
                     'value' => '',
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
                 ));
-                $form->setElement('checkbox', 'RatePaySandboxBE', array(
-                    'label' => 'Testmodus aktivieren ( Test Gateway )',
-                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
-                ));
 
                 /** NL CREDENTIALS **/
                 $form->setElement('button', 'button5', array(
@@ -565,10 +568,6 @@
                     'label' => 'Niederlande Security Code',
                     'value' => '',
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
-                ));
-                $form->setElement('checkbox', 'RatePaySandboxNL', array(
-                    'label' => 'Testmodus aktivieren ( Test Gateway )',
-                    'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
                 ));
 
                 /** BIDIRECTIONAL ORDER SETTINGS **/
@@ -643,16 +642,12 @@
                         'RatePaySecurityCodeDE' => 'Deutschland Security Code',
                         'RatePayProfileIDAT'    => 'Österreich Profile-ID',
                         'RatePaySecurityCodeAT' => 'Österreich Security Code',
-                        'RatePaySandboxDE'      => 'Testmodus aktivieren ( Test Gateway )',
                         'RatePayProfileIDNL'    => 'Niederlande Profile-ID',
                         'RatePaySecurityCodeNL' => 'Niederlande Security Code',
-                        'RatePaySandboxNL'      => 'Testmodus aktivieren ( Test Gateway )',
                         'RatePayProfileIDBE'    => 'Belgien Profile-ID',
                         'RatePaySecurityCodeBE' => 'Belgien Security Code',
-                        'RatePaySandboxBE'      => 'Testmodus aktivieren ( Test Gateway )',
                         'RatePayProfileIDCH'    => 'Schweitz Profile-ID',
                         'RatePaySecurityCodeCH' => 'Schweitz Security Code',
-                        'RatePaySandboxCH'      => 'Testmodus aktivieren ( Test Gateway )',
                         'button0'               => 'Zugangsdaten für Deutschland',
                         'button1'               => 'Zugangsdaten für Österreich',
                         'button2'               => 'Zugangsdaten für die Schweiz',
@@ -664,16 +659,12 @@
                         'RatePaySecurityCodeDE' => 'Security Code for Germany',
                         'RatePayProfileIDAT'    => 'Profile-ID for Austria',
                         'RatePaySecurityCodeAT' => 'Security Code for Austria',
-                        'RatePaySandboxDE'      => 'Sandbox ( Test Gateway )',
                         'RatePayProfileIDNL'    => 'Profile-ID for the Netherlands',
                         'RatePaySecurityCodeNL' => 'Security Code for the Netherlands',
-                        'RatePaySandboxNL'      => 'Sandbox ( Test Gateway )',
                         'RatePayProfileIDBE'    => 'Profile-ID for Belgium',
                         'RatePaySecurityCodeBE' => 'Security Code for Belgium',
-                        'RatePaySandboxBE'      => 'Sandbox ( Test Gateway )',
                         'RatePayProfileIDCH'    => 'Profile-ID for Switzerland',
                         'RatePaySecurityCodeCH' => 'Security Code for Switzerland',
-                        'RatePaySandboxCH'      => 'Sandbox ( Test Gateway )',
                         'button0'               => 'Credentials for Germany',
                         'button1'               => 'Credentials for Austria',
                         'button2'               => 'Credentials for Switzerland',
@@ -934,7 +925,6 @@
             //get ratepay config based on shopId @toDo: IF DI SNIPPET ID WILL BE VARIABLE BETWEEN SUBSHOPS WE NEED TO SELECT BY SHOPID AND COUNTRY CREDENTIALS
             $shopid = Shopware()->Shop()->getId();
             $configPlugin = $this->getRatePayPluginConfig($shopid);
-            $configShop = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
             if (!is_null(Shopware()->Session()->sUserId)) {
                 $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
@@ -959,7 +949,10 @@
                     $countryCode = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
                 }
 
-                $sandbox = $configShop->get('RatePaySandbox' . $country);
+                $sandbox = true;
+                if ($configPlugin['sandbox'] == 0) {
+                    $sandbox = false;
+                }
                 $view->assign('ratepaySandbox', $sandbox);
 
                 $view->extendsTemplate('frontend/payment_rpay_part/index/header.tpl');
@@ -1036,164 +1029,33 @@
 
             //Remove old configs
             $this->_truncateConfigTable();
+            $countries = $this->_countries;
 
             foreach ($parameter['elements'] as $element) {
-
-                //DE
-                if ($element['name'] === 'RatePayProfileIDDE') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['de']['profileID'] = $element['value'];
+                foreach ($countries AS $country) {
+                    if ($element['name'] === 'RatePayProfileID' . strtoupper($country)) {
+                        foreach($element['values'] as $element) {
+                            $credentials[$element['shopId']][$country]['profileID'] = $element['value'];
+                        }
                     }
-                }
-                if ($element['name'] === 'RatePaySecurityCodeDE') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['de']['securityCode'] = $element['value'];
-                    }
-                }
-                if ($element['name'] === 'RatePaySandboxDE') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['de']['sandbox'] = $element['value'];
-                    }
-                }
-
-                //AT
-                if ($element['name'] === 'RatePayProfileIDAT') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['at']['profileID'] = $element['value'];
-                    }
-                }
-                if ($element['name'] === 'RatePaySecurityCodeAT')
-                {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['at']['securityCode'] = $element['value'];
-                    }
-                }
-                if ($element['name'] === 'RatePaySandboxAT') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['at']['sandbox'] = $element['value'];
-                    }
-                }
-
-                //CH
-                if ($element['name'] === 'RatePayProfileIDCH') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['ch']['profileID'] = $element['value'];
-                    }
-                }
-                if ($element['name'] === 'RatePaySecurityCodeCH')
-                {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['ch']['securityCode'] = $element['value'];
-                    }
-                }
-                if ($element['name'] === 'RatePaySandboxCH') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['ch']['sandbox'] = $element['value'];
-                    }
-                }
-                //BE
-                if ($element['name'] === 'RatePayProfileIDBE') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['be']['profileID'] = $element['value'];
-                    }
-                }
-                if ($element['name'] === 'RatePaySecurityCodeBE')
-                {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['be']['securityCode'] = $element['value'];
-                    }
-                }
-                if ($element['name'] === 'RatePaySandboxBE') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['be']['sandbox'] = $element['value'];
-                    }
-                }
-                //NL
-                if ($element['name'] === 'RatePayProfileIDNL') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['nl']['profileID'] = $element['value'];
-                    }
-                }
-                if ($element['name'] === 'RatePaySecurityCodeNL')
-                {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['nl']['securityCode'] = $element['value'];
-                    }
-                }
-                if ($element['name'] === 'RatePaySandboxNL') {
-                    foreach($element['values'] as $element) {
-                        $credentials[$element['shopId']]['nl']['sandbox'] = $element['value'];
+                    if ($element['name'] === 'RatePaySecurityCode'  . strtoupper($country)) {
+                        foreach($element['values'] as $element) {
+                            $credentials[$element['shopId']][$country]['securityCode'] = $element['value'];
+                        }
                     }
                 }
             }
 
             //DE Profile Request
             foreach($credentials as $shopId => $credentials) {
-
-                if (
-                    null !== $credentials['de']['profileID']
-                    &&
-                    null !== $credentials['de']['securityCode']
-                    &&
-                    null !== $credentials['de']['sandbox']
-                )
-                {
-                    if ($this->getRatepayConfig($credentials['de']['profileID'], $credentials['de']['securityCode'], $shopId, $credentials['de']['sandbox'], 'de')) {
-                        Shopware()->PluginLogger()->addNotice('Ruleset for Germany successfully updated.');
-                    }
-                }
-
-                //AT Profile Request
-                if (
-                    null !== $credentials['at']['profileID']
-                    &&
-                    null !== $credentials['at']['securityCode']
-                    &&
-                    null !== $credentials['at']['sandbox']
-                )
-                {
-                    if ($this->getRatepayConfig($credentials['at']['profileID'], $credentials['at']['securityCode'], $shopId, $credentials['at']['sandbox'], 'at')) {
-                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Austria successfully updated.');
-                    }
-                }
-
-                //CH Profile Request
-                if (
-                    null !== $credentials['ch']['profileID']
-                    &&
-                    null !== $credentials['ch']['securityCode']
-                    &&
-                    null !== $credentials['ch']['sandbox']
-                )
-                {
-                    if ($this->getRatepayConfig($credentials['ch']['profileID'], $credentials['ch']['securityCode'], $shopId, $credentials['ch']['sandbox'], 'ch')) {
-                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Switzerland successfully updated.');
-                    }
-                }
-                //NL Profile Request
-                if (
-                    null !== $credentials['nl']['profileID']
-                    &&
-                    null !== $credentials['nl']['securityCode']
-                    &&
-                    null !== $credentials['nl']['sandbox']
-                )
-                {
-                    if ($this->getRatepayConfig($credentials['nl']['profileID'], $credentials['nl']['securityCode'], $shopId, $credentials['nl']['sandbox'], 'nl')) {
-                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for the Netherlands successfully updated.');
-                    }
-                }
-                //BE Profile Request
-                if (
-                    null !== $credentials['be']['profileID']
-                    &&
-                    null !== $credentials['be']['securityCode']
-                    &&
-                    null !== $credentials['be']['sandbox']
-                )
-                {
-                    if ($this->getRatepayConfig($credentials['be']['profileID'], $credentials['be']['securityCode'], $shopId, $credentials['be']['sandbox'], 'be')) {
-                        Shopware()->Pluginlogger()->info('RatePAY: Ruleset for Belgium successfully updated.');
+                foreach ($countries AS $country) {
+                    if (null !== $credentials[$country]['profileID']
+                        && null !== $credentials[$country]['securityCode']
+                    )
+                    {
+                        if ($this->getRatepayConfig($credentials[$country]['profileID'], $credentials[$country]['securityCode'], $shopId, $country)) {
+                            Shopware()->PluginLogger()->addNotice('Ruleset for ' . strtoupper($country) . ' successfully updated.');
+                        }
                     }
                 }
             }
@@ -1234,12 +1096,6 @@
             }
 
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
-
-            //get country of order
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $order->getCustomer()->getBilling()->getCountryId());
-
-            //set sandbox mode based on config
-            $sandbox = $config->get('RatePaySandbox' . $country->getIso());
 
             $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $history      = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
@@ -1284,7 +1140,6 @@
                 }
 
                 if (null != $count) {
-                    $modelFactory->setSandboxMode($sandbox);
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
@@ -1323,7 +1178,6 @@
                 }
 
                 if (null != $count) {
-                    $modelFactory->setSandboxMode($sandbox);
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
@@ -1361,7 +1215,6 @@
 
                 if (null != $count) {
                     $modelFactory->setTransactionId($order->getTransactionID());
-                    $modelFactory->setSandboxMode($sandbox);
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
                     $operationData['subtype'] = 'return';
@@ -1459,7 +1312,6 @@
 
                 $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
                 $modelFactory->setTransactionId($parameter['transactionId']);
-                $modelFactory->setSandboxMode($sandbox);
                 $modelFactory->setTransactionId($order->getTransactionID());
                 $operationData['orderId'] = $order->getId();
                 $operationData['items'] = $items;
@@ -1893,65 +1745,68 @@
          *
          * @param string $profileId
          * @param string $securityCode
+         * @param int $shopId
+         * @param string $country
          *
-         * @return boolean
+         * @return mixed
+         * @throws exception
          */
-        private function getRatepayConfig($profileId, $securityCode, $shopId, $sandbox, $country)
+        private function getRatepayConfig($profileId, $securityCode, $shopId, $country)
         {
             $factory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $data = array(
                 'profileId' => $profileId,
-                'securityCode' => $securityCode,
-                'sandbox' => $sandbox);
+                'securityCode' => $securityCode);
             $response = $factory->callRequest('ProfileRequest', $data);
 
             if (is_array($response) && $response !== false) {
                 $data = array(
-                    $response['merchantConfig']['profile-id'],
-                    $response['merchantConfig']['activation-status-invoice'],
-                    $response['merchantConfig']['activation-status-elv'],
-                    $response['merchantConfig']['activation-status-installment'],
-                    $response['merchantConfig']['b2b-invoice'] ? : 'no',
-                    $response['merchantConfig']['b2b-elv'] ? : 'no',
-                    $response['merchantConfig']['b2b-installment'] ? : 'no',
-                    $response['merchantConfig']['delivery-address-invoice'] ? : 'no',
-                    $response['merchantConfig']['delivery-address-elv'] ? : 'no',
-                    $response['merchantConfig']['delivery-address-installment'] ? : 'no',
-                    $response['merchantConfig']['tx-limit-invoice-min'],
-                    $response['merchantConfig']['tx-limit-elv-min'],
-                    $response['merchantConfig']['tx-limit-installment-min'],
-                    $response['merchantConfig']['tx-limit-invoice-max'],
-                    $response['merchantConfig']['tx-limit-elv-max'],
-                    $response['merchantConfig']['tx-limit-installment-max'],
-                    $response['merchantConfig']['tx-limit-invoice-max-b2b'],
-                    $response['merchantConfig']['tx-limit-elv-max-b2b'],
-                    $response['merchantConfig']['tx-limit-installment-max-b2b'],
-                    $response['installmentConfig']['month-allowed'],
-                    $response['installmentConfig']['valid-payment-firstdays'],
-                    $response['installmentConfig']['rate-min-normal'],
-                    $response['installmentConfig']['interestrate-default'],
-                    $response['merchantConfig']['eligibility-device-fingerprint'] ? : 'no',
-                    $response['merchantConfig']['device-fingerprint-snippet-id'],
-                    strtoupper($response['merchantConfig']['country-code-billing']),
-                    strtoupper($response['merchantConfig']['country-code-delivery']),
-                    strtoupper($response['merchantConfig']['currency']),
+                    $response['result']['merchantConfig']['profile-id'],
+                    $response['result']['merchantConfig']['activation-status-invoice'],
+                    $response['result']['merchantConfig']['activation-status-elv'],
+                    $response['result']['merchantConfig']['activation-status-installment'],
+                    $response['result']['merchantConfig']['b2b-invoice'] ? : 'no',
+                    $response['result']['merchantConfig']['b2b-elv'] ? : 'no',
+                    $response['result']['merchantConfig']['b2b-installment'] ? : 'no',
+                    $response['result']['merchantConfig']['delivery-address-invoice'] ? : 'no',
+                    $response['result']['merchantConfig']['delivery-address-elv'] ? : 'no',
+                    $response['result']['merchantConfig']['delivery-address-installment'] ? : 'no',
+                    $response['result']['merchantConfig']['tx-limit-invoice-min'],
+                    $response['result']['merchantConfig']['tx-limit-elv-min'],
+                    $response['result']['merchantConfig']['tx-limit-installment-min'],
+                    $response['result']['merchantConfig']['tx-limit-invoice-max'],
+                    $response['result']['merchantConfig']['tx-limit-elv-max'],
+                    $response['result']['merchantConfig']['tx-limit-installment-max'],
+                    $response['result']['merchantConfig']['tx-limit-invoice-max-b2b'],
+                    $response['result']['merchantConfig']['tx-limit-elv-max-b2b'],
+                    $response['result']['merchantConfig']['tx-limit-installment-max-b2b'],
+                    $response['result']['installmentConfig']['month-allowed'],
+                    $response['result']['installmentConfig']['valid-payment-firstdays'],
+                    $response['result']['installmentConfig']['rate-min-normal'],
+                    $response['result']['installmentConfig']['interestrate-default'],
+                    $response['result']['merchantConfig']['eligibility-device-fingerprint'] ? : 'no',
+                    $response['result']['merchantConfig']['device-fingerprint-snippet-id'],
+                    strtoupper($response['result']['merchantConfig']['country-code-billing']),
+                    strtoupper($response['result']['merchantConfig']['country-code-delivery']),
+                    strtoupper($response['result']['merchantConfig']['currency']),
                     strtoupper($country),
+                    $response['sandbox'],
                     //shopId always needs be the last line
                     $shopId
                 );
 
                 $activePayments = [];
-                if ($response['merchantConfig']['activation-status-invoice'] == 2) {
+                if ($response['result']['merchantConfig']['activation-status-invoice'] == 2) {
                     $activePayments[] = '"rpayratepayinvoice"';
                 } else {
                     $inactivePayments[] = '"rpayratepayinvoice"';
                 }
-                if ($response['merchantConfig']['activation-status-elv'] == 2) {
+                if ($response['result']['merchantConfig']['activation-status-elv'] == 2) {
                     $activePayments[] = '"rpayratepaydebit"';
                 } else {
                     $inactivePayments[] = '"rpayratepaydebit"';
                 }
-                if ($response['merchantConfig']['activation-status-installment'] == 2) {
+                if ($response['result']['merchantConfig']['activation-status-installment'] == 2) {
                     $activePayments[] = '"rpayratepayrate"';
                 } else {
                     $inactivePayments[] = '"rpayratepayrate"';
@@ -1974,9 +1829,9 @@
                        . '`month-allowed`, `payment-firstday`, `rate-min-normal`, `interestrate-default`,'
                        . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
                        . '`country-code-billing`, `country-code-delivery`,'
-                       . '`currency`,`country`,'
+                       . '`currency`,`country`, `sandbox`,'
                        . ' `shopId`)'
-                       . 'VALUES(' . substr(str_repeat('?,', 30), 0, -1) . ');'; // In case of altering cols change 29 by amount of affected cols
+                       . 'VALUES(' . substr(str_repeat('?,', 31), 0, -1) . ');'; // In case of altering cols change 29 by amount of affected cols
                 try {
                     Shopware()->Db()->query($configSql, $data);
                     if (count($activePayments) > 0) {
