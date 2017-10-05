@@ -327,7 +327,7 @@
             //adding sandbox index for rp config
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "sandbox")) {
                 try {
-                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `sandbox` TINYINT NOT NULL AFTER `error-default`;");
+                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `sandbox` int(1) NOT NULL AFTER `error-default`;");
                 } catch (Exception $exception) {
                     throw new Exception("Can not add sandbox column in table rpay_ratepay_config` - " . $exception->getMessage());
                 }
@@ -751,6 +751,7 @@
                          "`currency` varchar(30) NULL, " .
                          "`country` varchar(30) NOT NULL, " .
                          "`error-default` VARCHAR(535) NOT NULL DEFAULT 'Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href=\"http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach\" target=\"_blank\">RatePAY-Datenschutzerklärung</a>', " .
+                         "`sandbox` int(1) NOT NULL, " .
                          "PRIMARY KEY (`shopId`, `country`)" .
                          ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
