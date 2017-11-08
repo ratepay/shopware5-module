@@ -37,6 +37,11 @@
          */
         public function getRatepayRateConfig()
         {
+            $paymentType = $_SESSION['Shopware']['sOrderVariables']['sUserData']['additional']['payment']['name'];
+            if ($paymentType == 'rpayratepayrate') {
+                $paymentType = 'installment';
+            }
+
             $shopId = Shopware()->Shop()->getId();
             $userId = Shopware()->Session()->sUserId;
             $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
@@ -44,17 +49,15 @@
             $countryIso = $country->getIso();
             $basketAmount = $this->getRequestAmount();
 
+            $qry = "SELECT rrci.`month-allowed`, rrci.`rate-min-normal`, rrci.`interestrate-default`, rrci.`payment-firstday`
+                    FROM `rpay_ratepay_config_installment` AS rrci
+                      JOIN `rpay_ratepay_config` AS rrc
+                        ON rrci.`rpay_id` = rrc.`" . $paymentType . "`
+                    WHERE rrc.`shopId` = " . $shopId . "
+                    AND rrc.`country-code-billing` LIKE '%" . $countryIso . "%'";
+
             //get ratepay config based on shopId
-            $rpRateConfig=Shopware()->Db()->fetchRow('
-                SELECT
-                `month-allowed`, `rate-min-normal`, `interestrate-default`, `payment-firstday`
-                FROM
-                `rpay_ratepay_config`
-                WHERE
-                `shopId` = ' . $shopId . '
-                AND 
-                `country-code-billing` LIKE \'%' . $countryIso . '%\'
-            ');
+            $rpRateConfig=Shopware()->Db()->fetchRow($qry);
 
             $interestRate = ((float)$rpRateConfig["interestrate-default"] / 12) / 100;
             $monthAllowed = explode(',', $rpRateConfig["month-allowed"]);

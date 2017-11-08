@@ -170,7 +170,6 @@
                 }
             }
 
-
             Shopware()->PluginLogger()->addNotice('Successful module update');
 
             return array(
@@ -217,8 +216,12 @@
         private function _truncateConfigTable()
         {
             $configSql = 'TRUNCATE TABLE `rpay_ratepay_config`;';
+            $configPaymentSql = 'TRUNCATE TABLE `rpay_ratepay_config_payment`;';
+            $configInstallmentSql = 'TRUNCATE TABLE `rpay_ratepay_config_installment`;';
             try {
                 Shopware()->Db()->query($configSql);
+                Shopware()->Db()->query($configPaymentSql);
+                Shopware()->Db()->query($configInstallmentSql);
             } catch (Exception $exception) {
                 Shopware()->Pluginlogger()->info($exception->getMessage());
                 return false;
@@ -261,9 +264,8 @@
                     } catch (Exception $exception) {
                         throw new Exception("Can not add device-fingerprint columns in table `rpay_ratepay_config` - " . $exception->getMessage());
                     }
-               }
+                }
             }
-
             // Adding currency and country columns into config table from version 4.2.0
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "currency")) {
                 try {
@@ -274,7 +276,6 @@
                     throw new Exception("Can not add country-code and currency columns in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
-
             // Adding limit max b2b columns into config table from version 4.2.2
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "limit-invoice-max-b2b")) {
                 try {
@@ -285,7 +286,6 @@
                     throw new Exception("Can not add max b2b columns in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
-
             //Adding error-default message into config table from version 4.2.2
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "error_default")) {
                 try {
@@ -294,7 +294,6 @@
                     throw new Exception("Can not add error default column in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
-
             //Adding error-default message into config table from version 4.2.2
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "month-allowed")) {
                 try {
@@ -305,7 +304,6 @@
                     throw new Exception("Can not add month-allowed, rate-min-normal and interestrate-default columns in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
-
             //Adding error-default message into config table from version 4.2.2
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "payment-firstday")) {
                 try {
@@ -330,6 +328,71 @@
                     Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `sandbox` int(1) NOT NULL AFTER `error-default`;");
                 } catch (Exception $exception) {
                     throw new Exception("Can not add sandbox column in table rpay_ratepay_config` - " . $exception->getMessage());
+                }
+            }
+
+            //change config fields for module update 5.0.4
+            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "invoice")) {
+                try {
+
+                    $sqlAdd = "ALTER TABLE `rpay_ratepay_config` 
+                                   ADD `invoice` INT(2) NOT NULL AFTER `profileId`, 
+                                   ADD `debit` INT(2) NOT NULL AFTER `invoice`, 
+                                   ADD `installment` INT(2) NOT NULL AFTER `debit`, 
+                                   ADD `installment0` INT(2) NOT NULL AFTER `installment`, 
+                                   ADD `installmentDebit` INT(2) NOT NULL AFTER `installment0`;";
+
+                    $sqlRemove = "ALTER TABLE `rpay_ratepay_config`
+                                      DROP `invoiceStatus`,
+                                      DROP `debitStatus`,
+                                      DROP `rateStatus`,
+                                      DROP `b2b-invoice`,
+                                      DROP `b2b-debit`,
+                                      DROP `b2b-rate`,
+                                      DROP `address-invoice`,
+                                      DROP `address-debit`,
+                                      DROP `address-rate`,
+                                      DROP `limit-invoice-min`,
+                                      DROP `limit-debit-min`,
+                                      DROP `limit-rate-min`,
+                                      DROP `limit-invoice-max`,
+                                      DROP `limit-debit-max`,
+                                      DROP `limit-rate-max`,
+                                      DROP `limit-invoice-max-b2b`,
+                                      DROP `limit-debit-max-b2b`,
+                                      DROP `limit-rate-max-b2b`,
+                                      DROP `month-allowed`,
+                                      DROP `rate-min-normal`,
+                                      DROP `payment-firstday`,
+                                      DROP `interestrate-default`;";
+
+                    $sqlPayment = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config_payment` (" .
+                                    "`rpay_id` int(2) NOT NULL AUTO_INCREMENT," .
+                                    "`status` varchar(255) NOT NULL," .
+                                    "`b2b` int(2) NOT NULL," .
+                                    "`limit_min` int(10) NOT NULL," .
+                                    "`limit_max` int(10) NOT NULL," .
+                                    "`limit_max_b2b` int(10)," .
+                                    "`address` int(2)," .
+                                    "PRIMARY KEY (`rpay_id`)" .
+                                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+
+                    $sqlInstallment = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config_installment` (" .
+                                        "`rpay_id` int(2) NOT NULL," .
+                                        "`month-allowed` varchar(255) NOT NULL," .
+                                        "`payment-firstday` varchar(10) NOT NULL," .
+                                        "`interestrate-default` float NOT NULL," .
+                                        "`rate-min-normal` float NOT NULL," .
+                                        "PRIMARY KEY (`rpay_id`)" .
+                                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+
+                    Shopware()->Db()->query($sqlAdd);
+                    Shopware()->Db()->query($sqlRemove);
+                    Shopware()->Db()->query($sqlPayment);
+                    Shopware()->Db()->query($sqlInstallment);
+
+                } catch (Exception $exception) {
+                    throw new Exception("Can not change structure in rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
         }
@@ -404,17 +467,6 @@
             Shopware()->Db()->query($sql);
 
             return true;
-        }
-
-        /**
-         * @param $iso
-         *
-         * @return null|\Shopware\Models\Country\Country
-         */
-        final private function getCountry($iso)
-        {
-            return Shopware()->Models()->getRepository('Shopware\Models\Country\Country')
-                             ->findOneBy(array('iso' => $iso));
         }
 
         /**
@@ -576,8 +628,6 @@
                     'value' => ''
                 ));
 
-
-
                 $form->setElement('checkbox', 'RatePayBidirectional', array(
                     'label' => 'Bidirektionalität aktivieren ( Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert)',
                     'scope' => Shopware\Models\Config\Element::SCOPE_SHOP,
@@ -722,28 +772,11 @@
             $sqlConfig = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config` (" .
                          "`profileId` varchar(255) NOT NULL," .
                          "`shopId` int(5) NOT NULL, " .
-                         "`invoiceStatus` int(1) NOT NULL, " .
-                         "`debitStatus` int(1) NOT NULL, " .
-                         "`rateStatus` int(1) NOT NULL, " .
-                         "`b2b-invoice` varchar(3) NOT NULL, " .
-                         "`b2b-debit` varchar(3) NOT NULL, " .
-                         "`b2b-rate` varchar(3) NOT NULL, " .
-                         "`address-invoice` varchar(3) NOT NULL, " .
-                         "`address-debit` varchar(3) NOT NULL, " .
-                         "`address-rate` varchar(3) NOT NULL, " .
-                         "`limit-invoice-min` int(5) NOT NULL, " .
-                         "`limit-debit-min` int(5) NOT NULL, " .
-                         "`limit-rate-min` int(5) NOT NULL, " .
-                         "`limit-invoice-max` int(5) NOT NULL, " .
-                         "`limit-debit-max` int(5) NOT NULL, " .
-                         "`limit-rate-max` int(5) NOT NULL, " .
-                         "`limit-invoice-max-b2b` int(5) NOT NULL, " .
-                         "`limit-debit-max-b2b` int(5) NOT NULL, " .
-                         "`limit-rate-max-b2b` int(5) NOT NULL, " .
-                         "`month-allowed` varchar(30) NULL, " .
-                         "`rate-min-normal` float NULL, " .
-                         "`payment-firstday` varchar(5) NULL, " .
-                         "`interestrate-default` float NULL, " .
+                         "`invoice` int(2) NOT NULL, " .
+                         "`debit` int(2) NOT NULL, " .
+                         "`installment` int(2) NOT NULL, " .
+                         "`installment0` int(2) NOT NULL, " .
+                         "`installmentDebit` int(2) NOT NULL, " .
                          "`device-fingerprint-status` varchar(3) NOT NULL, " .
                          "`device-fingerprint-snippet-id` varchar(55) NULL, " .
                          "`country-code-billing` varchar(30) NULL, " .
@@ -781,12 +814,35 @@
                                "`quantity` varchar(50), " .
                                "PRIMARY KEY (`id`)" .
                                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+
+            $sqlPayment = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config_payment` (" .
+                            "`rpay_id` int(2) NOT NULL AUTO_INCREMENT," .
+                            "`status` varchar(255) NOT NULL," .
+                            "`b2b` int(2) NOT NULL," .
+                            "`limit_min` int NOT NULL DEFAULT CURRENT_TIMESTAMP," .
+                            "`limit_max` int NOT NULL," .
+                            "`limit_max_b2b` int," .
+                            "`address` int(2) NOT NULL," .
+                            "PRIMARY KEY (`id`)" .
+                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+
+            $sqlInstallment = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config_installment` (" .
+                                "`rpay_id` int(2) NOT NULL," .
+                                "`month-allowed` varchar(255) NOT NULL," .
+                                "`payment-firstday` varchar(10) NOT NULL," .
+                                "`interestrate-default` float NOT NULL," .
+                                "`rate-min-normal` float NOT NULL," .
+                                "PRIMARY KEY (`id`)" .
+                                ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+
             try {
                 Shopware()->Db()->query($sqlLogging);
                 Shopware()->Db()->query($sqlConfig);
                 Shopware()->Db()->query($sqlOrderPositions);
                 Shopware()->Db()->query($sqlOrderShipping);
                 Shopware()->Db()->query($sqlOrderHistory);
+                Shopware()->Db()->query($sqlPayment);
+                Shopware()->Db()->query($sqlInstallment);
             } catch (Exception $exception) {
                 $this->uninstall();
                 throw new Exception('Can not create Database.' . $exception->getMessage());
@@ -803,6 +859,8 @@
                 Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_positions`");
                 Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_shipping`");
                 Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
+                Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
+                Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
             } catch (Exception $exception) {
                 throw new Exception('Can not delete RatePAY tables - ' . $exception->getMessage());
             }
@@ -1484,18 +1542,26 @@
         private function getRatePayPluginConfigByCountry($shopId, $country) {
             //fetch correct config for current shop based on user country
             $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
+            $payments = array("installment", "invoice", "debit");
+            $paymentConfig = array();
 
-            //get ratepay config based on shopId and profileId
-            return Shopware()->Db()->fetchRow('
-                SELECT
-                *
-                FROM
-                `rpay_ratepay_config`
-                WHERE
-                `shopId` =?
-                AND
-                `profileId`=?
-            ', array($shopId, $profileId));
+            foreach ($payments AS $payment) {
+                $qry = "SELECT * 
+                        FROM `rpay_ratepay_config` AS rrc
+                          JOIN `rpay_ratepay_config_payment` AS rrcp
+                            ON rrcp.`rpay_id` = rrc.`" . $payment . "`
+                          LEFT JOIN `rpay_ratepay_config_installment` AS rrci
+                            ON rrci.`rpay_id` = rrc.`" . $payment . "`
+                        WHERE rrc.`shopId` = '" . $shopId . "'
+                             AND rrc.`profileId`= '" . $profileId . "'";
+                $result = Shopware()->Db()->fetchRow($qry);
+
+                if (!empty($result)) {
+                    $paymentConfig[$payment] = $result;
+                }
+            }
+
+            return $paymentConfig;
         }
 
         /**
@@ -1547,87 +1613,48 @@
 
             Shopware()->Pluginlogger()->info('ShopId ' . $shopId);
             $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
+            foreach ($config AS $payment => $data) {
+                $show[$payment] = $data['status'] == 2 ? true : false;
 
-            $showRate    = $config['rateStatus']    == 2 ? true : false;
-            $showDebit   = $config['debitStatus']   == 2 ? true : false;
-            $showInvoice = $config['invoiceStatus'] == 2 ? true : false;
+                $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($config);
+                $validation->setAllowedCurrencies($data['currency']);
+                $validation->setAllowedCountriesBilling($data['country-code-billing']);
+                $validation->setAllowedCountriesDelivery($data['country-code-delivery']);
 
-            $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($config);
-            $validation->setAllowedCurrencies($config['currency']);
-            $validation->setAllowedCountriesBilling($config['country-code-billing']);
-            $validation->setAllowedCountriesDelivery($config['country-code-delivery']);
-
-            //check if payments are hidden by session (not in sandbox mode)
-            if ($validation->isRatepayHidden()) {
-                $showRate    = false;
-                $showDebit   = false;
-                $showInvoice = false;
-            }
-
-            //check if the country is allowed
-            if (!$validation->isCurrencyValid($currency)) {
-                $showRate    = false;
-                $showDebit   = false;
-                $showInvoice = false;
-            }
-
-            //check if the billing country is allowed
-            if (!$validation->isBillingCountryValid($countryBilling)) {
-                $showRate    = false;
-                $showDebit   = false;
-                $showInvoice = false;
-            }
-
-            //check if the delivery country is allowed
-            if (!$validation->isDeliveryCountryValid($countryDelivery)) {
-                $showRate    = false;
-                $showDebit   = false;
-                $showInvoice = false;
-            }
-
-            $limitInvoiceMin = $config['limit-invoice-min'];
-            $limitDebitMin   = $config['limit-debit-min'];
-            $limitRateMin    = $config['limit-rate-min'];
-
-            //check if it is a b2b transaction
-            if ($validation->isCompanyNameSet() || $validation->isUSTSet()) {
-                $showRate    = $config['b2b-rate']    == 'yes' && $showRate ? true : false;
-                $showDebit   = $config['b2b-debit']   == 'yes' && $showDebit ? true : false;
-                $showInvoice = $config['b2b-invoice'] == 'yes' && $showInvoice ? true : false;
-
-                $limitInvoiceMax = ($config['limit-invoice-max-b2b'] > 0) ? $config['limit-invoice-max-b2b'] : $config['limit-invoice-max'];
-                $limitDebitMax   = ($config['limit-debit-max-b2b'] > 0) ? $config['limit-debit-max-b2b'] : $config['limit-debit-max'];
-                $limitRateMax    = ($config['limit-rate-max-b2b'] > 0) ? $config['limit-rate-max-b2b'] : $config['limit-rate-max'];
-            } else {
-                $limitInvoiceMax = $config['limit-invoice-max'];
-                $limitDebitMax   = $config['limit-debit-max'];
-                $limitRateMax    = $config['limit-rate-max'];
-            }
-
-            //check if there is an alternate delivery address
-            if (!$validation->isBillingAddressSameLikeShippingAddress()) {
-                $showRate    = $config['address-rate']    == 'yes' && $showRate ? true : false;
-                $showDebit   = $config['address-debit']   == 'yes' && $showDebit ? true : false;
-                $showInvoice = $config['address-invoice'] == 'yes' && $showInvoice ? true : false;
-            }
-
-            //check the limits
-            if (Shopware()->Modules()->Basket()) {
-                $basket = Shopware()->Modules()->Basket()->sGetAmount();
-                $basket = $basket['totalAmount'];
-
-                Shopware()->Pluginlogger()->info('BasketAmount: ' . $basket);
-
-                if ($basket < $limitInvoiceMin || $basket > $limitInvoiceMax) {
-                    $showInvoice = false;
+                if ($validation->isRatepayHidden()) {
+                    $show[$payment]    = false;
                 }
 
-                if ($basket < $limitDebitMin || $basket > $limitDebitMax) {
-                    $showDebit = false;
+                if (!$validation->isCurrencyValid($currency)) {
+                    $show[$payment]    = false;
                 }
 
-                if ($basket < $limitRateMin || $basket > $limitRateMax) {
-                    $showRate = false;
+                if (!$validation->isBillingCountryValid($countryBilling)) {
+                    $show[$payment]    = false;
+                }
+
+                if (!$validation->isDeliveryCountryValid($countryDelivery)) {
+                    $show[$payment]    = false;
+                }
+
+                if ($validation->isCompanyNameSet() || $validation->isUSTSet()) {
+                    $show[$payment] = $data['b2b'] == 'yes' && $show[$payment] ? true : false;
+                    $data['limit_max'] = ($data['limit-max-b2b'] > 0) ? $data['limit--max-b2b'] : $data['limit-max'];
+                }
+
+                if (!$validation->isBillingAddressSameLikeShippingAddress()) {
+                    $show[$payment]    = $data['address']    == 'yes' && $show[$payment] ? true : false;
+                }
+
+                if (Shopware()->Modules()->Basket()) {
+                    $basket = Shopware()->Modules()->Basket()->sGetAmount();
+                    $basket = $basket['totalAmount'];
+
+                    Shopware()->Pluginlogger()->info('BasketAmount: ' . $basket);
+
+                    if ($basket < $data['limit_min'] || $basket > $data['limit_max']) {
+                        $show[$payment] = false;
+                    }
                 }
             }
 
@@ -1636,17 +1663,17 @@
 
             $payments = array();
             foreach ($return as $payment) {
-                if ($payment['name'] === 'rpayratepayinvoice' && !$showInvoice) {
+                if ($payment['name'] === 'rpayratepayinvoice' && !$show['invoice']) {
                     Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Invoice');
                     $setToDefaultPayment = $paymentModel->getName() === "rpayratepayinvoice" ? : $setToDefaultPayment;
                     continue;
                 }
-                if ($payment['name'] === 'rpayratepaydebit' && !$showDebit) {
+                if ($payment['name'] === 'rpayratepaydebit' && !$show['debit']) {
                     Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Debit');
                     $setToDefaultPayment = $paymentModel->getName() === "rpayratepaydebit" ? : $setToDefaultPayment;
                     continue;
                 }
-                if ($payment['name'] === 'rpayratepayrate' && !$showRate) {
+                if ($payment['name'] === 'rpayratepayrate' && !$show['installment']) {
                     Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Rate');
                     $setToDefaultPayment = $paymentModel->getName() === "rpayratepayrate" ? : $setToDefaultPayment;
                     continue;
@@ -1760,31 +1787,62 @@
                 'securityCode' => $securityCode);
             $response = $factory->callRequest('ProfileRequest', $data);
 
+            $payments = array('invoice', 'elv', 'installment');
+
             if (is_array($response) && $response !== false) {
+                foreach ($payments AS $payment) {
+                    $dataPayment = array(
+                        $response['result']['merchantConfig']['activation-status-' . $payment],
+                        $response['result']['merchantConfig']['b2b-' . $payment] ? : 'no',
+                        $response['result']['merchantConfig']['tx-limit-' . $payment . '-min'],
+                        $response['result']['merchantConfig']['tx-limit-' . $payment . '-max'],
+                        $response['result']['merchantConfig']['tx-limit-i' . $payment . '-max-b2b'],
+                        $response['result']['merchantConfig']['delivery-address-'  . $payment] ? : 'no',
+                    );
+
+                    $paymentSql = 'REPLACE INTO `rpay_ratepay_config_payment`'
+                        . '(`status`, `b2b`,`limit_min`,`limit_max`,'
+                        . '`limit_max_b2b`, `address`)'
+                        . 'VALUES(' . substr(str_repeat('?,', 6), 0, -1) . ');';
+                    try {
+                        Shopware()->Db()->query($paymentSql, $dataPayment);
+                        $id = Shopware()->Db()->fetchOne('SELECT `rpay_id` FROM `rpay_ratepay_config_payment` ORDER BY `rpay_id` DESC');
+                        $type[$payment] = $id;
+                        Shopware()->Pluginlogger()->error($payment . " " .  $id);
+                    } catch (Exception $exception) {
+                        Shopware()->Pluginlogger()->error($exception->getMessage());
+                        return false;
+                    }
+                }
+
+                if ($response['result']['merchantConfig']['activation-status-installment']  == 2) {
+                    $installmentConfig = array(
+                        $type['installment'],
+                        $response['result']['installmentConfig']['month-allowed'],
+                        $response['result']['installmentConfig']['valid-payment-firstdays'],
+                        $response['result']['installmentConfig']['rate-min-normal'],
+                        $response['result']['installmentConfig']['interestrate-default'],
+                    );
+                    $paymentSql = 'REPLACE INTO `rpay_ratepay_config_installment`'
+                        . '(`rpay_id`, `month-allowed`,`payment-firstday`,`interestrate-default`,'
+                        . '`rate-min-normal`)'
+                        . 'VALUES(' . substr(str_repeat('?,', 5), 0, -1) . ');';
+                    try {
+                        Shopware()->Db()->query($paymentSql, $installmentConfig);
+                    } catch (Exception $exception) {
+                        Shopware()->Pluginlogger()->error($exception->getMessage());
+                        return false;
+                    }
+
+                }
+
                 $data = array(
                     $response['result']['merchantConfig']['profile-id'],
-                    $response['result']['merchantConfig']['activation-status-invoice'],
-                    $response['result']['merchantConfig']['activation-status-elv'],
-                    $response['result']['merchantConfig']['activation-status-installment'],
-                    $response['result']['merchantConfig']['b2b-invoice'] ? : 'no',
-                    $response['result']['merchantConfig']['b2b-elv'] ? : 'no',
-                    $response['result']['merchantConfig']['b2b-installment'] ? : 'no',
-                    $response['result']['merchantConfig']['delivery-address-invoice'] ? : 'no',
-                    $response['result']['merchantConfig']['delivery-address-elv'] ? : 'no',
-                    $response['result']['merchantConfig']['delivery-address-installment'] ? : 'no',
-                    $response['result']['merchantConfig']['tx-limit-invoice-min'],
-                    $response['result']['merchantConfig']['tx-limit-elv-min'],
-                    $response['result']['merchantConfig']['tx-limit-installment-min'],
-                    $response['result']['merchantConfig']['tx-limit-invoice-max'],
-                    $response['result']['merchantConfig']['tx-limit-elv-max'],
-                    $response['result']['merchantConfig']['tx-limit-installment-max'],
-                    $response['result']['merchantConfig']['tx-limit-invoice-max-b2b'],
-                    $response['result']['merchantConfig']['tx-limit-elv-max-b2b'],
-                    $response['result']['merchantConfig']['tx-limit-installment-max-b2b'],
-                    $response['result']['installmentConfig']['month-allowed'],
-                    $response['result']['installmentConfig']['valid-payment-firstdays'],
-                    $response['result']['installmentConfig']['rate-min-normal'],
-                    $response['result']['installmentConfig']['interestrate-default'],
+                    $type['invoice'],
+                    $type['installment'],
+                    $type['elv'],
+                    0,
+                    0,
                     $response['result']['merchantConfig']['eligibility-device-fingerprint'] ? : 'no',
                     $response['result']['merchantConfig']['device-fingerprint-snippet-id'],
                     strtoupper($response['result']['merchantConfig']['country-code-billing']),
@@ -1796,50 +1854,26 @@
                     $shopId
                 );
 
-                $activePayments = [];
-                if ($response['result']['merchantConfig']['activation-status-invoice'] == 2) {
-                    $activePayments[] = '"rpayratepayinvoice"';
-                } else {
-                    $inactivePayments[] = '"rpayratepayinvoice"';
-                }
-                if ($response['result']['merchantConfig']['activation-status-elv'] == 2) {
-                    $activePayments[] = '"rpayratepaydebit"';
-                } else {
-                    $inactivePayments[] = '"rpayratepaydebit"';
-                }
-                if ($response['result']['merchantConfig']['activation-status-installment'] == 2) {
-                    $activePayments[] = '"rpayratepayrate"';
-                } else {
-                    $inactivePayments[] = '"rpayratepayrate"';
-                }
+                $activePayments[] = '"rpayratepayinvoice"';
+                $activePayments[] = '"rpayratepaydebit"';
+                $activePayments[] = '"rpayratepayrate"';
 
                 if (count($activePayments) > 0) {
                     $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(",", $activePayments) . ') AND `active` <> 0';
                 }
-                if (count($inactivePayments) > 0) {
-                    $updateSqlInactivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 0 WHERE `name` in(' . implode(",", $inactivePayments) . ')';
-                }
+
 
                 $configSql = 'REPLACE INTO `rpay_ratepay_config`'
-                       . '(`profileId`, `invoiceStatus`,`debitStatus`,`rateStatus`,'
-                       . '`b2b-invoice`, `b2b-debit`, `b2b-rate`,'
-                       . '`address-invoice`, `address-debit`, `address-rate`,'
-                       . '`limit-invoice-min`, `limit-debit-min`, `limit-rate-min`,'
-                       . '`limit-invoice-max`, `limit-debit-max`, `limit-rate-max`,'
-                       . '`limit-invoice-max-b2b`, `limit-debit-max-b2b`, `limit-rate-max-b2b`,'
-                       . '`month-allowed`, `payment-firstday`, `rate-min-normal`, `interestrate-default`,'
+                       . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`,'
                        . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
                        . '`country-code-billing`, `country-code-delivery`,'
                        . '`currency`,`country`, `sandbox`,'
                        . ' `shopId`)'
-                       . 'VALUES(' . substr(str_repeat('?,', 31), 0, -1) . ');'; // In case of altering cols change 29 by amount of affected cols
+                       . 'VALUES(' . substr(str_repeat('?,', 14), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
                 try {
                     Shopware()->Db()->query($configSql, $data);
                     if (count($activePayments) > 0) {
                         Shopware()->Db()->query($updateSqlActivePaymentMethods);
-                    }
-                    if (count($inactivePayments) > 0) {
-                        Shopware()->Db()->query($updateSqlInactivePaymentMethods);
                     }
 
                     return true;
