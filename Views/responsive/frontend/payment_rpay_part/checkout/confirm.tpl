@@ -8,6 +8,8 @@
         ( $sPayment.name == 'rpayratepaydebit')
             ||
         ( $sPayment.name == 'rpayratepayrate')
+        ||
+        ( $sPayment.name == 'rpayratepayrate0')
     )}
 
     <div class="ratepay-overlay" style="display: none;">
@@ -44,7 +46,7 @@
                                     {include file='frontend/payment_rpay_part/RatePAYSEPAAGBs.tpl'}
                                 {/if}
 
-                                {if $sPayment.name == 'rpayratepayrate'}
+                                {if $sPayment.name == 'rpayratepayrate' || $sPayment.name == 'rpayratepayrate0'}
                                     {include file='frontend/payment_rpay_part/RatePAYErrorMessage.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYFormElements.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYRatenrechner.tpl'}

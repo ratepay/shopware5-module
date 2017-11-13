@@ -31,6 +31,9 @@
                 case 'rpayratepaydebit':
                     return 'ELV';
                     break;
+                case 'rpayratepayrate0':
+                    return 'INSTALLMENT0';
+                    break;
             }
         }
 

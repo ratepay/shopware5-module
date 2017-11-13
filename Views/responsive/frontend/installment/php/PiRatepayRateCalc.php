@@ -40,6 +40,8 @@
             $paymentType = $_SESSION['Shopware']['sOrderVariables']['sUserData']['additional']['payment']['name'];
             if ($paymentType == 'rpayratepayrate') {
                 $paymentType = 'installment';
+            } elseif ($paymentType == 'rpayratepayrate0') {
+                $paymentType = 'installment0';
             }
 
             $shopId = Shopware()->Shop()->getId();
@@ -158,6 +160,13 @@
             }
             
             $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+
+            $user = Shopware()->Session()->sOrderVariables['sUserData'];
+            if (!empty($user['additional']['payment']['name'])) {
+                if ($user['additional']['payment']['name'] == 'rpayratepayrate0') {
+                    $modelFactory->setZPercent();
+                }
+            }
 
             $operationData['payment']['amount'] = $this->getRequestAmount();
             $operationData['payment']['paymentFirstday'] = $this->getRequestFirstday();

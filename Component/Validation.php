@@ -100,7 +100,7 @@
          */
         public function isRatePAYPayment()
         {
-            return in_array($this->_payment->getName(), array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit"));
+            return in_array($this->_payment->getName(), array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit", "rpayratepayrate0"));
         }
 
         /**

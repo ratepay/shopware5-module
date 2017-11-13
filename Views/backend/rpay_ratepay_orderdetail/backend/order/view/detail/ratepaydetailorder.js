@@ -36,7 +36,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydetailorder', {
             }
         }
 
-        if (paymentName.search(/^rpayratepay(invoice|rate|debit)$/) != -1) {
+        if (paymentName.search(/^rpayratepay(invoice|rate|rate0|debit)$/) != -1) {
             return true;
         } else {
             return false;

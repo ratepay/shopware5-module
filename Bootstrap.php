@@ -24,6 +24,8 @@
     {
         protected $_countries = array('de', 'at', 'ch', 'nl', 'be');
 
+        protected $_paymentMethodes = array('rpayratepayinvoice', 'rpayratepayrate', 'rpayratepaydebit', 'rpayratepayrate0');
+
 
         /**
          * Returns the Label of the Plugin
@@ -148,6 +150,8 @@
 
             $this->_dropOrderAdditionalAttributes();
 
+            $this->_updatePaymentMethods();
+
             foreach ($countries AS $country) {
                 $profile = $configShop->get('RatePayProfileID' . strtoupper($country));
                 $security = $configShop->get('RatePaySecurityCode' . strtoupper($country));
@@ -166,6 +170,9 @@
                 foreach ($shops AS $county => $shop) {
                     foreach ($shop['id'] as $item) {
                         $this->getRatepayConfig($shop['profile'], $shop['security'], $item['shop_id'], $country);
+                        if ($country == 'de') {
+                            $this->getRatepayConfig($shop['profile'] . '_0RT', $shop['security'], $item['shop_id'], $country);
+                        }
                     }
                 }
             }
@@ -177,6 +184,25 @@
                 'invalidateCache' => array(
                     'frontend',
                     'backend'
+                )
+            );
+        }
+
+        protected function _updatePaymentMethods() {
+            $this->createPayment(
+                array(
+                    'name'                  => 'rpayratepayrate0',
+                    'description'           => '0% Finanzierung',
+                    'action'                => 'rpay_ratepay',
+                    'active'                => 1,
+                    'position'              => 4,
+                    'additionaldescription' => 'Kauf per 0% Finanzierung',
+                    'template'              => 'RatePAYRate.tpl',
+                    'pluginID'              => $this->getId(),
+                    /*'countries'             => array(
+                        $this->getCountry('DE'),
+                        $this->getCountry('AT')
+                    )*/
                 )
             );
         }
@@ -276,40 +302,12 @@
                     throw new Exception("Can not add country-code and currency columns in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
-            // Adding limit max b2b columns into config table from version 4.2.2
-            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "limit-invoice-max-b2b")) {
-                try {
-                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `limit-invoice-max-b2b` INT(5) NOT NULL AFTER `limit-rate-max`;");
-                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `limit-debit-max-b2b` INT(5) NOT NULL AFTER `limit-invoice-max-b2b`;");
-                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `limit-rate-max-b2b` INT(5) NOT NULL AFTER `limit-debit-max-b2b`;");
-                } catch (Exception $exception) {
-                    throw new Exception("Can not add max b2b columns in table `rpay_ratepay_config` - " . $exception->getMessage());
-                }
-            }
             //Adding error-default message into config table from version 4.2.2
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "error_default")) {
                 try {
                     Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `error-default` VARCHAR(535) NOT NULL DEFAULT 'Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href=\"http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach\" target=\"_blank\">RatePAY-Datenschutzerklärung</a>' AFTER `currency`;");
                 } catch (Exception $exception) {
                     throw new Exception("Can not add error default column in table `rpay_ratepay_config` - " . $exception->getMessage());
-                }
-            }
-            //Adding error-default message into config table from version 4.2.2
-            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "month-allowed")) {
-                try {
-                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `month-allowed` VARCHAR(30) NULL ");
-                    Shopware()->DB()->query("ALTER TABLE `rpay_ratepay_config` ADD `rate-min-normal` float NULL ");
-                    Shopware()->DB()->query("ALTER TABLE `rpay_ratepay_config` ADD `interestrate-default` float NULL ");
-                }catch (Exception $exception) {
-                    throw new Exception("Can not add month-allowed, rate-min-normal and interestrate-default columns in table `rpay_ratepay_config` - " . $exception->getMessage());
-                }
-            }
-            //Adding error-default message into config table from version 4.2.2
-            if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "payment-firstday")) {
-                try {
-                    Shopware()->Db()->query("ALTER TABLE `rpay_ratepay_config` ADD `payment-firstday` VARCHAR(2) NULL ");
-                } catch (Exception $exception) {
-                    throw new Exception("Can not add payment-firstdate column in table `rpay_ratepay_config` - " . $exception->getMessage());
                 }
             }
             //adding primary index for rp config
@@ -393,6 +391,16 @@
 
                 } catch (Exception $exception) {
                     throw new Exception("Can not change structure in rpay_ratepay_config` - " . $exception->getMessage());
+                }
+
+                //remove sandbox fields
+                if ($this->_sqlCheckIfColumnExists('s_core_config_elements', 'RatePaySandboxDE')) {
+                    try {
+                        $sql = "DELETE FROM `s_core_config_elements` WHERE `s_core_config_elements`.`name` LIKE 'RatePaySandbox%'";
+                        Shopware()->Db()->query($sql);
+                    } catch (Exception $exception) {
+                        throw new Exception("Can't remove Sandbox fields` - " . $exception->getMessage());
+                    }
                 }
             }
         }
@@ -516,6 +524,22 @@
                         'position'              => 3,
                         'additionaldescription' => 'Kauf per SEPA Lastschrift',
                         'template'              => 'RatePAYDebit.tpl',
+                        'pluginID'              => $this->getId(),
+                        /*'countries'             => array(
+                            $this->getCountry('DE'),
+                            $this->getCountry('AT')
+                        )*/
+                    )
+                );
+                $this->createPayment(
+                    array(
+                        'name'                  => 'rpayratepayrate0',
+                        'description'           => '0% Finanzierung',
+                        'action'                => 'rpay_ratepay',
+                        'active'                => 1,
+                        'position'              => 4,
+                        'additionaldescription' => 'Kauf per 0% Finanzierung',
+                        'template'              => 'RatePAYRate.tpl',
                         'pluginID'              => $this->getId(),
                         /*'countries'             => array(
                             $this->getCountry('DE'),
@@ -1055,8 +1079,8 @@
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $request->getParam('id'));
             $newPaymentMethod = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $request->getParam('paymentId'));
 
-            if ((!in_array($order->getPayment()->getName(), array('rpayratepayinvoice', 'rpayratepayrate', 'rpayratepaydebit')) && in_array($newPaymentMethod->getName(), array('rpayratepayinvoice', 'rpayratepayrate', 'rpayratepaydebit')))
-                || (in_array($order->getPayment()->getName(), array('rpayratepayinvoice', 'rpayratepayrate', 'rpayratepaydebit')) && $newPaymentMethod->getName() != $order->getPayment()->getName())
+            if ((!in_array($order->getPayment()->getName(), $this->_paymentMethodes) && in_array($newPaymentMethod->getName(), $this->_paymentMethodes))
+                || (in_array($order->getPayment()->getName(), $this->_paymentMethodes) && $newPaymentMethod->getName() != $order->getPayment()->getName())
             ) {
                 Shopware()->Pluginlogger()->addNotice('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
                 $arguments->stop();
@@ -1105,7 +1129,6 @@
                 }
             }
 
-            //DE Profile Request
             foreach($credentials as $shopId => $credentials) {
                 foreach ($countries AS $country) {
                     if (null !== $credentials[$country]['profileID']
@@ -1114,6 +1137,11 @@
                     {
                         if ($this->getRatepayConfig($credentials[$country]['profileID'], $credentials[$country]['securityCode'], $shopId, $country)) {
                             Shopware()->PluginLogger()->addNotice('Ruleset for ' . strtoupper($country) . ' successfully updated.');
+                        }
+                        if ($country == 'de') {
+                            if ($this->getRatepayConfig($credentials[$country]['profileID'] . '_0RT', $credentials[$country]['securityCode'], $shopId, $country)) {
+                                Shopware()->PluginLogger()->addNotice('Ruleset for ' . strtoupper($country) . ' successfully updated.');
+                            }
                         }
                     }
                 }
@@ -1132,7 +1160,7 @@
             $request = $arguments->getSubject()->Request();
             $parameter = $request->getParams();
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['orderID']);
-            if ($parameter['valid'] != true && in_array($order->getPayment()->getName(), array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit"))) {
+            if ($parameter['valid'] != true && in_array($order->getPayment()->getName(), $this->_paymentMethodes)) {
                 Shopware()->Pluginlogger()->warning('Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
                 $arguments->stop();
             }
@@ -1147,9 +1175,7 @@
             $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
             if (true !== $config->get('RatePayBidirectional') || (!in_array(
-                    $parameter['payment'][0]['name'],
-                    array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit")
-                ))
+                    $parameter['payment'][0]['name'], $this->_paymentMethodes))
             ) {
                 return;
             }
@@ -1324,7 +1350,7 @@
         {
             $request = $arguments->getSubject()->Request();
             $parameter = $request->getParams();
-            if (!in_array($parameter['payment'][0]['name'], array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit"))) {
+            if (!in_array($parameter['payment'][0]['name'], $this->_paymentMethodes)) {
                 return false;
             }
             $sql = "SELECT COUNT(*) FROM `s_order_details` AS `detail` "
@@ -1542,7 +1568,7 @@
         private function getRatePayPluginConfigByCountry($shopId, $country) {
             //fetch correct config for current shop based on user country
             $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
-            $payments = array("installment", "invoice", "debit");
+            $payments = array("installment", "invoice", "debit", "installment0");
             $paymentConfig = array();
 
             foreach ($payments AS $payment) {
@@ -1614,6 +1640,7 @@
             Shopware()->Pluginlogger()->info('ShopId ' . $shopId);
             $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
             foreach ($config AS $payment => $data) {
+                Shopware()->Pluginlogger()->info('Payment ' . $payment);
                 $show[$payment] = $data['status'] == 2 ? true : false;
 
                 $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($config);
@@ -1676,6 +1703,11 @@
                 if ($payment['name'] === 'rpayratepayrate' && !$show['installment']) {
                     Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Rate');
                     $setToDefaultPayment = $paymentModel->getName() === "rpayratepayrate" ? : $setToDefaultPayment;
+                    continue;
+                }
+                if ($payment['name'] === 'rpayratepayrate0' && !$show['installment0']) {
+                    Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Rate');
+                    $setToDefaultPayment = $paymentModel->getName() === "rpayratepayrate0" ? : $setToDefaultPayment;
                     continue;
                 }
                 $payments[] = $payment;
@@ -1790,7 +1822,13 @@
             $payments = array('invoice', 'elv', 'installment');
 
             if (is_array($response) && $response !== false) {
+
                 foreach ($payments AS $payment) {
+                    if (strstr($profileId, '_0RT') !== false) {
+                        if ($payment !== 'installment') {
+                            continue;
+                        }
+                    }
                     $dataPayment = array(
                         $response['result']['merchantConfig']['activation-status-' . $payment],
                         $response['result']['merchantConfig']['b2b-' . $payment] ? : 'no',
@@ -1836,56 +1874,67 @@
 
                 }
 
-                $data = array(
-                    $response['result']['merchantConfig']['profile-id'],
-                    $type['invoice'],
-                    $type['installment'],
-                    $type['elv'],
-                    0,
-                    0,
-                    $response['result']['merchantConfig']['eligibility-device-fingerprint'] ? : 'no',
-                    $response['result']['merchantConfig']['device-fingerprint-snippet-id'],
-                    strtoupper($response['result']['merchantConfig']['country-code-billing']),
-                    strtoupper($response['result']['merchantConfig']['country-code-delivery']),
-                    strtoupper($response['result']['merchantConfig']['currency']),
-                    strtoupper($country),
-                    $response['sandbox'],
-                    //shopId always needs be the last line
-                    $shopId
-                );
+                if (strstr($profileId, '_0RT') !== false) {
+                    $qry = "UPDATE rpay_ratepay_config SET installment0 = '" . $type['installment'] . "' WHERE profileId = '" . substr($profileId, 0, -4) . "'";
+                    Shopware()->Db()->query($qry);
+                } else {
+                    $data = array(
+                        $response['result']['merchantConfig']['profile-id'],
+                        $type['invoice'],
+                        $type['installment'],
+                        $type['elv'],
+                        0,
+                        0,
+                        $response['result']['merchantConfig']['eligibility-device-fingerprint'] ? : 'no',
+                        $response['result']['merchantConfig']['device-fingerprint-snippet-id'],
+                        strtoupper($response['result']['merchantConfig']['country-code-billing']),
+                        strtoupper($response['result']['merchantConfig']['country-code-delivery']),
+                        strtoupper($response['result']['merchantConfig']['currency']),
+                        strtoupper($country),
+                        $response['sandbox'],
+                        //shopId always needs be the last line
+                        $shopId
+                    );
 
-                $activePayments[] = '"rpayratepayinvoice"';
-                $activePayments[] = '"rpayratepaydebit"';
-                $activePayments[] = '"rpayratepayrate"';
+                    $activePayments[] = '"rpayratepayinvoice"';
+                    $activePayments[] = '"rpayratepaydebit"';
+                    $activePayments[] = '"rpayratepayrate"';
+                    $activePayments[] = '"rpayratepayrate0"';
 
-                if (count($activePayments) > 0) {
-                    $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(",", $activePayments) . ') AND `active` <> 0';
-                }
-
-
-                $configSql = 'REPLACE INTO `rpay_ratepay_config`'
-                       . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`,'
-                       . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
-                       . '`country-code-billing`, `country-code-delivery`,'
-                       . '`currency`,`country`, `sandbox`,'
-                       . ' `shopId`)'
-                       . 'VALUES(' . substr(str_repeat('?,', 14), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
-                try {
-                    Shopware()->Db()->query($configSql, $data);
                     if (count($activePayments) > 0) {
-                        Shopware()->Db()->query($updateSqlActivePaymentMethods);
+                        $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(",", $activePayments) . ') AND `active` <> 0';
                     }
 
-                    return true;
-                } catch (Exception $exception) {
-                    Shopware()->Pluginlogger()->error($exception->getMessage());
 
-                    return false;
+                    $configSql = 'REPLACE INTO `rpay_ratepay_config`'
+                        . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`,'
+                        . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
+                        . '`country-code-billing`, `country-code-delivery`,'
+                        . '`currency`,`country`, `sandbox`,'
+                        . ' `shopId`)'
+                        . 'VALUES(' . substr(str_repeat('?,', 14), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
+                    try {
+                        Shopware()->Db()->query($configSql, $data);
+                        if (count($activePayments) > 0) {
+                            Shopware()->Db()->query($updateSqlActivePaymentMethods);
+                        }
+
+                        return true;
+                    } catch (Exception $exception) {
+                        Shopware()->Pluginlogger()->error($exception->getMessage());
+
+                        return false;
+                    }
                 }
+
+
             }
             else {
                 Shopware()->Pluginlogger()->error('RatePAY: Profile_Request failed!');
-                throw new Exception('RatePAY: Profile_Request failed!');
+
+                if (strstr($profileId, '_0RT') == false) {
+                    throw new Exception('RatePAY: Profile_Request failed!');
+                }
             }
         }
 

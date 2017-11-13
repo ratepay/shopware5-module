@@ -29,6 +29,8 @@
 
         private $_orderId = false;
 
+        private $_zPercent = false;
+
         public function __construct($config = null)
         {
             $this->_config = $config;
@@ -37,6 +39,10 @@
         public function setOrderId($orderId)
         {
             $this->_orderId = $orderId;
+        }
+
+        public function setZPercent() {
+            $this->_zPercent = true;
         }
 
         /**
@@ -180,7 +186,12 @@
          * @return int
          */
         public function getSandboxMode($countryCode) {
-            $qry = 'SELECT sandbox FROM rpay_ratepay_config WHERE profileId = "'. $this->getProfileId($countryCode) .'"';
+            $profileId = $this->getProfileId($countryCode);
+            if (strstr($profileId, '_0RT') !== false) {
+                $profileId = substr($profileId, 0, -4);
+            }
+
+            $qry = 'SELECT sandbox FROM rpay_ratepay_config WHERE profileId = "'. $profileId .'"';
             $sandbox = Shopware()->Db()->fetchOne($qry);
             return $sandbox;
         }
@@ -192,13 +203,18 @@
          */
         private function callPaymentRequest()
         {
+            $method = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
+                Shopware()->Session()->sOrderVariables['sUserData']['additional']['payment']['name']
+            );
+            Shopware()->Pluginlogger()->error('Method' . $method);
+            if ($method == 'INSTALLMENT0') {
+                $this->setZPercent();
+                $method = 'INSTALLMENT';
+            }
+
             $mbHead = $this->getHead();
             $mbHead->setCustomerDevice(
                 $mbHead->CustomerDevice()->setDeviceToken(Shopware()->Session()->RatePAY['dfpToken'])
-            );
-
-            $method = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
-                Shopware()->Session()->sOrderVariables['sUserData']['additional']['payment']['name']
             );
 
             $shopUser = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
@@ -608,6 +624,12 @@
         {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
             $countryCode = $order->getBilling()->getCountry()->getIso();
+            $method = $order->getPayment()->getName();
+
+            if ($method == 'rpayratepayrate0') {
+                $this->setZPercent();
+            }
+
             $mbHead = $this->getHead($countryCode);
 
             $shoppingItems = $this->createBasketArray($operationData['items'], 'shipping');
@@ -656,6 +678,12 @@
         {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
             $countryCode = $order->getBilling()->getCountry()->getIso();
+            $method = $order->getPayment()->getName();
+
+            if ($method == 'rpayratepayrate0') {
+                $this->setZPercent();
+            }
+
             $mbHead = $this->getHead($countryCode);
 
             if ($operationData['subtype'] == 'credit') {
@@ -795,6 +823,10 @@
                 $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $countryCode, $shopId);
             }
 
+            if ($this->_zPercent == true) {
+                $profileId = $profileId . '_0RT';
+            }
+            Shopware()->Pluginlogger()->info($profileId);
             return $profileId;
         }
 
