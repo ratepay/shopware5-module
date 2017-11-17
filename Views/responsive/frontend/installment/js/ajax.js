@@ -7,6 +7,14 @@
  * Code by Ratepay GmbH  <http://www.ratepay.com/>
  */
 
+document.onreadystatechange = function () {
+    if (document.readyState == "complete") {
+        if (document.getElementById('month').value !== "" && document.getElementById('mode').value == "runtime") {
+            piRatepayRateCalculatorAction('runtime', document.getElementById('month').value);
+        }
+    }
+}
+
 function piRatepayRateCalculatorAction(mode, month) {
     var calcValue;
     var calcMethod;
@@ -23,21 +31,16 @@ function piRatepayRateCalculatorAction(mode, month) {
     } else {// code for IE6, IE5
         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
     }
-    //piRpInputValue = document.getElementById('piRpInput-button').value;
-    //piRpInputValueRuntime = document.getElementById('piRpInput-buttonRuntime').value;
+
     if (mode == 'rate') {
         calcValue = document.getElementById('rp-rate-value').value;
         calcMethod = 'calculation-by-rate';
-       /* document.getElementById('piRpInput-button').className = "piRpInput-button  ajaxloader";
-        document.getElementById('piRpInput-button').value = 'wird geladen ...';*/
         paymentFirstday = document.getElementById('paymentFirstday').value;
 
     } else if (mode == 'runtime') {
         calcValue = month;
         document.getElementById('month').value = month;
         calcMethod = 'calculation-by-time';
-        document.getElementById('piRpInput-buttonRuntime').className = "piRpInput-button  ajaxloader";
-        document.getElementById('piRpInput-buttonRuntime').value = 'wird geladen ...';
         paymentFirstday = document.getElementById('paymentFirstday').value;
     }
 

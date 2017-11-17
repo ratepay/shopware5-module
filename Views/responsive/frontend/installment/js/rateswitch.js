@@ -11,7 +11,10 @@ function changeFirstday(firstday) {
     var button = $('button[type=submit]');
 
     if (firstday == 28) {
-        $('#debitDetails').hide();
+        if ($('#debitDetails') !== "") {
+            $('#debitDetails').hide();
+        }
+
         $('#piRpResultContainer').hide();
         $('#changeFirstday').hide();
         $('#changeFirstday2').show();
@@ -27,7 +30,9 @@ function changeFirstday(firstday) {
 
 
     } else {
-        $('#debitDetails').show();
+        if ($('#debitDetails') !== "") {
+            $('#debitDetails').show();
+        }
         $('#piRpResultContainer').hide();
         $('#changeFirstday2').hide()
         $('#changeFirstday').show();
@@ -43,10 +48,10 @@ function changeFirstday(firstday) {
         button.css({ opacity: 0.5 });
     }
 
-    if ($('#rp-rate-value').val() == "") {
+    if ($('#rp-rate-value').val() > 1) {
+        piRatepayRateCalculatorAction('rate', 0);
+    } else {
         month = $('#month').val();
         piRatepayRateCalculatorAction('runtime', month);
-    } else {
-        piRatepayRateCalculatorAction('rate', 0);
     }
 }

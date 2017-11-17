@@ -43,6 +43,7 @@
     else {
 ?>
     <div class="rpContainer">
+    <?php if (count($pi_monthAllowedArray) > 1) { ?>
         <div class="row">
             <div class="col-md-10">
                 <?php
@@ -96,11 +97,24 @@
                 </div>
             </div>
         </div>
+        <?php } else { ?>
+        <div class="row">
+            <div class="col-md-10">
+                <input type="hidden" id="rate_elv" name="rate_elv" value="<?php echo $pi_rate_elv ?>">
+                <input type="hidden" id="rate" name="rate" value="<?php echo $pi_rate ?>">
+                <input type="hidden" id="month" name="month" value="<?php echo $pi_monthAllowedArray[0]; ?>">
+                <input type="hidden" id="mode" name="mode" value="runtime">
+                <input type="hidden" id="piRpInput-buttonMonth-<?php echo $pi_monthAllowedArray[0]; ?>" role="group">
+            </div>
+            <br/>
+         </div>
+        <?php }  ?>
     </div>
     <br style="clear: both"/>
     <div class="row">
         <div class="col-md-11" id="piRpResultContainer"></div>
     </div>
+    <br style="clear: both"/>
 <?php
         if ($pi_config['payment_firstday'] == '2,28') {
 ?>
