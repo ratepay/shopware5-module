@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau, Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `5.0.3`
+|Version | `5.0.4`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,11 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 5.0.4 - Released 2017-11-17
+* add payment method installment 0 %
+* code refactoring
+* add optional payment confirm
 
 ### Version Version 5.0.3 - Released 2017-09-25
 * add country belgium
