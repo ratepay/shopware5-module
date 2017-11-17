@@ -58,6 +58,21 @@
         }
 
         /**
+         * Returns the PaymentConfirm Config
+         *
+         * @return string
+         */
+        public function getPCConfig()
+        {
+            $info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .'plugin.json'), true);
+            if ($info) {
+                return $info['payment_confirm'];
+            } else {
+                throw new Exception('The plugin has an invalid version file.');
+            }
+        }
+
+        /**
          * Returns all allowed actions
          *
          * @return array

@@ -108,6 +108,9 @@
                 case 'PaymentChange':
                     return $this->callPaymentChange($operationData);
                     break;
+                case 'PaymentConfirm':
+                    return $this->makePaymentConfirm();
+                    break;
                 case 'CalculationRequest':
                     return $this->callCalculationRequest($operationData);
                     break;
@@ -133,6 +136,25 @@
             $this->_logging->logRequest($calculationRequest->getRequestRaw(), $calculationRequest->getResponseRaw());
 
             return $calculationRequest;
+        }
+
+        /**
+        * make payment confirm
+        *
+        * @return bool
+        */
+        private function makePaymentConfirm()
+        {
+            $mbHead = $this->getHead();
+            $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
+
+            $paymentConfirm = $rb->callPaymentConfirm($mbHead);
+            $this->_logging->logRequest($paymentConfirm->getRequestRaw(), $paymentConfirm->getResponseRaw());
+
+            if ($paymentConfirm->isSuccessful()) {
+                return true;
+            }
+           return false;
         }
 
         /**
