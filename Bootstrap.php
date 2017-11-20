@@ -1652,10 +1652,8 @@
             //get current shopId
             $shopId = Shopware()->Shop()->getId();
 
-            Shopware()->Pluginlogger()->info('ShopId ' . $shopId);
             $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
             foreach ($config AS $payment => $data) {
-                Shopware()->Pluginlogger()->info('Payment ' . $payment);
                 $show[$payment] = $data['status'] == 2 ? true : false;
 
                 $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($config);
@@ -1680,8 +1678,8 @@
                 }
 
                 if ($validation->isCompanyNameSet() || $validation->isUSTSet()) {
-                    $show[$payment] = $data['b2b'] == 'yes' && $show[$payment] ? true : false;
-                    $data['limit_max'] = ($data['limit-max-b2b'] > 0) ? $data['limit--max-b2b'] : $data['limit-max'];
+                    $show[$payment] = $data['b2b'] == '1' && $show[$payment] ? true : false;
+                    $data['limit_max'] = ($data['limit_max_b2b'] > 0) ? $data['limit_max_b2b'] : $data['limit_max'];
                 }
 
                 if (!$validation->isBillingAddressSameLikeShippingAddress()) {
@@ -1721,7 +1719,7 @@
                     continue;
                 }
                 if ($payment['name'] === 'rpayratepayrate0' && !$show['installment0']) {
-                    Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Rate');
+                    Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Rate0');
                     $setToDefaultPayment = $paymentModel->getName() === "rpayratepayrate0" ? : $setToDefaultPayment;
                     continue;
                 }
@@ -1844,13 +1842,16 @@
                             continue;
                         }
                     }
+
+                    Shopware()->Pluginlogger()->error('B2B' . $response['result']['merchantConfig']['b2b-' . $payment]);
+
                     $dataPayment = array(
                         $response['result']['merchantConfig']['activation-status-' . $payment],
-                        $response['result']['merchantConfig']['b2b-' . $payment] ? : 'no',
+                        $response['result']['merchantConfig']['b2b-' . $payment] == 'yes' ? 1 : 0,
                         $response['result']['merchantConfig']['tx-limit-' . $payment . '-min'],
                         $response['result']['merchantConfig']['tx-limit-' . $payment . '-max'],
-                        $response['result']['merchantConfig']['tx-limit-i' . $payment . '-max-b2b'],
-                        $response['result']['merchantConfig']['delivery-address-'  . $payment] ? : 'no',
+                        $response['result']['merchantConfig']['tx-limit-' . $payment . '-max-b2b'],
+                        $response['result']['merchantConfig']['delivery-address-'  . $payment] == 'yes' ? 1 : 0,
                     );
 
                     $paymentSql = 'REPLACE INTO `rpay_ratepay_config_payment`'
