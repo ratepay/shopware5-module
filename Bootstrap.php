@@ -858,11 +858,11 @@
                             "`rpay_id` int(2) NOT NULL AUTO_INCREMENT," .
                             "`status` varchar(255) NOT NULL," .
                             "`b2b` int(2) NOT NULL," .
-                            "`limit_min` int NOT NULL DEFAULT CURRENT_TIMESTAMP," .
+                            "`limit_min` int NOT NULL," .
                             "`limit_max` int NOT NULL," .
                             "`limit_max_b2b` int," .
                             "`address` int(2) NOT NULL," .
-                            "PRIMARY KEY (`id`)" .
+                            "PRIMARY KEY (`rpay_id`)" .
                             ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $sqlInstallment = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config_installment` (" .
@@ -871,7 +871,7 @@
                                 "`payment-firstday` varchar(10) NOT NULL," .
                                 "`interestrate-default` float NOT NULL," .
                                 "`rate-min-normal` float NOT NULL," .
-                                "PRIMARY KEY (`id`)" .
+                                "PRIMARY KEY (`rpay_id`)" .
                                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             try {
