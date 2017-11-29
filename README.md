@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau, Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `4.2.91`
+|Version | `4.2.93`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.2.93 - Released 2017-11-29
+* change company address
 
 ### Version Version 4.2.92 - Released 2017-07-26
 * fix credit/debit bug
