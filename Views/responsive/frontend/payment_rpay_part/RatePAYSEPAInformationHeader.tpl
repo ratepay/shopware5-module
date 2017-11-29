@@ -1,6 +1,6 @@
 <p class="none" id="payrp">
     {s namespace=RatePAY name='ratepaySEPAInformationHeader'}
-        RatePAY GmbH, Schlüterstr. 39, 10629 Berlin
+        RatePAY GmbH, Franklinstraße 28-29, 10587 Berlin
         <br/>
         Gläubiger-ID: DE39RPY00000568463
         <br/>
