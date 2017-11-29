@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version Version 5.0.4.1 - Released 2017-11-29
+* change company address
+
 ### Version Version 5.0.4 - Released 2017-11-17
 * add payment method installment 0 %
 * code refactoring
