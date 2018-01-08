@@ -3,9 +3,9 @@
 
 |Module | RatePAY Module for Shopware
 |------|----------
-|Author | Aarne Welschlau, Annegret Seufert
-|Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `5.0.4`
+|Author | Annegret Seufert
+|Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
+|Version | `5.0.4.1` 
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
