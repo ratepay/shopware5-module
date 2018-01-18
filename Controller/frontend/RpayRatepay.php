@@ -142,7 +142,6 @@
                     $updateAddressData['phone'] = $Parameter['ratepay_phone'] ? : $customerAddressBilling->getPhone();
                     if ($customerAddressBilling->getCompany() !== "") {
                         $updateAddressData['company'] = $Parameter['ratepay_company'] ? : $customerAddressBilling->getCompany();
-                        $updateAddressData['ustid'] = $Parameter['ratepay_ustid'] ? : $customerAddressBilling->getVatId();
                     } else {
                         $updateAddressData['birthday'] = $Parameter['ratepay_dob'] ? : $customerAddressBilling->getBirthday()->format("Y-m-d");
                     }
@@ -159,7 +158,6 @@
                     $updateAddressData['phone'] = $Parameter['ratepay_phone'] ? : $customerAddressBilling->getPhone();
                     if (!is_null($customerAddressBilling->getCompany())) {
                         $updateAddressData['company'] = $Parameter['ratepay_company'] ? : $customerAddressBilling->getCompany();
-                        $updateAddressData['ustid'] = $Parameter['ratepay_ustid'] ? : $customerAddressBilling->getVatId();
                     } else {
                         $updateUserData['birthday'] = $Parameter['ratepay_dob'] ? : $userModel->getBirthday()->format("Y-m-d");
                     }

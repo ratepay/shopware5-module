@@ -156,24 +156,6 @@
         }
 
         /**
-         * Checks if the VatId is set
-         *
-         * @return boolean
-         */
-        public function isUSTSet()
-        {
-            if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 session contains current billing address
-                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-                $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
-                $ust = $checkoutAddressBilling->getVatId();
-            } else {
-                $ust = $this->_user->getBilling()->getVatId();
-            }
-
-            return !empty($ust);
-        }
-
-        /**
          * Checks if the CompanyName is set
          *
          * @return boolean

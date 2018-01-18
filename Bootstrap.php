@@ -1534,13 +1534,10 @@
             if ($validation->isRatePAYPayment()) {
                 $view->sRegisterFinished = 'false';
 
-                $view->ratepayValidateUST = $validation->isUSTSet() ? 'true' : 'false';
-                Shopware()->Pluginlogger()->info('RatePAY: isUSTSet->' . $view->ratepayValidateUST);
-
                 $view->ratepayValidateCompanyName = $validation->isCompanyNameSet() ? 'true' : 'false';
                 Shopware()->Pluginlogger()->info('RatePAY: isCompanyNameSet->' . $view->ratepayValidateCompanyName);
 
-                $view->ratepayValidateIsB2B = $validation->isCompanyNameSet() || $validation->isUSTSet() ? 'true' : 'false';
+                $view->ratepayValidateIsB2B = $validation->isCompanyNameSet() ? 'true' : 'false';
                 Shopware()->Pluginlogger()->info('RatePAY: isB2B->' . $view->ratepayValidateIsB2B);
 
                 $view->ratepayIsBillingAddressSameLikeShippingAddress = $validation->isBillingAddressSameLikeShippingAddress() ? 'true' : 'false';
@@ -1677,7 +1674,7 @@
                     $show[$payment]    = false;
                 }
 
-                if ($validation->isCompanyNameSet() || $validation->isUSTSet()) {
+                if ($validation->isCompanyNameSet()) {
                     $show[$payment] = $data['b2b'] == '1' && $show[$payment] ? true : false;
                     $data['limit_max'] = ($data['limit_max_b2b'] > 0) ? $data['limit_max_b2b'] : $data['limit_max'];
                 }
@@ -1761,7 +1758,6 @@
                     'ratepaySEPAAgbLast' => ['value' => 'ein und ermächtige diese, mit diesem Kaufvertrag in Zusammenhang stehende Zahlungen von meinem'],
                     'ratepaySEPAInformationHeader' => ['value' => 'RatePAY GmbH, Schlüterstr. 39, 10629 Berlin<br/>Gläubiger-ID: DE39RPY00000568463<br/>Mandatsreferenz: (wird nach Kaufabschluss übermittelt)'],
                     'transactionid' => ['value' => 'Transaction-ID'],
-                    'vatId' => ['value' => 'Vat Id'],
                     'version' => ['value' => 'Version']
                 ],
                 108 => [
@@ -1789,7 +1785,6 @@
                                                                         Référence de mandat : (conforme à la référence transmise après conclusion de la vente
                                                                         '],
                     'transactionid' => ['value' => 'Transaction-ID'],
-                    'vatId' => ['value' => 'Numéro de TVA'],
                     'version' => ['value' => 'Version']
                 ],
                 176 => [
@@ -1806,7 +1801,6 @@
                     'ratepaySEPAAgbLast' =>  ['value' => 'en machtig hen de betalingen in samenhang met deze koopovereenkomst middels een incasso van bovengenoemde rekening af te boeken. Gelijktijdig geef ik mijn kredietinstelling opdracht de incasso’s van RatePAY GmbH op mijn rekening te honoreren. '],
                     'ratepaySEPAInformationHeader' =>  ['value' => 'Opmerking. Na het tot stand komen van deze overeenkomst wordt u het RatePAY machtigingskenmerk medegedeeld. Ik kan binnen acht weken, na afschrijving, het bedrag laten terugboeken. Hierbij gelden de met mijn kredietinstelling overeengekomen voorwaarden.'],
                     'transactionid' =>  ['value' => 'Transaction-ID'],
-                    'vatId' =>  ['value' => 'BTW-nummer'],
                     'version' =>  ['value' => 'Version'],
                 ],
             ];

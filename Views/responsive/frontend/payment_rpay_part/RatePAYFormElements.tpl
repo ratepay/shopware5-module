@@ -4,10 +4,6 @@
 
 {if $ratepayValidateIsB2B == 'true'}
     {block  name='ratepay_frontend_b2b'}
-    <div class="none">
-        <label for="ratepay_ustid" class="normal">{s namespace=RatePAY name=vatId}Umsatzsteuer{/s}:</label>
-        <input id="ratepay_ustid" class="text" type="text" value="{if $sUserData.billingaddress.ustid}{$sUserData.billingaddress.ustid}{/if}">
-    </div>
     <br />
     <div class="none">
         <label for="ratepay_company" class="normal">{s namespace=frontend/register/shipping_fieldset name=RegisterShippingPlaceholderCompany}Firmenname{/s}:</label>
