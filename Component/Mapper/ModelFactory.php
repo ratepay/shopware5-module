@@ -525,7 +525,12 @@
                     ', $usergroupId['customergroup']);
             }
 
-            if ((int)$usergroup['tax'] === 0) {
+            $b2b = Shopware()->Db()->fetchRow('
+                    SELECT company FROM s_user_billingaddress
+                    WHERE userID = ?
+                    ', $user['userID']);
+
+            if ((int)$usergroup['tax'] === 0 && !empty($b2b['company'])) {
                 $net = true;
             }
 

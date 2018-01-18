@@ -1385,9 +1385,6 @@
                 //get country of order
                 $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $order->getCustomer()->getBilling()->getCountryId());
 
-                //set sandbox mode based on config
-                $sandbox = $config->get('RatePaySandbox' . $country->getIso());
-
                 $sqlShipping = "SELECT invoice_shipping FROM s_order WHERE id = ?";
                 $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, array($parameter['id']));
 
