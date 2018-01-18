@@ -111,7 +111,12 @@
         public function isAgeValid()
         {
             $today = new DateTime("now");
-            $birthday = $this->_user->getBilling()->getBirthday();
+
+            $birthday = $this->_user->getBirthday();
+            if (empty($birthday) || is_null($birthday)) {
+                $birthday = $this->_user->getBilling()->getBirthday();
+            }
+
             $return = false;
             if (!is_null($birthday)) {
                 if( $birthday->diff($today)->y >= 18 && $birthday->diff($today)->y <= 120 )
@@ -130,7 +135,12 @@
          */
         public function isBirthdayValid()
         {
-            $birthday = $this->_user->getBilling()->getBirthday();
+            $birthday = $this->_user->getBirthday();
+
+            if (empty($birthday) || is_null($birthday)) {
+                $birthday = $this->_user->getBilling()->getBirthday();
+            }
+
             $return = false;
             if (!is_null($birthday)) {
                 if (preg_match("/^\d{4}-\d{2}-\d{2}$/", $birthday->format('Y-m-d')) !== 0)

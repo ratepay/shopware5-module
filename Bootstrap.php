@@ -1540,8 +1540,8 @@
                 $view->ratepayIsBillingAddressSameLikeShippingAddress = $validation->isBillingAddressSameLikeShippingAddress() ? 'true' : 'false';
                 Shopware()->Pluginlogger()->info('RatePAY: isBillingAddressSameLikeShippingAddress->' . $view->ratepayIsBillingAddressSameLikeShippingAddress);
 
-                $view->ratepayValidateIsBirthdayValid = true;
-                $view->ratepayValidateisAgeValid = true;
+                $view->ratepayValidateIsBirthdayValid = $validation->isBirthdayValid();
+                $view->ratepayValidateisAgeValid = $validation->isAgeValid();
 
                 $view->errorRatenrechner = (!Shopware()->Session()->RatePAY['errorRatenrechner']) ? 'false' : Shopware()->Session()->RatePAY['errorRatenrechner'];
 
