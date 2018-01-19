@@ -895,8 +895,15 @@
             try {
                 Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_logging`");
                 Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config`");
-                Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_positions`");
-                Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_shipping`");
+
+                /*
+                 * These tables are not deleted. This makes possible to manage the
+                 * orders after a new Plugin installation
+                 *
+                 * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_positions`");
+                 * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_shipping`");
+                 */
+
                 Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
                 Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
                 Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
