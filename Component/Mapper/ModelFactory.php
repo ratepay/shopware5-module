@@ -228,7 +228,7 @@
             $method = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
                 Shopware()->Session()->sOrderVariables['sUserData']['additional']['payment']['name']
             );
-            Shopware()->Pluginlogger()->error('Method' . $method);
+
             if ($method == 'INSTALLMENT0') {
                 $this->setZPercent();
                 $method = 'INSTALLMENT';
@@ -623,6 +623,14 @@
                                         continue;
                                     }
                                     $item['Quantity'] = $shopItem->cancelledItems;
+                                    break;
+                                case 'shippingRate':
+                                    if ($shopItem->maxQuantity == 0) {
+                                        $item['Quantity'] = 0;
+                                        continue;
+                                    }
+                                    $item['Quantity'] = $shopItem->maxQuantity;
+                                    break;
                             }
                         }
                     }
@@ -646,14 +654,18 @@
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
             $countryCode = $order->getBilling()->getCountry()->getIso();
             $method = $order->getPayment()->getName();
+            $type = 'shipping';
 
             if ($method == 'rpayratepayrate0') {
                 $this->setZPercent();
             }
+            if ($method == 'rpayratepayrate0' || $method == 'rpayratepayrate') {
+                $type = 'shippingRate';
+            }
 
             $mbHead = $this->getHead($countryCode);
 
-            $shoppingItems = $this->createBasketArray($operationData['items'], 'shipping');
+            $shoppingItems = $this->createBasketArray($operationData['items'], $type);
             $shoppingBasket = [
                 'ShoppingBasket' => $shoppingItems,
             ];
@@ -847,7 +859,7 @@
             if ($this->_zPercent == true) {
                 $profileId = $profileId . '_0RT';
             }
-            Shopware()->Pluginlogger()->info($profileId);
+
             return $profileId;
         }
 

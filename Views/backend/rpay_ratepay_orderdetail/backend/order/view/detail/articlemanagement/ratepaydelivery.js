@@ -336,6 +336,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             item['name'] = row.name;
             item['price'] = row.price;
             item['taxRate'] = row.tax_rate;
+            item['maxQuantity'] = row.quantity;
             item['quantity'] = row.quantityDeliver;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;

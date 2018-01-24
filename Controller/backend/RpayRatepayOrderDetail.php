@@ -175,21 +175,36 @@
             $items = json_decode($this->Request()->getParam("items"));
             $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
             $order = $orderModel->findOneBy(array('id' => $orderId));
+
+            $payment = $order->getPayment()->getName();
             $this->_modelFactory->setTransactionId($order->getTransactionID());
             $this->_modelFactory->setOrderId($order->getNumber());
             $itemsToDeliver = null;
 
             $basketItems = array();
+            $sendItem = true;
             foreach ($items as $item) {
                 $itemsToDeliver += $item->deliveredItems;
+
+                if ($payment == 'rpayratepayrate0' || $payment == 'rpayratepayrate') {
+                    if (($item->maxQuantity - $item->deliveredItems - $item->cancelled - $item->retournedItems - $item->delivered) !== 0) {
+                        $itemsToDeliver += $item->delivered;
+                        $sendItem = false;
+                    }
+                }
             }
 
             if ($itemsToDeliver > 0) {
                 $operationData['orderId'] = $orderId;
+                $operationData['method'] = $payment;
                 $operationData['items'] = $items;
-                $result = $this->_modelFactory->callRequest('ConfirmationDeliver', $operationData);
+                $result = false;
 
-                if ($result === true) {
+                if ($sendItem == true) {
+                    $result = $this->_modelFactory->callRequest('ConfirmationDeliver', $operationData);
+                }
+
+                if ($result === true || $sendItem == false) {
                     foreach ($items as $item) {
                         $bind = array(
                             'delivered' => $item->delivered + $item->deliveredItems
@@ -198,7 +213,12 @@
                         if ($item->quantity <= 0) {
                             continue;
                         }
-                        $this->_history->logHistory($orderId, "Artikel wurde versand.", $item->name, $item->articlenumber, $item->quantity);
+
+                        if ($sendItem == true) {
+                            $this->_history->logHistory($orderId, "Artikel wurde versand.", $item->name, $item->articlenumber, $item->quantity);
+                        } else {
+                            $this->_history->logHistory($orderId, "Artikel wurde für versand vorbereitet.", $item->name, $item->articlenumber, $item->quantity);
+                        }
                     }
                 }
 
