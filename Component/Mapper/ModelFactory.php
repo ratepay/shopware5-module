@@ -576,7 +576,7 @@
                             );
                             if ($net == true) {
                                 $price = $shopItem['priceNumeric']/100 * $shopItem['tax_rate'] +  $shopItem['priceNumeric'];
-                                $item['UnitPriceGross'] = number_format($price, 2);
+                                $item['UnitPriceGross'] = $shopItem['priceNumeric'];
                             }
                         }
                     } elseif (is_object($shopItem)) {
@@ -592,8 +592,7 @@
                                 'TaxRate' => $shopItem->getTaxRate(),
                             );
                             if ($net == true) {
-                                $price = $shopItem->getPrice() / 100 * $shopItem->getTaxRate() +  $shopItem->getPrice();
-                                $item['UnitPriceGross'] = number_format($price, 2);
+                                $item['UnitPriceGross'] = $shopItem->getNetPrice();
                             }
                             $type = false;
                         } else {
@@ -607,10 +606,6 @@
                                 'UnitPriceGross' => $shopItem->price,
                                 'TaxRate' => $shopItem->taxRate,
                             );
-                            if ($net == true) {
-                                $price = $shopItem->price / 100 * $shopItem->taxRate + $shopItem->price;
-                                $item['UnitPriceGross'] = number_format($price, 2);
-                            }
                         }
 
                         if (!empty($type)) {

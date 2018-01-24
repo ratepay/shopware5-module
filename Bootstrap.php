@@ -1367,6 +1367,7 @@
          * Stops Orderdeletation, when any article has been send
          *
          * @param Enlight_Hook_HookArgs $arguments
+         * @return bool
          */
         public function beforeDeleteOrder(Enlight_Hook_HookArgs $arguments)
         {
@@ -1479,7 +1480,6 @@
                                        . "JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id`=`s_order`.`paymentID` "
                                        . "WHERE  `s_order`.`ordernumber`=? AND`s_core_paymentmeans`.`name` LIKE 'rpayratepay%';";
                 $isRatePAYpayment = Shopware()->Db()->fetchOne($isRatePAYpaymentSQL, array($ordernumber));
-                Shopware()->Pluginlogger()->info($isRatePAYpayment);
             } catch (Exception $exception) {
                 Shopware()->Pluginlogger()->error($exception->getMessage());
                 $isRatePAYpayment = 0;
@@ -1547,8 +1547,13 @@
                 $view->ratepayIsBillingAddressSameLikeShippingAddress = $validation->isBillingAddressSameLikeShippingAddress() ? 'true' : 'false';
                 Shopware()->Pluginlogger()->info('RatePAY: isBillingAddressSameLikeShippingAddress->' . $view->ratepayIsBillingAddressSameLikeShippingAddress);
 
-                $view->ratepayValidateIsBirthdayValid = $validation->isBirthdayValid();
-                $view->ratepayValidateisAgeValid = $validation->isAgeValid();
+                if ($view->ratepayValidateIsB2B == false) {
+                    $view->ratepayValidateIsBirthdayValid = $validation->isBirthdayValid();
+                    $view->ratepayValidateisAgeValid = $validation->isAgeValid();
+                } else {
+                    $view->ratepayValidateIsBirthdayValid = true;
+                    $view->ratepayValidateisAgeValid = true;
+                }
 
                 $view->errorRatenrechner = (!Shopware()->Session()->RatePAY['errorRatenrechner']) ? 'false' : Shopware()->Session()->RatePAY['errorRatenrechner'];
 
@@ -1732,7 +1737,6 @@
                 Shopware()->Models()->persist($user);
                 Shopware()->Models()->flush();
                 Shopware()->Models()->refresh($user);
-                Shopware()->Pluginlogger()->info($user->getPaymentId());
             }
 
             return $payments;
@@ -1841,8 +1845,6 @@
                         }
                     }
 
-                    Shopware()->Pluginlogger()->error('B2B' . $response['result']['merchantConfig']['b2b-' . $payment]);
-
                     $dataPayment = array(
                         $response['result']['merchantConfig']['activation-status-' . $payment],
                         $response['result']['merchantConfig']['b2b-' . $payment] == 'yes' ? 1 : 0,
@@ -1860,7 +1862,6 @@
                         Shopware()->Db()->query($paymentSql, $dataPayment);
                         $id = Shopware()->Db()->fetchOne('SELECT `rpay_id` FROM `rpay_ratepay_config_payment` ORDER BY `rpay_id` DESC');
                         $type[$payment] = $id;
-                        Shopware()->Pluginlogger()->error($payment . " " .  $id);
                     } catch (Exception $exception) {
                         Shopware()->Pluginlogger()->error($exception->getMessage());
                         return false;
