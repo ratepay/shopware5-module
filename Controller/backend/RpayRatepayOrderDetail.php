@@ -38,14 +38,6 @@
             if(null !== $orderId)
             {
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
-                $shopId = $order->getShop()->getId();
-
-                //if shop id is not set then use main shop and set config
-                if(!$shopId) $shopId = 1;
-                $config = array();
-                $config['shop'] = Shopware()->Models()->find('Shopware\Models\Shop\Shop', $shopId);
-                $config['db'] = Shopware()->Db();
-                $this->_config = new \Shopware_Components_Config($config);
                 $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
 
                 //get user of current order and set sandbox mode
@@ -55,7 +47,7 @@
                     $orderUser->getBilling()->getCountryId()
                 );
             } else {
-                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
+                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             }
 
             $this->_history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
@@ -156,7 +148,7 @@
             else {
                 $positions = $data;
             }
-            $total = Shopware()->Db()->fetchOne("SELECT count(*) FROM `s_order_details` WHERE `s_order_details`.`orderId`=?;", array($orderId));
+            $total = Shopware()->Db()->fetchOne("SELECT count(*) FROM `s_order_details` WHERE `s_order_details`.`orderID`=?;", array($orderId));
 
             $this->View()->assign(array(
                     "data"    => $positions,
