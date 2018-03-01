@@ -5,7 +5,7 @@
 |------|----------
 |Author | Aarne Welschlau, Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x`
-|Version | `4.2.93`
+|Version | `4.3.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,10 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 4.3.0 - Released 2018-03-01
+* add backend panels without overwriting them
+* compatibility for Shopware 5.4.0
 
 ### Version Version 4.2.93 - Released 2017-11-29
 * change company address
