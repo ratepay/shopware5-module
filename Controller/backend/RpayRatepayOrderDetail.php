@@ -37,14 +37,6 @@
             if(null !== $orderId)
             {
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
-                $shopId = $order->getShop()->getId();
-
-                //if shop id is not set then use main shop and set config
-                if(!$shopId) $shopId = 1;
-                $config = array();
-                $config['shop'] = Shopware()->Models()->find('Shopware\Models\Shop\Shop', $shopId);
-                $config['db'] = Shopware()->Db();
-                $this->_config = new \Shopware_Components_Config($config);
 
                 //get user of current order and set sandbox mode
                 $orderUser    = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $order->getCustomer()->getId());
@@ -52,15 +44,12 @@
                     'Shopware\Models\Country\Country',
                     $orderUser->getBilling()->getCountryId()
                 );
-
-                $sandbox = $this->_config['RatePaySandbox' . $orderCountry->getIso()];
-
+                $sandbox = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePaySandbox' . $orderCountry->getIso());
                 //set sandbox mode in model
                 $this->_service = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_RequestService($sandbox);
-
             }
 
-            $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
+            $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $this->_history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
         }
 
