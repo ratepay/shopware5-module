@@ -12,7 +12,7 @@ class Constants {
     /**
      * Library version
      */
-    const LIBRARY_VERSION = "0.9.4.1";
+    const LIBRARY_VERSION = "0.9.4.3";
 
     /**
      * Supported RatePAY API version
@@ -23,4 +23,9 @@ class Constants {
      * CustomerAllowCreditInquiry
      */
     const CUSTOMER_ALLOW_CREDIT_INQUIRY = "yes";
+
+    /**
+     * NumberFormat
+     */
+    const NUMBER_FORMAT = "EN";
 }
