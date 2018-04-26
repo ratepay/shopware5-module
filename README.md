@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
-|Version | `5.0.5` 
+|Version | `5.0.5.1` 
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 5.0.5.1 - Released 2018-04-26
+* add downward compatibility for old module
 
 ### Version Version 5.0.5 - Released 2018-01-24
 * no partial delivery for installments
