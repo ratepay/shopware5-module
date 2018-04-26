@@ -31,6 +31,8 @@
 
         private $_zPercent = false;
 
+        private $_retry = false;
+
         public function __construct($config = null)
         {
             $this->_config = $config;
@@ -359,7 +361,7 @@
             $elv = false;
             if (!empty($installmentDetails)) {
                 if (Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 28) {
-                    $contentArr['Payment']['DebitPayType']= 'BANK-TRANSFER';
+                    $contentArr['Payment']['DebitPayType'] = 'BANK-TRANSFER';
                 } else {
                     $contentArr['Payment']['DebitPayType'] = 'DIRECT-DEBIT';
                     $elv = true;
@@ -537,22 +539,43 @@
             foreach ($items AS $shopItem) {
                 if ($shopItem->articlenumber == 'shipping') {
                     if ($shopItem->delivered == 0 || $shopItem->cancelled == 0 || $shopItem->returned == 0) {
-                        $shoppingBasket['Shipping'] = array(
-                            'Description' => "Shipping costs",
-                            'UnitPriceGross' => $shopItem->price,
-                            'TaxRate' => $shopItem->taxRate,
-                        );
+                        if ($this->_retry == true) {
+                            $item = array(
+                                'ArticleNumber' => $shopItem->articlenumber,
+                                'Quantity' => 1,
+                                'Description' => "shipping",
+                                'UnitPriceGross' => $shopItem->price,
+                                'TaxRate' => $shopItem->taxRate,
+                            );
+                            $shoppingBasket['Items'][] = array('Item' => $item);
+                        } else {
+                            $shoppingBasket['Shipping'] = array(
+                                'Description' => "Shipping costs",
+                                'UnitPriceGross' => $shopItem->price,
+                                'TaxRate' => $shopItem->taxRate,
+                            );
+                        }
                     }
                     if (!empty($type) && $shopItem->cancelledItems == 0 && $shopItem->returnedItems == 0 && $shopItem->deliveredItems == 0) {
                         unset($shoppingBasket['Shipping']);
                     }
                 } elseif ((substr($shopItem->articlenumber, 0, 5) == 'Debit')
                         || (substr($shopItem->articlenumber, 0, 6) == 'Credit')) {
-                    $shoppingBasket['Discount'] = array(
-                        'Description' => $shopItem->articlenumber,
-                        'UnitPriceGross' => $shopItem->price,
-                        'TaxRate' => $shopItem->taxRate,
-                    );
+                    if ($this->_retry == true) {
+                        $item = array(
+                            'ArticleNumber' => $shopItem->articlenumber,
+                            'Quantity' => $shopItem->quantity,
+                            'Description' => $shopItem->articlenumber,
+                            'UnitPriceGross' => $shopItem->price,
+                            'TaxRate' => $shopItem->taxRate,
+                        );
+                    } else {
+                        $shoppingBasket['Discount'] = array(
+                            'Description' => $shopItem->articlenumber,
+                            'UnitPriceGross' => $shopItem->price,
+                            'TaxRate' => $shopItem->taxRate,
+                        );
+                    }
 
                 } else {
                     if (is_array($shopItem)) {
@@ -560,12 +583,22 @@
                             continue;
                         }
                         if ($shopItem['articlename'] == 'Shipping') {
-                            $shoppingBasket['Shipping'] = array(
-                                'Description' => "Shipping costs",
-                                'UnitPriceGross' => $shopItem['priceNumeric'],
-                                'TaxRate' => $shopItem['tax_rate'],
-                            );
-                            continue;
+                            if ($this->_retry == true) {
+                                $item = array(
+                                    'ArticleNumber' => "shipping",
+                                    'Quantity' => 1,
+                                    'Description' => 'shipping',
+                                    'UnitPriceGross' => $shopItem['priceNumeric'],
+                                    'TaxRate' => $shopItem['tax_rate'],
+                                );
+                            } else {
+                                $shoppingBasket['Shipping'] = array(
+                                    'Description' => "Shipping costs",
+                                    'UnitPriceGross' => $shopItem['priceNumeric'],
+                                    'TaxRate' => $shopItem['tax_rate'],
+                                );
+                                continue;
+                            }
                         } else {
                             $item = array(
                                 'Description' => $shopItem['articlename'],
@@ -672,6 +705,7 @@
 
             $mbContent = new \RatePAY\ModelBuilder('Content');
             $mbContent->setArray($shoppingBasket);
+
             $documentModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Document\Document');
             $document = $documentModel->findOneBy(array('orderId' => $operationData['orderId'], 'type' => 1));
 
@@ -697,8 +731,12 @@
 
             if ($confirmationDeliver->isSuccessful()) {
                 return true;
+            } elseif ($this->_retry == false && (int)$confirmationDeliver->getReasonCode() == 2300) {
+                $this->_retry = true;
+                return $this->callRequest('ConfirmationDeliver', $operationData);
             }
             return false;
+
         }
 
         /**
@@ -742,6 +780,9 @@
 
             if ($paymentChange->isSuccessful()) {
                 return true;
+            } elseif ($this->_retry == false && (int)$paymentChange->getReasonCode() == 2300) {
+                $this->_retry = true;
+                return $this->callRequest('PaymentChange', $operationData);
             }
             return false;
         }
