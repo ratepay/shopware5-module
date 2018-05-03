@@ -1,17 +1,6 @@
 <script type="text/javascript">
     ratepayPaymentMethodSelected = true;
 </script>
-
-{if $ratepayValidateIsB2B == 'true'}
-    {block  name='ratepay_frontend_b2b'}
-    <br />
-    <div class="none">
-        <label for="ratepay_company" class="normal">{s namespace=frontend/register/shipping_fieldset name=RegisterShippingPlaceholderCompany}Firmenname{/s}:</label>
-        <input id="ratepay_company" class="text" type="text" value="{if $sUserData.billingaddress.company}{$sUserData.billingaddress.company}{/if}">
-    </div>
-    <br />
-    {/block}
-{else}
     {* Birthday *}
     {block name='ratepay_frontend_birthday'}
         <div class="register--birthdate">
@@ -50,7 +39,6 @@
             <p>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um mit RatePAY bezahlen zu können.{/s}</p>
         </div>
     {/block}
-{/if}
 
 {* Phone *}
 {block name='ratepay_frontend_phone'}
