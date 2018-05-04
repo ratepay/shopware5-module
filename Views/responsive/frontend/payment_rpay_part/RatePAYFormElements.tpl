@@ -1,6 +1,7 @@
 <script type="text/javascript">
     ratepayPaymentMethodSelected = true;
 </script>
+{if $ratepayValidateIsB2B == 'false'}
     {* Birthday *}
     {block name='ratepay_frontend_birthday'}
         <div class="register--birthdate">
@@ -39,6 +40,7 @@
             <p>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um mit RatePAY bezahlen zu können.{/s}</p>
         </div>
     {/block}
+{/if}
 
 {* Phone *}
 {block name='ratepay_frontend_phone'}
