@@ -7,7 +7,6 @@
         Mandatsreferenz: (wird nach Kaufabschluss übermittelt)
     {/s}
 </p>
-
 <div id="paywire">
     <p class="none">
         Wirecard Bank AG, Einsteinring 35, 85609Aschheim

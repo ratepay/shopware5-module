@@ -344,6 +344,7 @@
                 }
             }
 
+
             //change config fields for module update 5.0.4
             if (!$this->_sqlCheckIfColumnExists("rpay_ratepay_config", "invoice")) {
                 try {

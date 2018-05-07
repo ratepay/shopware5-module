@@ -63,6 +63,16 @@
 * add php 7 compatibility
 * add bidirectional function
 
+### Version Version 4.3.0 - Released 2018-03-01
+* add backend panels without overwriting them
+* compatibility for Shopware 5.4.0
+
+### Version Version 4.2.93 - Released 2017-11-29
+* change company address
+
+### Version Version 4.2.92 - Released 2017-07-26
+* fix credit/debit bug
+
 ### Version Version 4.2.91 - Released 2017-04-12
 * fix for checkout javascript problem
 
