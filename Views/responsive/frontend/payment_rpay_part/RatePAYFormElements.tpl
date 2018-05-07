@@ -49,3 +49,11 @@
         <input id="ratepay_phone" name="ratepay_phone" class="register--field is--required" type="text" required="required" aria-required="true" placeholder="{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderPhone}Telefonnummer{/s}*" value="{if $ratepayPhone}{$ratepayPhone}{else}{$sUserData.billingaddress.phone|escape}{/if}">
     </div>
 {/block}
+<br/><br/>
+{block name='ratepay_zgb'}
+    <div class="register--phone">
+        {s namespace=frontend/register/personal_fieldset name=ratepay_zgb}
+            Es gelten die <a href='https://www.ratepay.com/zgb-dse' target='_blank'>zusätzlichen Geschäftsbedingungen und der Datenschutzhinweis</a> der RatePAY GmbH
+        {/s}
+    </div>
+{/block}
