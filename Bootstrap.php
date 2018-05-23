@@ -26,6 +26,8 @@
 
         protected $_paymentMethodes = array('rpayratepayinvoice', 'rpayratepayrate', 'rpayratepaydebit', 'rpayratepayrate0');
 
+        private $_object;
+
 
         /**
          * Returns the Label of the Plugin
@@ -1613,6 +1615,15 @@
         }
 
         /**
+         * @param $method
+         * @return bool
+         */
+        private function existsAndNotEmpty($method) {
+            $obj = $this->_object;
+            return (method_exists($obj, $method) && !empty($obj->$method()) && !is_null($obj->$method()));
+        }
+
+        /**
          * Filters the shown Payments
          * RatePAY-payments will be hidden, if one of the following requirement is not given
          *  - Delivery Address is not allowed to be not the same as billing address
@@ -1640,10 +1651,30 @@
             if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 find current address information in default billing address
                 $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
                 $customerAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
-                $countryBilling = $customerAddressBilling->getCountry();
+
+                $this->_object = $customerAddressBilling;
+                if ($this->existsAndNotEmpty('getCountry')) {
+                    $countryBilling = $customerAddressBilling->getCountry();
+                } else {
+                    $this->_object = $user->getBilling();
+                    if ($this->existsAndNotEmpty('getCountryId')) {
+                        $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
+                    }
+                }
+
                 if (Shopware()->Session()->checkoutShippingAddressId > 0 && Shopware()->Session()->checkoutShippingAddressId != Shopware()->Session()->checkoutBillingAddressId) {
                     $customerAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
-                    $countryDelivery = $customerAddressShipping->getCountry();
+
+                    $this->_object = $customerAddressShipping;
+                    if ($this->existsAndNotEmpty('getCountry')) {
+                        $countryDelivery = $customerAddressShipping->getCountry();
+                    } else {
+                        $this->_object = $user->getShipping();
+                        if ($this->existsAndNotEmpty('getCountryId')) {
+                            $countryDelivery = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getShipping()->getCountryId());
+                        }
+                    }
+
                 } else {
                     $countryDelivery = $countryBilling;
                 }

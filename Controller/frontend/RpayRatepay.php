@@ -48,16 +48,6 @@
             }
 
             $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-
-            if (isset($Parameter['checkoutBillingAddressId']) && !is_null($Parameter['checkoutBillingAddressId'])) { // From Shopware 5.2 current billing address is sent by parameter
-                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-                $customerAddressBilling = $addressModel->findOneBy(array('id' => $Parameter['checkoutBillingAddressId']));
-                $country = $customerAddressBilling->getCountry();
-            } else {
-                $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
-                $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
-            }
-
             $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $this->_logging      = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
         }

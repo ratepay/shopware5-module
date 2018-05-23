@@ -33,6 +33,8 @@
 
         private $_retry = false;
 
+        private $_object;
+
         public function __construct($config = null)
         {
             $this->_config = $config;
@@ -254,7 +256,22 @@
 
                 $company = $checkoutAddressBilling->getCompany();
                 if (empty($company)) {
-                    $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d"); // From Shopware 5.2 date of birth has moved to customer object
+                    $this->_object = $shopUser;
+                    if ($this->existsAndNotEmpty('getBirthday')) {
+                        $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d"); // From Shopware 5.2 date of birth has moved to customer object
+                    } else {
+                        $checkoutAddressBirthBilling = $shopUser->getBilling();
+                        $this->_object = $checkoutAddressBirthBilling;
+                        if ($this->existsAndNotEmpty('getBirthday')) {
+                            $dateOfBirth = $checkoutAddressBirthBilling->getBirthday()->format("Y-m-d");
+                        }
+                        $this->_object = $checkoutAddressBilling;
+                        if ($this->existsAndNotEmpty('getBirthday')) {
+                            $dateOfBirth = $checkoutAddressBilling->getBirthday()->format("Y-m-d");
+                        } elseif (empty($dateOfBirth)) {
+                            $dateOfBirth = '0000-00-00';
+                        }
+                    }
                 }
                 $merchantCustomerId = $shopUser->getNumber(); // From Shopware 5.2 billing number has moved to customer object
             } else {
@@ -268,7 +285,18 @@
 
                 $company = $checkoutAddressBilling->getCompany();
                 if (empty($company)) {
-                    $dateOfBirth = $checkoutAddressBilling->getBirthday()->format("Y-m-d");
+                    $this->_object = $checkoutAddressBilling;
+                    if ($this->existsAndNotEmpty('getBirthday')) {
+                        $dateOfBirth = $checkoutAddressBilling->getBirthday()->format("Y-m-d");
+                    } else{
+                        $this->_object = $shopUser;
+                        if ($this->existsAndNotEmpty('getBirthday')) {
+                            $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d");
+                        } elseif (empty($dateOfBirth)) {
+                            $dateOfBirth = '0000-00-00';
+                        }
+                    }
+
                 }
                 $merchantCustomerId = $checkoutAddressBilling->getNumber();
             }
@@ -390,6 +418,15 @@
             $this->_logging->logRequest($paymentRequest->getRequestRaw(), $paymentRequest->getResponseRaw());
 
             return $paymentRequest;
+        }
+
+        /**
+         * @param $method
+         * @return bool
+         */
+        private function existsAndNotEmpty($method) {
+            $obj = $this->_object;
+            return (method_exists($obj, $method) && !empty($obj->$method()) && !is_null($obj->$method()));
         }
 
         /**
