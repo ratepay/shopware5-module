@@ -143,10 +143,10 @@
         }
 
         /**
-        * make payment confirm
-        *
-        * @return bool
-        */
+         * make payment confirm
+         *
+         * @return bool
+         */
         private function makePaymentConfirm()
         {
             $mbHead = $this->getHead();
@@ -158,7 +158,7 @@
             if ($paymentConfirm->isSuccessful()) {
                 return true;
             }
-           return false;
+            return false;
         }
 
         /**
@@ -172,20 +172,20 @@
             $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
 
             $head = [
-                        'SystemId' => $systemId,
-                        'Credential' => [
-                            'ProfileId' => $this->getProfileId($countryCode),
-                            'Securitycode' => $this->getSecurityCode($countryCode)
-                        ],
-                        'Meta' => [
-                            'Systems' => [
-                                'System' => [
-                                    'Name' => 'Shopware',
-                                    'Version' => Shopware()->Config()->get('version') . '/' . $bootstrap->getVersion()
-                                ]
-                            ]
+                'SystemId' => $systemId,
+                'Credential' => [
+                    'ProfileId' => $this->getProfileId($countryCode),
+                    'Securitycode' => $this->getSecurityCode($countryCode)
+                ],
+                'Meta' => [
+                    'Systems' => [
+                        'System' => [
+                            'Name' => 'Shopware',
+                            'Version' => Shopware()->Config()->get('version') . '/' . $bootstrap->getVersion()
                         ]
-                    ];
+                    ]
+                ]
+            ];
 
             $orderId = $this->_orderId;
             if (!empty($orderId)) {
@@ -251,46 +251,32 @@
                 $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->RatePAY['checkoutBillingAddressId']));
                 $checkoutAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->RatePAY['checkoutShippingAddressId'] ? Shopware()->Session()->RatePAY['checkoutShippingAddressId'] : Shopware()->Session()->RatePAY['checkoutBillingAddressId']));
 
-                $countryCodeBilling = $checkoutAddressBilling->getCountry()->getIso();
-                $countryCodeShipping = $checkoutAddressShipping->getCountry()->getIso();
-
                 $company = $checkoutAddressBilling->getCompany();
                 if (empty($company)) {
-                    $this->_object = $shopUser;
-                    if ($this->existsAndNotEmpty('getBirthday')) {
+                    if ($this->existsAndNotEmpty($shopUser, 'getBirthday')) {
                         $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d"); // From Shopware 5.2 date of birth has moved to customer object
                     } else {
                         $checkoutAddressBirthBilling = $shopUser->getBilling();
-                        $this->_object = $checkoutAddressBirthBilling;
-                        if ($this->existsAndNotEmpty('getBirthday')) {
+                        if ($this->existsAndNotEmpty($checkoutAddressBirthBilling, 'getBirthday')) {
                             $dateOfBirth = $checkoutAddressBirthBilling->getBirthday()->format("Y-m-d");
                         }
-                        $this->_object = $checkoutAddressBilling;
-                        if ($this->existsAndNotEmpty('getBirthday')) {
+                        if ($this->existsAndNotEmpty($checkoutAddressBilling, 'getBirthday')) {
                             $dateOfBirth = $checkoutAddressBilling->getBirthday()->format("Y-m-d");
                         } elseif (empty($dateOfBirth)) {
                             $dateOfBirth = '0000-00-00';
                         }
                     }
                 }
-                $merchantCustomerId = $shopUser->getNumber(); // From Shopware 5.2 billing number has moved to customer object
             } else {
                 $checkoutAddressBilling = $shopUser->getBilling();
                 $checkoutAddressShipping = $shopUser->getShipping() !== null ? $shopUser->getShipping() : $shopUser->getBilling();
 
-                $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressBilling->getCountryId());
-                $countryCodeBilling = $countryBilling->getIso();
-                $countryShipping = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressShipping->getCountryId());
-                $countryCodeShipping = $countryShipping->getIso();
-
                 $company = $checkoutAddressBilling->getCompany();
                 if (empty($company)) {
-                    $this->_object = $checkoutAddressBilling;
-                    if ($this->existsAndNotEmpty('getBirthday')) {
+                    if ($this->existsAndNotEmpty($checkoutAddressBilling, 'getBirthday')) {
                         $dateOfBirth = $checkoutAddressBilling->getBirthday()->format("Y-m-d");
                     } else{
-                        $this->_object = $shopUser;
-                        if ($this->existsAndNotEmpty('getBirthday')) {
+                        if ($this->existsAndNotEmpty($shopUser, 'getBirthday')) {
                             $dateOfBirth = $shopUser->getBirthday()->format("Y-m-d");
                         } elseif (empty($dateOfBirth)) {
                             $dateOfBirth = '0000-00-00';
@@ -298,7 +284,22 @@
                     }
 
                 }
+            }
+
+            if ($this->existsAndNotEmpty($shopUser, "getNumber")) { // From Shopware 5.2 billing number has moved to customer object
+                $merchantCustomerId = $shopUser->getNumber();
+            } elseif ($this->existsAndNotEmpty($checkoutAddressBilling, "getNumber")) {
                 $merchantCustomerId = $checkoutAddressBilling->getNumber();
+            }
+
+            if ($this->existsAndNotEmpty($checkoutAddressBilling, "getCountry") && $this->existsAndNotEmpty($checkoutAddressBilling->getCountry(), "getIso")) {
+                $countryCodeBilling = $checkoutAddressBilling->getCountry()->getIso();
+                $countryCodeShipping = $checkoutAddressShipping->getCountry()->getIso();
+            } elseif ($this->existsAndNotEmpty($checkoutAddressBilling, "getCountryId")) {
+                $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressBilling->getCountryId());
+                $countryCodeBilling = $countryBilling->getIso();
+                $countryShipping = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressShipping->getCountryId());
+                $countryCodeShipping = $countryShipping->getIso();
             }
 
             $mbHead->setArray([
@@ -329,9 +330,9 @@
             if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
                 $system = Shopware()->System();
                 $usergroup = Shopware()->Db()->fetchRow('
-                SELECT * FROM s_core_customergroups
-                WHERE groupkey = ?
-                ', [$system->sUSERGROUP]);
+                    SELECT * FROM s_core_customergroups
+                    WHERE groupkey = ?
+                    ', [$system->sUSERGROUP]);
 
                 $shoppingBasket['Shipping'] = array(
                     'Description' => "Shipping costs",
@@ -347,7 +348,7 @@
                 }
             }
 
-            $shopContext =Shopware()->Container()->get('shopware_storefront.context_service')->getShopContext();
+            $shopContext = Shopware()->Container()->get('shopware_storefront.context_service')->getShopContext();
             $lang = $shopContext->getShop()->getLocale()->getLocale();
             $lang = substr($lang, 0, 2);
 
@@ -366,7 +367,7 @@
                             'Address' => $this->_getCheckoutAddress($checkoutAddressBilling, 'BILLING', $countryCodeBilling)
                         ], [
                             'Address' => $this->_getCheckoutAddress($checkoutAddressShipping, 'DELIVERY', $countryCodeShipping)
-                            ]
+                        ]
 
                     ],
                     'Contacts' => [
@@ -421,12 +422,13 @@
         }
 
         /**
+         * check if method of object exists and not null
+         *
          * @param $method
          * @return bool
          */
-        private function existsAndNotEmpty($method) {
-            $obj = $this->_object;
-            return (method_exists($obj, $method) && !empty($obj->$method()) && !is_null($obj->$method()));
+        private function existsAndNotEmpty(&$object, $method) {
+            return (method_exists($object, $method) && !empty($object->$method()) && !is_null($object->$method()));
         }
 
         /**
@@ -546,28 +548,28 @@
             if (empty($orderId)) {
                 $system = Shopware()->System();
                 $usergroup = Shopware()->Db()->fetchRow('
-                    SELECT * FROM s_core_customergroups
-                    WHERE groupkey = ?
-                    ', [$system->sUSERGROUP]);
+                        SELECT * FROM s_core_customergroups
+                        WHERE groupkey = ?
+                        ', [$system->sUSERGROUP]);
             } else {
                 $user = Shopware()->Db()->fetchRow('
-                    SELECT * FROM s_order
-                    WHERE ordernumber = ?
-                    ', $this->_orderId);
+                        SELECT * FROM s_order
+                        WHERE ordernumber = ?
+                        ', $this->_orderId);
                 $usergroupId = Shopware()->Db()->fetchRow('
-                    SELECT * FROM s_user
-                    WHERE id = ?
-                    ', $user['userID']);
+                        SELECT * FROM s_user
+                        WHERE id = ?
+                        ', $user['userID']);
                 $usergroup = Shopware()->Db()->fetchRow('
-                    SELECT * FROM s_core_customergroups
-                    WHERE groupkey = ?
-                    ', $usergroupId['customergroup']);
+                        SELECT * FROM s_core_customergroups
+                        WHERE groupkey = ?
+                        ', $usergroupId['customergroup']);
             }
 
             $b2b = Shopware()->Db()->fetchRow('
-                    SELECT company FROM s_user_billingaddress
-                    WHERE userID = ?
-                    ', $user['userID']);
+                        SELECT company FROM s_user_billingaddress
+                        WHERE userID = ?
+                        ', $user['userID']);
 
             if ((int)$usergroup['tax'] === 0 && !empty($b2b['company'])) {
                 $net = true;
@@ -597,7 +599,7 @@
                         unset($shoppingBasket['Shipping']);
                     }
                 } elseif ((substr($shopItem->articlenumber, 0, 5) == 'Debit')
-                        || (substr($shopItem->articlenumber, 0, 6) == 'Credit')) {
+                    || (substr($shopItem->articlenumber, 0, 6) == 'Credit')) {
                     if ($this->_retry == true) {
                         $item = array(
                             'ArticleNumber' => $shopItem->articlenumber,
@@ -796,10 +798,10 @@
 
             if ($operationData['subtype'] == 'credit') {
                 $shoppingItems = array('Discount' => $item = array(
-                                        'Description' => $operationData['items']['name'],
-                                        'UnitPriceGross' => $operationData['items']['price'],
-                                        'TaxRate' => $operationData['items']['tax_rate']
-                                    ));
+                    'Description' => $operationData['items']['name'],
+                    'UnitPriceGross' => $operationData['items']['price'],
+                    'TaxRate' => $operationData['items']['tax_rate']
+                ));
             } else {
                 $shoppingItems = $this->createBasketArray($operationData['items'], $operationData['subtype']);
             }
