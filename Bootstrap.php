@@ -1593,6 +1593,7 @@
             //fetch correct config for current shop based on user country
             $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
             $payments = array("installment", "invoice", "debit", "installment0");
+
             $paymentConfig = array();
 
             foreach ($payments AS $payment) {
@@ -1700,19 +1701,19 @@
                 $validation->setAllowedCountriesDelivery($data['country-code-delivery']);
 
                 if ($validation->isRatepayHidden()) {
-                    $show[$payment]    = false;
+                    $show[$payment] = false;
                 }
 
                 if (!$validation->isCurrencyValid($currency)) {
-                    $show[$payment]    = false;
+                    $show[$payment] = false;
                 }
 
                 if (!$validation->isBillingCountryValid($countryBilling)) {
-                    $show[$payment]    = false;
+                    $show[$payment] = false;
                 }
 
                 if (!$validation->isDeliveryCountryValid($countryDelivery)) {
-                    $show[$payment]    = false;
+                    $show[$payment] = false;
                 }
 
                 if ($validation->isCompanyNameSet()) {
@@ -1721,7 +1722,7 @@
                 }
 
                 if (!$validation->isBillingAddressSameLikeShippingAddress()) {
-                    $show[$payment]    = $data['address']    == 'yes' && $show[$payment] ? true : false;
+                    $show[$payment] = (bool) $data['address'] && $show[$payment] ? true : false;
                 }
 
                 if (Shopware()->Modules()->Basket()) {
