@@ -1800,7 +1800,7 @@
                     'ratepaySEPAInformationHeader' => ['value' => 'RatePAY GmbH, Schlüterstr. 39, 10629 Berlin<br/>Gläubiger-ID: DE39RPY00000568463<br/>Mandatsreferenz: (wird nach Kaufabschluss übermittelt)'],
                     'transactionid' => ['value' => 'Transaction-ID'],
                     'version' => ['value' => 'Version'],
-                    'ratepay_zgb' => ['value' => 'The Additional <a href="https://www.ratepay.com/zgb-dse" target="_blank">General Terms and Conditions and Data Protection Notice</a> of the RatePAY GmbH apply'],
+                    'ratepay_zgb_n' => ['value' => 'The Additional <a href="https://www.ratepay.com/zgb-dse" target="_blank">General Terms and Conditions and Data Protection Notice</a> apply of the payent menthod'],
                 ],
                 108 => [
                     'accountNumber' => ['value' => 'IBAN'],
@@ -1828,7 +1828,7 @@
                                                                         '],
                     'transactionid' => ['value' => 'Transaction-ID'],
                     'version' => ['value' => 'Version'],
-                    'ratepay_zgb' => ['value' => 'Les <a href="https://www.ratepay.com/zgb-dse" target="_blank">conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de RatePAY GmbH s´appliquent'],
+                    'ratepay_zgb_n' => ['value' => 'Les <a href="https://www.ratepay.com/zgb-dse" target="_blank">conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de RatePAY GmbH s´appliquent'],
                 ],
                 176 => [
                     'accountNumber' =>  ['value' => 'IBAN'],
@@ -1845,7 +1845,7 @@
                     'ratepaySEPAInformationHeader' =>  ['value' => 'Opmerking. Na het tot stand komen van deze overeenkomst wordt u het RatePAY machtigingskenmerk medegedeeld. Ik kan binnen acht weken, na afschrijving, het bedrag laten terugboeken. Hierbij gelden de met mijn kredietinstelling overeengekomen voorwaarden.'],
                     'transactionid' =>  ['value' => 'Transaction-ID'],
                     'version' =>  ['value' => 'Version'],
-                    'ratepay_zgb' => ['value' => 'De aanvullende <a href=" https://www.ratepay.com/terms-nl" target="_blank">voorwaarden en het gegevensbeschermingsvoorschrift</a> van RatePAY GmbH zijn van toepassing'],
+                    'ratepay_zgb_n' => ['value' => 'De aanvullende <a href=" https://www.ratepay.com/terms-nl" target="_blank">voorwaarden en het gegevensbeschermingsvoorschrift</a> van RatePAY GmbH zijn van toepassing'],
                 ],
             ];
             return $translation[$locale][$name]['value'];
