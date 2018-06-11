@@ -113,7 +113,7 @@
                     return $this->callPaymentChange($operationData);
                     break;
                 case 'PaymentConfirm':
-                    return $this->makePaymentConfirm();
+                    return $this->callPaymentConfirm();
                     break;
                 case 'CalculationRequest':
                     return $this->callCalculationRequest($operationData);
@@ -143,11 +143,11 @@
         }
 
         /**
-         * make payment confirm
+         * call payment confirm
          *
          * @return bool
          */
-        private function makePaymentConfirm()
+        private function callPaymentConfirm()
         {
             $mbHead = $this->getHead();
             $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
