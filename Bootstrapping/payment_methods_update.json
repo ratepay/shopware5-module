@@ -1,0 +1,11 @@
+[
+  {
+    "name": "rpayratepayrate0",
+    "description": "0% Finanzierung",
+    "action": "rpay_ratepay",
+    "active": 1,
+    "position": 4,
+    "additionaldescription": "Kauf per 0% Finanzierung",
+    "template": "RatePAYRate.tpl"
+  }
+]
