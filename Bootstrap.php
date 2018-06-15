@@ -91,11 +91,14 @@
          */
         public function install()
         {
+            $this->subscribeEvent('Enlight_Controller_Front_StartDispatch', 'onRegisterSubscriber');
+            $this->subscribeEvent('Shopware_Console_Add_Command', 'onRegisterSubscriber');
+
             $queue = [
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_FormsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_EventSubscriptionsSetup($this),
+//                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_EventSubscriptionsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_MenuesSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentStatusesSetup($this),
@@ -125,7 +128,7 @@
         public function update($version)
         {
             $queue = [
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_EventSubscriptionsSetup($this),
+//                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_EventSubscriptionsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_FormsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup($this),
@@ -195,5 +198,28 @@
             Shopware()->Db()->query($sql);
 
             return true;
+        }
+
+        public function onRegisterSubscriber()
+        {
+            $subscribers = [
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperationsSubscriber(),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensionSubscriber(),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentControllerSubscriber($this->bootstrap),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_LoggingControllerSubscriber($this->bootstrap),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailControllerSubscriber($this->bootstrap),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_CheckoutValidationSubscriber(),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSubscriber(),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigurationSubscriber($this->bootstrap),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsProcessSubscriber(),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_JavascriptSourceSubscriber(),
+            ];
+
+            foreach ($subscribers as $subscriber) {
+                // TODO does this injection works in all Shopware versions?
+//                $this->bootstrap->get('events')->addSubscriber($eventSubscriber);
+                Shopware()->Events()->addSubscriber($subscriber);
+            }
+
         }
     }
