@@ -9,17 +9,17 @@
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_LoggingControllerSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
-     * @var Shopware_Components_Plugin_Bootstrap
+     * @var string
      */
-    private $bootstrap;
+    private $path;
 
     /**
-     * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_LoggingControllerSubscriber constructor.
-     * @param Shopware_Components_Plugin_Bootstrap $bootstrap
+     * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentControllerSubscriber constructor.
+     * @param $path string base path to plugin
      */
-    public function __construct($bootstrap)
+    public function __construct($path)
     {
-        $this->bootstrap = $bootstrap;
+        $this->path = $path;
     }
 
     public static function getSubscribedEvents()
@@ -36,8 +36,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_LoggingControll
      */
     public function onLoggingBackendController()
     {
-        Shopware()->Template()->addTemplateDir($this->bootstrap->Path() . 'Views/');
+        Shopware()->Template()->addTemplateDir($this->path. 'Views/');
 
-        return $this->bootstrap->Path() . "/Controller/backend/RpayRatepayLogging.php";
+        return $this->path . "Controller/backend/RpayRatepayLogging.php";
     }
 }

@@ -8,6 +8,20 @@
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_JavascriptSourceSubscriber implements \Enlight\Event\SubscriberInterface
 {
+    /**
+     * @var string
+     */
+    private $path;
+
+    /**
+     * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_JavascriptSourceSubscriber constructor.
+     * @param $path string base path to plugin
+     */
+    public function __construct($path)
+    {
+        $this->path = $path;
+    }
+
     public static function getSubscribedEvents()
     {
         return [
@@ -23,7 +37,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_JavascriptSourc
     public function addJsFiles()
     {
         $jsPath = array(
-            __DIR__ . '/../../Views/responsive/frontend/_public/src/javascripts/jquery.ratepay_checkout.js'
+            $this->path . 'Views/responsive/frontend/_public/src/javascripts/jquery.ratepay_checkout.js'
         );
 
         return new Doctrine\Common\Collections\ArrayCollection($jsPath);

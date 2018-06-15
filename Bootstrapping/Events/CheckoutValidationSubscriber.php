@@ -8,6 +8,20 @@
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
 {
+    /**
+     * @var string
+     */
+    private $path;
+
+    /**
+     * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentControllerSubscriber constructor.
+     * @param $path string base path to plugin
+     */
+    public function __construct($path)
+    {
+        $this->path = $path;
+    }
+
     public static function getSubscribedEvents()
     {
         return [
@@ -44,8 +58,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_CheckoutValidat
 
             return;
         }
-        Shopware()->Template()->addTemplateDir(__DIR__ . '/../../Views/');
-        $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation();
+        Shopware()->Template()->addTemplateDir($this->path . 'Views/');
+        $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation([]);
 
         if ($validation->isRatePAYPayment()) {
             $view->sRegisterFinished = 'false';

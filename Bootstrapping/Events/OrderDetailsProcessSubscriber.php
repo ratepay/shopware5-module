@@ -16,27 +16,18 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsPro
     }
 
     /**
-     * Saves Data into the rpay_ratepay_order_position
+     * Saves Data into the `rpay_ratepay_order_position`
      *
      * @param Enlight_Event_EventArgs $arguments
+     * @return mixed
      */
-    public function insertRatepayPositions(Enlight_Event_EventArgs $arguments)
+    public function insertRatepayPositions(\Enlight_Event_EventArgs $arguments)
     {
-        $ordernumber = $arguments->getSubject()->sOrderNumber;
+        $orderNumber = $arguments->getSubject()->sOrderNumber;
 
-        try {
-            $isRatePAYpaymentSQL = "SELECT COUNT(*) FROM `s_order` "
-                . "JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id`=`s_order`.`paymentID` "
-                . "WHERE  `s_order`.`ordernumber`=? AND`s_core_paymentmeans`.`name` LIKE 'rpayratepay%';";
-            $isRatePAYpayment = Shopware()->Db()->fetchOne($isRatePAYpaymentSQL, array($ordernumber));
-        } catch (Exception $exception) {
-            Shopware()->Pluginlogger()->error($exception->getMessage());
-            $isRatePAYpayment = 0;
-        }
-
-        if ($isRatePAYpayment != 0) {
+        if ($this->isRatePayPayment($orderNumber)) {
             $sql = "SELECT `id` FROM `s_order_details` WHERE `ordernumber`=?;";
-            $rows = Shopware()->Db()->fetchAll($sql, array($ordernumber));
+            $rows = Shopware()->Db()->fetchAll($sql, array($orderNumber));
             $values = "";
             foreach ($rows as $row) {
                 $values .= "(" . $row['id'] . "),";
@@ -50,6 +41,25 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsPro
             }
         }
 
-        return $ordernumber;
+        return $orderNumber;
+    }
+
+    /**
+     * @param $orderNumber
+     * @return bool
+     */
+    public function isRatePayPayment($orderNumber)
+    {
+        $isRatepayPayment = false;
+        try {
+            $isRatePAYpaymentSQL = "SELECT COUNT(*) FROM `s_order` "
+                . "JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id`=`s_order`.`paymentID` "
+                . "WHERE  `s_order`.`ordernumber`=? AND`s_core_paymentmeans`.`name` LIKE 'rpayratepay%';";
+            $isRatepayPayment = (1 <= Shopware()->Db()->fetchOne($isRatePAYpaymentSQL, array($orderNumber)));
+        } catch (Exception $exception) {
+            Shopware()->Pluginlogger()->error($exception->getMessage());
+        }
+
+        return (bool) $isRatepayPayment;
     }
 }

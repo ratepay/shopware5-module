@@ -8,6 +8,20 @@
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
 {
+    /**
+     * @var string
+     */
+    private $path;
+
+    /**
+     * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensionSubscriber constructor.
+     * @param $path string base path to plugin
+     */
+    public function __construct($path)
+    {
+        $this->path = $path;
+    }
+
     public static function getSubscribedEvents()
     {
         return [
@@ -93,5 +107,27 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensi
                 $view->extendsTemplate('frontend/payment_rpay_part/index/dfp.tpl');
             }
         }
+    }
+
+    /**
+     * @param bool $isBackend
+     */
+    protected function registerMyTemplateDir($isBackend = false)
+    {
+        Shopware()->Template()->addTemplateDir($this->path . 'Views/responsive', 'rpay');
+    }
+
+    /**
+     * Get ratepay plugin config from `rpay_ratepay_config`  table
+     *
+     * @param $shopId
+     * @return mixed
+     */
+    private function getRatePayPluginConfig($shopId) {
+        //get ratepay config based on shopId
+        return Shopware()->Db()->fetchRow(
+            'SELECT * FROM `rpay_ratepay_config` WHERE `shopId`=?',
+            array($shopId)
+        );
     }
 }
