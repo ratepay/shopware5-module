@@ -1196,6 +1196,10 @@
             return true;
         }
 
+        /**
+         * Handler for saving in the batch processing dialog box for orders.
+         * @param Enlight_Hook_HookArgs $arguments
+         */
         public function afterOrderBatchProcess(Enlight_Hook_HookArgs $arguments) {
 
             $request = $arguments->getSubject()->Request();
@@ -1206,10 +1210,13 @@
                 return;
             }
 
-            $orders = $request->getParam("orders");
+            $orders = $request->getParam('orders');
 
+            if (count($orders) < 1) {
+                throw new Exception('No order selected');
+            }
 
-            foreach($orders as $order) {
+            foreach ($orders as $order) {
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $order['id']);
 
                 if (!in_array($order->getPayment()->getName(), $this->_paymentMethodes)) {
@@ -1220,6 +1227,11 @@
             }
         }
 
+        /**
+         * Sends Ratepay notification of order status change when new status meets criteria.
+         *
+         * @param \Shopware\Models\Order\Order $order
+         */
         public function informRatepayOfOrderStatusChange(Shopware\Models\Order\Order $order)
         {
 
@@ -1298,7 +1310,7 @@
 
                 $sql = "SELECT COUNT(*) "
                     . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                    . "WHERE `cancelled` = 0 AND `delivered` = 0 AND `shipping`.`s_order_details_id` = ?";
+                    . "WHERE `returned` = 0 AND `cancelled` = 0 AND `delivered` = 0 AND `shipping`.`s_order_details_id` = ?";
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -1335,7 +1347,9 @@
 
                 $sql = "SELECT COUNT(*) "
                     . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                    . "WHERE `returned` = 0 AND `delivered` > 0 AND `shipping`.`s_order_details_id` = ?";
+                    . "WHERE `returned` = 0 AND `cancelled` = 0 AND `delivered` > 0 AND `shipping`.`s_order_details_id` = ?";
+
+                $count = 0;
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -1343,7 +1357,7 @@
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
 
-                if (null != $count) {
+                if ((int)$count > 0) {
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
@@ -1367,6 +1381,10 @@
             }
         }
 
+        /**
+         * Event fired when user saves order.
+         * @param Enlight_Hook_HookArgs $arguments
+         */
         public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $arguments)
         {
             $request = $arguments->getSubject()->Request();
@@ -1426,11 +1444,8 @@
                 $arguments->stop();
             }
             else {
-                $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-                $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
 
-                //get country of order
-                $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $order->getCustomer()->getBilling()->getCountryId());
+                $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
 
                 $sqlShipping = "SELECT invoice_shipping FROM s_order WHERE id = ?";
                 $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, array($parameter['id']));
