@@ -1200,7 +1200,8 @@
          * Handler for saving in the batch processing dialog box for orders.
          * @param Enlight_Hook_HookArgs $arguments
          */
-        public function afterOrderBatchProcess(Enlight_Hook_HookArgs $arguments) {
+        public function afterOrderBatchProcess(Enlight_Hook_HookArgs $arguments)
+        {
 
             $request = $arguments->getSubject()->Request();
 
