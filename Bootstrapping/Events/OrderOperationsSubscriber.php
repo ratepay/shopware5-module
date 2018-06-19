@@ -20,6 +20,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
         return [
             'Shopware_Controllers_Backend_Order::saveAction::before' => 'beforeSaveOrderInBackend',
             'Shopware_Controllers_Backend_Order::saveAction::after' => 'onBidirectionalSendOrderOperation',
+            'Shopware_Controllers_Backend_Order::batchProcessAction::after' => 'afterOrderBatchProcess',
             'Shopware_Controllers_Backend_Order::deletePositionAction::before' => 'beforeDeleteOrderPosition',
             'Shopware_Controllers_Backend_Order::deleteAction::before' => 'beforeDeleteOrder',
         ];
@@ -53,10 +54,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
     }
 
     /**
+     * Event fired when user saves order.
+     * 
      * @param Enlight_Hook_HookArgs $arguments
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
      */
     public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $arguments)
     {
@@ -64,19 +64,64 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
         $parameter = $request->getParams();
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
-        if (true !== $config->get('RatePayBidirectional') || (!in_array(
-                $parameter['payment'][0]['name'], $this->paymentMethods))
+        $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
+
+        if (!$config->get('RatePayBidirectional') ||
+            !in_array($order->getPayment()->getName(), $this->paymentMethods)
         ) {
             return;
         }
 
-        $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
+        $this->informRatepayOfOrderStatusChange($order);
+
+    }
+
+    /**
+     * Handler for saving in the batch processing dialog box for orders.
+     *
+     * @param Enlight_Hook_HookArgs $arguments
+     * @throws Exception
+     */
+    public function afterOrderBatchProcess(Enlight_Hook_HookArgs $arguments)
+    {
+        $request = $arguments->getSubject()->Request();
+
+        $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
+
+        if (!$config->get('RatePayBidirectional')) {
+            return;
+        }
+
+        $orders = $request->getParam('orders');
+
+        if (count($orders) < 1) {
+            throw new Exception('No order selected');
+        }
+
+        foreach ($orders as $order) {
+            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $order['id']);
+
+            if (!in_array($order->getPayment()->getName(), $this->paymentMethods)) {
+                continue;
+            }
+
+            $this->informRatepayOfOrderStatusChange($order);
+        }
+    }
+
+    /**
+     * Sends Ratepay notification of order status change when new status meets criteria.
+     *
+     * @param \Shopware\Models\Order\Order $order
+     */
+    public function informRatepayOfOrderStatusChange(Shopware\Models\Order\Order $order)
+    {
+        $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
         $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
         $history      = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
 
-        $sqlShipping = "SELECT invoice_shipping FROM s_order WHERE id = ?";
-        $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, array($parameter['id']));
+        $shippingCosts = $order->getInvoiceShipping();
 
         $items = array();
         $i = 0;
@@ -97,11 +142,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
             $items['Shipping']['tax_rate'] = $taxRate;
         }
 
-        $newOrderStatus = $parameter['status'];
+        $newOrderStatus = $order->getOrderStatus()->getId();  //$parameter['status'];
 
-        if ($newOrderStatus == $config['RatePayFullDelivery']) {
+        if ($newOrderStatus === $config['RatePayFullDelivery']) {
 
             $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
+            //why do we only fetch one here, aren't we interested in ALL itemsyy the order?
             $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
             $sql = "SELECT COUNT(*) "
@@ -114,7 +160,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
                 Shopware()->Pluginlogger()->error($exception->getMessage());
             }
 
-            if (null != $count) {
+            if ((int)$count > 0) {
                 $modelFactory->setTransactionId($order->getTransactionID());
                 $operationData['orderId'] = $order->getId();
                 $operationData['items'] = $items;
@@ -134,17 +180,18 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
                         $history->logHistory($order->getId(), "Artikel wurde versand.", $item['articlename'], $item['ordernumber'], $item['quantity']);
                     }
                 }
-
             }
-
         }
-        if ($newOrderStatus == $config['RatePayFullCancellation']) {
+
+        if ($newOrderStatus === $config['RatePayFullCancellation']) {
             $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
+
+            //why do we only fetch one here, aren't we interested in ALL itemsyy the order?
             $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
             $sql = "SELECT COUNT(*) "
                 . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                . "WHERE `cancelled` = 0 AND `delivered` = 0 AND `shipping`.`s_order_details_id` = ?";
+                . "WHERE `returned` = 0 AND `cancelled` = 0 AND `delivered` = 0 AND `shipping`.`s_order_details_id` = ?";
 
             try {
                 $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -152,7 +199,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
                 Shopware()->Pluginlogger()->error($exception->getMessage());
             }
 
-            if (null != $count) {
+            if ((int)$count > 0) {
                 $modelFactory->setTransactionId($order->getTransactionID());
                 $operationData['orderId'] = $order->getId();
                 $operationData['items'] = $items;
@@ -174,13 +221,16 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
                 }
             }
         }
-        if ($newOrderStatus == $config['RatePayFullReturn']) {
+
+        if ($newOrderStatus === $config['RatePayFullReturn']) {
             $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
             $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
             $sql = "SELECT COUNT(*) "
                 . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                . "WHERE `returned` = 0 AND `delivered` > 0 AND `shipping`.`s_order_details_id` = ?";
+                . "WHERE `returned` = 0 AND `cancelled` = 0 AND `delivered` > 0 AND `shipping`.`s_order_details_id` = ?";
+
+            $count = 0;
 
             try {
                 $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -188,7 +238,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
                 Shopware()->Pluginlogger()->error($exception->getMessage());
             }
 
-            if (null != $count) {
+            if ((int)$count > 0) {
                 $modelFactory->setTransactionId($order->getTransactionID());
                 $operationData['orderId'] = $order->getId();
                 $operationData['items'] = $items;
@@ -209,7 +259,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
                     }
                 }
             }
-
         }
     }
 
