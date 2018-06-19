@@ -953,6 +953,9 @@
                     'Shopware_Controllers_Backend_Order::saveAction::after', 'onBidirectionalSendOrderOperation'
                 );
                 $this->subscribeEvent(
+                    'Shopware_Controllers_Backend_Order::batchProcessAction::after', 'afterOrderBatchProcess'
+                );
+                $this->subscribeEvent(
                     'Enlight_Controller_Action_PostDispatch_Frontend_Checkout', 'extendTemplates'
                 );
                 $this->subscribeEvent(
@@ -1193,25 +1196,52 @@
             return true;
         }
 
-        public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $arguments)
+        /**
+         * Handler for saving in the batch processing dialog box for orders.
+         * @param Enlight_Hook_HookArgs $arguments
+         */
+        public function afterOrderBatchProcess(Enlight_Hook_HookArgs $arguments)
         {
+
             $request = $arguments->getSubject()->Request();
-            $parameter = $request->getParams();
+
             $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
-            if (true !== $config->get('RatePayBidirectional') || (!in_array(
-                    $parameter['payment'][0]['name'], $this->_paymentMethodes))
-            ) {
+            if (!$config->get('RatePayBidirectional')) {
                 return;
             }
 
-            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
+            $orders = $request->getParam('orders');
+
+            if (count($orders) < 1) {
+                throw new Exception('No order selected');
+            }
+
+            foreach ($orders as $order) {
+                $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $order['id']);
+
+                if (!in_array($order->getPayment()->getName(), $this->_paymentMethodes)) {
+                    continue;
+                }
+
+                $this->informRatepayOfOrderStatusChange($order);
+            }
+        }
+
+        /**
+         * Sends Ratepay notification of order status change when new status meets criteria.
+         *
+         * @param \Shopware\Models\Order\Order $order
+         */
+        public function informRatepayOfOrderStatusChange(Shopware\Models\Order\Order $order)
+        {
+
+            $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
             $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $history      = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
 
-            $sqlShipping = "SELECT invoice_shipping FROM s_order WHERE id = ?";
-            $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, array($parameter['id']));
+            $shippingCosts = $order->getInvoiceShipping();
 
             $items = array();
             $i = 0;
@@ -1232,16 +1262,17 @@
                 $items['Shipping']['tax_rate'] = $taxRate;
             }
 
-            $newOrderStatus = $parameter['status'];
+            $newOrderStatus = $order->getOrderStatus()->getId();  //$parameter['status'];
 
-            if ($newOrderStatus == $config['RatePayFullDelivery']) {
+            if ($newOrderStatus === $config['RatePayFullDelivery']) {
 
                 $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
+                //why do we only fetch one here, aren't we interested in ALL itemsyy the order?
                 $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
                 $sql = "SELECT COUNT(*) "
-                        . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                        . "WHERE `delivered` = 0 AND `cancelled` = 0 AND `returned` = 0 AND `shipping`.`s_order_details_id` = ?";
+                    . "FROM `rpay_ratepay_order_positions` AS `shipping` "
+                    . "WHERE `delivered` = 0 AND `cancelled` = 0 AND `returned` = 0 AND `shipping`.`s_order_details_id` = ?";
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -1249,7 +1280,7 @@
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
 
-                if (null != $count) {
+                if ((int)$count > 0) {
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
@@ -1269,17 +1300,18 @@
                             $history->logHistory($order->getId(), "Artikel wurde versand.", $item['articlename'], $item['ordernumber'], $item['quantity']);
                         }
                     }
-
                 }
-
             }
-            if ($newOrderStatus == $config['RatePayFullCancellation']) {
+
+            if ($newOrderStatus === $config['RatePayFullCancellation']) {
                 $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
+
+                //why do we only fetch one here, aren't we interested in ALL itemsyy the order?
                 $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
                 $sql = "SELECT COUNT(*) "
-                        . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                        . "WHERE `cancelled` = 0 AND `delivered` = 0 AND `shipping`.`s_order_details_id` = ?";
+                    . "FROM `rpay_ratepay_order_positions` AS `shipping` "
+                    . "WHERE `returned` = 0 AND `cancelled` = 0 AND `delivered` = 0 AND `shipping`.`s_order_details_id` = ?";
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -1287,7 +1319,7 @@
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
 
-                if (null != $count) {
+                if ((int)$count > 0) {
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
@@ -1309,13 +1341,16 @@
                     }
                 }
             }
-            if ($newOrderStatus == $config['RatePayFullReturn']) {
+
+            if ($newOrderStatus === $config['RatePayFullReturn']) {
                 $sqlOrderDetailId = "SELECT id FROM s_order_details where orderId = ?";
                 $orderDetailId = Shopware()->Db()->fetchOne($sqlOrderDetailId, array($order->getId()));
 
                 $sql = "SELECT COUNT(*) "
-                        . "FROM `rpay_ratepay_order_positions` AS `shipping` "
-                        . "WHERE `returned` = 0 AND `delivered` > 0 AND `shipping`.`s_order_details_id` = ?";
+                    . "FROM `rpay_ratepay_order_positions` AS `shipping` "
+                    . "WHERE `returned` = 0 AND `cancelled` = 0 AND `delivered` > 0 AND `shipping`.`s_order_details_id` = ?";
+
+                $count = 0;
 
                 try {
                     $count = Shopware()->Db()->fetchOne($sql, array($orderDetailId));
@@ -1323,7 +1358,7 @@
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
 
-                if (null != $count) {
+                if ((int)$count > 0) {
                     $modelFactory->setTransactionId($order->getTransactionID());
                     $operationData['orderId'] = $order->getId();
                     $operationData['items'] = $items;
@@ -1344,8 +1379,28 @@
                         }
                     }
                 }
-
             }
+        }
+
+        /**
+         * Event fired when user saves order.
+         * @param Enlight_Hook_HookArgs $arguments
+         */
+        public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $arguments)
+        {
+            $request = $arguments->getSubject()->Request();
+            $parameter = $request->getParams();
+            $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
+
+            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
+
+            if (!$config->get('RatePayBidirectional') ||
+                !in_array($order->getPayment()->getName(), $this->_paymentMethodes)
+            ) {
+                return;
+            }
+
+            $this->informRatepayOfOrderStatusChange($order);
 
         }
 
@@ -1390,11 +1445,8 @@
                 $arguments->stop();
             }
             else {
-                $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-                $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
 
-                //get country of order
-                $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $order->getCustomer()->getBilling()->getCountryId());
+                $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
 
                 $sqlShipping = "SELECT invoice_shipping FROM s_order WHERE id = ?";
                 $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, array($parameter['id']));
