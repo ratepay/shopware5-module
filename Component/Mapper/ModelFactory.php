@@ -386,6 +386,7 @@
 
             if (!empty($company)) {
                 $contentArr['Customer']['CompanyName'] = $checkoutAddressBilling->getCompany();
+                $contentArr['Customer']['VatId'] = $checkoutAddressBilling->getVatId();
             }
             $elv = false;
             if (!empty($installmentDetails)) {
