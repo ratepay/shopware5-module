@@ -103,6 +103,7 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentStatusesSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DeliveryStatusesSetup($this),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
             ];
 
             foreach ($queue as $bootstrapper) {
@@ -213,6 +214,7 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigurationSubscriber($this->getName()),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsProcessSubscriber(),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_JavascriptSourceSubscriber($this->Path()),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransactionsSubscriber(),
             ];
 
             foreach ($subscribers as $subscriber) {
