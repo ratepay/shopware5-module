@@ -1,0 +1,17 @@
+{
+  "RatePayProfileIDDE": "Profile-ID for Germany",
+  "RatePaySecurityCodeDE": "Security Code for Germany",
+  "RatePayProfileIDAT": "Profile-ID for Austria",
+  "RatePaySecurityCodeAT": "Security Code for Austria",
+  "RatePayProfileIDNL": "Profile-ID for the Netherlands",
+  "RatePaySecurityCodeNL": "Security Code for the Netherlands",
+  "RatePayProfileIDBE": "Profile-ID for Belgium",
+  "RatePaySecurityCodeBE": "Security Code for Belgium",
+  "RatePayProfileIDCH": "Profile-ID for Switzerland",
+  "RatePaySecurityCodeCH": "Security Code for Switzerland",
+  "button0": "Credentials for Germany",
+  "button1": "Credentials for Austria",
+  "button2": "Credentials for Switzerland",
+  "button4": "Credentials for Belgium",
+  "button5": "Credentials for the Netherlands"
+}

@@ -1,0 +1,18 @@
+{
+  "accountNumber": "IBAN",
+  "bankCode": "BIC",
+  "bankdatanotvalid": "Om een betaling via RatePAY SEPA-incasso door te voeren, gelieve hier de IBAN invoeren",
+  "dob_info": "Om door RatePAY een betaling op rekening door te kunnen voeren, gelieve hier uw geboortedatum invoeren.",
+  "dobtooyoung": "Om door RatePAY een betaling op rekening door te kunnen, voeren moet u ten minste 18 jaar of ouder zijn.",
+  "invalidAge": "Om door RatePAY een betaling op rekening door te kunnen voeren, gelieve hier uw geboortedatum invoeren.",
+  "invaliddata": "Om door RatePAY een betaling op rekening door te kunnen voeren",
+  "phonenumbernotvalid": "Om door RatePAY een betaling op rekening door te kunnen voeren, gelieve hier uw telefoonnummer invoeren.",
+  "ratepayAgbMouseover": "",
+  "ratepaySEPAAgbFirst": "Ik ga hiermee akkoord met het overdragen van mijn gegevens aan RatePAY GmbH, Franklinstraße 28-29, 10587 Berlin volgens het",
+  "ratepaySEPAAgbLast": "en machtig hen de betalingen in samenhang met deze koopovereenkomst middels een incasso van bovengenoemde rekening af te boeken. Gelijktijdig geef ik mijn kredietinstelling opdracht de incasso’s van RatePAY GmbH op mijn rekening te honoreren.",
+  "ratepaySEPAInformationHeader": "Opmerking. Na het tot stand komen van deze overeenkomst wordt u het RatePAY machtigingskenmerk medegedeeld. Ik kan binnen acht weken, na afschrijving, het bedrag laten terugboeken. Hierbij gelden de met mijn kredietinstelling overeengekomen voorwaarden.",
+  "transactionid": "Transaction-ID",
+  "version": "Version",
+  "ratepay_zgb": "De aanvullende <a href='https://www.ratepay.com/terms-nl' target='_blank'>voorwaarden en het gegevensbeschermingsvoorschrift</a> van RatePAY GmbH zijn van toepassing",
+  "ratepay_zgb_n": "De aanvullende <a href='https://www.ratepay.com/terms-nl' target='_blank'>voorwaarden en het gegevensbeschermingsvoorschrift</a> van RatePAY GmbH zijn van toepassing"
+}

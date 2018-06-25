@@ -1,0 +1,184 @@
+[
+  {
+    "type":"button",
+    "name":"button0",
+    "config":{
+      "label":"<b>Zugangsdaten für Deutschland:</b>",
+      "value":""
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePayProfileIDDE",
+    "config":{
+      "label":"Deutschland Profile-ID",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeDE",
+    "config":{
+      "label":"Deutschland Security Code",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"button",
+    "name":"button1",
+    "config":{
+      "label":"<b>Zugangsdaten für Österreich:</b>",
+      "value":""
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePayProfileIDAT",
+    "config":{
+      "label":"Österreich Profile-ID",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeAT",
+    "config":{
+      "label":"Österreich Security Code",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"button",
+    "name":"button2",
+    "config":{
+      "label":"<b>Zugangsdaten für die Schweiz:</b>",
+      "value":""
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePayProfileIDCH",
+    "config":{
+      "label":"Schweiz Profile-ID",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeCH",
+    "config":{
+      "label":"Schweiz Security Code",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"button",
+    "name":"button4",
+    "config":{
+      "label":"<b>Zugangsdaten für Belgien:</b>",
+      "value":""
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePayProfileIDBE",
+    "config":{
+      "label":"Belgien Profile-ID",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeBE",
+    "config":{
+      "label":"Belgien Security Code",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"button",
+    "name":"button5",
+    "config":{
+      "label":"<b>Zugangsdaten für die Niederlande:</b>",
+      "value":""
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePayProfileIDNL",
+    "config":{
+      "label":"Niederlande Profile-ID",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeNL",
+    "config":{
+      "label":"Niederlande Security Code",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"button",
+    "name":"button3",
+    "config":{
+      "label":"<b>Bidirektionalität RatePAY-Bestellungen:</b>",
+      "value":""
+    }
+  },
+  {
+    "type":"checkbox",
+    "name":"RatePayBidirectional",
+    "config":{
+      "label":"Bidirektionalität aktivieren ( Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert}",
+      "scope":1
+    }
+  },
+  {
+    "type":"select",
+    "name":"RatePayFullDelivery",
+    "config":{
+      "label":"Status für Volllieferung",
+      "value":7,
+      "store":"base.OrderStatus",
+      "displayField":"description",
+      "valueField":"id",
+      "scope":1
+    }
+  },
+  {
+    "type":"select",
+    "name":"RatePayFullCancellation",
+    "config":{
+      "label":"Status für Vollstornierung",
+      "value":4,
+      "store":"base.OrderStatus",
+      "displayField":"description",
+      "valueField":"id",
+      "scope":1
+    }
+  },
+  {
+    "type":"select",
+    "name":"RatePayFullReturn",
+    "config":{
+      "label":"Status für Vollretournierung",
+      "value":4,
+      "store":"base.OrderStatus",
+      "displayField":"description",
+      "valueField":"id",
+      "scope":1
+    }
+  }
+]

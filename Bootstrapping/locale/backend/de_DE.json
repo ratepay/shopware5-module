@@ -1,0 +1,17 @@
+{
+  "RatePayProfileIDDE": "Deutschland Profile-ID",
+  "RatePaySecurityCodeDE": "Deutschland Security Code",
+  "RatePayProfileIDAT": "Österreich Profile-ID",
+  "RatePaySecurityCodeAT": "Österreich Security Code",
+  "RatePayProfileIDNL": "Niederlande Profile-ID",
+  "RatePaySecurityCodeNL": "Niederlande Security Code",
+  "RatePayProfileIDBE": "Belgien Profile-ID",
+  "RatePaySecurityCodeBE": "Belgien Security Code",
+  "RatePayProfileIDCH": "Schweitz Profile-ID",
+  "RatePaySecurityCodeCH": "Schweitz Security Code",
+  "button0": "Zugangsdaten für Deutschland",
+  "button1": "Zugangsdaten für Österreich",
+  "button2": "Zugangsdaten für die Schweiz",
+  "button4": "Zugangsdaten für Belgien",
+  "button5": "Zugangsdaten für die Niederlande"
+}
