@@ -136,6 +136,7 @@
                 // _dropOrderAdditionalAttributes
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup($this),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
                 // _truncateConfigTable
             ];
 
