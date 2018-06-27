@@ -601,9 +601,9 @@
                     }
                 } elseif ((substr($shopItem->articlenumber, 0, 5) == 'Debit')
                     || (substr($shopItem->articlenumber, 0, 6) == 'Credit')) {
-                    if ($this->_retry == true) {
+                    if ($this->_retry == true || $shopItem->price > 0) {
                         $item = array(
-                            'ArticleNumber' => $shopItem->articlenumber,
+                            'ArticleNumber' => $shopItem->articleordernumber,
                             'Quantity' => $shopItem->quantity,
                             'Description' => $shopItem->articlenumber,
                             'UnitPriceGross' => $shopItem->price,
@@ -616,7 +616,6 @@
                             'TaxRate' => $shopItem->taxRate,
                         );
                     }
-
                 } else {
                     if (is_array($shopItem)) {
                         if ($shopItem['quantity'] == 0 && empty($type)) {
@@ -798,11 +797,22 @@
             $mbHead = $this->getHead($countryCode);
 
             if ($operationData['subtype'] == 'credit') {
-                $shoppingItems = array('Discount' => $item = array(
-                    'Description' => $operationData['items']['name'],
-                    'UnitPriceGross' => $operationData['items']['price'],
-                    'TaxRate' => $operationData['items']['tax_rate']
-                ));
+                if ($operationData['items']['price'] > 0) {
+                    $shoppingItems['Items'] = array('Item' => $item = array(
+                        'ArticleNumber' => $operationData['items']['articleordernumber'],
+                        'Quantity' => 1,
+                        'Description' => $operationData['items']['name'],
+                        'UnitPriceGross' => $operationData['items']['price'],
+                        'TaxRate' => $operationData['items']['tax_rate'],
+                    ));
+                } else {
+                    $shoppingItems = array('Discount' => $item = array(
+                        'Description' => $operationData['items']['name'],
+                        'UnitPriceGross' => $operationData['items']['price'],
+                        'TaxRate' => $operationData['items']['tax_rate']
+                    ));
+                }
+
             } else {
                 $shoppingItems = $this->createBasketArray($operationData['items'], $operationData['subtype']);
             }
