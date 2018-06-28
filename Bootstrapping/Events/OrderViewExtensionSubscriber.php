@@ -9,17 +9,17 @@
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderViewExtensionSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
-     * @var Shopware_Components_Plugin_Bootstrap
+     * @var string
      */
-    private $bootstrap;
+    private $path;
 
     /**
-     * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_LoggingControllerSubscriber constructor.
-     * @param Shopware_Components_Plugin_Bootstrap $bootstrap
+     * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderViewExtensionSubscriber constructor.
+     * @param $path string base path to plugin
      */
-    public function __construct($bootstrap)
+    public function __construct($path)
     {
-        $this->bootstrap = $bootstrap;
+        $this->path = $path;
     }
 
     public static function getSubscribedEvents()
@@ -30,14 +30,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderViewExtens
     }
 
     /**
-     * extends the Orderdetailview
+     * Extends the Order-details view
      *
      * @param Enlight_Event_EventArgs $arguments
      */
     public function extendOrderDetailView(Enlight_Event_EventArgs $arguments)
     {
         $arguments->getSubject()->View()->addTemplateDir(
-            $this->bootstrap->Path() . 'Views/backend/rpay_ratepay_orderdetail/'
+            $this->path . 'Views/backend/rpay_ratepay_orderdetail/'
         );
 
         if ($arguments->getRequest()->getActionName() === 'load') {

@@ -268,17 +268,17 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                                 articleNumber.push(response.data.articleNumber);
                                                 insertedIds.push(response.data.id);
                                                 if (me.initPositions(articleNumber)) {
-                                                    if (me.paymentChange(id, 'credit', insertedIds)) {
-                                                        message = '{s namespace=RatePAY name=messagecreditsuccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
+                                                    if (me.paymentChange(id, 'debit', insertedIds)) {
+                                                        message = '{s namespace=RatePAY name=messagedebituccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
                                                     } else {
                                                         me.deletePosition(insertedIds);
-                                                        message = '{s namespace=RatePAY name=messagecreditfailrequest}Nachbelastung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
+                                                        message = '{s namespace=RatePAY name=messagedebitfailrequest}Nachbelastung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
                                                     }
                                                 } else {
-                                                    message = '{s namespace=RatePAY name=messagecreditfailposition}Nachbelastung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
+                                                    message = '{s namespace=RatePAY name=messagedebitfailposition}Nachbelastung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
                                                 }
                                                 Ext.getCmp('debitWindow').close();
-                                                Ext.Msg.alert('{s namespace=RatePAY name=messagecredittitle}Nachbelastung hinzuf&uuml;gen{/s}', message);
+                                                Ext.Msg.alert('{s namespace=RatePAY name=messagedebittitle}Nachbelastung hinzuf&uuml;gen{/s}', message);
                                                 me.reloadGrid();
                                             }
                                         });

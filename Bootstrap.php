@@ -106,7 +106,6 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_FormsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup($this),
-//                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_EventSubscriptionsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_MenuesSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentStatusesSetup($this),
@@ -137,15 +136,12 @@
         public function update($version)
         {
             $queue = [
-//                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_EventSubscriptionsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_FormsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup($this),
-                // _dropOrderAdditionalAttributes
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
-                // _truncateConfigTable
             ];
 
             $this->_dropOrderAdditionalAttributes();
@@ -223,13 +219,12 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigurationSubscriber($this->getName()),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsProcessSubscriber(),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_JavascriptSourceSubscriber($this->Path()),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderViewExtensionSubscriber($this->Path()),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransactionsSubscriber(),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderViewExtensionSubscriber($this),
             ];
 
             foreach ($subscribers as $subscriber) {
                 Shopware()->Events()->addSubscriber($subscriber);
             }
-
         }
     }
