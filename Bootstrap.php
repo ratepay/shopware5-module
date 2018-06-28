@@ -22,6 +22,14 @@
 
     class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Components_Plugin_Bootstrap
     {
+
+        const PAYMENT_METHODS = array(
+            'rpayratepayinvoice',
+            'rpayratepayrate',
+            'rpayratepaydebit',
+            'rpayratepayrate0',
+        );
+
         /**
          * Returns the Label of the Plugin
          *
