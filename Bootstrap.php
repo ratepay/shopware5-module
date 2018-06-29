@@ -22,6 +22,14 @@
 
     class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Components_Plugin_Bootstrap
     {
+
+        const PAYMENT_METHODS = array(
+            'rpayratepayinvoice',
+            'rpayratepayrate',
+            'rpayratepaydebit',
+            'rpayratepayrate0',
+        );
+
         /**
          * Returns the Label of the Plugin
          *
@@ -102,6 +110,7 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentStatusesSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DeliveryStatusesSetup($this),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
             ];
 
             foreach ($queue as $bootstrapper) {
@@ -132,6 +141,7 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup($this),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
             ];
 
             $this->_dropOrderAdditionalAttributes();
@@ -210,6 +220,7 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsProcessSubscriber(),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_JavascriptSourceSubscriber($this->Path()),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderViewExtensionSubscriber($this->Path()),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransactionsSubscriber(),
             ];
 
             foreach ($subscribers as $subscriber) {
