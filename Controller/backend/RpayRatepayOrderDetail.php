@@ -391,7 +391,7 @@
                 $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
 
                 if ($result === true) {
-                    if ($subOperation === 'credit') {
+                    if ($subOperation === 'credit' || $subOperation === 'debit') {
                         if ($row['price'] > 0) {
                             $event = 'Nachbelastung wurde hinzugefügt';
                         } else {
@@ -408,6 +408,7 @@
 
                         $newItems = Shopware()->Db()->fetchRow("SELECT * FROM `s_order_details` WHERE `id`=?", array($id));
                         $this->updateItem($orderId, $newItems['articleordernumber'], $bind);
+
                         if ($newItems['quantity'] <= 0) {
                             continue;
                         }
