@@ -28,7 +28,6 @@
          */
         public function logRequest($requestXml, $responseXml)
         {
-            $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
             $version = Shopware()->Plugins()->Frontend()->RpayRatePay()->getVersion();
 
             preg_match("/<operation.*>(.*)<\/operation>/", $requestXml, $operationMatches);
