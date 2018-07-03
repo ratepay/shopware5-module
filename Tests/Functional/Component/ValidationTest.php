@@ -13,8 +13,9 @@ use Shopware\Components\Test\Plugin\TestCase;
 class ValidationTest extends TestCase
 {
 
-    public function x_testIsBirthdayValid__tooYoung()
+    public function testIsBirthdayValid__tooYoung()
     {
+        $this->markTestSKipped("Method does not have expected behavior.");
         $customer = $this->getRandomCustomer();
 
         Shopware()->Session()->sUserId = $customer->getId();
