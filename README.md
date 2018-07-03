@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
-|Version | `5.0.6` 
+|Version | `5.0.7` 
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,12 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version Version 5.0.7 - Released 2018-07-03
+* add complete bidirectionally
+* add batch processing
+* refactor Bootstrap
+* fix alternative address option 
 
 ### Version Version 5.0.6 - Released 2018-05-07
 * remove special company name field
