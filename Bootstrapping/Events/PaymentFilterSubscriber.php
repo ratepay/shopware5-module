@@ -208,6 +208,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
      */
     private function existsAndNotEmpty($method, $object) {
         $check = (method_exists($object, $method) && !empty($object->$method()) && !is_null($object->$method()));
-        return (bool) $check;
+        return $check;
     }
 }

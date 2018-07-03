@@ -430,7 +430,7 @@
          */
         private function existsAndNotEmpty(&$object, $method) {
             $check = (method_exists($object, $method) && !empty($object->$method()) && !is_null($object->$method()));
-            return (bool)$check;
+            return $check;
         }
 
         /**
