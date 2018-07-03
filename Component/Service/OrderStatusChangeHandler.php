@@ -12,8 +12,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullDelivery'])) {
             return false;
         }
-
-        if (!in_array($order->getPayment()->getName(), Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS)) {
+        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        if (!in_array($order->getPayment()->getName(), $paymentMethods)) {
             return false;
         }
 
@@ -38,8 +38,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullCancellation'])) {
             return false;
         }
-
-        if (!in_array($order->getPayment()->getName(), Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS)) {
+        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        if (!in_array($order->getPayment()->getName(), $paymentMethods)) {
             return false;
         }
 
@@ -65,8 +65,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullReturn'])) {
             return false;
         }
-
-        if (!in_array($order->getPayment()->getName(), Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS)) {
+        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        if (!in_array($order->getPayment()->getName(), $paymentMethods)) {
             return false;
         }
 

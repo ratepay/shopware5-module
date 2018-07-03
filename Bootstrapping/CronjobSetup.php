@@ -2,7 +2,7 @@
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
 {
-    const UPDATE_TRANSACTIONS_INTERVAL_SECONDS = 60 * 60;
+    const UPDATE_TRANSACTIONS_INTERVAL_SECONDS = 3600;
     const UPDATE_TRANSACTIONS_ACTION = 'UpdateRatepayTransactions';
 
     /**

@@ -8,8 +8,6 @@
 
 abstract class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
 {
-    const CONFIG_SRC_PATH = __DIR__ . DIRECTORY_SEPARATOR;
-
     /**
      * @var Shopware_Components_Plugin_Bootstrap
      */
@@ -46,8 +44,8 @@ abstract class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
      */
     public function loadConfig($configFile)
     {
-        if (!empty($configFile) && file_exists(self::CONFIG_SRC_PATH . $configFile)) {
-            return json_decode(file_get_contents(self::CONFIG_SRC_PATH . $configFile), true);
+        if (!empty($configFile) && file_exists(__DIR__ . DIRECTORY_SEPARATOR . $configFile)) {
+            return json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . $configFile), true);
         }
 
         throw new Exception("Unable to load configuration file '$configFile'");

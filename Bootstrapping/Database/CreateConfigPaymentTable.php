@@ -8,16 +8,25 @@
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigPaymentTable
 {
-    protected $query = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config_payment` (" .
-        "`rpay_id` int(2) NOT NULL AUTO_INCREMENT," .
-        "`status` varchar(255) NOT NULL," .
-        "`b2b` int(2) NOT NULL," .
-        "`limit_min` int NOT NULL," .
-        "`limit_max` int NOT NULL," .
-        "`limit_max_b2b` int," .
-        "`address` int(2) NOT NULL," .
-        "PRIMARY KEY (`rpay_id`)" .
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+    /**
+     * @return string
+     */
+    protected function getQuery()
+    {
+       $query = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config_payment` (" .
+           "`rpay_id` int(2) NOT NULL AUTO_INCREMENT," .
+           "`status` varchar(255) NOT NULL," .
+           "`b2b` int(2) NOT NULL," .
+           "`limit_min` int NOT NULL," .
+           "`limit_max` int NOT NULL," .
+           "`limit_max_b2b` int," .
+           "`address` int(2) NOT NULL," .
+           "PRIMARY KEY (`rpay_id`)" .
+           ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+       return $query;
+    }
+
+
 
     /**
      * @param Enlight_Components_Db_Adapter_Pdo_Mysql $database
@@ -26,6 +35,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigP
     public function __invoke($database)
     {
         $database->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
-        $database->query($this->query);
+        $database->query($this->getQuery());
     }
 }

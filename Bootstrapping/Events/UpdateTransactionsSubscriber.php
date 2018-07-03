@@ -60,7 +60,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransacti
      */
     private function findCandidateOrdersForUpdate($config)
     {
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS;
+        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         $orderStatus = [
             $config['RatePayFullDelivery'],
             $config['RatePayFullCancellation'],

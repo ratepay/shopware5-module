@@ -44,9 +44,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
         $request = $arguments->getSubject()->Request();
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $request->getParam('id'));
         $newPaymentMethod = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $request->getParam('paymentId'));
-
-        if ((!in_array($order->getPayment()->getName(), Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS) && in_array($newPaymentMethod->getName(), Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS))
-            || (in_array($order->getPayment()->getName(), Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS) && $newPaymentMethod->getName() != $order->getPayment()->getName())
+        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        if ((!in_array($order->getPayment()->getName(), $paymentMethods) && in_array($newPaymentMethod->getName(), $paymentMethods))
+            || (in_array($order->getPayment()->getName(), $paymentMethods) && $newPaymentMethod->getName() != $order->getPayment()->getName())
         ) {
             Shopware()->Pluginlogger()->addNotice('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
             $arguments->stop();
@@ -68,9 +68,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
-
+        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if (!$config->get('RatePayBidirectional') ||
-            !in_array($order->getPayment()->getName(), Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS)
+            !in_array($order->getPayment()->getName(), $paymentMethods)
         ) {
             return;
         }
@@ -102,8 +102,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
 
         foreach ($orders as $order) {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $order['id']);
-
-            if (!in_array($order->getPayment()->getName(), Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS)) {
+            $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+            if (!in_array($order->getPayment()->getName(), $paymentMethods)) {
                 continue;
             }
 
@@ -127,7 +127,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
         $request = $arguments->getSubject()->Request();
         $parameter = $request->getParams();
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['orderID']);
-        if ($parameter['valid'] != true && in_array($order->getPayment()->getName(), Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS)) {
+        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        if ($parameter['valid'] != true && in_array($order->getPayment()->getName(), $paymentMethods)) {
             Shopware()->Pluginlogger()->warning('Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
             $arguments->stop();
         }
@@ -148,7 +149,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
     {
         $request = $arguments->getSubject()->Request();
         $parameter = $request->getParams();
-        if (!in_array($parameter['payment'][0]['name'], Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::PAYMENT_METHODS)) {
+        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        if (!in_array($parameter['payment'][0]['name'], $paymentMethods)) {
             return false;
         }
         $sql = "SELECT COUNT(*) FROM `s_order_details` AS `detail` "
