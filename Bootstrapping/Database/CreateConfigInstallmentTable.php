@@ -8,14 +8,19 @@
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigInstallmentTable
 {
-    protected $query = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config_installment` (" .
-        "`rpay_id` int(2) NOT NULL," .
-        "`month-allowed` varchar(255) NOT NULL," .
-        "`payment-firstday` varchar(10) NOT NULL," .
-        "`interestrate-default` float NOT NULL," .
-        "`rate-min-normal` float NOT NULL," .
-        "PRIMARY KEY (`rpay_id`)" .
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+    protected function getQuery()
+    {
+        $query = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_config_installment` (" .
+            "`rpay_id` int(2) NOT NULL," .
+            "`month-allowed` varchar(255) NOT NULL," .
+            "`payment-firstday` varchar(10) NOT NULL," .
+            "`interestrate-default` float NOT NULL," .
+            "`rate-min-normal` float NOT NULL," .
+            "PRIMARY KEY (`rpay_id`)" .
+            ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+        return $query;
+    }
+
 
     /**
      * @param Enlight_Components_Db_Adapter_Pdo_Mysql $database
@@ -24,6 +29,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigI
     public function __invoke($database)
     {
         $database->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
-        $database->query($this->query);
+        $database->query($this->getQuery());
     }
 }
