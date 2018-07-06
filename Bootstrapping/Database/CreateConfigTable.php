@@ -50,5 +50,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigT
             $sql = "ALTER TABLE rpay_ratepay_config ADD COLUMN backend int(1) NOT NULL";
             $database->query($sql);
         }
+
+        $sql = "ALTER TABLE rpay_ratepay_config DROP PRIMARY KEY, ADD PRIMARY KEY (shopId, country, backend);";
+        $database->query($sql);
     }
 }
