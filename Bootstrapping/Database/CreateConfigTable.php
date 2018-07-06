@@ -5,6 +5,7 @@
  * Date: 12.06.18
  * Time: 11:01
  */
+use Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util as Util;
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigTable
 {
@@ -41,7 +42,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigT
      */
     public function __invoke($database)
     {
-        $database->query("DROP TABLE IF EXISTS `rpay_ratepay_config`");
         $database->query($this->getQuery());
+
+        $hasColumnBackend = Util::tableHasColumn('rpay_ratepay_config', 'backend');
+
+        if (!$hasColumnBackend) {
+            $sql = "ALTER TABLE rpay_ratepay_config ADD COLUMN backend int(1) NOT NULL";
+            $database->query($sql);
+        }
     }
 }

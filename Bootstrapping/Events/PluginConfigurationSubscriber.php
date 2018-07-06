@@ -64,6 +64,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
                         $shopCredentials[$element['shopId']][$country]['securityCode'] = $element['value'];
                     }
                 }
+
+
+
+
+
             }
         }
 
@@ -114,11 +119,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
      * @param string $securityCode
      * @param int $shopId
      * @param string $country
+     * @param bool $backend
      *
      * @return mixed
      * @throws exception
      */
-    private function getRatepayConfig($profileId, $securityCode, $shopId, $country)
+    private function getRatepayConfig($profileId, $securityCode, $shopId, $country, $backend = false)
     {
         $factory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
         $data = array(
