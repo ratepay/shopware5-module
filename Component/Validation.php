@@ -1,5 +1,6 @@
 <?php
 
+    use RpayRatePay\Component\Service\Validation as ValidationService;
     /**
      * This program is free software; you can redistribute it and/or modify it under the terms of
      * the GNU General Public License as published by the Free Software Foundation; either
@@ -41,7 +42,7 @@
          */
         private $_allowedCurrencies;
 
-        /**
+        **
          * Allowed billing countries from configuration table
          *
          * @var array
@@ -135,25 +136,7 @@
          */
         public function isBirthdayValid()
         {
-            $birthday = $this->_user->getBirthday();
-
-            if (empty($birthday) || is_null($birthday)) {
-                $birthday = $this->_user->getBilling()->getBirthday();
-            }
-
-            $return = false;
-            if (!is_null($birthday)) {
-                if (!$birthday instanceof \DateTime) {
-                    $birthday = new \DateTime($birthday);
-                }
-
-                if (preg_match("/^\d{4}-\d{2}-\d{2}$/", $birthday->format('Y-m-d')) !== 0)
-                {
-                    $return = true;
-                }
-            }
-
-            return $return;
+            return ValidationService::isBirthdayValid($this->_user);
         }
 
         /**
@@ -163,9 +146,7 @@
          */
         public function isTelephoneNumberSet()
         {
-            $phone = $this->_user->getBilling()->getPhone();
-
-            return !empty($phone);
+            return ValidationService::isTelephoneNumberSet($this->_user);
         }
 
         /**

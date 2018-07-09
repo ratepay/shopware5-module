@@ -44,7 +44,13 @@
 
         public function afterInit()
         {
-            $this->get('Loader')->registerNamespace('RatePAY', $this->Path() . 'Component/Library/src/');
+            $loader = $this->get('Loader');
+
+            //Plugin
+            $loader->registerNamespace('RpayRatePay', $this->Path() . '/');
+
+            //library
+            $loader->registerNamespace('RatePAY', $this->Path() . 'Component/Library/src/');
         }
 
         /**
@@ -223,6 +229,7 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_JavascriptSourceSubscriber($this->Path()),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderViewExtensionSubscriber($this->Path()),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransactionsSubscriber(),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderControllerSubscriber($this->Path()),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderViewExtensionSubscriber($this->Path()),
             ];
 
