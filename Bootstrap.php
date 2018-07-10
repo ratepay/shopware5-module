@@ -148,7 +148,7 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup($this),
+                //new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
             ];
 
@@ -237,4 +237,19 @@
                 Shopware()->Events()->addSubscriber($subscriber);
             }
         }
+
+        /**
+         * @return bool
+         */
+        public function isSWAGBackendOrdersActive()
+        {
+            $sql = "SELECT id FROM s_core_plugins WHERE `name`='SWAGBackendOrder' AND active=1";
+            $result = Shopware()->Db()->fetchOne($sql);
+            if (empty($result)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
     }

@@ -53,15 +53,26 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
         $this->_truncateConfigTables();
 
         foreach ($parameter['elements'] as $element) {
+
             foreach ($this->_countries AS $country) {
                 if ($element['name'] === 'RatePayProfileID' . strtoupper($country)) {
                     foreach($element['values'] as $element) {
-                        $shopCredentials[$element['shopId']][$country]['profileID'] = $element['value'];
+                        $shopCredentials[$element['shopId']][$country]['profileID'] = trim($element['value']);
                     }
                 }
                 if ($element['name'] === 'RatePaySecurityCode'  . strtoupper($country)) {
                     foreach($element['values'] as $element) {
-                        $shopCredentials[$element['shopId']][$country]['securityCode'] = $element['value'];
+                        $shopCredentials[$element['shopId']][$country]['securityCode'] = trim($element['value']);
+                    }
+                }
+                if ($element['name'] === 'RatePayProfileID' . strtoupper($country) . 'Backend') {
+                    foreach($element['values'] as $element) {
+                        $shopCredentials[$element['shopId']][$country]['profileIDBackend'] = trim($element['value']);
+                    }
+                }
+                if ($element['name'] === 'RatePaySecurityCode' . strtoupper($country) . 'Backend') {
+                    foreach($element['values'] as $element) {
+                        $shopCredentials[$element['shopId']][$country]['securityCodeBackend'] = trim($element['value']);
                     }
                 }
             }
@@ -69,16 +80,25 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
 
         foreach($shopCredentials as $shopId => $credentials) {
             foreach ($this->_countries AS $country) {
-                if (null !== $credentials[$country]['profileID']
-                    && null !== $credentials[$country]['securityCode']
-                )
-                {
+                if (null !== $credentials[$country]['profileID'] &&
+                    null !== $credentials[$country]['securityCode']) {
                     if ($this->getRatepayConfig($credentials[$country]['profileID'], $credentials[$country]['securityCode'], $shopId, $country)) {
                         Shopware()->PluginLogger()->addNotice('Ruleset for ' . strtoupper($country) . ' successfully updated.');
                     }
                     if ($country == 'de') {
                         if ($this->getRatepayConfig($credentials[$country]['profileID'] . '_0RT', $credentials[$country]['securityCode'], $shopId, $country)) {
-                            Shopware()->PluginLogger()->addNotice('Ruleset for ' . strtoupper($country) . ' successfully updated.');
+                            Shopware()->PluginLogger()->addNotice('Ruleset 0RT for ' . strtoupper($country) . ' successfully updated.');
+                        }
+                    }
+                }
+                if (null !== $credentials[$country]['profileIDBackend'] &&
+                    null !== $credentials[$country]['securityCodeBackend']) {
+                    if ($this->getRatepayConfig($credentials[$country]['profileIDBackend'], $credentials[$country]['securityCodeBackend'], $shopId, $country, true)) {
+                        Shopware()->PluginLogger()->addNotice('Ruleset BACKEND for ' . strtoupper($country) . ' successfully updated.');
+                    }
+                    if ($country == 'de') {
+                        if ($this->getRatepayConfig($credentials[$country]['profileIDBackend'] . '_0RT', $credentials[$country]['securityCodeBackend'], $shopId, $country, true)) {
+                            Shopware()->PluginLogger()->addNotice('Ruleset BACKEND 0RT for ' . strtoupper($country) . ' successfully updated.');
                         }
                     }
                 }
@@ -114,11 +134,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
      * @param string $securityCode
      * @param int $shopId
      * @param string $country
+     * @param bool $backend
      *
      * @return mixed
      * @throws exception
      */
-    private function getRatepayConfig($profileId, $securityCode, $shopId, $country)
+    private function getRatepayConfig($profileId, $securityCode, $shopId, $country, $backend = false)
     {
         $factory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
         $data = array(
@@ -147,7 +168,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
                     $response['result']['merchantConfig']['delivery-address-'  . $payment] == 'yes' ? 1 : 0,
                 );
 
-                $paymentSql = 'REPLACE INTO `rpay_ratepay_config_payment`'
+                $paymentSql = 'INSERT INTO `rpay_ratepay_config_payment`'
                     . '(`status`, `b2b`,`limit_min`,`limit_max`,'
                     . '`limit_max_b2b`, `address`)'
                     . 'VALUES(' . substr(str_repeat('?,', 6), 0, -1) . ');';
@@ -169,7 +190,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
                     $response['result']['installmentConfig']['rate-min-normal'],
                     $response['result']['installmentConfig']['interestrate-default'],
                 );
-                $paymentSql = 'REPLACE INTO `rpay_ratepay_config_installment`'
+                $paymentSql = 'INSERT INTO `rpay_ratepay_config_installment`'
                     . '(`rpay_id`, `month-allowed`,`payment-firstday`,`interestrate-default`,'
                     . '`rate-min-normal`)'
                     . 'VALUES(' . substr(str_repeat('?,', 5), 0, -1) . ');';
@@ -200,6 +221,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
                     strtoupper($response['result']['merchantConfig']['currency']),
                     strtoupper($country),
                     $response['sandbox'],
+                    $backend,
                     //shopId always needs be the last line
                     $shopId
                 );
@@ -212,13 +234,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
                 if (count($activePayments) > 0) {
                     $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(",", $activePayments) . ') AND `active` <> 0';
                 }
-                $configSql = 'REPLACE INTO `rpay_ratepay_config`'
+                $configSql = 'INSERT INTO `rpay_ratepay_config`'
                     . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`,'
                     . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
                     . '`country-code-billing`, `country-code-delivery`,'
                     . '`currency`,`country`, `sandbox`,'
-                    . ' `shopId`)'
-                    . 'VALUES(' . substr(str_repeat('?,', 14), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
+                    . '`backend`, `shopId`)'
+                    . 'VALUES(' . substr(str_repeat('?,', 15), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
                 try {
                     Shopware()->Db()->query($configSql, $data);
                     if (count($activePayments) > 0) {

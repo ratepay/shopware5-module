@@ -39,11 +39,7 @@
         {
             $Parameter = $this->Request()->getParams();
 
-            if (isset(Shopware()->Session()->sUserId)) {
-                $userId = Shopware()->Session()->sUserId;
-            } elseif (isset($Parameter['userid'])) {
-                $userId = $Parameter['userid'];
-            } else { // return if no current user set. e.g. call by crawler
+            if (!isset(Shopware()->Session()->sUserId) && !isset($Parameter['userid'])) {
                 return "RatePAY frontend controller: No user set";
             }
 
@@ -291,7 +287,7 @@
          * @param $country
          * @return array
          */
-        private function getRatePayPluginConfigByCountry($shopId, $country) {
+        private function getRatePayPluginConfigByCountry($shopId, $country, $backend=false) {
             //fetch correct config for current shop based on user country
             $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
 
@@ -305,7 +301,9 @@
                 `shopId` =?
                 AND
                 `profileId`=?
-            ', array($shopId, $profileId));
+                AND 
+                backend=?
+            ', array($shopId, $profileId, $backend));
         }
 
         /**

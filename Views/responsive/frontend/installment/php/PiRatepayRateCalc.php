@@ -35,7 +35,7 @@
          *
          * @return array $installmentConfigArray
          */
-        public function getRatepayRateConfig()
+        public function getRatepayRateConfig($backend = false)
         {
             $paymentType = $_SESSION['Shopware']['sOrderVariables']['sUserData']['additional']['payment']['name'];
             if ($paymentType == 'rpayratepayrate') {

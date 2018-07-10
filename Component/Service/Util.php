@@ -37,4 +37,19 @@
             }
         }
 
+        /**
+         * @param $table string
+         * @param $column string
+         *
+         * @return bool
+         */
+        public static function tableHasColumn($table, $column)
+        {
+            $sql = "SHOW COLUMNS FROM $table LIKE '$column'";
+            $res = Shopware()->Db()->fetchRow($sql);
+            if (empty($res)) {
+                return false;
+            }
+            return true;
+        }
     }

@@ -26,6 +26,24 @@
     }
   },
   {
+    "type":"text",
+    "name":"RatePayProfileIDDEBackend",
+    "config":{
+      "label":"Deutschland Profile-ID BACKEND",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeDEBackend",
+    "config":{
+      "label":"Deutschland Security Code BACKEND",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
     "type":"button",
     "name":"button1",
     "config":{
@@ -47,6 +65,24 @@
     "name":"RatePaySecurityCodeAT",
     "config":{
       "label":"Österreich Security Code",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePayProfileIDATBackend",
+    "config":{
+      "label":"Österreich Profile-ID BACKEND",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeATBackend",
+    "config":{
+      "label":"Österreich Security Code BACKEND",
       "value":"",
       "scope":1
     }
@@ -78,6 +114,24 @@
     }
   },
   {
+    "type":"text",
+    "name":"RatePayProfileIDCHBackend",
+    "config":{
+      "label":"Schweiz Profile-ID BACKEND",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeCHBackend",
+    "config":{
+      "label":"Schweiz Security Code BACKEND",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
     "type":"button",
     "name":"button4",
     "config":{
@@ -104,6 +158,24 @@
     }
   },
   {
+    "type":"text",
+    "name":"RatePayProfileIDBEBackend",
+    "config":{
+      "label":"Belgien Profile-ID BACKEND",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeBEBackend",
+    "config":{
+      "label":"Belgien Security Code BACKEND",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
     "type":"button",
     "name":"button5",
     "config":{
@@ -125,6 +197,24 @@
     "name":"RatePaySecurityCodeNL",
     "config":{
       "label":"Niederlande Security Code",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePayProfileIDNLBackend",
+    "config":{
+      "label":"Niederlande Profile-ID BACKEND",
+      "value":"",
+      "scope":1
+    }
+  },
+  {
+    "type":"text",
+    "name":"RatePaySecurityCodeNLBackend",
+    "config":{
+      "label":"Niederlande Security Code BACKEND",
       "value":"",
       "scope":1
     }

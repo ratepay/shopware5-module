@@ -86,7 +86,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
         //get current shopId
         $shopId = Shopware()->Shop()->getId();
 
-        $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
+        $backend = false;
+        $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling, $backend);
         foreach ($config AS $payment => $data) {
             $show[$payment] = $data['status'] == 2 ? true : false;
 
@@ -177,12 +178,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
      * @param $country
      * @return array
      */
-    private function getRatePayPluginConfigByCountry($shopId, $country) {
+    private function getRatePayPluginConfigByCountry($shopId, $country, $backend = false) {
         //fetch correct config for current shop based on user country
         $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
         $payments = array("installment", "invoice", "debit", "installment0");
         $paymentConfig = array();
 
+        $sBackend = $backend ? '1' : '0';
         foreach ($payments AS $payment) {
             $qry = "SELECT * 
                         FROM `rpay_ratepay_config` AS rrc
@@ -191,7 +193,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
                           LEFT JOIN `rpay_ratepay_config_installment` AS rrci
                             ON rrci.`rpay_id` = rrc.`" . $payment . "`
                         WHERE rrc.`shopId` = '" . $shopId . "'
-                             AND rrc.`profileId`= '" . $profileId . "'";
+                             AND rrc.`profileId`= '" . $profileId . "'
+                        AND rrc.backend=$sBackend";
             $result = Shopware()->Db()->fetchRow($qry);
 
             if (!empty($result)) {

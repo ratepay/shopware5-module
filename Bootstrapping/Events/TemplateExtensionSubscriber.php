@@ -112,7 +112,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensi
     /**
      * @param bool $isBackend
      */
-    protected function registerMyTemplateDir($isBackend = false)
+    protected function registerMyTemplateDir()
     {
         Shopware()->Template()->addTemplateDir($this->path . 'Views/responsive', 'rpay');
     }
@@ -126,7 +126,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensi
     private function getRatePayPluginConfig($shopId) {
         //get ratepay config based on shopId
         return Shopware()->Db()->fetchRow(
-            'SELECT * FROM `rpay_ratepay_config` WHERE `shopId`=?',
+            'SELECT * FROM `rpay_ratepay_config` WHERE `shopId`=? AND backend=0',
             array($shopId)
         );
     }
