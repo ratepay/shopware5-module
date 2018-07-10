@@ -22,7 +22,14 @@ use RpayRatePay\Component\Service\Validation;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
 {
-    public function checkCustomerDataAction()
+
+    private function getSnippet($namespace, $name, $default)
+    {
+        $ns = Shopware()->Snippets()->getNamespace($namespace);
+        return $ns->get($name, $default);
+    }
+
+    public function prevalidateAction()
     {
         $params = $this->Request()->getParams();
         $customerId = $params['customerId'];
@@ -31,12 +38,11 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $validations = [];
 
         if (!Validation::isBirthdayValid($customer)) {
-            $validations[] = 'Geburtstag nicht gültig.';
+            $validations[] = $this->getSnippet("RatePAY/backend/backend_orders","birthday_not_valid", "Geburtstag nicht gültig.");
         }
 
-
         if (!Validation::isTelephoneNumberSet($customer)) {
-            $validations[] = 'Telephonnummer nicht gültig';
+            $validations[] = $this->getSnippet("RatePAY/backend/backend_orders","telephone_not_set",  "Kunden-Telefonnummer nicht gesetzt.");
         }
 
         if (count($validations) == 0) {

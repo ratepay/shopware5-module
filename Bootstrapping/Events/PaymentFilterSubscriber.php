@@ -36,6 +36,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
      */
     public function filterPayments(Enlight_Event_EventArgs $arguments)
     {
+
         $return = $arguments->getReturn();
         $currency = Shopware()->Config()->get('currency');
         $userId = Shopware()->Session()->sUserId;
