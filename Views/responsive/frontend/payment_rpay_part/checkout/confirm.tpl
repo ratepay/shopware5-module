@@ -61,12 +61,9 @@
                                     <a id="changeFirstday" style="display: none;cursor: pointer;" onclick="changeFirstday(28);">Ich möchte die Ratenzahlung selbst vornehmen und nicht per Lastschrift begleichen</a>
                                     <a id="changeFirstday2" style="display: none;cursor: pointer;" onclick="changeFirstday(2);">Ich möchte die Ratenzahlung per Lastschrift begleichen</a>
                                 {/if}
-
+                                <br />
+                                <small><strong>{s namespace=frontend/register/personal_fieldset name=RegisterPersonalRequiredText}* hierbei handelt es sich um ein Pflichtfeld{/s}</strong></small>
                             </div>
-                        </div>
-
-                        <div class="register--required-info required_fields">
-                            <strong>{s namespace=frontend/register/personal_fieldset name=RegisterPersonalRequiredText}* hierbei handelt es sich um ein Pflichtfeld{/s}</strong>
                         </div>
                     </form>
                 </div>
