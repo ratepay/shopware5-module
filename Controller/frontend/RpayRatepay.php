@@ -21,7 +21,6 @@
 
     class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
     {
-
         /**
          * Stores an Instance of the Shopware\Models\Customer\Billing model
          *
@@ -206,6 +205,7 @@
                         array(
                             'attribute5' => $dgNumber,
                             'attribute6' => Shopware()->Session()->RatePAY['transactionId'],
+                            'ratepay_fallback_shipping' => Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem'),
                         ),
                         'orderID=' . $orderId
                     );
