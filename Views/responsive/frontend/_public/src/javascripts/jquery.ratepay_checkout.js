@@ -180,9 +180,9 @@
                 });
 
                 /* dob validation */
-                if ($('#ratepay_birthyear').length) { /* only do the check if dob form exists */
-                    if ($('#ratepay_birthyear').val() != '' && $('#ratepay_birthmonth').val() != '' && $('#ratepay_birthday').val() != '') {
-                        dob = new Date($('#ratepay_birthyear').val() + '-' + $('#ratepay_birthmonth').val() + '-' + $('#ratepay_birthday').val());
+                if ($('#ratepay_birthday').length) { /* only do the check if dob form exists */
+                    if ($('#ratepay_birthday').val() != '') {
+                        dob = new Date($('#ratepay_birthday').val());
 
                         /* validate age */
                         if (getAge(dob) < 18 || getAge(dob) > 120) {
