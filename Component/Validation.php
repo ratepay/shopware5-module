@@ -107,6 +107,7 @@
         /**
          * Checks the Customers Age for RatePAY payments
          *
+         * TODO remove dupliacte code (see isBirthdayValid
          * @return boolean
          */
         public function isAgeValid()
@@ -188,23 +189,7 @@
                 $shippingAddress = $this->_user->getShipping();
             }
 
-            $classFunctions = array(
-                'getCompany',
-                'getFirstname',
-                'getLastName',
-                'getStreet',
-                'getZipCode',
-                'getCity',
-            );
-            $return = true;
-            if (!is_null($shippingAddress)) {
-                foreach ($classFunctions as $function) {
-                    if (strval(call_user_func(array($billingAddress, $function))) != strval(call_user_func(array($shippingAddress, $function)))) {
-                        Shopware()->Pluginlogger()->info('areAddressesEqual-> The value of ' . $function . " differs.");
-                        $return = false;
-                    }
-                }
-            }
+            $return = ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress);
 
             return $return;
         }

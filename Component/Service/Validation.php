@@ -21,6 +21,7 @@ class Validation
 
         //throws exception, method not found
         //if necessary, we could check for it through reflection
+        //TODO, ask Anni about this
         /*if (empty($birthday) || is_null($birthday)) {
             $birthday = $customer->getBilling()->getBirthday();
         }*/
@@ -49,5 +50,34 @@ class Validation
         $phone = $customer->getBilling()->getPhone();
 
         return !empty($phone);
+    }
+
+    /**
+     * Compares billing and shipping addresses.
+     * If shipping is null, returns true.
+     *
+     * @param Shopware\Models\Customer\Address $billing
+     * @param Shopware\Models\Customer\Address $shipping
+     */
+    public static function areBillingAndShippingSame($billing, $shipping = null)
+    {
+        $classFunctions = array(
+            'getCompany',
+            'getFirstname',
+            'getLastName',
+            'getStreet',
+            'getZipCode',
+            'getCity',
+        );
+
+        if (!is_null($shipping)) {
+            foreach ($classFunctions as $function) {
+                if (strval(call_user_func(array($billing, $function))) != strval(call_user_func(array($shipping, $function)))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }

@@ -31,8 +31,8 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                     params: {
                         customerId: me.customerId,
                         totalCosts: me.getTotalCost(),
-                        billing: me.getBilling(),
-                        shipping: me.getShipping(),
+                        billing: me.getBillingId(),
+                        shipping: me.getShippingId(),
                         pamentName: name
                     },
                     success: function(response) {
@@ -66,15 +66,15 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             return totalCostsModel.get("total");
         }
     },
-    getShipping: function() {
+    getShippingId: function() {
         var me = this;
         return me.getAddress(false);
     },
-    getBilling: function() {
+    getBillingId: function() {
         var me = this;
-        return me.getAddress();
+        return me.getAddressId();
     },
-    getAddress: function(billing = true) {
+    getAddressId: function(billing = true) {
         var me = this;
         var customerStore = me.subApplication.getStore("Customer");
         var customerModel = customerStore.getAt(0);
@@ -82,10 +82,10 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             var store = billing ? customerModel.billing() : customerModel.shipping();
             var model = store.getAt(0);
             if(model !== undefined) {
-                return Ext.JSON.encode(model.getData());
+                return model.id();//Ext.JSON.encode(model.getData());
             }
         }
-        return '';
+        return null;
     }
 });
 //
