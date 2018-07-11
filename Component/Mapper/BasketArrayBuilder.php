@@ -8,7 +8,7 @@
 
 // namespace RpayRatePay\Component\Mapper;
 
-class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayFactory
+class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
 {
     /**
      * @var array

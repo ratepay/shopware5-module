@@ -439,7 +439,6 @@
          */
         private function getPaymentDetails() {
             $paymentDetails = array();
-
             $paymentDetails['InstallmentNumber'] = Shopware()->Session()->RatePAY['ratenrechner']['number_of_rates'];
             $paymentDetails['InstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['rate'];
             $paymentDetails['LastInstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['last_rate'];
@@ -544,7 +543,7 @@
         private function createBasketArray($items, $type = false, $orderId = null) {
             $netPriceAllowed = $this->isNetPriceAllowed();
             $useFallbackShipping = $this->usesShippingItemFallback($orderId);
-            $basketFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayFactory(
+            $basketFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder(
                 $this->_retry,
                 $type,
                 $netPriceAllowed,
