@@ -8,6 +8,9 @@
                 return;
             }
 
+            const BANK_TRANSFER = 28;
+            const DIRECT_DEBIT = 2;
+
             var me = this;
 
             me.$checkoutButton = $('button[form=confirm--form]');
@@ -25,14 +28,14 @@
                 $("#ratepay_error").parent().removeClass("is--hidden");
             }
 
-            if ($("#paymentFirstday").val() == 28) {
+            if ($("#paymentFirstday").val() == BANK_TRANSFER) {
                 var debitDetails = $("#debitDetails");
                 $("#paywire").hide();
                 $("#wicAGB").hide();
                 debitDetails.remove();
             }
 
-            if ($("#paymentFirstday").val() == 2) {
+            if ($("#paymentFirstday").val() == DIRECT_DEBIT) {
                 $("#debitDetails").hide();
                 $("#paywire").show();
                 $("#wicAGB").show();
@@ -47,7 +50,7 @@
                 $("#wicAGB").remove();
             }
 
-            if ($("#paymentFirstday").val() == 2 && $("#firstdaySwitch").val() == 1) {
+            if ($("#paymentFirstday").val() == DIRECT_DEBIT && $("#firstdaySwitch").val() == 1) {
                 $("#changeFirstday").show();
             }
 

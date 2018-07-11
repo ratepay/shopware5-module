@@ -388,15 +388,21 @@
                 $contentArr['Customer']['CompanyName'] = $checkoutAddressBilling->getCompany();
                 $contentArr['Customer']['VatId'] = $checkoutAddressBilling->getVatId();
             }
-            $elv = false;
-            if (!empty($installmentDetails)) {
-                if (Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 28) {
-                    $contentArr['Payment']['DebitPayType'] = 'BANK-TRANSFER';
-                } else {
-                    $contentArr['Payment']['DebitPayType'] = 'DIRECT-DEBIT';
-                    $elv = true;
 
+            $elv = false;
+
+            if (!empty($installmentDetails)) {
+
+                $serviceUtil = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util();
+
+                $contentArr['Payment']['DebitPayType'] = $serviceUtil->getDebitPayType(
+                    Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday']
+                );
+                
+                if ($contentArr['Payment']['DebitPayType'] == 'DIRECT-DEBIT') {
+                    $elv = true;
                 }
+
                 $contentArr['Payment']['Amount'] = Shopware()->Session()->RatePAY['ratenrechner']['total_amount'];
                 $contentArr['Payment']['InstallmentDetails'] = $installmentDetails;
             }
