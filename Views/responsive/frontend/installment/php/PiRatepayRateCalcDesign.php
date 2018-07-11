@@ -17,6 +17,14 @@
     $pi_language = $pi_calculator->getLanguage();
     $pi_firstday = $pi_calculator->getRequestFirstday();
 
+    if ($pi_config['payment_firstday'] && ! empty($pi_config['payment_firstday'])) {
+        $serviceUtil = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util();
+        $debitPayType = $serviceUtil->getDebitPayType($pi_config['payment_firstday']);
+    } else {
+        $pi_config['payment_firstday'] = 28;
+    }
+
+    
     if ($pi_language == "DE") {
         require_once $calcPath . '/languages/german.php';
         $pi_currency = 'EUR';
@@ -116,15 +124,12 @@
     </div>
     <br style="clear: both"/>
 <?php
-        if ($pi_config['payment_firstday'] == '2,28') {
+        if ($debitPayType == 'FIRSTDAY-SWITCH') {
 ?>
             <input type="hidden" id="paymentFirstday" name="paymentFirstday" value="2">
             <input type="hidden" id="firstdaySwitch" value="1">
 <?php
         } else {
-            if (!$pi_config['payment_firstday'] || empty($pi_config['payment_firstday'])) {
-                $pi_config['payment_firstday'] = 28;
-            }
 ?>
             <input type="hidden" id="paymentFirstday" value="<?php echo $pi_config['payment_firstday']; ?>">
 <?php
