@@ -9,8 +9,32 @@ use PHPUnit\Framework\TestCase;
 
 class BasketArrayBuilderTest extends TestCase
 {
-    public function testMe()
+    /**
+     * @param $basketBuilder
+     * @param $itemList
+     * @param $expected
+     * @dataProvider provideArrayItems
+     */
+    public function testAddArrayItem($basketBuilder, $itemList, $expected)
     {
-        $this->assertEquals('me', 'you');
+        foreach ($itemList as $item) {
+            $basketBuilder->addItem($item);
+        }
+
+        $basket = $basketBuilder->toArray();
+        $this->assertEquals($expected, $basket);
+    }
+
+    public function provideArrayItems()
+    {
+        $itemList = [];
+
+        return [
+            [
+                new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder(false, null, false, false),
+                $itemList,
+                []
+            ],
+        ];
     }
 }
