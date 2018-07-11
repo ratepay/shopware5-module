@@ -18,11 +18,15 @@
  * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
  */
 
-use RpayRatePay\Component\Service\Validation;
+use RpayRatePay\Component\Service\ValidationLib;
+use RpayRatePay\Component\Service\ConfigLoader;
+use Shopware\Models\Payment\Payment;
+use Shopware\Models\Customer\Customer;
+use Shopware\Models\Country\Country;
+use Shopware\Models\Address\Address;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
 {
-
     private function getSnippet($namespace, $name, $default)
     {
         $ns = Shopware()->Snippets()->getNamespace($namespace);
@@ -33,17 +37,29 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
     {
         $params = $this->Request()->getParams();
         $customerId = $params['customerId'];
-        $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $customerId);
+        //TOOD REMOVE CLASSES BECAUSE PHP 5.4
+        $customer = Shopware()->Models()->find(Customer::class, $customerId);
 
-        $validations = [];
+        $billingId = $params['billingId'];
+        $billing = Shopware()->Models()->find(Address::class, $billingId);
+        $shippingId = $params['shippingId'];
+        $shipping = Shopware()->Models()->find(Address::class, $shippingId);
 
-        if (!Validation::isBirthdayValid($customer)) {
-            $validations[] = $this->getSnippet("RatePAY/backend/backend_orders","birthday_not_valid", "Geburtstag nicht gültig.");
-        }
+        $paymentTypeName = $params['paymentTypeName'];
+        $paymentType = Shopware()->Models()->getRepository(Payment::class)->findOneBy(['name' => $paymentTypeName]);
 
-        if (!Validation::isTelephoneNumberSet($customer)) {
-            $validations[] = $this->getSnippet("RatePAY/backend/backend_orders","telephone_not_set",  "Kunden-Telefonnummer nicht gesetzt.");
-        }
+        $totalCost = $params['totalCost'];
+
+        $validator = new Validation($customer, $paymentType);
+        $shop = Shopware()->Shop();
+        $shopId = $shop->getId();
+
+        $configLoader = new ConfigLoader();
+        $paymentTypeColumn = $configLoader->getPaymentColumnFromPaymentMeansName($paymentTypeName);
+        $configData = $configLoader->getPluginConfigForPaymentType($shopId, $countryIso);
+        $country = $billing->getCountry();
+
+        $validations = $this->validateCustomer($customer);
 
         if (count($validations) == 0) {
             $this->view->assign([
@@ -55,5 +71,26 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
                 'messages' => $validations
             ]);
         }
+    }
+
+    private function validateCustomer($customer, $validator)
+    {
+        $validations = [];
+        if (!ValidationLib::isBirthdayValid($customer)) {
+            $validations[] = $this->getSnippet("RatePAY/backend/backend_orders","birthday_not_valid", "Geburtstag nicht gültig.");
+        }
+
+        if (!ValidationLib::isTelephoneNumberSet($customer)) {
+            $validations[] = $this->getSnippet("RatePAY/backend/backend_orders","telephone_not_set",  "Kunden-Telefonnummer nicht gesetzt.");
+        }
+
+
+        return $validations;
+
+    }
+
+    private function validateCart()
+    {
+
     }
 }

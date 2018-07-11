@@ -33,8 +33,6 @@
 
         private $_retry = false;
 
-        private $_object;
-
         public function __construct($config = null)
         {
             $this->_config = $config;

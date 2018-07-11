@@ -26,14 +26,14 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                 }
 
                 //check for birthday and telephone number
-                Ext.Ajax.request({
+                /*Ext.Ajax.request({
                     url: '{url controller="RpayRatepayBackendOrder" action="prevalidate"}',
                     params: {
                         customerId: me.customerId,
-                        totalCosts: me.getTotalCost(),
-                        billing: me.getBillingId(),
-                        shipping: me.getShippingId(),
-                        pamentName: name
+                        totalCost: me.getTotalCost(),
+                        billingId: me.getBillingId(),
+                        shippingId: me.getShippingId(),
+                        paymentTypeName: name
                     },
                     success: function(response) {
                         var responseObj = Ext.decode(response.responseText);
@@ -45,7 +45,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                             combobox.setValue('');
                         }
                     }
-                });
+                });*/
             }
 
             //rpayratepayrate0
@@ -67,25 +67,11 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         }
     },
     getShippingId: function() {
-        var me = this;
-        return me.getAddress(false);
+        //this should work
+        var orderModel = me.subApplication.getCreateBackendOrderModel();
     },
     getBillingId: function() {
         var me = this;
-        return me.getAddressId();
-    },
-    getAddressId: function(billing = true) {
-        var me = this;
-        var customerStore = me.subApplication.getStore("Customer");
-        var customerModel = customerStore.getAt(0);
-        if (customerModel !== undefined) {
-            var store = billing ? customerModel.billing() : customerModel.shipping();
-            var model = store.getAt(0);
-            if(model !== undefined) {
-                return model.id();//Ext.JSON.encode(model.getData());
-            }
-        }
-        return null;
     }
 });
 //

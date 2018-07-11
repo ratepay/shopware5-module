@@ -26,6 +26,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
     {
         return [
             'Enlight_Controller_Dispatcher_ControllerPath_Backend_RpayRatepayBackendOrder' => 'onOrderDetailBackendController',
+            'Shopware_Controllers_Backend_SwagBackendOrder::createOrderAction::replace' => 'beforeCreateOrderAction',
         ];
     }
 
@@ -39,5 +40,17 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
         Shopware()->Template()->addTemplateDir($this->path . 'Views/');
 
         return $this->path . "Controller/backend/RpayRatepayBackendOrder.php";
+    }
+
+    public function beforeCreateOrderAction(Enlight_Hook_HookArgs $hookArgs)
+    {
+        Shopware()->Pluginlogger()->info('Ratepay: now making a backend payment and throwing an exception');
+
+        $subject = $hookArgs->getSubject();
+        $parentReturn = $subject->executeParent(
+            $hookArgs->getMmethod(),
+            $hookArgs->getArgs(),
+        );
+        $hookArgs->setReturn($parentReturn);
     }
 }

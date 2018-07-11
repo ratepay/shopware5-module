@@ -5,6 +5,8 @@
  * Date: 13.06.18
  * Time: 10:53
  */
+use RpayRatePay\Component\Service\ConfigLoader;
+use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -91,7 +93,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
         foreach ($config AS $payment => $data) {
             $show[$payment] = $data['status'] == 2 ? true : false;
 
-            $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($config);
+            $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user);
+
             $validation->setAllowedCurrencies($data['currency']);
             $validation->setAllowedCountriesBilling($data['country-code-billing']);
             $validation->setAllowedCountriesDelivery($data['country-code-delivery']);
@@ -112,13 +115,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
                 $show[$payment] = false;
             }
 
-            if ($validation->isCompanyNameSet()) {
-                $show[$payment] = $data['b2b'] == '1' && $show[$payment] ? true : false;
-                $data['limit_max'] = ($data['limit_max_b2b'] > 0) ? $data['limit_max_b2b'] : $data['limit_max'];
-            }
-
             if (!$validation->isBillingAddressSameLikeShippingAddress()) {
-                $show[$payment] = (bool) $data['address'] && $show[$payment] ? true : false;
+                $show[$payment] = (bool) $data['address'] && $show[$payment];
             }
 
             if (Shopware()->Modules()->Basket()) {
@@ -126,8 +124,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
                 $basket = $basket['totalAmount'];
 
                 Shopware()->Pluginlogger()->info('BasketAmount: ' . $basket);
+                $isB2b = $validation->isCompanyNameSet();
 
-                if ($basket < $data['limit_min'] || $basket > $data['limit_max']) {
+                if (!ValidationService::areAmountsValid($isB2b,$data, $basket)) {
                     $show[$payment] = false;
                 }
             }
@@ -179,23 +178,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
      * @return array
      */
     private function getRatePayPluginConfigByCountry($shopId, $country, $backend = false) {
-        //fetch correct config for current shop based on user country
-        $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
+
+        $configLoader = new ConfigLoader(Shopware()->Db());
+
         $payments = array("installment", "invoice", "debit", "installment0");
         $paymentConfig = array();
 
-        $sBackend = $backend ? '1' : '0';
         foreach ($payments AS $payment) {
-            $qry = "SELECT * 
-                        FROM `rpay_ratepay_config` AS rrc
-                          JOIN `rpay_ratepay_config_payment` AS rrcp
-                            ON rrcp.`rpay_id` = rrc.`" . $payment . "`
-                          LEFT JOIN `rpay_ratepay_config_installment` AS rrci
-                            ON rrci.`rpay_id` = rrc.`" . $payment . "`
-                        WHERE rrc.`shopId` = '" . $shopId . "'
-                             AND rrc.`profileId`= '" . $profileId . "'
-                        AND rrc.backend=$sBackend";
-            $result = Shopware()->Db()->fetchRow($qry);
+            $result = $configLoader->getPluginConfigForPaymentType($shopId, $country->getIso(), $payment, $backend);
 
             if (!empty($result)) {
                 $paymentConfig[$payment] = $result;

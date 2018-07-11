@@ -9,14 +9,18 @@ namespace RpayRatePay\Component\Service;
 
 use Shopware\Models\Customer\Customer;
 
-class Validation
+class ValidationLib
 {
     /**
      * @param Customer $customer
      * @return bool
      */
-    public static function isBirthdayValid(Customer $customer)
+    public static function isBirthdayValid(Customer $customer, $b2b = false)
     {
+        if ($b2b) {
+            return true;
+        }
+
         $birthday = $customer->getBirthday();
 
         //throws exception, method not found
@@ -75,6 +79,38 @@ class Validation
                 if (strval(call_user_func(array($billing, $function))) != strval(call_user_func(array($shipping, $function)))) {
                     return false;
                 }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param bool $b2b
+     * @param array $configData
+     * @param float $totalAmount
+     * @return bool
+     */
+    public static function areAmountsValid($b2b, $configData, $totalAmount)
+    {
+        if ($totalAmount < $configData['limit_min']) {
+            return false;
+        }
+
+        if ($b2b)  {
+            if ($configData['b2b'] !== 1) {
+                return false;
+            }
+
+            $b2bmax = $configData['limit_max_b2b'] > 0 ? $configData['limit_max_b2b'] : $configData['limit_max'];
+
+            if ($totalAmount > $b2bmax) {
+                return false;
+            }
+
+        } else {
+            if ($totalAmount > $configData['limit_max']) {
+                return false;
             }
         }
 

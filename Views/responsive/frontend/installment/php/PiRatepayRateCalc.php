@@ -16,9 +16,6 @@
     class PiRatepayRateCalc extends PiRatepayRateCalcBase
     {
 
-        //SimpleXML Object
-        private $ratepay;
-
         //Installment Details
 
         /**
@@ -30,7 +27,7 @@
         }
 
         /**
-         * This method send's the conig request to RatePAY or set's a error message
+         * This method send's the congig request to RatePAY or set's a error message
          * and returns the config details
          *
          * @return array $installmentConfigArray
@@ -51,12 +48,14 @@
             $countryIso = $country->getIso();
             $basketAmount = $this->getRequestAmount();
 
+            $sBackend = $backend ? 1 : 0;
             $qry = "SELECT rrci.`month-allowed`, rrci.`rate-min-normal`, rrci.`interestrate-default`, rrci.`payment-firstday`
                     FROM `rpay_ratepay_config_installment` AS rrci
                       JOIN `rpay_ratepay_config` AS rrc
                         ON rrci.`rpay_id` = rrc.`" . $paymentType . "`
                     WHERE rrc.`shopId` = " . $shopId . "
-                    AND rrc.`country-code-billing` LIKE '%" . $countryIso . "%'";
+                    AND rrc.`country-code-billing` LIKE '%" . $countryIso . "%'
+                    AND rrc.backend = $sBackend ;";
 
             //get ratepay config based on shopId
             $rpRateConfig=Shopware()->Db()->fetchRow($qry);
