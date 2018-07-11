@@ -328,6 +328,7 @@
             $shoppingBasket = $this->createBasketArray($shopItems);
 
             if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
+                // As we know this is the first request, we do not pass unsaved `orderId`
                 $useFallbackShipping = $this->usesShippingItemFallback(/*$this->_getOrderIdFromTransactionId()*/);
                 $shippingItem = $this->getShippingItemData(
                     Shopware()->Session()->sOrderVariables['sBasket'],
@@ -902,17 +903,18 @@
          */
         private function usesShippingItemFallback($orderId = null)
         {
-//            Shopware()->PluginLogger()->debug(">>> ORDER_ID shipping:" . json_encode($orderId));
-//            if ($orderId) {
-//                $query = "SELECT ratepay_fallback_shipping FROM `s_order_attributes` WHERE orderID = ?";
-//                $result = Shopware()->Db()->executeQuery($query, [$orderId])->fetch();
-//                Shopware()->PluginLogger()->debug(">>> check stored fallback shipping:");
-//                Shopware()->PluginLogger()->debug(json_encode($result));
-//
-//                return boolval($result['ratepay_fallback_shipping']);
-//            }
+            $configured = !!(Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()
+                ->get('RatePayUseFallbackShippingItem'));
 
-            return !!(Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem'));
+            if (!$orderId) {
+                return $configured;
+//                return boolval($result['ratepay_fallback_shipping']);
+            }
+
+            $query = "SELECT ratepay_fallback_shipping FROM `s_order_attributes` WHERE orderID = ?";
+            $result = Shopware()->Db()->executeQuery($query, [$orderId])->fetch()["ratepay_fallback_shipping"];
+
+            return is_null($result) ? false : (boolval($result) || $configured);
         }
 
     }
