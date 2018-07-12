@@ -5,20 +5,33 @@
  * Date: 12.06.18
  * Time: 13:49
  */
+namespace Shopware\RatePAY\Bootstrapping;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_FormsSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+use Shopware\RatePAY\Bootstrapping\Bootstrapper;
+
+class FormsSetup extends Bootstrapper
 {
     /**
      * @throws Exception
      */
     public function install() {
+        $availableLocales = ['de_DE','en_GB'];
         try {
+            $translations = [];
             $form = $this->bootstrap->Form();
             $formElements = $this->loadConfig('form_elements.json');
+
             foreach ($formElements as $element) {
                 $form->setElement($element['type'], $element['name'], $element['config']);
             }
-        } catch (Exception $exception) {
+
+            foreach ($availableLocales as $locale) {
+                $messages = $this->loadConfig('locale/backend/' . $locale . '.json');
+                $translations[$locale] = $messages;
+            }
+
+            $this->bootstrap->addFormTranslations($translations);
+        } catch (\Exception $exception) {
             $this->bootstrap->uninstall();
             throw new Exception("Can not create config elements." . $exception->getMessage());
         }

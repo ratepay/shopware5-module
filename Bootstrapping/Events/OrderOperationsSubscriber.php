@@ -5,8 +5,9 @@
  * Date: 13.06.18
  * Time: 10:23
  */
+namespace Shopware\RatePAY\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
+class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
 {
 
 
@@ -15,7 +16,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
 
     public function __construct()
     {
-        $this->orderStatusChangeHandler = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
+        $this->orderStatusChangeHandler = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
     }
 
     public static function getSubscribedEvents()
@@ -39,12 +40,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function beforeSaveOrderInBackend(Enlight_Hook_HookArgs $arguments)
+    public function beforeSaveOrderInBackend(\Enlight_Hook_HookArgs $arguments)
     {
         $request = $arguments->getSubject()->Request();
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $request->getParam('id'));
         $newPaymentMethod = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $request->getParam('paymentId'));
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if ((!in_array($order->getPayment()->getName(), $paymentMethods) && in_array($newPaymentMethod->getName(), $paymentMethods))
             || (in_array($order->getPayment()->getName(), $paymentMethods) && $newPaymentMethod->getName() != $order->getPayment()->getName())
         ) {
@@ -61,14 +62,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
      * 
      * @param Enlight_Hook_HookArgs $arguments
      */
-    public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $arguments)
+    public function onBidirectionalSendOrderOperation(\Enlight_Hook_HookArgs $arguments)
     {
         $request = $arguments->getSubject()->Request();
         $parameter = $request->getParams();
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if (!$config->get('RatePayBidirectional') ||
             !in_array($order->getPayment()->getName(), $paymentMethods)
         ) {
@@ -84,7 +85,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
      * @param Enlight_Hook_HookArgs $arguments
      * @throws Exception
      */
-    public function afterOrderBatchProcess(Enlight_Hook_HookArgs $arguments)
+    public function afterOrderBatchProcess(\Enlight_Hook_HookArgs $arguments)
     {
         $request = $arguments->getSubject()->Request();
 
@@ -102,7 +103,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
 
         foreach ($orders as $order) {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $order['id']);
-            $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+            $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
             if (!in_array($order->getPayment()->getName(), $paymentMethods)) {
                 continue;
             }
@@ -122,12 +123,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function beforeDeleteOrderPosition(Enlight_Hook_HookArgs $arguments)
+    public function beforeDeleteOrderPosition(\Enlight_Hook_HookArgs $arguments)
     {
         $request = $arguments->getSubject()->Request();
         $parameter = $request->getParams();
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['orderID']);
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if ($parameter['valid'] != true && in_array($order->getPayment()->getName(), $paymentMethods)) {
             Shopware()->Pluginlogger()->warning('Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
             $arguments->stop();
@@ -145,11 +146,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function beforeDeleteOrder(Enlight_Hook_HookArgs $arguments)
+    public function beforeDeleteOrder(\Enlight_Hook_HookArgs $arguments)
     {
         $request = $arguments->getSubject()->Request();
         $parameter = $request->getParams();
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if (!in_array($parameter['payment'][0]['name'], $paymentMethods)) {
             return false;
         }
@@ -188,7 +189,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperations
                 $items['Shipping']['tax_rate'] = $taxRate;
             }
 
-            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+            $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $modelFactory->setTransactionId($parameter['transactionId']);
             $modelFactory->setTransactionId($order->getTransactionID());
             $operationData['orderId'] = $order->getId();

@@ -5,8 +5,11 @@
  * Date: 12.06.18
  * Time: 13:49
  */
+namespace Shopware\RatePAY\Bootstrapping;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DeliveryStatusesSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+use Shopware\RatePAY\Bootstrapping\Bootstrapper;
+
+class DeliveryStatusesSetup extends Bootstrapper
 {
     /**
      * @throws Exception
@@ -17,14 +20,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DeliveryStatusesSetup 
             Shopware()->Db()->query($sql, array(
                 255, 'Teil-(Retoure)', 255, 'state', 0
             ));
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Shopware()->Pluginlogger()->addNotice($exception->getMessage());
         }
         try {
             Shopware()->Db()->query($sql, array(
                 265, 'Teil-(Storno)', 265, 'state', 0
             ));
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Shopware()->Pluginlogger()->addNotice($exception->getMessage());
         }
     }

@@ -5,8 +5,9 @@
  * Date: 13.06.18
  * Time: 10:38
  */
+namespace Shopware\RatePAY\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
+class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
      * @var string
@@ -35,7 +36,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensi
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function extendTemplates(Enlight_Event_EventArgs $args)
+    public function extendTemplates(\Enlight_Event_EventArgs $args)
     {
         /** @var $action Enlight_Controller_Action */
         $action = $args->getSubject();
@@ -96,7 +97,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensi
 
                 try {
                     $sId = Shopware()->SessionID();
-                } catch (Exception $exception) {}
+                } catch (\Exception $exception) {}
 
                 $tokenFirstPart = (!empty($sId)) ? $sId : rand();
 

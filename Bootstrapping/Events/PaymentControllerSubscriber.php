@@ -5,8 +5,9 @@
  * Date: 13.06.18
  * Time: 10:38
  */
+namespace Shopware\RatePAY\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentControllerSubscriber implements \Enlight\Event\SubscriberInterface
+class PaymentControllerSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
      * @var string
@@ -36,7 +37,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentControll
      *
      * @return string
      */
-    public function frontendPaymentController(Enlight_Event_EventArgs $arguments)
+    public function frontendPaymentController(\Enlight_Event_EventArgs $arguments)
     {
         $this->registerMyTemplateDir();
 

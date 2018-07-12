@@ -5,8 +5,9 @@
  * Date: 13.06.18
  * Time: 10:58
  */
+namespace Shopware\RatePAY\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigurationSubscriber implements \Enlight\Event\SubscriberInterface
+class PluginConfigurationSubscriber implements \Enlight\Event\SubscriberInterface
 {
     protected $_countries = array('de', 'at', 'ch', 'nl', 'be');
 
@@ -38,7 +39,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
      *
      * @return null
      */
-    public function beforeSavePluginConfig(Enlight_Hook_HookArgs $arguments)
+    public function beforeSavePluginConfig(\Enlight_Hook_HookArgs $arguments)
     {
         $request = $arguments->getSubject()->Request();
         $parameter = $request->getParams();
@@ -100,7 +101,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
             Shopware()->Db()->query($configSql);
             Shopware()->Db()->query($configPaymentSql);
             Shopware()->Db()->query($configInstallmentSql);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Shopware()->Pluginlogger()->info($exception->getMessage());
             return false;
         }
@@ -120,7 +121,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
      */
     private function getRatepayConfig($profileId, $securityCode, $shopId, $country)
     {
-        $factory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+        $factory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
         $data = array(
             'profileId' => $profileId,
             'securityCode' => $securityCode
@@ -155,7 +156,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
                     Shopware()->Db()->query($paymentSql, $dataPayment);
                     $id = Shopware()->Db()->fetchOne('SELECT `rpay_id` FROM `rpay_ratepay_config_payment` ORDER BY `rpay_id` DESC');
                     $type[$payment] = $id;
-                } catch (Exception $exception) {
+                } catch (\Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                     return false;
                 }
@@ -175,7 +176,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
                     . 'VALUES(' . substr(str_repeat('?,', 5), 0, -1) . ');';
                 try {
                     Shopware()->Db()->query($paymentSql, $installmentConfig);
-                } catch (Exception $exception) {
+                } catch (\Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                     return false;
                 }
@@ -226,7 +227,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
                     }
 
                     return true;
-                } catch (Exception $exception) {
+                } catch (\Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
 
                     return false;

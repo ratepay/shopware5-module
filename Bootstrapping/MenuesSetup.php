@@ -5,8 +5,11 @@
  * Date: 12.06.18
  * Time: 13:49
  */
+namespace Shopware\RatePAY\Bootstrapping;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_MenuesSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+use Shopware\RatePAY\Bootstrapping\Bootstrapper;
+
+class MenuesSetup extends Bootstrapper
 {
     /**
      * @throws Exception
@@ -23,7 +26,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_MenuesSetup extends Sh
                     'parent'     => $parent
                 )
             );
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->bootstrap->uninstall();
             throw new Exception("Can not create menu entry." . $exception->getMessage());
         }

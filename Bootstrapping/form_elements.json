@@ -185,8 +185,7 @@
     "type":"button",
     "name":"button6",
     "config":{
-      "label":"<b>Erweiterte Einstellungen:</b>",
-      "value":""
+      "label":"Erweiterte Einstellungen"
     }
   },
   {

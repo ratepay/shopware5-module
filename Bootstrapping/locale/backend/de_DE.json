@@ -1,17 +1,68 @@
 {
-  "RatePayProfileIDDE": "Deutschland Profile-ID",
-  "RatePaySecurityCodeDE": "Deutschland Security Code",
-  "RatePayProfileIDAT": "Österreich Profile-ID",
-  "RatePaySecurityCodeAT": "Österreich Security Code",
-  "RatePayProfileIDNL": "Niederlande Profile-ID",
-  "RatePaySecurityCodeNL": "Niederlande Security Code",
-  "RatePayProfileIDBE": "Belgien Profile-ID",
-  "RatePaySecurityCodeBE": "Belgien Security Code",
-  "RatePayProfileIDCH": "Schweitz Profile-ID",
-  "RatePaySecurityCodeCH": "Schweitz Security Code",
-  "button0": "Zugangsdaten für Deutschland",
-  "button1": "Zugangsdaten für Österreich",
-  "button2": "Zugangsdaten für die Schweiz",
-  "button4": "Zugangsdaten für Belgien",
-  "button5": "Zugangsdaten für die Niederlande"
+  "RatePayProfileIDDE": {
+    "label": "Deutschland Profile-ID"
+  },
+  "RatePaySecurityCodeDE": {
+    "label": "Deutschland Security Code"
+  },
+  "RatePayProfileIDAT": {
+    "label": "Österreich Profile-ID"
+  },
+  "RatePaySecurityCodeAT": {
+    "label": "Österreich Security Code"
+  },
+  "RatePayProfileIDNL": {
+    "label": "Niederlande Profile-ID"
+  },
+  "RatePaySecurityCodeNL": {
+    "label": "Niederlande Security Code"
+  },
+  "RatePayProfileIDBE": {
+    "label": "Belgien Profile-ID"
+  },
+  "RatePaySecurityCodeBE": {
+    "label": "Belgien Security Code"
+  },
+  "RatePayProfileIDCH": {
+    "label": "Schweitz Profile-ID"
+  },
+  "RatePaySecurityCodeCH": {
+    "label": "Schweitz Security Code"
+  },
+  "RatePayBidirectional": {
+    "label":"Bidirektionalität aktivieren (Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert)"
+  },
+  "RatePayFullDelivery": {
+    "label": "Status für Volllieferung"
+  },
+  "RatePayFullCancellation": {
+    "label": "Status für Vollstornierung"
+  },
+  "RatePayFullReturn": {
+    "label": "Status für Vollretournierung"
+  },
+  "RatePayUseFallbackShippingItem": {
+    "label": "Versandkosten als Warenkorbartikel übermitteln"
+  },
+  "button0": {
+    "label": "<b>Zugangsdaten für Deutschland</b>"
+  },
+  "button1": {
+    "label": "<b>Zugangsdaten für Österreich</b>"
+  },
+  "button2": {
+    "label": "<b>Zugangsdaten für die Schweiz</b>"
+  },
+  "button3": {
+    "label": "<b>Bidirectionalität RatePAY-Bestellungen</b>"
+  },
+  "button4": {
+    "label": "<b>Zugangsdaten für Belgien</b>"
+  },
+  "button5": {
+    "label": "<b>Zugangsdaten für die Niederlande</b>"
+  },
+  "button6": {
+    "label": "<b>Erweiterte Einstellungen</b>"
+  }
 }

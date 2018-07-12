@@ -5,8 +5,9 @@
  * Date: 12.06.18
  * Time: 14:02
  */
+namespace Shopware\RatePAY\Bootstrapping;
 
-abstract class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+abstract class Bootstrapper
 {
     /**
      * @var Shopware_Components_Plugin_Bootstrap

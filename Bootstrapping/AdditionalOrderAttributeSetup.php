@@ -5,8 +5,11 @@
  * Date: 10.07.18
  * Time: 11:26
  */
+namespace Shopware\RatePAY\Bootstrapping;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_AdditionalOrderAttributeSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+use Shopware\RatePAY\Bootstrapping\Bootstrapper;
+
+class AdditionalOrderAttributeSetup extends Bootstrapper
 {
     public function install()
     {

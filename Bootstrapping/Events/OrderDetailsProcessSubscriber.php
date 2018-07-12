@@ -5,8 +5,9 @@
  * Date: 13.06.18
  * Time: 11:22
  */
+namespace Shopware\RatePAY\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsProcessSubscriber implements \Enlight\Event\SubscriberInterface
+class OrderDetailsProcessSubscriber implements \Enlight\Event\SubscriberInterface
 {
     public static function getSubscribedEvents()
     {
@@ -18,8 +19,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsPro
     /**
      * Saves Data into the `rpay_ratepay_order_position`
      *
-     * @param Enlight_Event_EventArgs $arguments
+     * @param \Enlight_Event_EventArgs $arguments
      * @return mixed
+     * @throws \Zend_Db_Adapter_Exception
      */
     public function insertRatepayPositions(\Enlight_Event_EventArgs $arguments)
     {
@@ -36,7 +38,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsPro
             $sqlInsert = "INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES " . $values;
             try {
                 Shopware()->Db()->query($sqlInsert);
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 Shopware()->Pluginlogger()->error($exception->getMessage());
             }
         }
@@ -56,7 +58,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsPro
                 . "JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id`=`s_order`.`paymentID` "
                 . "WHERE  `s_order`.`ordernumber`=? AND`s_core_paymentmeans`.`name` LIKE 'rpayratepay%';";
             $isRatepayPayment = (1 <= Shopware()->Db()->fetchOne($isRatePAYpaymentSQL, array($orderNumber)));
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Shopware()->Pluginlogger()->error($exception->getMessage());
         }
 

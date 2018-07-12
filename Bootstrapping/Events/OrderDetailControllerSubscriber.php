@@ -5,8 +5,9 @@
  * Date: 13.06.18
  * Time: 10:48
  */
+namespace Shopware\RatePAY\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailControllerSubscriber implements \Enlight\Event\SubscriberInterface
+class OrderDetailControllerSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
      * @var string

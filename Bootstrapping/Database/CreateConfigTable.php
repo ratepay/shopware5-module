@@ -5,8 +5,9 @@
  * Date: 12.06.18
  * Time: 11:01
  */
+namespace Shopware\RatePAY\Bootstrapping\Database;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigTable
+class CreateConfigTable
 {
     /**
      * @return string
