@@ -8,9 +8,6 @@
                 return;
             }
 
-            const BANK_TRANSFER = 28;
-            const DIRECT_DEBIT = 2;
-
             var me = this;
 
             me.$checkoutButton = $('button[form=confirm--form]');
@@ -28,14 +25,14 @@
                 $("#ratepay_error").parent().removeClass("is--hidden");
             }
 
-            if ($("#paymentFirstday").val() == BANK_TRANSFER) {
+            if ($("#paymentFirstday").val() == me.getBankTransfer()) {
                 var debitDetails = $("#debitDetails");
                 $("#paywire").hide();
                 $("#wicAGB").hide();
                 debitDetails.remove();
             }
 
-            if ($("#paymentFirstday").val() == DIRECT_DEBIT) {
+            if ($("#paymentFirstday").val() == me.getDirectDebit()) {
                 $("#debitDetails").hide();
                 $("#paywire").show();
                 $("#wicAGB").show();
@@ -50,7 +47,7 @@
                 $("#wicAGB").remove();
             }
 
-            if ($("#paymentFirstday").val() == DIRECT_DEBIT && $("#firstdaySwitch").val() == 1) {
+            if ($("#paymentFirstday").val() == me.getDirectDebit() && $("#firstdaySwitch").val() == 1) {
                 $("#changeFirstday").show();
             }
 
@@ -80,8 +77,6 @@
                     });
                 }
 
-
-
                 var blzInput       = $(":input#ratepay_debit_bankcode");
                 var blzBlock       = $(".ratepay_debit_bankcode");
                 var accNumberInput = $(":input#ratepay_debit_accountnumber");
@@ -100,7 +95,6 @@
                     }
                 })
 
-
                 accNumberInput.on('blur keyup change click', function () {
                     if ($(this).val().match(/^\d+$/)) {
                         blzInput.prop('disabled', false);
@@ -112,6 +106,14 @@
                     }
                 })
             }
+        },
+
+        getBankTransfer: function () {
+            return 28;
+        },
+
+        getDirectDebit: function () {
+            return 2;
         },
 
         /**
@@ -183,9 +185,9 @@
                 });
 
                 /* dob validation */
-                if ($('#ratepay_birthday').length) { /* only do the check if dob form exists */
-                    if ($('#ratepay_birthday').val() != '') {
-                        dob = new Date($('#ratepay_birthday').val());
+                if ($('#ratepay_birthyear').length) { /* only do the check if dob form exists */
+                    if ($('#ratepay_birthyear').val() != '' && $('#ratepay_birthmonth').val() != '' && $('#ratepay_birthday').val() != '') {
+                        dob = new Date($('#ratepay_birthyear').val() + '-' + $('#ratepay_birthmonth').val() + '-' + $('#ratepay_birthday').val());
 
                         /* validate age */
                         if (getAge(dob) < 18 || getAge(dob) > 120) {

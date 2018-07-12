@@ -5,17 +5,65 @@
     {* Birthday *}
     {block name='ratepay_frontend_birthday'}
         <div class="register--birthdate">
-            <div class="rp-birthday field--select" id="birthday">
-                <label for="register_personal_birthdate" class="birthday--label">{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthday}Geburtsdatum{/s}*</label>
-                <br />
-                <input type="text"
-                    name="ratepay[personal][birthday]"
+            <label for="register_personal_birthdate" class="birthday--label">
+                {s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthday}Geburtsdatum{/s}*
+            </label>
+            <br />
+            <div class="rp-birthday field--select">
+                <input 
+                    type="text"
                     id="ratepay_birthday"
-                    placeholder="Geburtsdatum*"
-                    data-datepicker="true"
-                    data-allowInput="true"
-                    data-maxDate="01.01.{$smarty.now|date_format:"%Y" - 18}"
-                    value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday}{/if}" />
+                    name="ratepay[personal][birthday]" 
+                    maxlength="2" 
+                    placeholder="Tag"
+                    required="required"
+                    aria-required="true"
+                    value="
+                        {if $sUserData.billingaddress.birthday}
+                            {$sUserData.billingaddress.birthday|date_format:"%e"}
+                        {/if}
+                        {if $sUserData.additional.user.birthday}
+                            {$sUserData.additional.user.birthday|date_format:"%e"}
+                        {/if}"
+                />
+            </div>
+
+            <div class="rp-birthmonth field--select">
+                <input 
+                    type="text"
+                    id="ratepay_birthmonth"
+                    name="ratepay[personal][birthmonth]"
+                    maxlength="2"
+                    placeholder="Monat"
+                    required="required"
+                    aria-required="true"
+                    value="
+                        {if $sUserData.billingaddress.birthday}
+                            {$sUserData.billingaddress.birthday|date_format:"%m"}
+                        {/if}
+                        {if $sUserData.additional.user.birthday}
+                            {$sUserData.additional.user.birthday|date_format:"%m"}
+                        {/if}"
+                />
+            </div>
+
+            <div class="rp-birthyear field--select">
+                <input 
+                    type="text"
+                    id="ratepay_birthyear"
+                    name="ratepay[personal][birthyear]"
+                    maxlength="4"
+                    placeholder="Jahr"
+                    required="required"
+                    aria-required="true"
+                    value="
+                        {if $sUserData.billingaddress.birthday}
+                            {$sUserData.billingaddress.birthday|date_format:"%Y"}
+                        {/if}
+                        {if $sUserData.additional.user.birthday}
+                            {$sUserData.additional.user.birthday|date_format:"%Y"}
+                        {/if}"
+                />
             </div>
             <br style="clear: both">
             <p><small>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um per {$sPayment.description} bezahlen zu können.{/s}</small></p>
