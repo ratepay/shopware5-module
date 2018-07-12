@@ -182,11 +182,20 @@
     }
   },
   {
+    "type":"button",
+    "name":"button6",
+    "config":{
+      "label":"<b>Erweiterte Einstellungen:</b>",
+      "value":""
+    }
+  },
+  {
     "type":"checkbox",
     "name":"RatePayUseFallbackShippingItem",
     "config":{
       "label": "Use fallback shipping item:",
-      "value": false
+      "value": false,
+      "scope":1
     }
   }
 ]
