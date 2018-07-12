@@ -95,13 +95,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     }
 
     /**
-     * Checks if the choosen payment is a RatePAY-payment
-     *
-     * @return boolean
+     * @param $paymentName
+     * @return bool
      */
-    public function isRatePAYPayment($paymentName)
+    public function isRatePAYPayment()
     {
-        return in_array($paymentName, array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit", "rpayratepayrate0"));
+        return in_array($this->_payment->getName(), array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit", "rpayratepayrate0"));
     }
 
     /**

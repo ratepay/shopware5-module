@@ -181,6 +181,7 @@
          */
         private function _proceedPayment()
         {
+
             $resultRequest = $this->_modelFactory->callRequest('PaymentRequest');
 
             if ($resultRequest->isSuccessful()) {
