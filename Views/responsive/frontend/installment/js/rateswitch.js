@@ -8,6 +8,8 @@
  */
 function changeFirstday(firstday) {
 
+    const BANK_TRANSFER = 28;
+
     $('#paymentFirstday').val(firstday);
     var button = $('button[type=submit]');
 
