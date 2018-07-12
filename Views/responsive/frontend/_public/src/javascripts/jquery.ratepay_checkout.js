@@ -25,14 +25,14 @@
                 $("#ratepay_error").parent().removeClass("is--hidden");
             }
 
-            if ($("#paymentFirstday").val() == 28) {
+            if ($("#paymentFirstday").val() == me.getBankTransfer()) {
                 var debitDetails = $("#debitDetails");
                 $("#paywire").hide();
                 $("#wicAGB").hide();
                 debitDetails.remove();
             }
 
-            if ($("#paymentFirstday").val() == 2) {
+            if ($("#paymentFirstday").val() == me.getDirectDebit()) {
                 $("#debitDetails").hide();
                 $("#paywire").show();
                 $("#wicAGB").show();
@@ -47,7 +47,7 @@
                 $("#wicAGB").remove();
             }
 
-            if ($("#paymentFirstday").val() == 2 && $("#firstdaySwitch").val() == 1) {
+            if ($("#paymentFirstday").val() == me.getDirectDebit() && $("#firstdaySwitch").val() == 1) {
                 $("#changeFirstday").show();
             }
 
@@ -77,8 +77,6 @@
                     });
                 }
 
-
-
                 var blzInput       = $(":input#ratepay_debit_bankcode");
                 var blzBlock       = $(".ratepay_debit_bankcode");
                 var accNumberInput = $(":input#ratepay_debit_accountnumber");
@@ -97,7 +95,6 @@
                     }
                 })
 
-
                 accNumberInput.on('blur keyup change click', function () {
                     if ($(this).val().match(/^\d+$/)) {
                         blzInput.prop('disabled', false);
@@ -109,6 +106,14 @@
                     }
                 })
             }
+        },
+
+        getBankTransfer: function () {
+            return 28;
+        },
+
+        getDirectDebit: function () {
+            return 2;
         },
 
         /**

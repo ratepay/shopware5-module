@@ -17,12 +17,12 @@ class PaymentRequestData
     private $method;
 
     /**
-     * @var Shopware\Models\Customer\Customer
+     * @var \Shopware\Models\Customer\Customer
      */
     private $customer;
 
     /**
-     * @var Shopware\Models\Address\Address
+     * @var \Shopware\Models\Address\Address
      */
     private $billingAddress,
 

@@ -119,6 +119,7 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentStatusesSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DeliveryStatusesSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_AdditionalOrderAttributeSetup($this),
             ];
 
             foreach ($queue as $bootstrapper) {
@@ -150,6 +151,7 @@
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup($this),
                 //new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup($this),
                 new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_AdditionalOrderAttributeSetup($this),
             ];
 
             $this->_dropOrderAdditionalAttributes();
