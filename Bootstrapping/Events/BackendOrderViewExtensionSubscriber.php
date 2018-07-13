@@ -34,9 +34,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderVie
      */
     public function extendBackendOrderView(Enlight_Event_EventArgs $arguments)
     {
-
-        Shopware()->Pluginlogger()->info("Now extending swag backend order " . $arguments->getRequest()->getActionName());
-
         $arguments->getSubject()->View()->addTemplateDir(
             $this->path . 'Views/backend/rpay_ratepay_backend_order/'
         );

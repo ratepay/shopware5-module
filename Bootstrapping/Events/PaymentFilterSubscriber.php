@@ -5,6 +5,8 @@
  * Date: 13.06.18
  * Time: 10:53
  */
+
+use RatePAY\Service\Util;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 
@@ -54,10 +56,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
             $customerAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
 
-            if ($this->existsAndNotEmpty('getCountry', $customerAddressBilling)) {
+            if (Util::existsAndNotEmpty($customerAddressBilling,'getCountry')) {
                 $countryBilling = $customerAddressBilling->getCountry();
             } else {
-                if ($this->existsAndNotEmpty('getCountryId', $user->getBilling())) {
+                if (Util::existsAndNotEmpty($user->getBilling(),'getCountryId')) {
                     $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
                 }
             }
@@ -65,10 +67,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
             if (Shopware()->Session()->checkoutShippingAddressId > 0 && Shopware()->Session()->checkoutShippingAddressId != Shopware()->Session()->checkoutBillingAddressId) {
                 $customerAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
 
-                if ($this->existsAndNotEmpty('getCountry', $customerAddressShipping)) {
+                if (Util::existsAndNotEmpty($customerAddressShipping, 'getCountry')) {
                     $countryDelivery = $customerAddressShipping->getCountry();
                 } else {
-                    if ($this->existsAndNotEmpty('getCountryId', $user->getShipping())) {
+                    if (Util::existsAndNotEmpty($user->getShipping(), 'getCountryId')) {
                         $countryDelivery = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getShipping()->getCountryId());
                     }
                 }
@@ -195,18 +197,5 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
         return $paymentConfig;
     }
 
-    /**
-     * @param $method
-     * @param $object
-     * @return bool
-     */
-    private function existsAndNotEmpty($method, $object) {
-        if (method_exists($object, $method)) {
-            $var = $object->$method();
-            if (!empty($var) && !is_null($var)) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 }

@@ -22,8 +22,7 @@ use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Component\Service\ConfigLoader;
 use Shopware\Models\Payment\Payment;
 use Shopware\Models\Customer\Customer;
-use Shopware\Models\Country\Country;
-use Shopware\Models\Address\Address;
+use Shopware\Models\Customer\Address;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
 {

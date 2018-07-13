@@ -75,12 +75,21 @@ class ConfigLoader
      * @param bool $backend
      * @return string
      */
-    public function getProfileId($countryISO, $backend = false)
+    public static function getProfileIdKey($countryISO, $backend = false)
     {
         $profileId = 'RatePayProfileID' . $countryISO;
         if ($backend) {
             $profileId .= 'Backend';
         }
         return $profileId;
+    }
+
+    public static function getSecurityCodeKey($countryISO, $backend = false)
+    {
+        $securityCodeKey = 'RatePaySecurityCode' . $countryISO;
+        if ($backend) {
+            $securityCodeKey .= 'Backend';
+        }
+        return $securityCodeKey;
     }
 }

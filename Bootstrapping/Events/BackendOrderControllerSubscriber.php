@@ -1,4 +1,7 @@
 <?php
+
+use RpayRatePay\Component\Mapper\PaymentRequestData;
+
 /**
  * Created by PhpStorm.
  * User: eiriarte-mendez
@@ -53,17 +56,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
             /** @var OrderHydrator $orderHydrator */
             $orderHydrator = Shopware()->Container()->get('swag_backend_order.order.order_hydrator');
 
-            /** @var OrderValidator $orderValidator */
-            $orderValidator = Shopware()->Container()->get('swag_backend_order.order.order_validator');
-
             $orderStruct = $orderHydrator->hydrateFromRequest($request);
 
             //first find out if it's a ratepay order
             $paymentType = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $orderStruct->getPaymentId());
-
-            if(is_null($paymentType)) {
-                throw new Exception("Paymenttype is null, id " . $orderStruct->getPaymentId());
-            }
             $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $orderStruct->getCustomerId());
             $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($customer, $paymentType);
 
@@ -73,28 +69,88 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
             } else {
                 Shopware()->Pluginlogger()->info('Got a ratepay order');
 
-                $view->assign([
-                    'success' => false,
-                    'violations' => ['ratepay not yet supported. do i look like batman or what']
-                ]);
-                // $violations = $orderValidator->validate($orderStruct);
+                $swagValidations = $this->runSwagValidations($orderStruct);
+                if($swagValidations->getMessages()) {
+                    $this->fail($view, $swagValidations->getMessages());
+                    return;
+                }
 
-                /* if ($violations->getMessages()) {
-                     $this->view->assign([
-                         'success' => false,
-                         'violations' => $violations->getMessages(),
-                     ]);
-                     return;
-                 }*/
+                Shopware()->Pluginlogger()->info('SWAG Backend Order Passed');
+
+                $paymentRequestData = $this->orderStructToPaymentRequestData($orderStruct, $paymentType, $customer);
+
+                $paymentRequester = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true);
+
+                Shopware()->Pluginlogger()->info('Calling payment request.');
+
+                $answer = $paymentRequester->callPaymentRequest($paymentRequestData);
+                if ($answer->isSuccessful()) {
+                    Shopware()->Pluginlogger()->info('Payment Request success!');
+                    $transactionId = $answer->getTransactionId();
+                    $this->forwardToSWAGBackendOrders($hookArgs);
+
+                    $orderId = $view->getAssign("orderId");
+                    Shopware()->Pluginlogger()->info('Order created with id ' . $orderId);
+
+                } else {
+                    Shopware()->Pluginlogger()->info('Payment Request rejected!');
+                    $customerMessage = $answer->getCustomerMessage();
+                    $this->fail($view, [$customerMessage]);
+                }
             }
         } catch(\Exception $e) {
-            Shopware()->Pluginlogger()->info($e->getTraceAsString());
+            Shopware()->Pluginlogger()->error($e->getMessage());
+            Shopware()->Pluginlogger()->error($e->getTraceAsString());
             $view->assign([
                 'success' => false,
                 'violations' => [$e->getMessage()]
             ]);
         }
+    }
 
+    private function orderStructToPaymentRequestData(\SwagBackendOrder\Components\Order\Struct\OrderStruct $orderStruct,
+                                                     \Shopware\Models\Payment\Payment $paymentType,
+                                                     \Shopware\Models\Customer\Customer $customer)
+    {
+        $method = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
+            $paymentType->getName()
+        );
+
+        $billing = Shopware()->Models()->find('Shopware\Models\Customer\Address', $orderStruct->getBillingAddressId());
+
+        $shipping = Shopware()->Models()->find('Shopware\Models\Customer\Address', $orderStruct->getShippingAddressId());
+
+        $items = [];
+        foreach($orderStruct->getPositions() as $positionStruct) {
+            $items[] = $this->positionStructToArray($positionStruct);
+        }
+
+        $shippingCost = $orderStruct->getShippingCosts();
+
+        $shippingTax = $orderStruct->getShippingCostsNet() - $orderStruct->getSHippingCostsNet();
+
+        $dfpToken = '';
+
+        $shop = Shopware()->Models()->find('Shopware\Models\Shop\Shop', $orderStruct->getLanguageShopId());
+        $localeLang =  $shop->getLocale()->getLocale();
+        $lang = substr($localeLang, 0, 2);
+
+        $amount = $orderStruct->getTotal();
+
+        return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingCost, $shippingTax, $dfpToken, $lang, $amount);
+    }
+
+    private function positionStructToArray(SwagBackendOrder\Components\Order\Struct\PositionStruct $item)
+    {
+        $a = [
+            'articlename' => $item->getName(),
+            'ordernumber' => $item->getNumber(), //should be article number, see BasketArrayBuilder
+            'quantity' => $item->getQuantity(),
+            'priceNumeric' => $item->getPrice(), //testen zu sehen ob price gross
+            'tax_rate' => $item->getTaxRate(),
+        ];
+
+        return $a;
     }
 
     private function forwardToSWAGBackendOrders(Enlight_Hook_HookArgs $hookArgs)
@@ -107,4 +163,18 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
         $hookArgs->setReturn($parentReturn);
     }
 
+    private function fail($view, $messages)
+    {
+        $view->assign([
+            'success' => false,
+            'violations' => $messages,
+        ]);
+    }
+
+    private function runSwagValidations($orderStruct)
+    {
+            $validator = Shopware()->Container()->get('swag_backend_order.order.order_validator');
+            $violations = $validator ->validate($orderStruct);
+            return $violations;
+    }
 }

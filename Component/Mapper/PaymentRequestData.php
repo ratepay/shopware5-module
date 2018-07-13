@@ -8,6 +8,7 @@
 
 namespace RpayRatePay\Component\Mapper;
 
+use RatePAY\Service\Util;
 
 class PaymentRequestData
 {
@@ -22,12 +23,12 @@ class PaymentRequestData
     private $customer;
 
     /**
-     * @var \Shopware\Models\Address\Address
+     * @var \Shopware\Models\Customer\Address
      */
-    private $billingAddress,
+    private $billingAddress;
 
     /**
-     * @var Shopware\Models\Address\Address
+     * @var \Shopware\Models\Customer\Address
      */
     private $shippingAddress;
 
@@ -39,6 +40,26 @@ class PaymentRequestData
 
     private $dfpToken;
 
+    private $lang;
+
+    private $amount;
+
+    /**
+     * @return mixed
+     */
+    public function getLang()
+    {
+        return $this->lang;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAmount()
+    {
+        return $this->amount;
+    }
+
     /**
      * @return strign
      */
@@ -48,7 +69,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return Shopware\Models\Customer\Customer
+     * @return \Shopware\Models\Customer\Customer
      */
     public function getCustomer()
     {
@@ -56,7 +77,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return Shopware\Models\Address\Address
+     * @return \Shopware\Models\Customer\Address
      */
     public function getBillingAddress()
     {
@@ -64,7 +85,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return Shopware\Models\Address\Address
+     * @return \Shopware\Models\Customer\Address
      */
     public function getShippingAddress()
     {
@@ -103,21 +124,33 @@ class PaymentRequestData
         return $this->dfpToken;
     }
 
-    public function __construct($method, $customer,  $billingAddress, $shippingAddress, $items, $shippingCost, $shippingTax, $dfpToken)
+    public function __construct($method,
+                                $customer,
+                                $billingAddress,
+                                $shippingAddress,
+                                $items,
+                                $shippingCost,
+                                $shippingTax,
+                                $dfpToken,
+                                $lang,
+                                $amount
+    )
     {
-        $this->method= $method;
+        $this->method = $method;
         $this->customer = $customer;
         $this->billingAddress = $billingAddress;
         $this->shippingAddress = $shippingAddress;
         $this->items = $items;
         $this->shippingCost = $shippingCost;
         $this->shippingTax = $shippingTax;
-        $this->dfpToken = $dfpToken
+        $this->dfpToken = $dfpToken;
+        $this->lang = $lang;
+        $this->amount = $amount;
     }
 
     /**
-     * @param Shopware\Models\Customer\Customer $customer
-     * @param Shopware\Models\Address\Address $billing
+     * @param \Shopware\Models\Customer\Customer $customer
+     * @param \Shopware\Models\Customer\Address $billing
      * @return string
      */
     public function getBirthday()
@@ -125,12 +158,12 @@ class PaymentRequestData
         $dateOfBirth = '0000-00-00';
         $customerBilling = $this->customer->getBilling();
 
-        if ($this->existsAndNotEmpty($this->customer, 'getBirthday')) {
+        if (Util::existsAndNotEmpty($this->customer, 'getBirthday')) {
             $dateOfBirth = $this->customer->getBirthday()->format("Y-m-d"); // From Shopware 5.2 date of birth has moved to customer object
-        } else if ($this->existsAndNotEmpty($customerBilling, 'getBirthday')) {
+        } else if (Util::existsAndNotEmpty($customerBilling, 'getBirthday')) {
             $dateOfBirth = $customerBilling->getBirthday()->format("Y-m-d");
-        } else if ($this->existsAndNotEmpty($this->billing, 'getBirthday')) {
-            $dateOfBirth = $this->billing->getBirthday()->format("Y-m-d");
+        } else if (Util::existsAndNotEmpty($this->billingAddress, 'getBirthday')) {
+            $dateOfBirth = $this->billingAddress->getBirthday()->format("Y-m-d");
         }
 
         return $dateOfBirth;
@@ -141,7 +174,7 @@ class PaymentRequestData
      */
     public static function loadFromSession()
     {
-        $method = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
+        $method = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
             Shopware()->Session()->sOrderVariables['sUserData']['additional']['payment']['name']
         );
 
@@ -159,12 +192,35 @@ class PaymentRequestData
 
         $dfpToken = Shopware()->Session()->RatePAY['dfpToken'];
 
-        return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingCost, $shippingTax, $dfpToken);
+        $lang = self::findLangInSession();
+
+        $amount = self::findAmountInSession();
+
+        return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingCost, $shippingTax, $dfpToken, $lang, $amount);
+    }
+
+    private static function findLangInSession()
+    {
+        $shopContext = Shopware()->Container()->get('shopware_storefront.context_service')->getShopContext();
+        $lang = $shopContext->getShop()->getLocale()->getLocale();
+        $lang = substr($lang, 0, 2);
+        return $lang;
+    }
+
+    private static function findAmountInSession()
+    {
+        $user = Shopware()->Session()->sOrderVariables['sUserData'];
+        $basket = Shopware()->Session()->sOrderVariables['sBasket'];
+        if (!empty($user['additional']['charge_vat'])) {
+            return empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
+        } else {
+            return $basket['AmountNetNumeric'];
+        }
     }
 
      /**
-      * @param Shopware\Models\Customer\Customer $customer
-      * @param Shopware\Models\Address\Address $billing
+      * @param \Shopware\Models\Customer\Customer $customer
+      * @param \Shopware\Models\Customer\Address $billing
       * @return mixed
       */
     private static function findAddressShipping($customer, $billing)
@@ -179,7 +235,7 @@ class PaymentRequestData
     }
 
     /**
-     * @param Shopware\Models\Customer\Customer $customer
+     * @param \Shopware\Models\Customer\Customer $customer
      * @return mixed
      */
     private static function findAddressBilling($customer)
