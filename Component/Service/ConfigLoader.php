@@ -52,7 +52,8 @@ class ConfigLoader
      */
     public function getPluginConfigForPaymentType($shopId, $countryISO, $paymentColumn, $backend = false)
     {
-        $profileId = $this->getIso($countryISO, $backend);
+        $configKey = self::getProfileIdKey($countryISO, $backend);
+        $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get($configKey, $shopId);
 
         $sBackend = $backend ? '1' : '0';
 
