@@ -23,12 +23,12 @@ class PaymentRequestData
     private $customer;
 
     /**
-     * @var \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Billing
+     * @var mixed
      */
     private $billingAddress;
 
     /**
-     * @var \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Shipping
+     * @var mixed
      */
     private $shippingAddress;
 
@@ -77,7 +77,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Billing
+     * @return mixed
      */
     public function getBillingAddress()
     {
@@ -85,7 +85,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Shipping
+     * @return mixed
      */
     public function getShippingAddress()
     {
@@ -200,7 +200,7 @@ class PaymentRequestData
     }
 
     /**
-     * @param \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Billing|\Shopware\Models\Customer\Shipping $addressObject
+     * @param mixed
      * @return string|null
      */
     public static function findCountryISO($addressObject)

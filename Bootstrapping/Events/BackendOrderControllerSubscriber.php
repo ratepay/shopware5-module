@@ -1,6 +1,7 @@
 <?php
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\Component\Service\PaymentProcessor;
 
 /**
  * Created by PhpStorm.
@@ -75,8 +76,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
                     return;
                 }
 
-                Shopware()->Pluginlogger()->info('SWAG Backend Order Passed');
-
                 $paymentRequestData = $this->orderStructToPaymentRequestData($orderStruct, $paymentType, $customer);
 
                 $paymentRequester = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true);
@@ -86,11 +85,49 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
                 $answer = $paymentRequester->callPaymentRequest($paymentRequestData);
                 if ($answer->isSuccessful()) {
                     Shopware()->Pluginlogger()->info('Payment Request success!');
-                    $transactionId = $answer->getTransactionId();
+
+                    //let SWAG write order to db
                     $this->forwardToSWAGBackendOrders($hookArgs);
 
+                    Shopware()->Pluginlogger()->info('Forwarded to SWAG Backend order');
+
                     $orderId = $view->getAssign("orderId");
-                    Shopware()->Pluginlogger()->info('Order created with id ' . $orderId);
+
+                    Shopware()->Pluginlogger()->info('Order created with ID ' . $orderId);
+
+                    $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
+
+                    $paymentProcessor = new PaymentProcessor(Shopware()->Db());
+
+                    //set the transaction id
+                    $paymentProcessor->setOrderTransactionId($order, $answer->getTransactionId());
+
+                    //init shipping
+                    if ($paymentRequestData->getShippingCost() > 0) {
+                        $paymentProcessor->initShipping($order);
+                        Shopware()->Pluginlogger()->info('Payment processor init shippings');
+                    }
+
+                    //set order attributes
+                    $paymentProcessor->setOrderAttributes($order,
+                        $answer,
+                        Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem')
+                    );
+
+                    Shopware()->Pluginlogger()->info('Payment processor set order Attributes');
+
+                    //insert ratepay positions
+                    $paymentProcessor->insertRatepayPositions($order);
+
+                    //payment status closed
+                    $paymentProcessor->setPaymentStatusPaid($order);
+
+                    //insert positions
+                    if (Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPCConfig() == true) {
+                        $paymentProcessor->sendPaymentConfirm($answer->getTransactionId(), $order, true);
+                    }
+
+                    Shopware()->Pluginlogger()->info('BackendOrderControllerSubscriber done');
 
                 } else {
                     Shopware()->Pluginlogger()->info('Payment Request rejected!');

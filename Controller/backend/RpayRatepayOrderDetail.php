@@ -59,6 +59,8 @@
             $orderID = $this->Request()->getParam('orderID');
             $success = true;
             $bindings = array($orderID);
+            $bind = '';
+            $values = '';
             foreach (array_unique($articleNumbers) as $articleNumber) {
                 $sqlCountEntrys = "SELECT `id`, COUNT(*) AS 'count', SUM(`quantity`) AS 'quantity' FROM `s_order_details` "
                                   . "WHERE `orderID`=? "
@@ -170,7 +172,6 @@
             $this->_modelFactory->setOrderId($order->getNumber());
             $itemsToDeliver = null;
 
-            $basketItems = array();
             $sendItem = true;
             foreach ($items as $item) {
                 $itemsToDeliver += $item->deliveredItems;

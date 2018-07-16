@@ -75,7 +75,7 @@
          * @return mixed
          * @throws Exception
          */
-        public function getPCConfig()
+        public static function getPCConfig()
         {
             $info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .'plugin.json'), true);
             if ($info) {

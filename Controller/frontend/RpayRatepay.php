@@ -18,6 +18,7 @@
      * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
      */
     use Shopware\Components\CSRFWhitelistAware;
+    use \RpayRatePay\Component\Service\PaymentProcessor;
 
     class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
     {
@@ -162,8 +163,6 @@
                 } else {
                     $return = 'NOK';
                 }
-
-
             }
 
             if ($Parameter['ratepay_debit_updatedebitdata']) {
@@ -184,51 +183,36 @@
             $resultRequest = $this->_modelFactory->callRequest('PaymentRequest');
 
             if ($resultRequest->isSuccessful()) {
+                $paymentProcessor = new PaymentProcessor(Shopware()->Db());
+
                 Shopware()->Session()->RatePAY['transactionId'] = $resultRequest->getTransactionId();
                 $uniqueId = $this->createPaymentUniqueId();
                 $orderNumber = $this->saveOrder(Shopware()->Session()->RatePAY['transactionId'], $uniqueId, 17);
-                $dgNumber = $resultRequest->getDescriptor();
+                $order = Shopware()->Models()->getRepository('\Shopware\Models\Order\Order')
+                    ->findOneBy(['number' => $orderNumber]);
 
-                if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
-                    $this->initShipping($orderNumber);
-                }
                 try {
-                    $orderId = Shopware()->Db()->fetchOne(
-                        'SELECT `id` FROM `s_order` WHERE `ordernumber`=?',
-                        array($orderNumber)
-                    );
-                    Shopware()->Db()->update(
-                        's_order_attributes',
-                        array(
-                            'attribute5' => $dgNumber,
-                            'attribute6' => Shopware()->Session()->RatePAY['transactionId'],
-                            'ratepay_fallback_shipping' => Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem'),
-                        ),
-                        'orderID=' . $orderId
+                    if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
+                        $paymentProcessor->initShipping($order);
+                    }
+
+                } catch (Exception $exception) {
+                    Shopware()->Pluginlogger()->error($exception->getMessage());
+                }
+
+                try {
+                    $paymentProcessor->setOrderAttributes($order,
+                        $resultRequest,
+                        Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem')
                     );
                 } catch (Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                 }
 
-                //set cleared date
-                $dateTime = new DateTime();
+                $paymentProcessor->setPaymentStatusPaid($order);
 
-                $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
-                $order->setClearedDate($dateTime);
-                Shopware()->Models()->flush($order);
-
-                //set payments status to payed
-                $this->savePaymentStatus(
-                    Shopware()->Session()->RatePAY['transactionId'],
-                    $uniqueId,
-                    12
-                );
-
-                $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
-                if ($bootstrap->getPCConfig() == true) {
-                    $this->_modelFactory->setTransactionId($resultRequest->getTransactionId());
-                    $this->_modelFactory->setOrderId($orderNumber);
-                    $this->_modelFactory->callRequest('PaymentConfirm', array());
+                if (Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPCConfig() == true) {
+                    $paymentProcessor->sendPaymentConfirm($resultRequest->getTransactionId(), $order);
                 }
 
                 /**
@@ -329,27 +313,6 @@
             require_once $calcPath . '/PiRatepayRateCalc.php';
             require_once $calcPath . '/path.php';
             require_once $calcPath . '/PiRatepayRateCalcRequest.php';
-        }
-
-        /**
-         * Initiates the Shipping-Position fo the given order
-         *
-         * @param string $orderNumber
-         */
-        private function initShipping($orderNumber)
-        {
-            try {
-                $orderID = Shopware()->Db()->fetchOne(
-                    "SELECT `id` FROM `s_order` WHERE `ordernumber`=?",
-                    array($orderNumber)
-                );
-                Shopware()->Db()->query(
-                    "INSERT INTO `rpay_ratepay_order_shipping` (`s_order_id`) VALUES(?)",
-                    array($orderID)
-                );
-            } catch (Exception $exception) {
-                Shopware()->Pluginlogger()->error($exception->getMessage());
-            }
         }
 
         public function getWhitelistedCSRFActions()
