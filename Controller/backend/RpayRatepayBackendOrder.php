@@ -36,16 +36,16 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
     {
         $params = $this->Request()->getParams();
         $customerId = $params['customerId'];
-        //TOOD REMOVE CLASSES BECAUSE PHP 5.4
-        $customer = Shopware()->Models()->find(Customer::class, $customerId);
+        $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $customerId);
 
         $billingId = $params['billingId'];
-        $billing = Shopware()->Models()->find(Address::class, $billingId);
+        $billing = Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
+
         $shippingId = $params['shippingId'];
-        $shipping = Shopware()->Models()->find(Address::class, $shippingId);
+        $shipping = Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingId);
 
         $paymentTypeName = $params['paymentTypeName'];
-        $paymentType = Shopware()->Models()->getRepository(Payment::class)->findOneBy(['name' => $paymentTypeName]);
+        $paymentType = Shopware()->Models()->getRepository('Shopware\Models\Payment\Payment')->findOneBy(['name' => $paymentTypeName]);
 
         $totalCost = $params['totalCost'];
 
