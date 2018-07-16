@@ -5,9 +5,9 @@
  * Date: 12.06.18
  * Time: 13:26
  */
-namespace Shopware\RatePAY\Bootstrapping;
+namespace RpayRatePay\Bootstrapping;
 
-use Shopware\RatePAY\Bootstrapping\Bootstrapper;
+use RpayRatePay\Bootstrapping\Bootstrapper;
 
 class DatabaseSetup extends Bootstrapper
 {
@@ -62,13 +62,13 @@ class DatabaseSetup extends Bootstrapper
     protected function createDatabaseTables()
     {
         $tables = [
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateLoggingTable(),
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateConfigTable(),
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateOrderPositionsTable(),
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateOrderShippingTable(),
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateOrderHistoryTable(),
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateConfigPaymentTable(),
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateConfigInstallmentTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateLoggingTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateOrderPositionsTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateOrderShippingTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateOrderHistoryTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigPaymentTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigInstallmentTable(),
         ];
 
         try {
@@ -84,9 +84,9 @@ class DatabaseSetup extends Bootstrapper
     private function updateConfigurationTables()
     {
         $tables = [
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateConfigTable(),
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateConfigPaymentTable(),
-            new \Shopware\RatePAY\Bootstrapping\Database\CreateConfigInstallmentTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigPaymentTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigInstallmentTable(),
         ];
 
         try {

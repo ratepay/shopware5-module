@@ -5,9 +5,9 @@
  * Date: 12.06.18
  * Time: 13:49
  */
-namespace Shopware\RatePAY\Bootstrapping;
+namespace RpayRatePay\Bootstrapping;
 
-use Shopware\RatePAY\Bootstrapping\Bootstrapper;
+use RpayRatePay\Bootstrapping\Bootstrapper;
 
 class MenuesSetup extends Bootstrapper
 {

@@ -5,7 +5,7 @@
  * Date: 12.06.18
  * Time: 11:01
  */
-namespace Shopware\RatePAY\Bootstrapping\Database;
+namespace RpayRatePay\Bootstrapping\Database;
 
 class CreateConfigPaymentTable
 {

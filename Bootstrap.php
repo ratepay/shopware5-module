@@ -44,7 +44,7 @@
         public function afterInit()
         {
             $this->get('Loader')->registerNamespace(
-                'Shopware\\RatePAY\\Bootstrapping', $this->Path() . 'Bootstrapping/'
+                'RpayRatePay\\Bootstrapping', $this->Path() . 'Bootstrapping/'
             );
 
             $this->get('Loader')->registerNamespace(
@@ -110,15 +110,15 @@
             $this->subscribeEvent('Shopware_Console_Add_Command', 'onRegisterSubscriber');
 
             $queue = [
-                new \Shopware\RatePAY\Bootstrapping\PaymentsSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\FormsSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\TranslationsSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\MenuesSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\DatabaseSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\PaymentStatusesSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\DeliveryStatusesSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\CronjobSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\AdditionalOrderAttributeSetup($this),
+                new \RpayRatePay\Bootstrapping\PaymentsSetup($this),
+                new \RpayRatePay\Bootstrapping\FormsSetup($this),
+                new \RpayRatePay\Bootstrapping\TranslationsSetup($this),
+                new \RpayRatePay\Bootstrapping\MenuesSetup($this),
+                new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
+                new \RpayRatePay\Bootstrapping\PaymentStatusesSetup($this),
+                new \RpayRatePay\Bootstrapping\DeliveryStatusesSetup($this),
+                new \RpayRatePay\Bootstrapping\CronjobSetup($this),
+                new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
             ];
 
             foreach ($queue as $bootstrapper) {
@@ -144,13 +144,13 @@
         public function update($version)
         {
             $queue = [
-                new \Shopware\RatePAY\Bootstrapping\FormsSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\DatabaseSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\TranslationsSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\PaymentsSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\ShopConfigSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\CronjobSetup($this),
-                new \Shopware\RatePAY\Bootstrapping\AdditionalOrderAttributeSetup($this),
+                new \RpayRatePay\Bootstrapping\FormsSetup($this),
+                new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
+                new \RpayRatePay\Bootstrapping\TranslationsSetup($this),
+                new \RpayRatePay\Bootstrapping\PaymentsSetup($this),
+                new \RpayRatePay\Bootstrapping\ShopConfigSetup($this),
+                new \RpayRatePay\Bootstrapping\CronjobSetup($this),
+                new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
             ];
 
             $this->_dropOrderAdditionalAttributes();
@@ -188,7 +188,7 @@
         public function uninstall()
         {
             $queue = [
-                new \Shopware\RatePAY\Bootstrapping\DatabaseSetup($this),
+                new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
             ];
 
             $this->disable();
@@ -218,18 +218,18 @@
         public function onRegisterSubscriber()
         {
             $subscribers = [
-                new \Shopware\RatePAY\Bootstrapping\Events\OrderOperationsSubscriber(),
-                new \Shopware\RatePAY\Bootstrapping\Events\TemplateExtensionSubscriber($this->Path()),
-                new \Shopware\RatePAY\Bootstrapping\Events\PaymentControllerSubscriber($this->Path()),
-                new \Shopware\RatePAY\Bootstrapping\Events\LoggingControllerSubscriber($this->Path()),
-                new \Shopware\RatePAY\Bootstrapping\Events\OrderDetailControllerSubscriber($this->Path()),
-                new \Shopware\RatePAY\Bootstrapping\Events\CheckoutValidationSubscriber($this->Path()),
-                new \Shopware\RatePAY\Bootstrapping\Events\PaymentFilterSubscriber(),
-                new \Shopware\RatePAY\Bootstrapping\Events\PluginConfigurationSubscriber($this->getName()),
-                new \Shopware\RatePAY\Bootstrapping\Events\OrderDetailsProcessSubscriber(),
-                new \Shopware\RatePAY\Bootstrapping\Events\JavascriptSourceSubscriber($this->Path()),
-                new \Shopware\RatePAY\Bootstrapping\Events\OrderViewExtensionSubscriber($this->Path()),
-                new \Shopware\RatePAY\Bootstrapping\Events\UpdateTransactionsSubscriber(),
+                new \RpayRatePay\Bootstrapping\Events\OrderOperationsSubscriber(),
+                new \RpayRatePay\Bootstrapping\Events\TemplateExtensionSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\PaymentControllerSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\LoggingControllerSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\OrderDetailControllerSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\CheckoutValidationSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\PaymentFilterSubscriber(),
+                new \RpayRatePay\Bootstrapping\Events\PluginConfigurationSubscriber($this->getName()),
+                new \RpayRatePay\Bootstrapping\Events\OrderDetailsProcessSubscriber(),
+                new \RpayRatePay\Bootstrapping\Events\JavascriptSourceSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\OrderViewExtensionSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\UpdateTransactionsSubscriber(),
             ];
 
             foreach ($subscribers as $subscriber) {

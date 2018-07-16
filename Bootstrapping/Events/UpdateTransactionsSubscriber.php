@@ -1,5 +1,5 @@
 <?php
-namespace Shopware\RatePAY\Bootstrapping\Events;
+namespace RpayRatePay\Bootstrapping\Events;
 
 class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
 {

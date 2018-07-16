@@ -5,7 +5,7 @@
  * Date: 13.06.18
  * Time: 10:46
  */
-namespace Shopware\RatePAY\Bootstrapping\Events;
+namespace RpayRatePay\Bootstrapping\Events;
 
 class LoggingControllerSubscriber implements \Enlight\Event\SubscriberInterface
 {

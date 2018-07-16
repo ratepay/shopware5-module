@@ -5,7 +5,7 @@
  * Date: 12.06.18
  * Time: 14:02
  */
-namespace Shopware\RatePAY\Bootstrapping;
+namespace RpayRatePay\Bootstrapping;
 
 abstract class Bootstrapper
 {

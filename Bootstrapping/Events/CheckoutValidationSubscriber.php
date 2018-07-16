@@ -5,7 +5,7 @@
  * Date: 13.06.18
  * Time: 10:50
  */
-namespace Shopware\RatePAY\Bootstrapping\Events;
+namespace RpayRatePay\Bootstrapping\Events;
 
 class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
 {

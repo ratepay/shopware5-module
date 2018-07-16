@@ -5,7 +5,7 @@
  * Date: 13.06.18
  * Time: 11:18
  */
-namespace Shopware\RatePAY\Bootstrapping\Events;
+namespace RpayRatePay\Bootstrapping\Events;
 
 class OrderViewExtensionSubscriber implements \Enlight\Event\SubscriberInterface
 {

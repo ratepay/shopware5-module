@@ -5,7 +5,7 @@
  * Date: 13.06.18
  * Time: 10:58
  */
-namespace Shopware\RatePAY\Bootstrapping\Events;
+namespace RpayRatePay\Bootstrapping\Events;
 
 class PluginConfigurationSubscriber implements \Enlight\Event\SubscriberInterface
 {

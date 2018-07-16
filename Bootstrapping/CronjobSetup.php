@@ -1,7 +1,7 @@
 <?php
-namespace Shopware\RatePAY\Bootstrapping;
+namespace RpayRatePay\Bootstrapping;
 
-use Shopware\RatePAY\Bootstrapping\Bootstrapper;
+use RpayRatePay\Bootstrapping\Bootstrapper;
 
 class CronjobSetup extends Bootstrapper
 {
