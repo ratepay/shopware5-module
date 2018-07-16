@@ -5,8 +5,11 @@
  * Date: 12.06.18
  * Time: 13:49
  */
+namespace RpayRatePay\Bootstrapping;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentStatusesSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+use RpayRatePay\Bootstrapping\Bootstrapper;
+
+class PaymentStatusesSetup extends Bootstrapper
 {
     /**
      * @throws Exception
@@ -17,7 +20,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentStatusesSetup e
             Shopware()->Db()->query($sql, array(
                 155, 'Zahlungsabwicklung durch RatePAY', 155, 'payment', 0
             ));
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Shopware()->Pluginlogger()->addNotice($exception->getMessage());
         }
     }

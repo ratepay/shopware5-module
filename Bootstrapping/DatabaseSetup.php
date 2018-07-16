@@ -5,8 +5,11 @@
  * Date: 12.06.18
  * Time: 13:26
  */
+namespace RpayRatePay\Bootstrapping;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+use RpayRatePay\Bootstrapping\Bootstrapper;
+
+class DatabaseSetup extends Bootstrapper
 {
     /**
      * @return mixed|void
@@ -48,7 +51,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup extends 
             Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
             Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
             Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             throw new Exception('Can not delete RatePAY tables - ' . $exception->getMessage());
         }
     }
@@ -59,20 +62,20 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup extends 
     protected function createDatabaseTables()
     {
         $tables = [
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateLoggingTable(),
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigTable(),
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateOrderPositionsTable(),
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateOrderShippingTable(),
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateOrderHistoryTable(),
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigPaymentTable(),
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigInstallmentTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateLoggingTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateOrderPositionsTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateOrderShippingTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateOrderHistoryTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigPaymentTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigInstallmentTable(),
         ];
 
         try {
             foreach ($tables as $generator) {
                 $generator(Shopware()->Db());
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->bootstrap->uninstall();
             throw new Exception('Can not create Database.' . $exception->getMessage());
         }
@@ -81,16 +84,16 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup extends 
     private function updateConfigurationTables()
     {
         $tables = [
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigTable(),
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigPaymentTable(),
-            new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Database_CreateConfigInstallmentTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigPaymentTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateConfigInstallmentTable(),
         ];
 
         try {
             foreach ($tables as $generator) {
                 $generator(Shopware()->Db());
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             throw new Exception('Can not update Database.' . $exception->getMessage());
         }
     }
@@ -102,7 +105,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup extends 
                 Shopware()->Db()->query(
                     "DELETE FROM `s_core_config_elements` WHERE `s_core_config_elements`.`name` LIKE 'RatePaySandbox%'"
                 );
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 throw new Exception("Can't remove Sandbox fields` - " . $exception->getMessage());
             }
         }
@@ -122,7 +125,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup extends 
             $columnExists = Shopware()->Db()->fetchRow(
                 "SHOW COLUMNS FROM `" . $table . "` LIKE '" . $column . "'"
             );
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             throw new Exception("Can not enter table " . $table . " - " . $exception->getMessage());
         }
 

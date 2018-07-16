@@ -5,8 +5,9 @@
  * Date: 13.06.18
  * Time: 10:53
  */
+namespace RpayRatePay\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
+class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
      * @var
@@ -34,7 +35,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function filterPayments(Enlight_Event_EventArgs $arguments)
+    public function filterPayments(\Enlight_Event_EventArgs $arguments)
     {
         $return = $arguments->getReturn();
         $currency = Shopware()->Config()->get('currency');
@@ -89,7 +90,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSu
         foreach ($config AS $payment => $data) {
             $show[$payment] = $data['status'] == 2 ? true : false;
 
-            $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($config);
+            $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($config);
             $validation->setAllowedCurrencies($data['currency']);
             $validation->setAllowedCountriesBilling($data['country-code-billing']);
             $validation->setAllowedCountriesDelivery($data['country-code-delivery']);
