@@ -272,18 +272,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         Shopware()->PluginLogger()->info('Call PaymentRequest 4');
 
-        if (Util::existsAndNotEmpty($checkoutAddressBilling, "getCountry") && Util::existsAndNotEmpty($checkoutAddressBilling->getCountry(), "getIso")) {
-            Shopware()->PluginLogger()->info('Setting country from 1');
-            $countryCodeBilling = $checkoutAddressBilling->getCountry()->getIso();
-            $countryCodeShipping = $checkoutAddressShipping->getCountry()->getIso();
-        } elseif (Util::existsAndNotEmpty($checkoutAddressBilling, "getCountryId")) {
-            Shopware()->PluginLogger()->info('Setting country from 2');
-            $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressBilling->getCountryId());
-            $countryCodeBilling = $countryBilling->getIso();
-            $countryShipping = Shopware()->Models()->find('Shopware\Models\Country\Country', $checkoutAddressShipping->getCountryId());
-            $countryCodeShipping = $countryShipping->getIso();
-        } else {
-            Shopware()->Pluginlogger()->error('Country could not be loaded.');
+        $countryCodeBilling = PaymentRequestData::findCountryISO($checkoutAddressBilling);
+        $countryCodeShipping = PaymentRequestData::findCountryISO($checkoutAddressShipping);
+
+        if(is_null($countryCodeBilling || is_null($countryCodeShipping))) {
+            Shopware()->Pluginlogger()->error('Country code not loaded....');
         }
 
         Shopware()->PluginLogger()->info('Call PaymentRequest 5');

@@ -23,12 +23,12 @@ class PaymentRequestData
     private $customer;
 
     /**
-     * @var \Shopware\Models\Customer\Address
+     * @var \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Billing
      */
     private $billingAddress;
 
     /**
-     * @var \Shopware\Models\Customer\Address
+     * @var \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Shipping
      */
     private $shippingAddress;
 
@@ -77,7 +77,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return \Shopware\Models\Customer\Address
+     * @return \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Billing
      */
     public function getBillingAddress()
     {
@@ -85,7 +85,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return \Shopware\Models\Customer\Address
+     * @return \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Shipping
      */
     public function getShippingAddress()
     {
@@ -199,6 +199,23 @@ class PaymentRequestData
         return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingCost, $shippingTax, $dfpToken, $lang, $amount);
     }
 
+    /**
+     * @param \Shopware\Models\Customer\Address|\Shopware\Models\Customer\Billing|\Shopware\Models\Customer\Shipping $addressObject
+     * @return string|null
+     */
+    public static function findCountryISO($addressObject)
+    {
+        $iso = null;
+        if (Util::existsAndNotEmpty($addressObject, "getCountry") &&
+            Util::existsAndNotEmpty($addressObject->getCountry(), "getIso")) {
+            $iso = $addressObject->getCountry()->getIso();
+        } elseif (Util::existsAndNotEmpty($addressObject, "getCountryId")) {
+            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $addressObject->getCountryId());
+            $iso = $country->getIso();
+        }
+        return $iso;
+    }
+
     private static function findLangInSession()
     {
         $shopContext = Shopware()->Container()->get('shopware_storefront.context_service')->getShopContext();
@@ -249,5 +266,4 @@ class PaymentRequestData
 
         return $checkoutAddressBilling;
     }
-
 }
