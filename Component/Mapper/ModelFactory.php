@@ -1,6 +1,7 @@
 <?php
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\Component\Mapper\BankData;
 use RatePAY\Service\Util;
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -228,12 +229,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
     }
 
     /**
-     * @param RpayRatePay\Component\Mapper\PaymentRequestData|null $paymentRequestData
+     * @param null|RpayRatePay\Component\Mapper\PaymentRequestData $paymentRequestData
+     * @param null|RpayRatePay\Component\Mapper\BankData $bankData
      *
      * @return \RatePAY\RequestBuilder
      * @throws \RatePAY\Exception\ModelException
      */
-    public function callPaymentRequest($paymentRequestData = null)
+    public function callPaymentRequest($paymentRequestData = null, $bankData = null)
     {
         if (is_null($paymentRequestData)) {
             $paymentRequestData = PaymentRequestData::loadFromSession();
@@ -369,15 +371,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         }
 
         if ($method === 'ELV' || ($method == 'INSTALLMENT' && $elv == true)) {
-            $contentArr['Customer']['BankAccount']['Owner'] = Shopware()->Session()->RatePAY['bankdata']['bankholder'];
-
-            $bankCode = Shopware()->Session()->RatePAY['bankdata']['bankcode'];
-            if (!empty($bankCode)) {
-                $contentArr['Customer']['BankAccount']['BankAccountNumber'] = Shopware()->Session()->RatePAY['bankdata']['account'];
-                $contentArr['Customer']['BankAccount']['BankCode'] = Shopware()->Session()->RatePAY['bankdata']['bankcode'];
-            } else {
-                $contentArr['Customer']['BankAccount']['Iban'] = Shopware()->Session()->RatePAY['bankdata']['account'];
+            if (is_null($bankData)) {
+                $bankData = BankData::instantiateFromSession();
             }
+            $contentArr['Customer']['BankAccount'] = $bankData->toArray();
         }
 
         $mbContent->setArray($contentArr);
