@@ -18,6 +18,8 @@
  * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
  */
 
+use RpayRatePay\Component\Mapper\BankData;
+use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Component\Service\ConfigLoader;
 use Shopware\Models\Payment\Payment;
@@ -26,10 +28,38 @@ use Shopware\Models\Customer\Address;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
 {
+    /**
+     * @param string $namespace
+     * @param string $name
+     * @param string $default
+     * @return mixed
+     */
     private function getSnippet($namespace, $name, $default)
     {
         $ns = Shopware()->Snippets()->getNamespace($namespace);
         return $ns->get($name, $default);
+    }
+
+    /**
+     * Write to session. We must because there is no way to send extra data with order create request.
+     */
+    public function setExtendedDataAction()
+    {
+        Shopware()->Pluginlogger()->info('Now calling setExtendedData');
+        $params = $this->Request()->getParams();
+        $iban = trim($params["iban"]);
+        $accountNumber = trim($params["accountNumber"]);
+        $bankCode = trim($params["bankCode"]);
+
+        $sessionLoader = new SessionLoader(Shopware()->BackendSession());
+
+        $sessionLoader->setBankData(
+            $accountNumber ? $accountNumber : $iban,
+            $bankCode, Shopware()->BackendSession());
+        Shopware()->Pluginlogger()->info('Bank data written to session');
+        $this->view->assign([
+            'success' => true,
+        ]);
     }
 
     public function prevalidateAction()

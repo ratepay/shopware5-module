@@ -17,7 +17,10 @@
      * @category   RatePAY
      * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
      */
-    use Shopware\Components\CSRFWhitelistAware;
+
+use RpayRatePay\Component\Mapper\BankData;
+use RpayRatePay\Component\Service\SessionLoader;
+use Shopware\Components\CSRFWhitelistAware;
     use \RpayRatePay\Component\Service\PaymentProcessor;
 
     class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
@@ -165,10 +168,13 @@
                 }
             }
 
+            $sessionLoader = new SessionLoader(Shopware()->Session());
             if ($Parameter['ratepay_debit_updatedebitdata']) {
-                Shopware()->Session()->RatePAY['bankdata']['account']    = $Parameter['ratepay_debit_accountnumber'];
-                Shopware()->Session()->RatePAY['bankdata']['bankcode']   = $Parameter['ratepay_debit_bankcode'];
-                Shopware()->Session()->RatePAY['bankdata']['bankholder'] = $customerAddressBilling->getFirstname() . " " . $customerAddressBilling->getLastname();
+                $sessionLoader->setBankData(
+        //            $customerAddressBilling->getFirstname() . " " . $customerAddressBilling->getLastname(),
+                    $Parameter['ratepay_debit_accountnumber'],
+                    $Parameter['ratepay_debit_bankcode']
+                );
             }
 
             echo $return;

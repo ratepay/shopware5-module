@@ -3,6 +3,8 @@
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Mapper\BankData;
 use RatePAY\Service\Util;
+use RpayRatePay\Component\Service\SessionLoader;
+
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation; either
@@ -237,14 +239,19 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      */
     public function callPaymentRequest($paymentRequestData = null, $bankData = null)
     {
+        $sessionLoader = new SessionLoader($this->backend ?
+            Shopware()->BackendSession() :
+            Shopware()->Session()
+        );
+
         if (is_null($paymentRequestData)) {
-            $paymentRequestData = PaymentRequestData::loadFromSession();
+            $paymentRequestData = $sessionLoader->getPaymentRequestData();
         }
 
         $method = $paymentRequestData->getMethod();
 
         if ($method == 'INSTALLMENT0') {
-            $this->setZPercent();
+            $this->setZPercent(); //side effect
             $method = 'INSTALLMENT';
         }
 
@@ -372,7 +379,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         if ($method === 'ELV' || ($method == 'INSTALLMENT' && $elv == true)) {
             if (is_null($bankData)) {
-                $bankData = BankData::instantiateFromSession();
+                $bankData = $sessionLoader->getBankData($checkoutAddressBilling);
             }
             $contentArr['Customer']['BankAccount'] = $bankData->toArray();
         }
@@ -383,8 +390,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $paymentRequest = $rb->callPaymentRequest($mbHead, $mbContent);
         $this->_logging->logRequest($paymentRequest->getRequestRaw(), $paymentRequest->getResponseRaw());
 
-      //  Shopware()->Pluginlogger()->info($paymentRequest->getRequestRaw());
-       // Shopware()->Pluginlogger()->info($paymentRequest->getResponseRaw());
+        Shopware()->Pluginlogger()->info("REQUEST");
+        Shopware()->Pluginlogger()->info($paymentRequest->getRequestRaw());
+        Shopware()->Pluginlogger()->info("RESPONSE");
+        Shopware()->Pluginlogger()->info($paymentRequest->getResponseRaw());
         return $paymentRequest;
     }
 
@@ -496,7 +505,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      * @param bool$type* @param null $orderId
      * @return array
      */
-    private function createBasketArray($items, $type = false,$orderId= null) {
+    private function createBasketArray($items, $type = false, $orderId = null) {
                     $netPriceAllowed = $this->isNetPriceAllowed();
 
         $useFallbackShipping =$this->usesShippingItemFallback($orderId);

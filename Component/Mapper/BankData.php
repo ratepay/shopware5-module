@@ -70,7 +70,7 @@ class BankData
      * @param $bankCode
      * @param $accountNumber
      */
-    private function __construct($accountHolder, $iban = null, $bankCode = null, $accountNumber = null)
+    public function __construct($accountHolder, $iban = null, $bankCode = null, $accountNumber = null)
     {
         $this->accountHolder = $accountHolder;
         $this->iban = $iban;
@@ -78,43 +78,6 @@ class BankData
         $this->accountNumber = $accountNumber;
     }
 
-    /**
-     * @param $accountHolder
-     * @param $bankCode
-     * @param $accountNumber
-     * @return BankData
-     */
-    public static function instantiateOldSystem($accountHolder, $bankCode, $accountNumber)
-    {
-        return new BankData($accountHolder, null, $bankCode, $accountNumber);
-    }
-
-    /**
-     * @param $accountHolder
-     * @param $iban
-     * @return BankData
-     */
-    public static function instantiateNewSystem($accountHolder, $iban)
-    {
-        return new BankData($accountHolder,  $iban);
-    }
-
-    /**
-     * @return BankData
-     */
-    public static function instantiateFromSession()
-    {
-        $sessionArray = Shopware()->Session()->RatePAY['bankdata'];
-
-        $bankCode = $sessionArray['bankcode'];
-        $accountHolder = $sessionArray['bankholder'];
-
-        if (!empty($bankCode)) {
-            return self::instantiateOldSystem($accountHolder, $bankCode, $sessionArray['account']);
-        } else {
-            return self::instantiateNewSystem($accountHolder, $sessionArray['account']);
-        }
-    }
 
     /**
      * @return array

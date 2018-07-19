@@ -19,6 +19,7 @@
         /**
          * This method get the RatePAY profile-id and has to be rewritten
          *
+         * @deprecated
          * @return string
          */
         public function getProfileId()

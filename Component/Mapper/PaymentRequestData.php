@@ -170,36 +170,6 @@ class PaymentRequestData
     }
 
     /**
-     * @return PaymentRequestData
-     */
-    public static function loadFromSession()
-    {
-        $method = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
-            Shopware()->Session()->sOrderVariables['sUserData']['additional']['payment']['name']
-        );
-
-        $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
-
-        $billing = self::findAddressBilling($customer);
-
-        $shipping = self::findAddressShipping($customer, $billing);
-
-        $items = Shopware()->Session()->sOrderVariables['sBasket']['content'];
-
-        $shippingCost = Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'];
-
-        $shippingTax = Shopware()->Session()->sOrderVariables['sBasket']['sShippingcostsTax'];
-
-        $dfpToken = Shopware()->Session()->RatePAY['dfpToken'];
-
-        $lang = self::findLangInSession();
-
-        $amount = self::findAmountInSession();
-
-        return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingCost, $shippingTax, $dfpToken, $lang, $amount);
-    }
-
-    /**
      * @param mixed
      * @return string|null
      */
@@ -214,56 +184,5 @@ class PaymentRequestData
             $iso = $country->getIso();
         }
         return $iso;
-    }
-
-    private static function findLangInSession()
-    {
-        $shopContext = Shopware()->Container()->get('shopware_storefront.context_service')->getShopContext();
-        $lang = $shopContext->getShop()->getLocale()->getLocale();
-        $lang = substr($lang, 0, 2);
-        return $lang;
-    }
-
-    private static function findAmountInSession()
-    {
-        $user = Shopware()->Session()->sOrderVariables['sUserData'];
-        $basket = Shopware()->Session()->sOrderVariables['sBasket'];
-        if (!empty($user['additional']['charge_vat'])) {
-            return empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
-        } else {
-            return $basket['AmountNetNumeric'];
-        }
-    }
-
-     /**
-      * @param \Shopware\Models\Customer\Customer $customer
-      * @param \Shopware\Models\Customer\Address $billing
-      * @return mixed
-      */
-    private static function findAddressShipping($customer, $billing)
-    {
-        if (isset(Shopware()->Session()->RatePAY['checkoutShippingAddressId']) && Shopware()->Session()->RatePAY['checkoutShippingAddressId'] > 0) {
-            $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $checkoutAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->RatePAY['checkoutShippingAddressId'] ? Shopware()->Session()->RatePAY['checkoutShippingAddressId'] : Shopware()->Session()->RatePAY['checkoutBillingAddressId']));
-        } else {
-            $checkoutAddressShipping = $customer->getShipping() !== null ? $customer->getShipping() : $billing;
-        }
-        return $checkoutAddressShipping;
-    }
-
-    /**
-     * @param \Shopware\Models\Customer\Customer $customer
-     * @return mixed
-     */
-    private static function findAddressBilling($customer)
-    {
-        if (isset(Shopware()->Session()->RatePAY['checkoutBillingAddressId']) && Shopware()->Session()->RatePAY['checkoutBillingAddressId'] > 0) {
-            $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->RatePAY['checkoutBillingAddressId']));
-        } else {
-            $checkoutAddressBilling = $customer->getBilling();
-        }
-
-        return $checkoutAddressBilling;
     }
 }

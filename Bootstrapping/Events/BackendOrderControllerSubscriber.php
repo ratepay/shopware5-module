@@ -89,11 +89,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
                     //let SWAG write order to db
                     $this->forwardToSWAGBackendOrders($hookArgs);
 
-                    Shopware()->Pluginlogger()->info('Forwarded to SWAG Backend order');
-
                     $orderId = $view->getAssign("orderId");
-
-                    Shopware()->Pluginlogger()->info('Order created with ID ' . $orderId);
 
                     $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
 

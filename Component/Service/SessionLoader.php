@@ -1,0 +1,139 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: awhittington
+ * Date: 18.07.18
+ * Time: 16:09
+ */
+namespace  RpayRatePay\Component\Service;
+
+use RpayRatePay\Component\Mapper\BankData;
+use RpayRatePay\Component\Mapper\PaymentRequestData;
+
+class SessionLoader
+{
+    private $session;
+
+    /**
+     * Session constructor with Shopware params Session or BackendSession.
+     * @param object $session
+     */
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
+
+    public function setBankData($accountNumber, $bankCode = null)
+    {
+        $this->session->RatePAY['bankdata']['account'] = $accountNumber;
+        $this->session->RatePAY['bankdata']['bankcode'] = $bankCode;
+    }
+
+    /**
+     * @param $customerAddressBilling
+     * @return BankData
+     */
+    public function getBankData($customerAddressBilling)
+    {
+        $sessionArray = $this->session->RatePAY['bankdata'];
+
+        $bankCode = $sessionArray['bankcode'];
+        $account = $sessionArray['account'];
+
+        $accountHolder = $customerAddressBilling->getFirstname() . " " . $customerAddressBilling->getLastname();
+        if (!empty($bankCode)) {
+            return new BankData($accountHolder, null, $bankCode, $account);
+        } else {
+            return new BankData($accountHolder, $account);
+        }
+    }
+
+    /**
+     * @param \Shopware\Models\Customer\Customer $customer
+     * @param \Shopware\Models\Customer\Address $billing
+     * @return mixed
+     */
+    private function findAddressShipping($customer, $billing)
+    {
+        if (isset($this->session->RatePAY['checkoutShippingAddressId']) && $this->session->RatePAY['checkoutShippingAddressId'] > 0) {
+            $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+            $checkoutAddressShipping = $addressModel->findOneBy(array('id' => $this->session->RatePAY['checkoutShippingAddressId'] ? $this->session->RatePAY['checkoutShippingAddressId'] : $this->session->RatePAY['checkoutBillingAddressId']));
+        } else {
+            $checkoutAddressShipping = $customer->getShipping() !== null ? $customer->getShipping() : $billing;
+        }
+        return $checkoutAddressShipping;
+    }
+    
+    /**
+     * @param \Shopware\Models\Customer\Customer $customer
+     * @return mixed
+     */
+    private function findAddressBilling($customer)
+    {
+        if (isset($this->session->RatePAY['checkoutBillingAddressId']) && $this->session->RatePAY['checkoutBillingAddressId'] > 0) {
+            $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+            $checkoutAddressBilling = $addressModel->findOneBy(array('id' => $this->session->RatePAY['checkoutBillingAddressId']));
+        } else {
+            $checkoutAddressBilling = $customer->getBilling();
+        }
+
+        return $checkoutAddressBilling;
+    }
+
+    private function findAmountInSession()
+    {
+        $user = Shopware()->Session()->sOrderVariables['sUserData'];
+        $basket = Shopware()->Session()->sOrderVariables['sBasket'];
+        if (!empty($user['additional']['charge_vat'])) {
+            return empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
+        } else {
+            return $basket['AmountNetNumeric'];
+        }
+    }
+
+    private static function findLangInSession()
+    {
+        $shopContext = Shopware()->Container()->get('shopware_storefront.context_service')->getShopContext();
+        $lang = $shopContext->getShop()->getLocale()->getLocale();
+        $lang = substr($lang, 0, 2);
+        return $lang;
+    }
+
+    public function getPaymentRequestData()
+    {
+        $method = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
+            $this->session->sOrderVariables['sUserData']['additional']['payment']['name']
+        );
+
+        $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $this->session->sUserId);
+
+        $billing = $this->findAddressBilling($customer);
+
+        $shipping = $this->findAddressShipping($customer, $billing);
+
+        $items = $this->session->sOrderVariables['sBasket']['content'];
+
+        $shippingCost = $this->session->sOrderVariables['sBasket']['sShippingcosts'];
+
+        $shippingTax = $this->session->sOrderVariables['sBasket']['sShippingcostsTax'];
+
+        $dfpToken = $this->session->RatePAY['dfpToken'];
+
+        $lang = $this->findLangInSession();
+
+        $amount = $this->findAmountInSession();
+
+        return new PaymentRequestData(
+            $method,
+            $customer,
+            $billing,
+            $shipping,
+            $items,
+            $shippingCost,
+            $shippingTax,
+            $dfpToken,
+            $lang,
+            $amount);
+    }
+
+}
