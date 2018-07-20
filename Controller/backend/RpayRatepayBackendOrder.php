@@ -19,9 +19,11 @@
  */
 
 use RpayRatePay\Component\Mapper\BankData;
+use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Component\Service\ConfigLoader;
+use Shopware\Components\DependencyInjection\Bridge\Config;
 use Shopware\Models\Payment\Payment;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Customer\Address;
@@ -55,12 +57,57 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
 
         $sessionLoader->setBankData(
             $accountNumber ? $accountNumber : $iban,
-            $bankCode, Shopware()->BackendSession());
-        Shopware()->Pluginlogger()->info('Bank data written to session');
+            $bankCode, Shopware()->BackendSession()
+        );
+
         $this->view->assign([
             'success' => true,
         ]);
     }
+
+    public function getInstallmentInfoAction()
+    {
+        //TODO add try/catch block
+        $params = $this->Request()->getParams();
+
+        $shopId = $params['shopId'];
+        $billingId = $params['billingId'];
+        $paymentMeansName = $params['paymentTypeName'];
+        $totalAmount = $params['totalAmount'];
+
+        $configLoader = new ConfigLoader(Shopware()->Db());
+        $paymentColumn = $configLoader->getPaymentColumnFromPaymentMeansName($paymentMeansName);
+
+        $addressObj = Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
+        $countryIso = PaymentRequestData::findCountryISO($addressObj);
+
+        $config = $configLoader->getPluginConfigForPaymentType(
+            $shopId,
+            $countryIso,
+            $paymentColumn,
+            true
+        );
+
+        //TODO handle if not exists
+        $isSandbox = ((int)($config['sandbox']) === 1);
+        $installmentBuilder = new RatePAY\Frontend\InstallmentBuilder($isSandbox);
+        $installmentBuilder->setProfileId($config["profileId"]);
+
+        $securityCodeKey = ConfigLoader::getSecurityCodeKey($countryIso, true);
+        $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get($securityCodeKey);
+
+     //   Shopware()->Pluginlogger()->info('ProfileId set to ' . $config["profileId"]);
+     //   Shopware()->Pluginlogger()->info('Security key ' . $securityCode);
+        $installmentBuilder->setSecurityCode($securityCode);
+
+        $result = $installmentBuilder->getInstallmentCalculatorAsJson($totalAmount);
+
+        $this->view->assign([
+            'success' => true,
+            'resultJson' => $result
+        ]);
+    }
+
 
     public function prevalidateAction()
     {

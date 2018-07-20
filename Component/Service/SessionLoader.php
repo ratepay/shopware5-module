@@ -40,7 +40,7 @@ class SessionLoader
         $bankCode = $sessionArray['bankcode'];
         $account = $sessionArray['account'];
 
-        $accountHolder = $customerAddressBilling->getFirstname() . " " . $customerAddressBilling->getLastname();
+        $accountHolder = $customerAddressBilling->getFirstname() . ' ' . $customerAddressBilling->getLastname();
         if (!empty($bankCode)) {
             return new BankData($accountHolder, null, $bankCode, $account);
         } else {

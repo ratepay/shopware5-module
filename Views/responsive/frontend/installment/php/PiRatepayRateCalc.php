@@ -30,6 +30,7 @@
          * This method send's the congig request to RatePAY or set's a error message
          * and returns the config details
          *
+         * @deprecated use ConfigLoader for all loading of Configs
          * @return array $installmentConfigArray
          */
         public function getRatepayRateConfig($backend = false)
@@ -63,6 +64,7 @@
             $interestRate = ((float)$rpRateConfig["interestrate-default"] / 12) / 100;
             $monthAllowed = explode(',', $rpRateConfig["month-allowed"]);
 
+            //this should
             foreach ($monthAllowed AS $month) {
                 $rateAmount = ceil($basketAmount * (($interestRate * pow((1 + $interestRate), $month)) / (pow((1 + $interestRate), $month) - 1)));
                 if($rateAmount >= $rpRateConfig["rate-min-normal"]) {

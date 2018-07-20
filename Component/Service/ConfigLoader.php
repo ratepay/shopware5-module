@@ -66,6 +66,7 @@ class ConfigLoader
                         WHERE rrc.`shopId` = '" . $shopId . "'
                              AND rrc.`profileId`= '" . $profileId . "'
                         AND rrc.backend=$sBackend";
+
         $result = Shopware()->Db()->fetchRow($qry);
 
         return $result;

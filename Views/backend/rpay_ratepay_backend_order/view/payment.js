@@ -15,6 +15,10 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         me.add(me.bankDataContainer);
         me.bankDataContainer.setVisible(false);
 
+
+        me.calculatorStore = me.createCalculatorStore();
+        me.calculatorContainer = me.createCalculatorContainer();
+
         var changePaymentTypeHandler = function(combobox, newValue, oldValue) {
             if (newValue === '') return false;
             var paymentRecord = combobox.store.findRecord('id', newValue),
@@ -29,7 +33,11 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             } else {
                 me.paymentDataView.setVisible(false);
 
-                //because this view is created in another handler
+                if (me.customerId === -1) {
+                    Shopware.Notification.createGrowlMessage('', me.snippetsLocal.loadCustomerFirst);
+                    combobox.setValue('');
+                    return false;
+                }
 
                 //rpayratepayrate0
                 //rpayratepaydebit
@@ -37,17 +45,43 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                 //rpayratepayinvoice
 
                 if(name === 'rpayratepayrate0' || name === 'rpayratepayrate') {
+                    var customerModel = me.subApplication.getStore('Customer')
+                        .getAt(0);
+
+                    var createBackendOrderStore = me.subApplication.getStore('CreateBackendOrder');
+                    var ct = createBackendOrderStore.getCount();
+                    if (ct !== 1) {
+                        Shopware.Notification.createGrowlMessage('','Please set shipping costs and items first. Ct ' + ct);//me.snippetsLocal.orderNotYetModelled);
+                        combobox.setValue('');
+                        return;
+                    }
+
+                    //now check total basket amount
+
+                    var totalCostsStore = me.subApplication.getStore('TotalCosts');
+                    var totalCostsModel = totalCostsStore.getAt(0);
+                    var totalAmount =  totalCostsModel.get('total');
+                    var shippingCosts = totalCostsModel.get('shippingCosts');
+
+                    if (totalAmount < 0.01  || (totalAmount - shippingCosts) < 0.01) {
+                        Shopware.Notification.createGrowlMessage('','Please put something in the shopping cart.');//me.snippetsLocal.orderNotYetModelled);
+                        combobox.setValue('');
+                        return;
+                    }
+
+                    var backendOrder = createBackendOrderStore.getAt(ct - 1);
+
+                    me.requestInstallmentCalculator(
+                        customerModel.get('shopId'),
+                        backendOrder.get('billingAddressId'),
+                        name,
+                        totalAmount
+                    );
                      //load ratenrechner
                 } else if(name === 'rpayratepaydebit') {
                     //load bank bank data fields
                     me.bankDataContainer.setVisible(true);
                 }
-
-                /*if (me.customerId === -1) {
-                    Shopware.Notification.createGrowlMessage('', me.snippetsLocal.loadCustomerFirst);
-                    combobox.setValue('');
-                    return false;
-                }*/
 
                 //check for birthday and telephone number
                 /*Ext.Ajax.request({
@@ -75,20 +109,45 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         };
 
 
+        console.log('APP trying to bind to select billing address event');
+        me.subApplication.app.on('selectBillingAddress', function() {
+            alert('select billing address');
+        });
+
         me.paymentComboBox.on('change', changePaymentTypeHandler);
     },
     iban: null,
     accountNumber: null,
     bankCode: null,
+    requestInstallmentCalculator: function(shopId, billingAddressId, paymentTypeName, totalAmount) {
+        Ext.Ajax.request({
+            url: '{url controller="RpayRatepayBackendOrder" action="getInstallmentInfo"}',
+            params: {
+                shopId: shopId,
+                billingId: billingAddressId,
+                paymentTypeName: paymentTypeName,
+                totalAmount: totalAmount
+            },
+            success: function(response) {
+                var responseObj = Ext.decode(response.responseText);
+                if (responseObj.success === false) {
+                    responseObj.messages.forEach(function (message) {
+                        Shopware.Notification.createGrowlMessage('', message);
+                    });
+                } else {
+                    Shopware.Notification.createGrowlMessage('', 'success');
+                }
+            }
+        });
+
+    },
     handleBankDataBlur: function() {
         var me = this;
-        console.log('account ' + me.accountNumber + ' bankCode ' + me.bankCode + ' iban ' + me.iban);
 
         //very minimalistic validation
         if(me.iban || (me.bankCode && me.iban)) {
-
             Ext.Ajax.request({
-                url: '{url controller="RpayRatepayBackendOrder" action="setExtendedData"}',
+                url: '{url controller="RpayRatepayBackendOrder" action="getInstallmentInfo"}',
                 params: {
                     iban: me.iban,
                     accountNumber: me.accountNumber,
@@ -108,7 +167,24 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             });
         }
     },
-    createBankDataContainer : function() {
+    createCalculatorStore: function() {
+        return Ext.create('Ext.data.Store', {
+            fields: ['display', 'value'],
+            data : []
+        });
+    },
+    createCalculatorContainer: function() {
+        var me = this;
+        return Ext.create('Ext.form.ComboBox', {
+            fieldLabel: 'Term',
+            name: 'calculatorSelect',
+            store: me.calculatorStore,
+            queryMode: 'local',
+            displayField: 'display',
+            valueField: 'value'
+        });
+    },
+    createBankDataContainer: function() {
         var me = this;
         var iban = Ext.create('Ext.form.TextField', {
             name: 'ibanTxtBox',
@@ -170,10 +246,8 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
     },
     getShippingId: function() {
         //this should work
-        var orderModel = me.subApplication.getCreateBackendOrderModel();
     },
     getBillingId: function() {
-        var me = this;
     }
 });
 //
