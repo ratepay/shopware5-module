@@ -65,6 +65,57 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         ]);
     }
 
+    private function getInstallmentBuilder($isSandbox, $profileId, $securityCode)
+    {
+        $installmentBuilder = new RatePAY\Frontend\InstallmentBuilder($isSandbox);
+        $installmentBuilder->setProfileId($profileId);
+        $installmentBuilder->setSecurityCode($securityCode);
+        return $installmentBuilder;
+    }
+
+    /**
+     * @param $paymentMeansName
+     * @param $addressObj
+     * @param $shopId
+     * @return \RatePAY\Frontend\InstallmentBuilder
+     */
+    private function getInstallmentBuilderFromConfig($paymentMeansName, $addressObj, $shopId)
+    {
+        $config = $this->getConfig($paymentMeansName, $addressObj, $shopId);
+
+        //TODO handle if not exists
+        $isSandbox = ((int)($config['sandbox']) === 1);
+        $profileId = $config["profileId"];
+        $countryIso = PaymentRequestData::findCountryISO($addressObj);
+        $securityCodeKey = ConfigLoader::getSecurityCodeKey($countryIso, true);
+        $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get($securityCodeKey);
+
+        $installmentBuilder = $this->getInstallmentBuilder($isSandbox, $profileId, $securityCode);
+        return $installmentBuilder;
+    }
+
+    /**
+     * @param $paymentMeansName
+     * @param $addressObj
+     * @param $shopId
+     * @return array
+     */
+    private function getConfig($paymentMeansName, $addressObj, $shopId)
+    {
+        $configLoader = new ConfigLoader(Shopware()->Db());
+        $paymentColumn = $configLoader->getPaymentColumnFromPaymentMeansName($paymentMeansName);
+
+        $countryIso = PaymentRequestData::findCountryISO($addressObj);
+
+        $config = $configLoader->getPluginConfigForPaymentType(
+            $shopId,
+            $countryIso,
+            $paymentColumn,
+            true
+        );
+        return $config;
+    }
+
     public function getInstallmentInfoAction()
     {
         //TODO add try/catch block
@@ -75,36 +126,46 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $paymentMeansName = $params['paymentTypeName'];
         $totalAmount = $params['totalAmount'];
 
-        $configLoader = new ConfigLoader(Shopware()->Db());
-        $paymentColumn = $configLoader->getPaymentColumnFromPaymentMeansName($paymentMeansName);
-
         $addressObj = Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
-        $countryIso = PaymentRequestData::findCountryISO($addressObj);
 
-        $config = $configLoader->getPluginConfigForPaymentType(
-            $shopId,
-            $countryIso,
-            $paymentColumn,
-            true
-        );
-
-        //TODO handle if not exists
-        $isSandbox = ((int)($config['sandbox']) === 1);
-        $installmentBuilder = new RatePAY\Frontend\InstallmentBuilder($isSandbox);
-        $installmentBuilder->setProfileId($config["profileId"]);
-
-        $securityCodeKey = ConfigLoader::getSecurityCodeKey($countryIso, true);
-        $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get($securityCodeKey);
-
-     //   Shopware()->Pluginlogger()->info('ProfileId set to ' . $config["profileId"]);
-     //   Shopware()->Pluginlogger()->info('Security key ' . $securityCode);
-        $installmentBuilder->setSecurityCode($securityCode);
-
+        $installmentBuilder = $this->getInstallmentBuilderFromConfig($paymentMeansName, $addressObj, $shopId);
         $result = $installmentBuilder->getInstallmentCalculatorAsJson($totalAmount);
 
         $this->view->assign([
             'success' => true,
             'termInfo' => json_decode($result, true) //to prevent double encode
+        ]);
+    }
+
+    public function getInstallmentPlanAction()
+    {
+        $params = $this->Request()->getParams();
+
+        $shopId = $params['shopId'];
+        $billingId = $params['billingId'];
+        $paymentMeansName = $params['paymentMeansName'];
+
+        $type = $params['type'];
+        $val = $params['value'];
+        $totalAmount = $params['totalAmount'];
+
+        $addressObj = Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
+
+        $installmentBuilder = $this->getInstallmentBuilderFromConfig($paymentMeansName, $addressObj, $shopId);
+
+        try {
+            //Shopware()->Pluginlogger()->info("Get installment plan with total $totalAmount type $type val $val.");
+            $result = $installmentBuilder->getInstallmentPlanAsJson($totalAmount, $type, $val);
+        } catch (\Exception $e) {
+            $this->view->assign([
+                'success' => false,
+                'messages' => [$e->getMessage()]
+            ]);
+            return;
+        }
+        $this->view->assign([
+            'success' => true,
+            'plan' => json_decode($result, true) //to prevent double encode
         ]);
     }
 
@@ -169,4 +230,5 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
     {
 
     }
+
 }

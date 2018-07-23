@@ -735,7 +735,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $countryCode = $this->_getCountryCodesByBillingAddress();
         }
 
-
         $configKey = RpayRatePay\Component\Service\ConfigLoader::getProfileIdKey($countryCode, $this->backend);
         if(null !== $this->_config) {
             $profileId = $this->_config->get($configKey);
