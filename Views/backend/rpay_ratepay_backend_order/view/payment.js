@@ -18,20 +18,21 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
 
         me.calculatorStore = me.createCalculatorStore();
         me.calculatorContainer = me.createCalculatorContainer();
+        me.add(me.calculatorContainer);
+        me.calculatorContainer.setVisible(false);
 
         var changePaymentTypeHandler = function(combobox, newValue, oldValue) {
             if (newValue === '') return false;
             var paymentRecord = combobox.store.findRecord('id', newValue),
                 name = paymentRecord.get('name');
 
-            console.log('Removing BankDataContainer');
-
             me.bankDataContainer.setVisible(false);
+            me.calculatorContainer.setVisible(false);
+
             //not a ratepay order
             if (name.indexOf('rpay') !== 0) {
                 return true;
             } else {
-                me.paymentDataView.setVisible(false);
 
                 if (me.customerId === -1) {
                     Shopware.Notification.createGrowlMessage('', me.snippetsLocal.loadCustomerFirst);
@@ -57,7 +58,6 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                     }
 
                     //now check total basket amount
-
                     var totalCostsStore = me.subApplication.getStore('TotalCosts');
                     var totalCostsModel = totalCostsStore.getAt(0);
                     var totalAmount =  totalCostsModel.get('total');
@@ -68,6 +68,8 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                         combobox.setValue('');
                         return;
                     }
+
+                    me.calculatorContainer.setVisible(true);
 
                     var backendOrder = createBackendOrderStore.getAt(ct - 1);
 
@@ -120,6 +122,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
     accountNumber: null,
     bankCode: null,
     requestInstallmentCalculator: function(shopId, billingAddressId, paymentTypeName, totalAmount) {
+        var me = this;
         Ext.Ajax.request({
             url: '{url controller="RpayRatepayBackendOrder" action="getInstallmentInfo"}',
             params: {
@@ -130,12 +133,24 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             },
             success: function(response) {
                 var responseObj = Ext.decode(response.responseText);
+
                 if (responseObj.success === false) {
                     responseObj.messages.forEach(function (message) {
                         Shopware.Notification.createGrowlMessage('', message);
                     });
                 } else {
-                    Shopware.Notification.createGrowlMessage('', 'success');
+                    var termInfo = responseObj.termInfo;
+                    var months = termInfo.rp_allowedMonths;
+                    me.calculatorStore.loadData(
+                        months.map(
+                            function(m) {
+                                return {
+                                    display: m,
+                                    value: m
+                                };
+                            }
+                        )
+                    );
                 }
             }
         });
@@ -175,7 +190,8 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
     },
     createCalculatorContainer: function() {
         var me = this;
-        return Ext.create('Ext.form.ComboBox', {
+
+        var combobox = Ext.create('Ext.form.ComboBox', {
             fieldLabel: 'Term',
             name: 'calculatorSelect',
             store: me.calculatorStore,
@@ -183,6 +199,28 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             displayField: 'display',
             valueField: 'value'
         });
+
+        var moneyTxtBox = Ext.create('Ext.form.TextField', {
+            name: 'moneyTxtBox',
+            width: 230,
+            fieldLabel: 'Geld',
+            maxLengthText: 255,
+            listeners: {
+                blur: function (field) {
+                    //me.accountNumber = field.getValue();
+                }
+            }
+        });
+
+        return Ext.create('Ext.Container', {
+            name: 'bankDataContainer',
+            width: 255,
+            height: 'auto',
+            items: [
+                combobox, moneyTxtBox
+            ]
+        });
+
     },
     createBankDataContainer: function() {
         var me = this;

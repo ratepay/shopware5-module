@@ -104,7 +104,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
 
         $this->view->assign([
             'success' => true,
-            'resultJson' => $result
+            'termInfo' => json_decode($result, true) //to prevent double encode
         ]);
     }
 
