@@ -20,6 +20,24 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         me.add(me.calculatorContainer);
         me.calculatorContainer.setVisible(false);
 
+        //TODO: unbind this when the plugin is closed
+        Ext.Ajax.on('requestcomplete', function(conn, req, opts) {
+            var url = req.request.options.url;
+
+            if(url ===  '{url controller="SwagBackendOrder" action="getCustomerPaymentData"}' &&
+                me.paymentMeansName.indexOf('rpay') === 0) {
+                // hide the customer payment data views which ratepay doesn't use
+                setTimeout( function() {
+                    if (me.noDataView instanceof Ext.view.View) {
+                        me.remove(me.noDataView);
+                    }
+                    me.paymentDataView.setVisible(false);
+                }, 1);
+                //return false;
+            }
+            return true;
+        });
+
         var changePaymentTypeHandler = function(combobox, newValue, oldValue) {
             if (newValue === '') return false;
             var  name = combobox.store.findRecord('id', newValue).get('name');
@@ -27,6 +45,8 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
 
             me.bankDataContainer.setVisible(false);
             me.calculatorContainer.setVisible(false);
+
+            me.remove('calculationResultView');
 
             //not a ratepay order
             if (name.indexOf('rpay') !== 0) {
@@ -38,21 +58,36 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                     combobox.setValue('');
                     return false;
                 }
+
+                // hide the customer payment data views which ratepay doesn't use
+                if (me.noDataView instanceof Ext.view.View) {
+                    me.remove(me.noDataView);
+                }
+                me.paymentDataView.setVisible(false);
+
                 if(name === 'rpayratepayrate0' || name === 'rpayratepayrate') {
                     var backendOrder = me.getBackendOrder();
 
                     if (backendOrder === null) {
-                        Shopware.Notification.createGrowlMessage('','Please set shipping costs and items first. Ct ' + ct);//me.snippetsLocal.orderNotYetModelled);
+                        Shopware.Notification.createGrowlMessage('','Please set shipping costs and items first.');//me.snippetsLocal.orderNotYetModelled);
                         combobox.setValue('');
                         return;
                     }
 
                     //now check total basket amount
-                    var totalAmount = me.getTotalAmount()
+                    var totalAmount = me.getTotalAmount();
                     var shippingCosts = me.getShippingCosts();
 
                     if (totalAmount < 0.01  || (totalAmount - shippingCosts) < 0.01) {
-                        Shopware.Notification.createGrowlMessage('','Please put something in the shopping cart.');//me.snippetsLocal.orderNotYetModelled);
+                        Shopware.Notification.createGrowlMessage('', 'Please put something in the shopping cart.');//me.snippetsLocal.orderNotYetModelled);
+                        combobox.setValue('');
+                        return;
+                    }
+
+                    var billingId = me.getBillingAddressId();
+
+                    if (billingId=== null) {
+                        Shopware.Notification.createGrowlMessage('', 'Please select a billing address first.');
                         combobox.setValue('');
                         return;
                     }
@@ -61,7 +96,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
 
                     me.requestInstallmentCalculator(
                         me.getShopId(),
-                        me.getBillingAddressId(),
+                        billingId,
                         name,
                         totalAmount
                     );
@@ -103,6 +138,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         });
 
         me.paymentComboBox.on('change', changePaymentTypeHandler);
+
     },
     iban: null,
     accountNumber: null,
@@ -183,13 +219,22 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             success: function (response) {
                 var responseObj = Ext.decode(response.responseText);
 
+                me.remove('calculationResultView');
                 if (responseObj.success === false) {
                     responseObj.messages.forEach(function (message) {
                         Shopware.Notification.createGrowlMessage('', message);
                     });
                 } else {
-                    Shopware.Notification.createGrowlMessage('', 'Plan Successfully loaded');
-                    console.log('PLAN: ' + JSON.stringify(responseObj.plan));
+                    Shopware.Notification.createGrowlMessage('', 'Plan Successfully loaded.');
+
+                    me.calculationResultView = Ext.create('Ext.view.View', {
+                        id: 'calculationResultView',
+                        name: 'calculationResultView',
+                        tpl: me.createCalculatorResultTemplate(responseObj.plan)
+                    });
+
+                    me.add(me.calculationResultView);
+                    me.doLayout();
                 }
             }
         });
@@ -199,6 +244,18 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             fields: ['display', 'value'],
             data : []
         });
+    },
+    createCalculatorResultTemplate: function(data) {
+        return new Ext.XTemplate(
+            '<table><tbody>' +
+            '<tr><td>Base Price: </td><td style="text-align: right;" >' + data.amount.toFixed(2) + '</td></tr>' +
+            '<tr><td>Interest: </td><td style="text-align: right;" >' + data.interestAmount.toFixed(2) +  '<trspan></tr>' +
+            '<tr><td>Total: </td><td style="text-align: right;" >' + data.totalAmount.toFixed(2) + '</td></tr>' +
+            '<tr><td>Number of installments:</td><td style="text-align: right;" >' + data.numberOfRatesFull + '</td></tr>' +
+            '<tr><td>Standard Payment: </td><td style="text-align: right;" >'+ data.rate.toFixed(2) + '</td></tr>' +
+            '<tr><td>Last Payment: </td><td style="text-align: right;" >' + data.lastRate.toFixed(2) + '</td></tr>' +
+            '</tbody></table>'
+        );
     },
     createCalculatorContainer: function() {
         var me = this;
