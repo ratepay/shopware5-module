@@ -66,12 +66,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
     private function _getCountryCodesByBillingAddress()
     {
         // Checkout address ids are set from shopware version >=5.2.0
-        if (isset(Shopware()->Session()->checkoutBillingAddressId) && Shopware()->Session()->checkoutBillingAddressId > 0) {
+        if (isset($this->getSession()->checkoutBillingAddressId) && $this->getSession()->checkoutBillingAddressId > 0) {
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
+            $checkoutAddressBilling = $addressModel->findOneBy(array('id' => $this->getSession()->checkoutBillingAddressId));
             return $checkoutAddressBilling->getCountry()->getIso();
         } else {
-            $shopUser = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
+            $shopUser = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $this->getSession()->sUserId);
             $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $shopUser->getBilling()->getCountryId());
             return $country->getIso();
         }
@@ -241,7 +241,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
     {
         $sessionLoader = new SessionLoader($this->backend ?
             Shopware()->BackendSession() :
-            Shopware()->Session()
+            $this->getSession()
         );
 
         if (is_null($paymentRequestData)) {
@@ -366,14 +366,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         if (!empty($installmentDetails)) {
             $serviceUtil = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util();
 
-            $contentArr['Payment']['DebitPayType'] = $serviceUtil->getDebitPayType(Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday']
+            $contentArr['Payment']['DebitPayType'] = $serviceUtil->getDebitPayType($this->getSession()->RatePAY['ratenrechner']['payment_firstday']
                 );
 
             if ($contentArr['Payment']['DebitPayType'] == 'DIRECT-DEBIT') {
                 $elv = true;
             }
 
-            $contentArr['Payment']['Amount'] = Shopware()->Session()->RatePAY['ratenrechner']['total_amount'];
+            $contentArr['Payment']['Amount'] = $this->getSession()->RatePAY['ratenrechner']['total_amount'];
             $contentArr['Payment']['InstallmentDetails'] = $installmentDetails;
         }
 
@@ -397,6 +397,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         return $paymentRequest;
     }
 
+    private function getSession()
+    {
+        $sess = $this->backend ? Shopware()->BackendSession() : Shopware()->Session();
+        return $sess;
+    }
+
     /**
      * get payment details
      *
@@ -405,11 +411,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
     private function getPaymentDetails() {
         $paymentDetails = array();
 
-        $paymentDetails['InstallmentNumber'] = Shopware()->Session()->RatePAY['ratenrechner']['number_of_rates'];
-        $paymentDetails['InstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['rate'];
-        $paymentDetails['LastInstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['last_rate'];
-        $paymentDetails['InterestRate'] = Shopware()->Session()->RatePAY['ratenrechner']['interest_rate'];
-        $paymentDetails['PaymentFirstday'] = Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'];
+        $paymentDetails['InstallmentNumber'] = $this->getSession()->RatePAY['ratenrechner']['number_of_rates'];
+        $paymentDetails['InstallmentAmount'] = $this->getSession()->RatePAY['ratenrechner']['rate'];
+        $paymentDetails['LastInstallmentAmount'] = $this->getSession()->RatePAY['ratenrechner']['last_rate'];
+        $paymentDetails['InterestRate'] = $this->getSession()->RatePAY['ratenrechner']['interest_rate'];
+        $paymentDetails['PaymentFirstday'] = $this->getSession()->RatePAY['ratenrechner']['payment_firstday'];
 
         return $paymentDetails;
     }

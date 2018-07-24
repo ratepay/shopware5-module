@@ -135,5 +135,22 @@ class SessionLoader
             $lang,
             $amount);
     }
-
+    
+    
+    public function setInstallmentData($total_amount, $amount, $interest_rate, $interest_amount, $service_charge, $annual_percentage_rate, $monthly_debit_interest, $number_of_rates, $rate, $last_rate, $payment_firstday)
+    {
+        /* Saving Data as example in the Session */
+        $this->session->RatePAY['ratenrechner']['total_amount'] = $total_amount;
+        $this->session->RatePAY['ratenrechner']['amount'] = $amount;
+        $this->session->RatePAY['ratenrechner']['interest_rate'] = $interest_rate;
+        $this->session->RatePAY['ratenrechner']['interest_amount'] = $interest_amount;
+        $this->session->RatePAY['ratenrechner']['service_charge'] = $service_charge;
+        $this->session->RatePAY['ratenrechner']['annual_percentage_rate'] = $annual_percentage_rate;
+        $this->session->RatePAY['ratenrechner']['monthly_debit_interest'] = $monthly_debit_interest;
+        $this->session->RatePAY['ratenrechner']['number_of_rates'] = $number_of_rates;
+        $this->session->RatePAY['ratenrechner']['rate'] = $rate;
+        $this->session->RatePAY['ratenrechner']['last_rate'] = $last_rate;
+        $this->session->RatePAY['ratenrechner']['payment_firstday'] = $payment_firstday;
+        $this->session->RatePAY['dueDate'] = $payment_firstday;
+    }
 }

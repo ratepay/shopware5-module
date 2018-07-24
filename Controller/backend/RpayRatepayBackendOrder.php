@@ -140,6 +140,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
     public function getInstallmentPlanAction()
     {
         $params = $this->Request()->getParams();
+        $session = Shopware()->BackendSession();
 
         $shopId = $params['shopId'];
         $billingId = $params['billingId'];
@@ -163,9 +164,27 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
             ]);
             return;
         }
+
+        $plan =  json_decode($result, true);
+
+        $sessionLoader = new SessionLoader(Shopware()->BackendSession());
+        $sessionLoader->setInstallmentData(
+            $plan['totalAmount'],
+            $plan['amount'],
+            $plan['interestRate'],
+            $plan['interestAmount'],
+            $plan['serviceCharge'],
+            $plan['annualPercentageRate'],
+            $plan['monthlyDebitInterest'],
+            $plan['numberOfRatesFull'],
+            $plan['rate'],
+            $plan['lastRate'],
+            $plan['paymentFirstday']
+        );
+
         $this->view->assign([
             'success' => true,
-            'plan' => json_decode($result, true) //to prevent double encode
+            'plan' => $plan,
         ]);
     }
 
