@@ -10,6 +10,9 @@ namespace RpayRatePay\Component\Service;
 class ConfigLoader
 {
     private $db;
+
+    private $config;
+
     /**
      * ConfigLoader constructor.
      * @param \Enlight_Components_Db_Adapter_Pdo_Mysql $db
@@ -17,6 +20,10 @@ class ConfigLoader
     public function __construct(\Enlight_Components_Db_Adapter_Pdo_Mysql $db)
     {
         $this->db = $db;
+
+        //TODO parameterize
+        $this->config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
+
     }
 
 
@@ -70,6 +77,23 @@ class ConfigLoader
         $result = Shopware()->Db()->fetchRow($qry);
 
         return $result;
+    }
+
+    /**
+     * @param string $countryISO
+     * @param int $shopId
+     * @param bool $zeroPercent
+     * @param bool $backend
+     * @return string
+     */
+    public function getProfileId($countryISO, $shopId, $zeroPercent = false, $backend = false)
+    {
+        $key = self::getProfileIdKey($countryISO, $backend);
+
+        $profileIdBase = $this->config->get($key, $shopId);
+        $profileId = $zeroPercent ? $profileIdBase . '_0RT' : $profileIdBase;
+
+        return $profileId;
     }
 
     /**

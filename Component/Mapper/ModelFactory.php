@@ -252,7 +252,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         if ($method == 'INSTALLMENT0') {
             $this->setZPercent(); //side effect
-            $method = 'INSTALLMENT';
+            $method = 'INSTALLMENT'; //state
         }
 
         $mbHead = $this->getHead($paymentRequestData->getBillingAddress()->getCountry()->getIso());
@@ -733,6 +733,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      *
      * @param bool $countryCode
      * @return mixed
+     * TODO: USE ConfigLoader->getProfileId
      */
     public function getProfileId($countryCode = false)
     {

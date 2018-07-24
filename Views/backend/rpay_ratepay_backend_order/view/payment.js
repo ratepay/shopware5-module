@@ -92,15 +92,18 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                         return;
                     }
 
-                    me.calculatorContainer.setVisible(true);
+                    if(name === 'rpayratepayrate0') {
+                        me.handleCalculatorInput();
+                    } else {
+                        me.calculatorContainer.setVisible(true);
 
-                    me.requestInstallmentCalculator(
-                        me.getShopId(),
-                        billingId,
-                        name,
-                        totalAmount
-                    );
-                    //load ratenrechner
+                        me.requestInstallmentCalculator(
+                            me.getShopId(),
+                            billingId,
+                            name,
+                            totalAmount
+                        );
+                    }
                 } else if(name === 'rpayratepaydebit') {
                     //load bank bank data fields
                     me.bankDataContainer.setVisible(true);
@@ -203,7 +206,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             });
         }
     },
-    handleCalculatorInput: function(value, type) {
+    handleCalculatorInput: function(value = null, type = null) {
         var me = this;
 
         Ext.Ajax.request({

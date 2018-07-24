@@ -18,18 +18,14 @@
  * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
  */
 
-use RpayRatePay\Component\Mapper\BankData;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Component\Service\ConfigLoader;
-use Shopware\Components\DependencyInjection\Bridge\Config;
-use Shopware\Models\Payment\Payment;
-use Shopware\Models\Customer\Customer;
-use Shopware\Models\Customer\Address;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
 {
+
     /**
      * @param string $namespace
      * @param string $name
@@ -85,8 +81,15 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
 
         //TODO handle if not exists
         $isSandbox = ((int)($config['sandbox']) === 1);
-        $profileId = $config["profileId"];
+
         $countryIso = PaymentRequestData::findCountryISO($addressObj);
+
+        $configLoader = new ConfigLoader(Shopware()->Db());
+
+        //TODO: put magic strings in consts
+        $nullPercent = $paymentMeansName ==='rpayratepayrate0';
+        $profileId = $configLoader->getProfileId($countryIso, $shopId, $nullPercent, true);
+
         $securityCodeKey = ConfigLoader::getSecurityCodeKey($countryIso, true);
         $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get($securityCodeKey);
 
@@ -116,6 +119,14 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         return $config;
     }
 
+    private function getTermFallback($paymentMeansName, $addressObj, $shopId)
+    {
+        $config = $this->getConfig($paymentMeansName, $addressObj, $shopId);
+        $termString = $config['month-allowed'];
+        $termArray = explode(',', $termString);
+        return $termArray[0];
+    }
+
     public function getInstallmentInfoAction()
     {
         //TODO add try/catch block
@@ -140,22 +151,24 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
     public function getInstallmentPlanAction()
     {
         $params = $this->Request()->getParams();
-        $session = Shopware()->BackendSession();
 
         $shopId = $params['shopId'];
         $billingId = $params['billingId'];
-        $paymentMeansName = $params['paymentMeansName'];
-
-        $type = $params['type'];
-        $val = $params['value'];
-        $totalAmount = $params['totalAmount'];
 
         $addressObj = Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
+
+        $paymentMeansName = $params['paymentMeansName'];
+
+        $totalAmount = $params['totalAmount'];
+
+        $calcParamSet = !empty($params['value']) && !empty($params['type']);
+
+        $type = $calcParamSet ? $params['type'] : 'time';
+        $val = $calcParamSet ? $params['value'] : $this->getTermFallback($paymentMeansName, $addressObj, $shopId);
 
         $installmentBuilder = $this->getInstallmentBuilderFromConfig($paymentMeansName, $addressObj, $shopId);
 
         try {
-            //Shopware()->Pluginlogger()->info("Get installment plan with total $totalAmount type $type val $val.");
             $result = $installmentBuilder->getInstallmentPlanAsJson($totalAmount, $type, $val);
         } catch (\Exception $e) {
             $this->view->assign([
@@ -168,6 +181,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $plan =  json_decode($result, true);
 
         $sessionLoader = new SessionLoader(Shopware()->BackendSession());
+
         $sessionLoader->setInstallmentData(
             $plan['totalAmount'],
             $plan['amount'],
@@ -187,7 +201,6 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
             'plan' => $plan,
         ]);
     }
-
 
     public function prevalidateAction()
     {
