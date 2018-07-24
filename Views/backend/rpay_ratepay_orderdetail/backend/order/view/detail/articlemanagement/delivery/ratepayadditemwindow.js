@@ -210,8 +210,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayadditemwindow', {
                 quantity: item.quantity,
                 taxRate: item.tax_rate
             },
-            success: function (response) {
-                var response = Ext.JSON.decode(response.responseText);
+            success: function (payload) {
+                var response = Ext.JSON.decode(payload.responseText);
                 insertID = response.data.id;
             }
         });
@@ -227,8 +227,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayadditemwindow', {
             params: {
                 id: id
             },
-            success: function (response) {
-                var response = Ext.JSON.decode(response.responseText);
+            success: function (payload) {
+                var response = Ext.JSON.decode(payload.responseText);
                 model = Ext.create('Shopware.apps.Order.model.ratepaypositions', {
                     articleID: id,
                     articleordernumber: response.data.mainDetail.number,

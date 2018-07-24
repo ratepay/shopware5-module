@@ -113,8 +113,7 @@ class ShopConfigSetup extends Bootstrapper
                 );
 
                 $paymentSql = 'REPLACE INTO `rpay_ratepay_config_payment`'
-                    . '(`status`, `b2b`,`limit_min`,`limit_max`,'
-                    . '`limit_max_b2b`, `address`)'
+                    . '(`status`, `b2b`,`limit_min`,`limit_max`, `limit_max_b2b`, `address`)'
                     . 'VALUES(' . substr(str_repeat('?,', 6), 0, -1) . ');';
                 try {
                     Shopware()->Db()->query($paymentSql, $dataPayment);

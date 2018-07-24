@@ -166,10 +166,11 @@
          *
          * @param bool $countryCode
          * @return \RatePAY\ModelBuilder
+         * @throws \RatePAY\Exception\ModelException
          */
         private function getHead($countryCode = false) {
             $systemId = $this->getSystemId();
-            $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+            $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
 
             $head = [
                 'SystemId' => $systemId,
@@ -457,12 +458,13 @@
         /**
          * @param $operationData
          * @return bool|array
+         * @throws \RatePAY\Exception\ModelException
          */
         private function callProfileRequest($operationData)
         {
             $systemId = $this->getSystemId();
             $sandbox = true;
-            $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+            $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
 
             if (strpos($operationData['profileId'], '_TE_')) {
                 $sandbox = true;
