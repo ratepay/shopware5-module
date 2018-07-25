@@ -45,14 +45,10 @@ pipeline {
             agent { label "master" }
             steps {
                 script {
-                    echo "install sonar-scanner...."
                     def scannerHome = tool name: 'SonarQube Scanner 3.0.1', type: 'hudson.plugins.sonar.SonarRunnerInstallation';
                     echo "scannerHome = $scannerHome ...."
                     withSonarQubeEnv() {
-                        sh "$scannerHome/bin/sonar-scanner \
-                            -Dsonar.projectKey=devmo_shopware5_module \
-                            -Dsonar.sources=./ \
-                            -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN"
+                        sh "$scannerHome/bin/sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN"
                     }
                 }
             }
