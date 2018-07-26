@@ -129,11 +129,12 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
 
     public function getInstallmentInfoAction()
     {
-        //TODO add try/catch block
+        //TODO: add try/catch block
         $params = $this->Request()->getParams();
 
         $shopId = $params['shopId'];
         $billingId = $params['billingId'];
+        //TODO: change array key to paymentMeansName
         $paymentMeansName = $params['paymentTypeName'];
         $totalAmount = $params['totalAmount'];
 
@@ -145,6 +146,29 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $this->view->assign([
             'success' => true,
             'termInfo' => json_decode($result, true) //to prevent double encode
+        ]);
+    }
+
+    /**
+     * Returns array of ints containing 2 or 28.
+     */
+    public function getInstallmentPaymentOptionsAction()
+    {
+        $params = $this->Request()->getParams();
+
+        $shopId = $params['shopId'];
+        $billingId = $params['billingId'];
+        $paymentMeansName = $params['paymentMeansName'];
+
+        $addressObj = Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
+
+        $config = $this->getConfig($paymentMeansName, $addressObj, $shopId);
+        $optionsString = $config['payment-firstday'];
+        $optionsArray = explode(',', $optionsString);
+        $optionsIntArray = array_map('intval', $optionsArray);
+        $this->view->assign([
+            'success' => true,
+            'options' => $optionsIntArray
         ]);
     }
 
@@ -160,6 +184,9 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $paymentMeansName = $params['paymentMeansName'];
 
         $totalAmount = $params['totalAmount'];
+
+        $paymentSubtype = $params['paymentSubtype'];
+
 
         $calcParamSet = !empty($params['value']) && !empty($params['type']);
 
@@ -193,13 +220,20 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
             $plan['numberOfRatesFull'],
             $plan['rate'],
             $plan['lastRate'],
-            $plan['paymentFirstday']
+            $paymentSubtype //$plan['paymentFirstday']
         );
 
         $this->view->assign([
             'success' => true,
             'plan' => $plan,
         ]);
+    }
+
+    public function updatePaymentSubtypeAction()
+    {
+        $params = $this->Request()->getParams();
+        $sessionLoader = new SessionLoader(Shopware()->BackendSession());
+        $sessionLoader->setInstallmentPaymentSubtype($params['paymentSubtype']);
     }
 
     public function prevalidateAction()

@@ -4,12 +4,18 @@
 Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
     override: 'Shopware.apps.SwagBackendOrder.view.main.CustomerInformation.Payment',
     snippetsLocal: {
-        loadCustomerFirst: '{s namespace="RatePAY/backend/backend_orders" name="load_customer_first"}Laden Sie bitte den Kunden zuerst.{/s}'
+        loadCustomerFirst: '{s namespace="RatePAY/backend/backend_orders" name="load_customer_first"}Laden Sie bitte den Kunden zuerst.{/s}',
+        directDebit: '{s namespace="RatePAY/backend/backend_orders" name="direct_debit"}Lastschrift{/s}'
     },
+    //override init
     initComponent : function() {
         var me = this;
 
         me.callParent(arguments);
+
+        me.directDebitCheckbox = me.createDirectDebitCheckbox();
+        me.add(me.directDebitCheckbox);
+        me.directDebitCheckbox.setVisible(false);
 
         me.bankDataContainer = me.createBankDataContainer();
         me.add(me.bankDataContainer);
@@ -38,107 +44,13 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             return true;
         });
 
-        var changePaymentTypeHandler = function(combobox, newValue, oldValue) {
-            if (newValue === '') return false;
-            var  name = combobox.store.findRecord('id', newValue).get('name');
-            me.paymentMeansName = name;
-
-            me.bankDataContainer.setVisible(false);
-            me.calculatorContainer.setVisible(false);
-
-            me.remove('calculationResultView');
-
-            //not a ratepay order
-            if (name.indexOf('rpay') !== 0) {
-                return true;
-            } else {
-
-                if (me.customerId === -1) {
-                    Shopware.Notification.createGrowlMessage('', me.snippetsLocal.loadCustomerFirst);
-                    combobox.setValue('');
-                    return false;
-                }
-
-                // hide the customer payment data views which ratepay doesn't use
-                if (me.noDataView instanceof Ext.view.View) {
-                    me.remove(me.noDataView);
-                }
-                me.paymentDataView.setVisible(false);
-
-                if(name === 'rpayratepayrate0' || name === 'rpayratepayrate') {
-                    var backendOrder = me.getBackendOrder();
-
-                    if (backendOrder === null) {
-                        Shopware.Notification.createGrowlMessage('','Please set shipping costs and items first.');//me.snippetsLocal.orderNotYetModelled);
-                        combobox.setValue('');
-                        return;
-                    }
-
-                    //now check total basket amount
-                    var totalAmount = me.getTotalAmount();
-                    var shippingCosts = me.getShippingCosts();
-
-                    if (totalAmount < 0.01  || (totalAmount - shippingCosts) < 0.01) {
-                        Shopware.Notification.createGrowlMessage('', 'Please put something in the shopping cart.');//me.snippetsLocal.orderNotYetModelled);
-                        combobox.setValue('');
-                        return;
-                    }
-
-                    var billingId = me.getBillingAddressId();
-
-                    if (billingId=== null) {
-                        Shopware.Notification.createGrowlMessage('', 'Please select a billing address first.');
-                        combobox.setValue('');
-                        return;
-                    }
-
-                    if(name === 'rpayratepayrate0') {
-                        me.handleCalculatorInput();
-                    } else {
-                        me.calculatorContainer.setVisible(true);
-
-                        me.requestInstallmentCalculator(
-                            me.getShopId(),
-                            billingId,
-                            name,
-                            totalAmount
-                        );
-                    }
-                } else if(name === 'rpayratepaydebit') {
-                    //load bank bank data fields
-                    me.bankDataContainer.setVisible(true);
-                }
-
-                //check for birthday and telephone number
-                /*Ext.Ajax.request({
-                    url: '{url controller="RpayRatepayBackendOrder" action="prevalidate"}',
-                    params: {
-                        customerId: me.customerId,
-                        totalCost: me.getTotalCost(),
-                        billingId: me.getBillingId(),
-                        shippingId: me.getShippingId(),
-                        paymentTypeName: name
-                    },
-                    success: function(response) {
-                        var responseObj = Ext.decode(response.responseText);
-
-                        if(responseObj.success === false) {
-                            responseObj.messages.forEach(function(message) {
-                                Shopware.Notification.createGrowlMessage('', message);
-                            });
-                            combobox.setValue('');
-                        }
-                    }
-                });*/
-            }
-
-        };
-
-
-        console.log('APP trying to bind to select billing address event');
         me.subApplication.app.on('selectBillingAddress', function() {
             alert('select billing address');
         });
+
+        var changePaymentTypeHandler = function(combobox, newValue, oldValue) {
+           me.handleChangePaymentType.call(me, combobox, newValue);
+        };
 
         me.paymentComboBox.on('change', changePaymentTypeHandler);
 
@@ -146,6 +58,139 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
     iban: null,
     accountNumber: null,
     bankCode: null,
+    fail: function(combobox, message) {
+        Shopware.Notification.createGrowlMessage('', message);
+        combobox.setValue('');
+    },
+    handleChangePaymentType: function(combobox, newValue) {
+        var me = this;
+
+        if (newValue === '') {
+            return;
+        }
+
+        var  name = combobox.store.findRecord('id', newValue).get('name');
+        me.paymentMeansName = name;
+
+        me.bankDataContainer.setVisible(false);
+        me.calculatorContainer.setVisible(false);
+        me.directDebitCheckbox.setVisible(false);
+
+        me.remove('calculationResultView');
+
+        //not a ratepay order
+        if (name.indexOf('rpay') !== 0) {
+            return true;
+        } else {
+
+            if (me.customerId === -1) {
+                me.fail(me.snippetsLocal.loadCustomerFirst);
+                return;
+            }
+
+            // hide the customer payment data views which ratepay doesn't use
+            if (me.noDataView instanceof Ext.view.View) {
+                me.remove(me.noDataView);
+            }
+
+            me.paymentDataView.setVisible(false);
+
+            if(name === 'rpayratepayrate0' || name === 'rpayratepayrate') {
+                me.handleChangePaymentInstallment(name, combobox);
+            } else if (name === 'rpayratepaydebit') {
+                //load bank bank data fields
+                me.bankDataContainer.setVisible(true);
+            }
+
+            //check for birthday and telephone number
+            /*Ext.Ajax.request({
+                url: '{url controller="RpayRatepayBackendOrder" action="prevalidate"}',
+                params: {
+                    customerId: me.customerId,
+                    totalCost: me.getTotalCost(),
+                    billingId: me.getBillingId(),
+                    shippingId: me.getShippingId(),
+                    paymentTypeName: name
+                },
+                success: function(response) {
+                    var responseObj = Ext.decode(response.responseText);
+
+                    if(responseObj.success === false) {
+                        responseObj.messages.forEach(function(message) {
+                            Shopware.Notification.createGrowlMessage('', message);
+                        });
+                        combobox.setValue('');
+                    }
+                }
+            });*/
+        }
+
+    },
+    handleChangePaymentInstallment: function(paymentMeansName, combobox) {
+        var me = this;
+        var backendOrder = me.getBackendOrder();
+
+        if (backendOrder === null) {
+            me.fail(combobox, 'Please set shipping costs and items first.');
+            return;
+        }
+
+        //now check total basket amount
+        var totalAmount = me.getTotalAmount();
+        var shippingCosts = me.getShippingCosts();
+
+        if (totalAmount < 0.01  || (totalAmount - shippingCosts) < 0.01) {
+            me.fail(combobox, 'Please put something in the shopping cart.');
+            return;
+        }
+
+        var billingId = me.getBillingAddressId();
+
+        if (billingId === null) {
+            me.fail(combobox, 'Please select a billing address first.');
+            return;
+        }
+
+        //get payment optios
+
+        Ext.Ajax.request({
+            url: '{url controller="RpayRatepayBackendOrder" action="getInstallmentPaymentOptions"}',
+            params: {
+                shopId: me.getShopId(),
+                billingId: billingId,
+                paymentMeansName: paymentMeansName,
+            },
+            success: function (response) {
+                var responseObj = Ext.decode(response.responseText);
+                var options = responseObj.options;
+                var TRANSFER = 28;
+
+                if (options.length === 1) {
+                    me.installmentPaymentType = options[0];
+                    me.directDebitCheckbox.setVisible(false);
+                } else {
+                    me.installmentPaymentType = TRANSFER;
+                    //show switch for bank data
+                    me.directDebitCheckbox.setVisible(true);
+                }
+
+                if(paymentMeansName === 'rpayratepayrate0') {
+                    me.handleCalculatorInput();
+                } else {
+                    me.calculatorContainer.setVisible(true);
+
+                    me.requestInstallmentCalculator(
+                        me.getShopId(),
+                        billingId,
+                        name,
+                        totalAmount,
+                        options
+                    );
+                }
+
+            }
+        });
+    },
     requestInstallmentCalculator: function(shopId, billingAddressId, paymentTypeName, totalAmount) {
         var me = this;
         Ext.Ajax.request({
@@ -186,7 +231,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         //very minimalistic validation
         if(me.iban || (me.bankCode && me.iban)) {
             Ext.Ajax.request({
-                url: '{url controller="RpayRatepayBackendOrder" action="getInstallmentInfo"}',
+                url: '{url controller="RpayRatepayBackendOrder" action="setExtendedData"}',
                 params: {
                     iban: me.iban,
                     accountNumber: me.accountNumber,
@@ -218,6 +263,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                 totalAmount: me.getTotalAmount(),
                 type: type,
                 value: value,
+                paymentSubtype: me.installmentPaymentType
             },
             success: function (response) {
                 var responseObj = Ext.decode(response.responseText);
@@ -246,6 +292,35 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         return Ext.create('Ext.data.Store', {
             fields: ['display', 'value'],
             data : []
+        });
+    },
+    createDirectDebitCheckbox: function() {
+        var me = this;
+        return Ext.create('Ext.form.field.Checkbox', {
+            boxLabel: me.snippetsLocal.directDebit,
+            name: 'directDebitCheckbox',
+            id: 'directDebitCheckbox',
+            uncheckedValue: false,
+            checked: false,
+            height: 35,
+            listeners: {
+                change: function (field, value) {
+                    var DIRECT_DEBIT = 2,
+                        TRANSFER = 28;
+                    me.bankDataContainer.setVisible(value);
+                    me.installmentPaymentType = value ? DIRECT_DEBIT : TRANSFER;
+
+                    Ext.Ajax.request({
+                        url: '{url controller="RpayRatepayBackendOrder" action="updatePaymentSubtype"}',
+                        params: {
+                            paymentSubtype: me.installmentPaymentType,
+                        },
+                        success: function () {
+                            Shopware.Notification.createGrowlMessage('', 'Set payment type to ' +  me.installmentPaymentType);
+                        }
+                    });
+                }
+            }
         });
     },
     createCalculatorResultTemplate: function(data) {

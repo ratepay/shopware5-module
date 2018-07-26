@@ -150,7 +150,12 @@ class SessionLoader
         $this->session->RatePAY['ratenrechner']['number_of_rates'] = $number_of_rates;
         $this->session->RatePAY['ratenrechner']['rate'] = $rate;
         $this->session->RatePAY['ratenrechner']['last_rate'] = $last_rate;
-        $this->session->RatePAY['ratenrechner']['payment_firstday'] = $payment_firstday;
-        $this->session->RatePAY['dueDate'] = $payment_firstday;
+        $this->setInstallmentPaymentSubtype($payment_firstday);
+    }
+
+    public function setInstallmentPaymentSubtype($subtype)
+    {
+        $this->session->RatePAY['ratenrechner']['payment_firstday'] = $subtype;
+        $this->session->RatePAY['dueDate'] = $subtype;
     }
 }
