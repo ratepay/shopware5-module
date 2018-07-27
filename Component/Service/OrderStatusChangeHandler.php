@@ -90,7 +90,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
     {
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
-        $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+        $attributes = $order->getAttribute();
+        $backend = (bool)($attributes->getRatepayBackend());
+        $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
         $history      = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
 
         $shippingCosts = $order->getInvoiceShipping();

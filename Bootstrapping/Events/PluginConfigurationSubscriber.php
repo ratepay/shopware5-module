@@ -141,11 +141,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigura
      */
     private function getRatepayConfig($profileId, $securityCode, $shopId, $country, $backend = false)
     {
-        $factory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+        $factory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
         $data = array(
             'profileId' => $profileId,
             'securityCode' => $securityCode
         );
+
         $response = $factory->callRequest('ProfileRequest', $data);
 
         $payments = array('invoice', 'elv', 'installment');

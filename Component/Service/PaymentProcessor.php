@@ -9,6 +9,7 @@
 namespace RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use Shopware\Components\Plugin;
 
 class PaymentProcessor
 {
@@ -36,7 +37,7 @@ class PaymentProcessor
      * @param $paymentRequestResult
      * @param $fallbackShipping
      */
-    public function setOrderAttributes($order, $paymentRequestResult, $fallbackShipping)
+    public function setOrderAttributes($order, $paymentRequestResult, $fallbackShipping, $backend = false)
     {
         $this->db->update( //wird wohl nicht gehen, da das Custom-Feld nicht da ist
             's_order_attributes',
@@ -44,6 +45,7 @@ class PaymentProcessor
                 'attribute5' => $paymentRequestResult->getDescriptor(),
                 'attribute6' => $paymentRequestResult->getTransactionId(),
                 'ratepay_fallback_shipping' => $fallbackShipping,
+                'ratepay_backend' => $backend,
             ),
             'orderID=' . $order->getId()
         );
@@ -55,13 +57,19 @@ class PaymentProcessor
     public function insertRatepayPositions($order)
     {
         $sql = "SELECT `id` FROM `s_order_details` WHERE `ordernumber`=?;";
+        Shopware()->Pluginlogger()->info('NOW SETTING ORDER DETAILS: ' . $sql);
+
         $rows = $this->db->fetchAll($sql, array($order->getNumber()));
+
+        Shopware()->Pluginlogger()->info('GOT ROWS ' . count($rows));
+
         $values = "";
         foreach ($rows as $row) {
             $values .= "(" . $row['id'] . "),";
         }
         $values = substr($values, 0, -1);
         $sqlInsert = "INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES " . $values;
+        Shopware()->Pluginlogger()->info('INSERT NOW ' . $sqlInsert);
         try {
             $this->db->query($sqlInsert);
         } catch (Exception $exception) {

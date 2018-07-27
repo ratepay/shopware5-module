@@ -166,6 +166,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $optionsString = $config['payment-firstday'];
         $optionsArray = explode(',', $optionsString);
         $optionsIntArray = array_map('intval', $optionsArray);
+
         $this->view->assign([
             'success' => true,
             'options' => $optionsIntArray
@@ -235,66 +236,4 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $sessionLoader = new SessionLoader(Shopware()->BackendSession());
         $sessionLoader->setInstallmentPaymentSubtype($params['paymentSubtype']);
     }
-
-    public function prevalidateAction()
-    {
-        $params = $this->Request()->getParams();
-        $customerId = $params['customerId'];
-        $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $customerId);
-
-        $billingId = $params['billingId'];
-        $billing = Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
-
-        $shippingId = $params['shippingId'];
-        $shipping = Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingId);
-
-        $paymentTypeName = $params['paymentTypeName'];
-        $paymentType = Shopware()->Models()->getRepository('Shopware\Models\Payment\Payment')->findOneBy(['name' => $paymentTypeName]);
-
-        $totalCost = $params['totalCost'];
-
-        $validator = new Validation($customer, $paymentType);
-        $shop = Shopware()->Shop();
-        $shopId = $shop->getId();
-
-        $configLoader = new ConfigLoader();
-        $paymentTypeColumn = $configLoader->getPaymentColumnFromPaymentMeansName($paymentTypeName);
-        $configData = $configLoader->getPluginConfigForPaymentType($shopId, $countryIso);
-        $country = $billing->getCountry();
-
-        $validations = $this->validateCustomer($customer);
-
-        if (count($validations) == 0) {
-            $this->view->assign([
-                'success' => true,
-            ]);
-        } else {
-            $this->view->assign([
-                'success' => false,
-                'messages' => $validations
-            ]);
-        }
-    }
-
-    private function validateCustomer($customer, $validator)
-    {
-        $validations = [];
-        if (!ValidationLib::isBirthdayValid($customer)) {
-            $validations[] = $this->getSnippet("RatePAY/backend/backend_orders","birthday_not_valid", "Geburtstag nicht gültig.");
-        }
-
-        if (!ValidationLib::isTelephoneNumberSet($customer)) {
-            $validations[] = $this->getSnippet("RatePAY/backend/backend_orders","telephone_not_set",  "Kunden-Telefonnummer nicht gesetzt.");
-        }
-
-
-        return $validations;
-
-    }
-
-    private function validateCart()
-    {
-
-    }
-
 }
