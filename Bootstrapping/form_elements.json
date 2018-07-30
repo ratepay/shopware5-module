@@ -272,11 +272,19 @@
     }
   },
   {
+    "type":"button",
+    "name":"button6",
+    "config":{
+      "label":"Erweiterte Einstellungen"
+    }
+  },
+  {
     "type":"checkbox",
     "name":"RatePayUseFallbackShippingItem",
     "config":{
       "label": "Use fallback shipping item:",
-      "value": false
+      "value": false,
+      "scope":1
     }
   }
 ]

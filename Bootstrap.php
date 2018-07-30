@@ -22,7 +22,6 @@
 
     class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Components_Plugin_Bootstrap
     {
-
         public static function getPaymentMethods() {
             return array(
                 'rpayratepayinvoice',
@@ -111,15 +110,15 @@
             $this->subscribeEvent('Shopware_Console_Add_Command', 'onRegisterSubscriber');
 
             $queue = [
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_FormsSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_MenuesSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentStatusesSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DeliveryStatusesSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_AdditionalOrderAttributeSetup($this),
+                new \RpayRatePay\Bootstrapping\PaymentsSetup($this),
+                new \RpayRatePay\Bootstrapping\FormsSetup($this),
+                new \RpayRatePay\Bootstrapping\TranslationsSetup($this),
+                new \RpayRatePay\Bootstrapping\MenuesSetup($this),
+                new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
+                new \RpayRatePay\Bootstrapping\PaymentStatusesSetup($this),
+                new \RpayRatePay\Bootstrapping\DeliveryStatusesSetup($this),
+                new \RpayRatePay\Bootstrapping\CronjobSetup($this),
+                new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
             ];
 
             foreach ($queue as $bootstrapper) {
@@ -145,13 +144,13 @@
         public function update($version)
         {
             $queue = [
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_FormsSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup($this),
-                //new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_CronjobSetup($this),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_AdditionalOrderAttributeSetup($this),
+                new \RpayRatePay\Bootstrapping\FormsSetup($this),
+                new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
+                new \RpayRatePay\Bootstrapping\TranslationsSetup($this),
+                new \RpayRatePay\Bootstrapping\PaymentsSetup($this),
+                // new \RpayRatePay\Bootstrapping\ShopConfigSetup($this),
+                new \RpayRatePay\Bootstrapping\CronjobSetup($this),
+                new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
             ];
 
             $this->_dropOrderAdditionalAttributes();
@@ -189,7 +188,7 @@
         public function uninstall()
         {
             $queue = [
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_DatabaseSetup($this),
+                new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
             ];
 
             $this->disable();
@@ -219,20 +218,20 @@
         public function onRegisterSubscriber()
         {
             $subscribers = [
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderOperationsSubscriber(),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensionSubscriber($this->Path()),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentControllerSubscriber($this->Path()),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_LoggingControllerSubscriber($this->Path()),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailControllerSubscriber($this->Path()),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_CheckoutValidationSubscriber($this->Path()),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentFilterSubscriber(),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PluginConfigurationSubscriber($this->getName()),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderDetailsProcessSubscriber(),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_JavascriptSourceSubscriber($this->Path()),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_OrderViewExtensionSubscriber($this->Path()),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransactionsSubscriber(),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderControllerSubscriber($this->Path()),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderViewExtensionSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\OrderOperationsSubscriber(),
+                new \RpayRatePay\Bootstrapping\Events\TemplateExtensionSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\PaymentControllerSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\LoggingControllerSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\OrderDetailControllerSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\CheckoutValidationSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\PaymentFilterSubscriber(),
+                new \RpayRatePay\Bootstrapping\Events\PluginConfigurationSubscriber($this->getName()),
+                new \RpayRatePay\Bootstrapping\Events\OrderDetailsProcessSubscriber(),
+                new \RpayRatePay\Bootstrapping\Events\JavascriptSourceSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\OrderViewExtensionSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\UpdateTransactionsSubscriber(),
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderControllerSubscriber($this->Path()), //TODO ...
+                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderViewExtensionSubscriber($this->Path()), //TODO fix namespaces
             ];
 
             foreach ($subscribers as $subscriber) {

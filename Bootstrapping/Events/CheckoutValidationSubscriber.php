@@ -5,8 +5,9 @@
  * Date: 13.06.18
  * Time: 10:50
  */
+namespace RpayRatePay\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
+class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
      * @var string
@@ -34,7 +35,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_CheckoutValidat
      *
      * @param Enlight_Event_EventArgs $arguments
      */
-    public function preValidation(Enlight_Event_EventArgs $arguments)
+    public function preValidation(\Enlight_Event_EventArgs $arguments)
     {
         $request  = $arguments->getSubject()->Request();
         $response = $arguments->getSubject()->Response();
@@ -62,7 +63,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_CheckoutValidat
         $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
         $paymentType =  Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
 
-        $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user, $paymentType);
+        $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user, $paymentType);
 
         if ($validation->isRatePAYPayment()) {
             $view->sRegisterFinished = 'false';
