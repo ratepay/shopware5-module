@@ -20,7 +20,6 @@
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\SessionLoader;
-use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Component\Service\ConfigLoader;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
@@ -61,6 +60,12 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         ]);
     }
 
+    /**
+     * @param bool $isSandbox
+     * @param string $profileId
+     * @param string $securityCode
+     * @return \RatePAY\Frontend\InstallmentBuilder
+     */
     private function getInstallmentBuilder($isSandbox, $profileId, $securityCode)
     {
         $installmentBuilder = new RatePAY\Frontend\InstallmentBuilder($isSandbox);
@@ -119,6 +124,12 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         return $config;
     }
 
+    /**
+     * @param $paymentMeansName
+     * @param object $addressObj
+     * @param int $shopId
+     * @return mixed
+     */
     private function getTermFallback($paymentMeansName, $addressObj, $shopId)
     {
         $config = $this->getConfig($paymentMeansName, $addressObj, $shopId);
@@ -229,6 +240,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
             'plan' => $plan,
         ]);
     }
+
 
     public function updatePaymentSubtypeAction()
     {
