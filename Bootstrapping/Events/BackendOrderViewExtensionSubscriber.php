@@ -5,8 +5,9 @@
  * Date: 13.06.18
  * Time: 11:18
  */
+namespace RpayRatePay\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderViewExtensionSubscriber implements \Enlight\Event\SubscriberInterface
+class BackendOrderViewExtensionSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
      * @var string
@@ -32,7 +33,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderVie
     /**
      * @param Enlight_Event_EventArgs $arguments
      */
-    public function extendBackendOrderView(Enlight_Event_EventArgs $arguments)
+    public function extendBackendOrderView(\Enlight_Event_EventArgs $arguments)
     {
         $arguments->getSubject()->View()->addTemplateDir(
             $this->path . 'Views/backend/rpay_ratepay_backend_order/'

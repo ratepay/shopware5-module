@@ -230,8 +230,8 @@
                 new \RpayRatePay\Bootstrapping\Events\JavascriptSourceSubscriber($this->Path()),
                 new \RpayRatePay\Bootstrapping\Events\OrderViewExtensionSubscriber($this->Path()),
                 new \RpayRatePay\Bootstrapping\Events\UpdateTransactionsSubscriber(),
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderControllerSubscriber($this->Path()), //TODO ...
-                new Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderViewExtensionSubscriber($this->Path()), //TODO fix namespaces
+                new \RpayRatePay\Bootstrapping\Events\BackendOrderControllerSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\BackendOrderViewExtensionSubscriber($this->Path()),
             ];
 
             foreach ($subscribers as $subscriber) {

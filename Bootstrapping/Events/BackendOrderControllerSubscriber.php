@@ -1,16 +1,17 @@
 <?php
 
-use RpayRatePay\Component\Mapper\PaymentRequestData;
-use RpayRatePay\Component\Service\PaymentProcessor;
-
 /**
  * Created by PhpStorm.
  * User: eiriarte-mendez
  * Date: 13.06.18
  * Time: 10:48
  */
+namespace RpayRatePay\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInterface
+use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\Component\Service\PaymentProcessor;
+
+class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
      * @var string
@@ -46,7 +47,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
         return $this->path . "Controller/backend/RpayRatepayBackendOrder.php";
     }
 
-    public function beforeCreateOrderAction(Enlight_Hook_HookArgs $hookArgs)
+    public function beforeCreateOrderAction(\Enlight_Hook_HookArgs $hookArgs)
     {
         $request = $hookArgs->getSubject()->Request();
         $view = $hookArgs->getSubject()->View();
@@ -76,13 +77,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
 
             $paymentRequestData = $this->orderStructToPaymentRequestData($orderStruct, $paymentType, $customer);
 
-            $paymentRequester = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true);
+            $paymentRequester = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true);
 
-            Shopware()->Pluginlogger()->info('NOW CALLING PAYMENT REQUEST');
             $answer = $paymentRequester->callPaymentRequest($paymentRequestData);
 
             if ($answer->isSuccessful()) {
-                Shopware()->Pluginlogger()->info('PAYMENT REQUEST SUCCESSFUL');
                 //let SWAG write order to db
                 $this->forwardToSWAGBackendOrders($hookArgs);
 
@@ -109,7 +108,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
                                                      \Shopware\Models\Payment\Payment $paymentType,
                                                      \Shopware\Models\Customer\Customer $customer)
     {
-        $method = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
+        $method = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
             $paymentType->getName()
         );
 
@@ -137,7 +136,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
         return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingCost, $shippingTax, $dfpToken, $lang, $amount);
     }
 
-    private function positionStructToArray(SwagBackendOrder\Components\Order\Struct\PositionStruct $item)
+    private function positionStructToArray(\SwagBackendOrder\Components\Order\Struct\PositionStruct $item)
     {
         $a = [
             'articlename' => $item->getName(),
@@ -150,7 +149,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
         return $a;
     }
 
-    private function forwardToSWAGBackendOrders(Enlight_Hook_HookArgs $hookArgs)
+    private function forwardToSWAGBackendOrders(\Enlight_Hook_HookArgs $hookArgs)
     {
         $subject = $hookArgs->getSubject();
         $parentReturn = $subject->executeParent(
@@ -203,7 +202,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_BackendOrderCon
         $paymentProcessor->setPaymentStatusPaid($order);
 
         //insert positions
-        if (Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPCConfig() == true) {
+        if (\Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPCConfig() == true) {
             $paymentProcessor->sendPaymentConfirm($answer->getTransactionId(), $order, true);
         }
     }
