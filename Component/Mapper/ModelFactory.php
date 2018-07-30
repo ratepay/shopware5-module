@@ -691,7 +691,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
                     "SELECT `remote_addr` FROM `s_order` WHERE `transactionID`=" . $this->_transactionId
                 );
             } else {
-                $customerIp = $_SERVER['SERVER_ADDR']; //TODO put this in the PaymentRequestData
+                $customerIp = $_SERVER['SERVER_ADDR']; 
             }
         }
 
