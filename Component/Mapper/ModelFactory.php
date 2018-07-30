@@ -622,8 +622,8 @@
                 $this->_retry = true;
                 return $this->callRequest('ConfirmationDeliver', $operationData);
             }
+            
             return false;
-
         }
 
         /**
@@ -833,11 +833,10 @@
          */
         private function isNetPriceAllowed()
         {
-            $net = false;
+            $netto = false;
+
             if (empty($this->_orderId)) {
-//                $system = Shopware()->System();
-//                $groupKey = $system->sUSERGROUP;
-                return $net;
+                return $netto;
             }
 
             $user = Shopware()->Db()->fetchRow('
@@ -862,10 +861,10 @@
             ', [$groupKey]);
 
             if ((int)$userGroup['tax'] === 0 && !empty($b2b['company'])) {
-                $net = true;
+                $netto = true;
             }
 
-            return $net;
+            return $netto;
         }
 
         /**

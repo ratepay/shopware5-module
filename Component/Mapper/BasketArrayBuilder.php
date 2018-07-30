@@ -167,7 +167,7 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      * @param $item
      */
     private function addItemFromObject($item)
-    {
+    {        
         if ($this->hasNoQuantity($item) && empty($this->requestType)) {
             return;
         }
@@ -268,7 +268,7 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function hasNoQuantity($item)
     {
-        return 0 == $item->getQuantity() || 0 == $item->quantity;
+        return $item->quantity == 0;
     }
 
     /**
