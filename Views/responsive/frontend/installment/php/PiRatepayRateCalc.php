@@ -27,7 +27,7 @@
         }
 
         /**
-         * This method send's the congig request to RatePAY or set's a error message
+         * This method send's the config request to RatePAY or set's a error message
          * and returns the config details
          *
          * @deprecated use ConfigLoader for all loading of Configs
@@ -56,7 +56,7 @@
                         ON rrci.`rpay_id` = rrc.`" . $paymentType . "`
                     WHERE rrc.`shopId` = " . $shopId . "
                     AND rrc.`country-code-billing` LIKE '%" . $countryIso . "%'
-                    AND rrc.backend = $sBackend ;";
+                    AND rrc.backend = $sBackend;";
 
             //get ratepay config based on shopId
             $rpRateConfig=Shopware()->Db()->fetchRow($qry);
@@ -64,7 +64,6 @@
             $interestRate = ((float)$rpRateConfig["interestrate-default"] / 12) / 100;
             $monthAllowed = explode(',', $rpRateConfig["month-allowed"]);
 
-            //this should
             foreach ($monthAllowed AS $month) {
                 $rateAmount = ceil($basketAmount * (($interestRate * pow((1 + $interestRate), $month)) / (pow((1 + $interestRate), $month) - 1)));
                 if($rateAmount >= $rpRateConfig["rate-min-normal"]) {

@@ -238,19 +238,4 @@
                 Shopware()->Events()->addSubscriber($subscriber);
             }
         }
-
-        /**
-         * @return bool
-         */
-        public function isSWAGBackendOrdersActive()
-        {
-            $sql = "SELECT id FROM s_core_plugins WHERE `name`='SWAGBackendOrder' AND active=1";
-            $result = Shopware()->Db()->fetchOne($sql);
-            if (empty($result)) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
     }

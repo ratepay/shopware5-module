@@ -101,30 +101,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                 //load bank bank data fields
                 me.bankDataContainer.setVisible(true);
             }
-
-            //check for birthday and telephone number
-            /*Ext.Ajax.request({
-                url: '{url controller="RpayRatepayBackendOrder" action="prevalidate"}',
-                params: {
-                    customerId: me.customerId,
-                    totalCost: me.getTotalCost(),
-                    billingId: me.getBillingId(),
-                    shippingId: me.getShippingId(),
-                    paymentTypeName: name
-                },
-                success: function(response) {
-                    var responseObj = Ext.decode(response.responseText);
-
-                    if(responseObj.success === false) {
-                        responseObj.messages.forEach(function(message) {
-                            Shopware.Notification.createGrowlMessage('', message);
-                        });
-                        combobox.setValue('');
-                    }
-                }
-            });*/
         }
-
     },
     handleChangePaymentInstallment: function(paymentMeansName, combobox) {
         var me = this;
@@ -187,7 +164,6 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                         options
                     );
                 }
-
             }
         });
     },

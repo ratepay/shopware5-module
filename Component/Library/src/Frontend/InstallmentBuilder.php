@@ -255,8 +255,6 @@ class InstallmentBuilder
         $calculation = $rb->callCalculationRequest($this->getHead(), $mbContent)->subtype('calculation-by-' . $type);
         // ToDo: Surround with Try-Catch-Block
 
-        Shopware()->Pluginlogger()->info($calculation->getRequestRaw()); // $calculation->getResponseRaw());
-
         if (!$calculation->isSuccessful()) {
             throw new RequestException("Calculation Request not successful - reason: '" . $calculation->getReasonMessage() . "'");
         }
