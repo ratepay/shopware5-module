@@ -392,7 +392,13 @@
                 $operationData['subtype'] = 'credit';
                 $this->_modelFactory->setOrderId($order['ordernumber']);
 
-                if($subOperation === 'debit' && $order['paymentID'] === '8') {
+                $rpRate = Shopware()->Db()->fetchRow("SELECT id FROM `s_core_paymentmeans` WHERE `name`=?", array('rpayratepayrate'));
+                $rpRate0 = Shopware()->Db()->fetchRow("SELECT id FROM `s_core_paymentmeans` WHERE `name`=?", array('rpayratepayrate0'));
+
+                if(
+                    ($subOperation === 'debit' && $order['paymentID'] == $rpRate['id']) ||
+                    ($subOperation === 'debit' && $order['paymentID'] == $rpRate0['id'])
+                ) {
                     $result = false;
                 } else {
                     $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
