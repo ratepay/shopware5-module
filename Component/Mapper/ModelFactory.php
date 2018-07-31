@@ -833,10 +833,10 @@
          */
         private function isNetPriceAllowed()
         {
-            $netto = false;
+            $net = false;
 
             if (empty($this->_orderId)) {
-                return $netto;
+                return $net;
             }
 
             $user = Shopware()->Db()->fetchRow('
@@ -861,10 +861,10 @@
             ', [$groupKey]);
 
             if ((int)$userGroup['tax'] === 0 && !empty($b2b['company'])) {
-                $netto = true;
+                $net = true;
             }
 
-            return $netto;
+            return $net;
         }
 
         /**

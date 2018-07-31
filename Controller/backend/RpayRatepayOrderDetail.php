@@ -396,8 +396,8 @@
                 $rpRate0 = Shopware()->Db()->fetchRow("SELECT id FROM `s_core_paymentmeans` WHERE `name`=?", array('rpayratepayrate0'));
 
                 if(
-                    ($subOperation === 'debit' && $order['paymentID'] == $rpRate['id']) ||
-                    ($subOperation === 'debit' && $order['paymentID'] == $rpRate0['id'])
+                    $subOperation === 'debit' &&
+                    ($order['paymentID'] == $rpRate['id'] || $order['paymentID'] == $rpRate0['id'])
                 ) {
                     $result = false;
                 } else {
