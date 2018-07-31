@@ -84,7 +84,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         } else {
 
             if (me.customerId === -1) {
-                me.fail(me.snippetsLocal.loadCustomerFirst);
+                me.fail(combobox, me.snippetsLocal.loadCustomerFirst);
                 return;
             }
 
@@ -159,7 +159,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                     me.requestInstallmentCalculator(
                         me.getShopId(),
                         billingId,
-                        name,
+                        paymentMeansName,
                         totalAmount,
                         options
                     );
