@@ -97,10 +97,8 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
         } catch(\Exception $e) {
             Shopware()->Pluginlogger()->error($e->getMessage());
             Shopware()->Pluginlogger()->error($e->getTraceAsString());
-            $view->assign([
-                'success' => false,
-                'violations' => [$e->getMessage()]
-            ]);
+
+            $this->fail($view, [$e->getMessage()]);
         }
     }
 
@@ -142,7 +140,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             'articlename' => $item->getName(),
             'ordernumber' => $item->getNumber(), //should be article number, see BasketArrayBuilder
             'quantity' => $item->getQuantity(),
-            'priceNumeric' => $item->getPrice(), //testen zu sehen ob price gross
+            'priceNumeric' => $item->getPrice(),
             'tax_rate' => $item->getTaxRate(),
         ];
 

@@ -292,7 +292,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                             paymentSubtype: me.installmentPaymentType,
                         },
                         success: function () {
-                            Shopware.Notification.createGrowlMessage('', 'Set payment type to ' +  me.installmentPaymentType);
+                            //Shopware.Notification.createGrowlMessage('', 'Zahlart auf Server gesetzt');
                         }
                     });
                 }
