@@ -268,7 +268,13 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function hasNoQuantity($item)
     {
-        return $item->quantity == 0;
+        if (method_exists($item, 'getQuantity') &&
+            $item->getQuantity() == 0) {
+                return true;
+            }
+        if ($item->quantity == 0) {
+            return true;
+        }
     }
 
     /**
