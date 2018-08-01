@@ -128,7 +128,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             return;
         }
 
-        //get payment optios
+        //get payment options, direct debit or invoice
 
         Ext.Ajax.request({
             url: '{url controller="RpayRatepayBackendOrder" action="getInstallmentPaymentOptions"}',
@@ -148,10 +148,12 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                 } else {
                     me.installmentPaymentType = TRANSFER;
                     //show switch for bank data
+                    me.directDebitCheckbox.setValue(false);
                     me.directDebitCheckbox.setVisible(true);
                 }
 
                 if(paymentMeansName === 'rpayratepayrate0') {
+                    //load directly fo 0%, since there are no variable terms
                     me.handleCalculatorInput();
                 } else {
                     me.calculatorContainer.setVisible(true);
