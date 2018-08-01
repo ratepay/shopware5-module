@@ -374,6 +374,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
                 $elv = true;
             }
 
+            $calculatorAmountWithoutInterest = $this->getSession()->RatePAY['ratenrechner']['amount'];
+
+            if ((string)$calculatorAmountWithoutInterest !==  (string)$paymentRequestData->getAmount()) {
+                throw new \Exception('Attempt to create order with wrong amount in installment calculator.' .
+                    'Expected '.  $paymentRequestData->getAmount() . " Got " . $calculatorAmountWithoutInterest
+                );
+            }
+
             $contentArr['Payment']['Amount'] = $this->getSession()->RatePAY['ratenrechner']['total_amount'];
             $contentArr['Payment']['InstallmentDetails'] = $installmentDetails;
         }

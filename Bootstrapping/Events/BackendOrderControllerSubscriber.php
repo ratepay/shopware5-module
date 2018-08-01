@@ -61,7 +61,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             //first find out if it's a ratepay order
             $paymentType = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $orderStruct->getPaymentId());
             $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $orderStruct->getCustomerId());
-            $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($customer, $paymentType);
+            $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($customer, $paymentType);
 
             if (!$validation->isRatePAYPayment()) {
                 $this->forwardToSWAGBackendOrders($hookArgs);
