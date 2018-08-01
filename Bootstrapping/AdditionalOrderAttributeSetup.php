@@ -66,10 +66,10 @@ class AdditionalOrderAttributeSetup extends Bootstrapper
 
 
         for ($i=0; $i<3; $i++) {
-            if ($expected[$i] > $configured[$i])
+            if ($expected[$i] < $configured[$i])
                 return true;
 
-            if ($expected[$i] < $configured[$i])
+            if ($expected[$i] > $configured[$i])
                 return false;
         }
 
