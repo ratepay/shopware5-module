@@ -23,19 +23,33 @@ class SessionLoader
         $this->session = $session;
     }
 
-    public function setBankData($accountNumber, $bankCode = null)
+    /**
+     * @param $customerId
+     * @param $accountNumber
+     * @param null $bankCode
+     */
+    public function setBankData($customerId, $accountNumber, $bankCode = null)
     {
+        $this->session->RatePAY['bankdata']['customerId'] = $customerId;
         $this->session->RatePAY['bankdata']['account'] = $accountNumber;
         $this->session->RatePAY['bankdata']['bankcode'] = $bankCode;
     }
 
     /**
      * @param $customerAddressBilling
+     * @param $customerId
      * @return BankData
+     * @throws \Exception
      */
-    public function getBankData($customerAddressBilling)
+    public function getBankData($customerAddressBilling, $customerId)
     {
         $sessionArray = $this->session->RatePAY['bankdata'];
+
+        $customerIdSession = $sessionArray['customerId'];
+
+        if ($customerIdSession !== $customerId) {
+            throw new \Exception("Attempt to load bank data for wrong customer!");
+        }
 
         $bankCode = $sessionArray['bankcode'];
         $account = $sessionArray['account'];

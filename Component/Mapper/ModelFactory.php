@@ -236,6 +236,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      *
      * @return \RatePAY\RequestBuilder
      * @throws \RatePAY\Exception\ModelException
+     * @throws \Exception
      */
     public function callPaymentRequest($paymentRequestData = null, $bankData = null)
     {
@@ -379,7 +380,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         if ($method === 'ELV' || ($method == 'INSTALLMENT' && $elv == true)) {
             if (is_null($bankData)) {
-                $bankData = $sessionLoader->getBankData($checkoutAddressBilling);
+                $bankData = $sessionLoader->getBankData($checkoutAddressBilling, $customer->getId());
             }
             $contentArr['Customer']['BankAccount'] = $bankData->toArray();
         }
@@ -390,10 +391,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $paymentRequest = $rb->callPaymentRequest($mbHead, $mbContent);
         $this->_logging->logRequest($paymentRequest->getRequestRaw(), $paymentRequest->getResponseRaw());
 
-        Shopware()->Pluginlogger()->info("REQUEST");
+        /*Shopware()->Pluginlogger()->info("REQUEST");
         Shopware()->Pluginlogger()->info($paymentRequest->getRequestRaw());
         Shopware()->Pluginlogger()->info("RESPONSE");
-        Shopware()->Pluginlogger()->info($paymentRequest->getResponseRaw());
+        Shopware()->Pluginlogger()->info($paymentRequest->getResponseRaw());*/
         return $paymentRequest;
     }
 

@@ -206,11 +206,17 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
     handleBankDataBlur: function() {
         var me = this;
 
+        var customerId = me.getCustomerId();
+        if (!customerId) {
+            return;
+        }
+
         //very minimalistic validation
         if(me.iban || (me.bankCode && me.iban)) {
             Ext.Ajax.request({
                 url: '{url controller="RpayRatepayBackendOrder" action="setExtendedData"}',
                 params: {
+                    customerId: customerId,
                     iban: me.iban,
                     accountNumber: me.accountNumber,
                     bankCode: me.bankCode
@@ -417,6 +423,11 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
 
         return me.subApplication.getStore('Customer')
             .getAt(0);
+    },
+    getCustomerId: function () {
+        var me = this;
+        var customer = me.getCustomerModel();
+        return customer.get('id');
     },
     getShopId: function() {
         var me = this;
