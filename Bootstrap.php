@@ -53,7 +53,7 @@
         }
 
         /**
-         * Returns the Pluginversion
+         * Returns the Plugin version
          *
          * @return string
          * @throws Exception
