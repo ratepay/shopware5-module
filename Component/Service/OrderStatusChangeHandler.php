@@ -85,6 +85,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
      * Sends Ratepay notification of order status change when new status meets criteria.
      *
      * @param \Shopware\Models\Order\Order $order
+     * @throws Zend_Db_Adapter_Exception
      */
     public function informRatepayOfOrderStatusChange(Shopware\Models\Order\Order $order)
     {

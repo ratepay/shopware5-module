@@ -14,9 +14,9 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
     }
 
     /**
-     * Eventlistener for frontendcontroller
+     * EventListener for frontend controller
      *
-     * @param Shopware_Components_Cron_CronJob $job
+     * @param \Shopware_Components_Cron_CronJob $job
      *
      * @return string
      * @throws Exception
@@ -33,6 +33,7 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
             $orderIds = $this->findCandidateOrdersForUpdate($config);
             $orderProcessor = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
             foreach($orderIds as $orderId) {
+                /* @var \Shopware\Models\Order\Order $order */
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
                 $orderProcessor->informRatepayOfOrderStatusChange($order);
             }

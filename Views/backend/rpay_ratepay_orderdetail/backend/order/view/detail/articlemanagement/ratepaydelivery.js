@@ -178,8 +178,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                             taxRate: 0,
                                             total: 0
                                         },
-                                        success: function (response) {
-                                            var response = Ext.JSON.decode(response.responseText);
+                                        success: function (payload) {
+                                            var response = Ext.JSON.decode(payload.responseText);
                                             var articleNumber = new Array();
                                             var insertedIds = new Array();
                                             var message;
@@ -260,8 +260,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                                     taxRate: 0,
                                                     total: 0
                                                 },
-                                            success: function (response) {
-                                                var response = Ext.JSON.decode(response.responseText);
+                                            success: function (payload) {
+                                                var response = Ext.JSON.decode(payload.responseText);
                                                 var articleNumber = new Array();
                                                 var insertedIds = new Array();
                                                 var message;
@@ -488,8 +488,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 orderID: id,
                 articleNumber: Ext.JSON.encode(articleNumber)
             },
-            success: function (response) {
-                var response = Ext.JSON.decode(response.responseText);
+            success: function (payload) {
+                var response = Ext.JSON.decode(payload.responseText);
                 returnValue = response.success;
             }
         });
@@ -507,8 +507,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 suboperation: suboperation,
                 insertedIds: Ext.JSON.encode(insertedIds)
             },
-            success: function (response) {
-                var response = Ext.JSON.decode(response.responseText);
+            success: function (payload) {
+                var response = Ext.JSON.decode(payload.responseText);
                 returnValue = response.result;
             }
         });
@@ -527,8 +527,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 id: id,
                 valid: true
             },
-            success: function (response) {
-                var response = Ext.JSON.decode(response.responseText);
+            success: function (payload) {
+                var response = Ext.JSON.decode(payload.responseText);
                 result = response.success;
             }
         });
