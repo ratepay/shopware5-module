@@ -62,7 +62,7 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
      */
     private function findCandidateOrdersForUpdate($config)
     {
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         $orderStatus = [
             $config['RatePayFullDelivery'],
             $config['RatePayFullCancellation'],

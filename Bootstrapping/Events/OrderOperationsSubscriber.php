@@ -213,7 +213,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
     public function usesBidirectionalUpdates($paymentName)
     {
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
 
         return $config->get('RatePayBidirectional') && in_array($paymentName, $paymentMethods);
     }

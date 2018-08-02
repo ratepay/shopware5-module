@@ -227,7 +227,7 @@
                     12
                 );
 
-                $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_installer');
+                $bootstrap = new \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_installer');
                 if ($bootstrap->getPCConfig() == true) {
                     $this->_modelFactory->setTransactionId($resultRequest->getTransactionId());
                     $this->_modelFactory->setOrderId($orderNumber);
