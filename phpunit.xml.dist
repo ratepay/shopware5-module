@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="Tests/Bootstrap.php"
+         backupGlobals="false"
+         backupStaticAttributes="false"
+         forceCoversAnnotation="true"
+         beStrictAboutCoversAnnotation="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true"
+         verbose="true">
+
+    <testsuites>
+        <testsuite name="unit">
+            <directory suffix="Test.php">Tests/Unit</directory>
+        </testsuite>
+        <testsuite name="functional">
+            <directory suffix="Test.php">Tests/Functional</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./</directory>
+            <exclude>
+                <directory suffix=".php">Tests</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+
+    <php>
+        <env name="TEST_ENV" value="unit"/>
+    </php>
+</phpunit>

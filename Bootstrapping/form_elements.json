@@ -141,7 +141,7 @@
     "type":"checkbox",
     "name":"RatePayBidirectional",
     "config":{
-      "label":"Bidirektionalität aktivieren ( Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert}",
+      "label":"Bidirektionalität aktivieren (Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert)",
       "scope":1
     }
   },
@@ -178,6 +178,22 @@
       "store":"base.OrderStatus",
       "displayField":"description",
       "valueField":"id",
+      "scope":1
+    }
+  },
+  {
+    "type":"button",
+    "name":"button6",
+    "config":{
+      "label":"Erweiterte Einstellungen"
+    }
+  },
+  {
+    "type":"checkbox",
+    "name":"RatePayUseFallbackShippingItem",
+    "config":{
+      "label": "Use fallback shipping item:",
+      "value": false,
       "scope":1
     }
   }

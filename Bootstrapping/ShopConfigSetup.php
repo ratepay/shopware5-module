@@ -5,8 +5,11 @@
  * Date: 12.06.18
  * Time: 13:49
  */
+namespace RpayRatePay\Bootstrapping;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+use RpayRatePay\Bootstrapping\Bootstrapper;
+
+class ShopConfigSetup extends Bootstrapper
 {
     protected $availableCountries = array(
         'de',
@@ -19,7 +22,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup extend
     /**
      * @throws Exception
      */
-    public function install() {}
+    public function install() {
+        //
+    }
 
     /**
      * @return mixed|void
@@ -108,14 +113,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup extend
                 );
 
                 $paymentSql = 'REPLACE INTO `rpay_ratepay_config_payment`'
-                    . '(`status`, `b2b`,`limit_min`,`limit_max`,'
-                    . '`limit_max_b2b`, `address`)'
+                    . '(`status`, `b2b`,`limit_min`,`limit_max`, `limit_max_b2b`, `address`)'
                     . 'VALUES(' . substr(str_repeat('?,', 6), 0, -1) . ');';
                 try {
                     Shopware()->Db()->query($paymentSql, $dataPayment);
                     $id = Shopware()->Db()->fetchOne('SELECT `rpay_id` FROM `rpay_ratepay_config_payment` ORDER BY `rpay_id` DESC');
                     $type[$payment] = $id;
-                } catch (Exception $exception) {
+                } catch (\Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                     return false;
                 }
@@ -135,7 +139,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup extend
                     . 'VALUES(' . substr(str_repeat('?,', 5), 0, -1) . ');';
                 try {
                     Shopware()->Db()->query($paymentSql, $installmentConfig);
-                } catch (Exception $exception) {
+                } catch (\Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
                     return false;
                 }
@@ -188,7 +192,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_ShopConfigSetup extend
                     }
 
                     return true;
-                } catch (Exception $exception) {
+                } catch (\Exception $exception) {
                     Shopware()->Pluginlogger()->error($exception->getMessage());
 
                     return false;

@@ -166,10 +166,11 @@
          *
          * @param bool $countryCode
          * @return \RatePAY\ModelBuilder
+         * @throws \RatePAY\Exception\ModelException
          */
         private function getHead($countryCode = false) {
             $systemId = $this->getSystemId();
-            $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+            $bootstrap = new \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
 
             $head = [
                 'SystemId' => $systemId,
@@ -328,23 +329,17 @@
             $shoppingBasket = $this->createBasketArray($shopItems);
 
             if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
-                $system = Shopware()->System();
-                $usergroup = Shopware()->Db()->fetchRow('
-                    SELECT * FROM s_core_customergroups
-                    WHERE groupkey = ?
-                    ', [$system->sUSERGROUP]);
-
-                $shoppingBasket['Shipping'] = array(
-                    'Description' => "Shipping costs",
-                    'UnitPriceGross' => Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'],
-                    'TaxRate' => Shopware()->Session()->sOrderVariables['sBasket']['sShippingcostsTax'],
-
+                // As we know this is the first request, we do not pass unsaved `orderId`
+                $useFallbackShipping = $this->usesShippingItemFallback(/*$this->_getOrderIdFromTransactionId()*/);
+                $shippingItem = $this->getShippingItemData(
+                    Shopware()->Session()->sOrderVariables['sBasket'],
+                    $useFallbackShipping
                 );
 
-                if ($usergroup['tax'] == 0) {
-                    $cost =  Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'];
-                    $tax = Shopware()->Session()->sOrderVariables['sBasket']['sShippingcostsTax'];
-                    $shoppingBasket['Shipping']['UnitPriceGross'] = number_format($cost / 100 * $tax +  $cost , 2);
+                if ($useFallbackShipping) {
+                    $shoppingBasket['Items'][] = ['Item' => $shippingItem];
+                } else {
+                    $shoppingBasket['Shipping'] = $shippingItem;
                 }
             }
 
@@ -388,15 +383,21 @@
                 $contentArr['Customer']['CompanyName'] = $checkoutAddressBilling->getCompany();
                 $contentArr['Customer']['VatId'] = $checkoutAddressBilling->getVatId();
             }
-            $elv = false;
-            if (!empty($installmentDetails)) {
-                if (Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday'] == 28) {
-                    $contentArr['Payment']['DebitPayType'] = 'BANK-TRANSFER';
-                } else {
-                    $contentArr['Payment']['DebitPayType'] = 'DIRECT-DEBIT';
-                    $elv = true;
 
+            $elv = false;
+
+            if (!empty($installmentDetails)) {
+
+                $serviceUtil = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util();
+
+                $contentArr['Payment']['DebitPayType'] = $serviceUtil->getDebitPayType(
+                    Shopware()->Session()->RatePAY['ratenrechner']['payment_firstday']
+                );
+                
+                if ($contentArr['Payment']['DebitPayType'] == 'DIRECT-DEBIT') {
+                    $elv = true;
                 }
+
                 $contentArr['Payment']['Amount'] = Shopware()->Session()->RatePAY['ratenrechner']['total_amount'];
                 $contentArr['Payment']['InstallmentDetails'] = $installmentDetails;
             }
@@ -445,7 +446,6 @@
          */
         private function getPaymentDetails() {
             $paymentDetails = array();
-
             $paymentDetails['InstallmentNumber'] = Shopware()->Session()->RatePAY['ratenrechner']['number_of_rates'];
             $paymentDetails['InstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['rate'];
             $paymentDetails['LastInstallmentAmount'] = Shopware()->Session()->RatePAY['ratenrechner']['last_rate'];
@@ -458,12 +458,13 @@
         /**
          * @param $operationData
          * @return bool|array
+         * @throws \RatePAY\Exception\ModelException
          */
         private function callProfileRequest($operationData)
         {
             $systemId = $this->getSystemId();
             $sandbox = true;
-            $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+            $bootstrap = new \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
 
             if (strpos($operationData['profileId'], '_TE_')) {
                 $sandbox = true;
@@ -543,182 +544,25 @@
          * create basket array
          *
          * @param $items
-         * @param $type
+         * @param bool $type
+         * @param null $orderId
          * @return array
          */
-        private function createBasketArray($items, $type = false) {
-            $shoppingBasket = array();
-            $item = array();
-            $net = false;
-            $orderId = $this->_orderId;
+        private function createBasketArray($items, $type = false, $orderId = null) {
+            $netPriceAllowed = $this->isNetPriceAllowed();
+            $useFallbackShipping = $this->usesShippingItemFallback($orderId);
+            $basketFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder(
+                $this->_retry,
+                $type,
+                $netPriceAllowed,
+                $useFallbackShipping
+            );
 
-            if (empty($orderId)) {
-                $system = Shopware()->System();
-                $usergroup = Shopware()->Db()->fetchRow('
-                        SELECT * FROM s_core_customergroups
-                        WHERE groupkey = ?
-                        ', [$system->sUSERGROUP]);
-            } else {
-                $user = Shopware()->Db()->fetchRow('
-                        SELECT * FROM s_order
-                        WHERE ordernumber = ?
-                        ', $this->_orderId);
-                $usergroupId = Shopware()->Db()->fetchRow('
-                        SELECT * FROM s_user
-                        WHERE id = ?
-                        ', $user['userID']);
-                $usergroup = Shopware()->Db()->fetchRow('
-                        SELECT * FROM s_core_customergroups
-                        WHERE groupkey = ?
-                        ', $usergroupId['customergroup']);
+            foreach ($items as $shopItem) {
+                $basketFactory->addItem($shopItem);
             }
 
-            $b2b = Shopware()->Db()->fetchRow('
-                        SELECT company FROM s_user_billingaddress
-                        WHERE userID = ?
-                        ', $user['userID']);
-
-            if ((int)$usergroup['tax'] === 0 && !empty($b2b['company'])) {
-                $net = true;
-            }
-
-            foreach ($items AS $shopItem) {
-                if ($shopItem->articlenumber == 'shipping') {
-                    if ($shopItem->delivered == 0 || $shopItem->cancelled == 0 || $shopItem->returned == 0) {
-                        if ($this->_retry == true) {
-                            $item = array(
-                                'ArticleNumber' => $shopItem->articlenumber,
-                                'Quantity' => 1,
-                                'Description' => "shipping",
-                                'UnitPriceGross' => $shopItem->price,
-                                'TaxRate' => $shopItem->taxRate,
-                            );
-                            $shoppingBasket['Items'][] = array('Item' => $item);
-                        } else {
-                            $shoppingBasket['Shipping'] = array(
-                                'Description' => "Shipping costs",
-                                'UnitPriceGross' => $shopItem->price,
-                                'TaxRate' => $shopItem->taxRate,
-                            );
-                        }
-                    }
-                    if (!empty($type) && $shopItem->cancelledItems == 0 && $shopItem->returnedItems == 0 && $shopItem->deliveredItems == 0) {
-                        unset($shoppingBasket['Shipping']);
-                    }
-                } elseif ((substr($shopItem->articlenumber, 0, 5) == 'Debit')
-                    || (substr($shopItem->articlenumber, 0, 6) == 'Credit')) {
-                    if ($this->_retry == true || $shopItem->price > 0) {
-                        $item = array(
-                            'ArticleNumber' => $shopItem->articleordernumber,
-                            'Quantity' => $shopItem->quantity,
-                            'Description' => $shopItem->articlenumber,
-                            'UnitPriceGross' => $shopItem->price,
-                            'TaxRate' => $shopItem->taxRate,
-                        );
-                    } else {
-                        $shoppingBasket['Discount'] = array(
-                            'Description' => $shopItem->articlenumber,
-                            'UnitPriceGross' => $shopItem->price,
-                            'TaxRate' => $shopItem->taxRate,
-                        );
-                    }
-                } else {
-                    if (is_array($shopItem)) {
-                        if ($shopItem['quantity'] == 0 && empty($type)) {
-                            continue;
-                        }
-                        if ($shopItem['articlename'] == 'Shipping') {
-                            if ($this->_retry == true) {
-                                $item = array(
-                                    'ArticleNumber' => "shipping",
-                                    'Quantity' => 1,
-                                    'Description' => 'shipping',
-                                    'UnitPriceGross' => $shopItem['priceNumeric'],
-                                    'TaxRate' => $shopItem['tax_rate'],
-                                );
-                            } else {
-                                $shoppingBasket['Shipping'] = array(
-                                    'Description' => "Shipping costs",
-                                    'UnitPriceGross' => $shopItem['priceNumeric'],
-                                    'TaxRate' => $shopItem['tax_rate'],
-                                );
-                                continue;
-                            }
-                        } else {
-                            $item = array(
-                                'Description' => $shopItem['articlename'],
-                                'ArticleNumber' => $shopItem['ordernumber'],
-                                'Quantity' => $shopItem['quantity'],
-                                'UnitPriceGross' => $shopItem['priceNumeric'],
-                                'TaxRate' => $shopItem['tax_rate'],
-                            );
-                            if ($net == true) {
-                                $price = $shopItem['priceNumeric']/100 * $shopItem['tax_rate'] +  $shopItem['priceNumeric'];
-                                $item['UnitPriceGross'] = $shopItem['priceNumeric'];
-                            }
-                        }
-                    } elseif (is_object($shopItem)) {
-                        if (!isset($shopItem->name)) {
-                            if ($shopItem->getQuantity() == 0 && empty($type)) {
-                                continue;
-                            }
-                            $item = array(
-                                'Description' => $shopItem->getArticleName(),
-                                'ArticleNumber' => $shopItem->getArticleNumber(),
-                                'Quantity' => $shopItem->getQuantity(),
-                                'UnitPriceGross' => $shopItem->getPrice(),
-                                'TaxRate' => $shopItem->getTaxRate(),
-                            );
-                            if ($net == true) {
-                                $item['UnitPriceGross'] = $shopItem->getNetPrice();
-                            }
-                            $type = false;
-                        } else {
-                            if ($shopItem->quantity == 0 && empty($type)) {
-                                continue;
-                            }
-                            $item = array(
-                                'Description' => $shopItem->name,
-                                'ArticleNumber' => $shopItem->articlenumber,
-                                'Quantity' => $shopItem->quantity,
-                                'UnitPriceGross' => $shopItem->price,
-                                'TaxRate' => $shopItem->taxRate,
-                            );
-                        }
-
-                        if (!empty($type)) {
-                            switch ($type) {
-                                case 'return':
-                                    if ($shopItem->returnedItems == 0) {
-                                        $item['Quantity'] = 0;
-                                        continue;
-                                    }
-                                    $item['Quantity'] = $shopItem->returnedItems;
-                                    break;
-                                case 'cancellation':
-                                    if ($shopItem->cancelledItems == 0) {
-                                        $item['Quantity'] = 0;
-                                        continue;
-                                    }
-                                    $item['Quantity'] = $shopItem->cancelledItems;
-                                    break;
-                                case 'shippingRate':
-                                    if ($shopItem->maxQuantity == 0) {
-                                        $item['Quantity'] = 0;
-                                        continue;
-                                    }
-                                    $item['Quantity'] = $shopItem->maxQuantity;
-                                    break;
-                            }
-                        }
-                    }
-
-                    if ($item['Quantity'] != 0) {
-                        $shoppingBasket['Items'][] = array('Item' => $item);
-                    }
-                }
-            }
-            return $shoppingBasket;
+            return $basketFactory->toArray();
         }
 
         /**
@@ -743,7 +587,7 @@
 
             $mbHead = $this->getHead($countryCode);
 
-            $shoppingItems = $this->createBasketArray($operationData['items'], $type);
+            $shoppingItems = $this->createBasketArray($operationData['items'], $type, $operationData['orderId']);
             $shoppingBasket = [
                 'ShoppingBasket' => $shoppingItems,
             ];
@@ -820,7 +664,7 @@
                 }
 
             } else {
-                $shoppingItems = $this->createBasketArray($operationData['items'], $operationData['subtype']);
+                $shoppingItems = $this->createBasketArray($operationData['items'], $operationData['subtype'], $operationData['orderId']);
             }
 
             $shoppingBasket = [
@@ -984,6 +828,100 @@
             }
 
             return $securityCode;
+        }
+
+        /**
+         * @return bool
+         */
+        private function isNetPriceAllowed()
+        {
+            $net = false;
+            if (empty($this->_orderId)) {
+//                $system = Shopware()->System();
+//                $groupKey = $system->sUSERGROUP;
+                return $net;
+            }
+
+            $user = Shopware()->Db()->fetchRow('
+                    SELECT * FROM s_order
+                    WHERE ordernumber = ?
+                ', $this->_orderId);
+            $userGroupId = Shopware()->Db()->fetchRow('
+                    SELECT * FROM s_user
+                    WHERE id = ?
+                ', $user['userID']);
+
+            $groupKey = $userGroupId['customergroup'];
+
+            $b2b = Shopware()->Db()->fetchRow('
+                SELECT company FROM s_user_billingaddress
+                WHERE userID = ?
+            ', $user['userID']);
+
+            $userGroup = Shopware()->Db()->fetchRow('
+                SELECT * FROM s_core_customergroups
+                WHERE groupkey = ?
+            ', [$groupKey]);
+
+            if ((int)$userGroup['tax'] === 0 && !empty($b2b['company'])) {
+                $net = true;
+            }
+
+            return $net;
+        }
+
+        /**
+         * @param array $shippingData
+         * @param bool $useFallbackShipping
+         * @return array
+         */
+        private function getShippingItemData($shippingData, $useFallbackShipping = false)
+        {
+            $item = [
+                'Description' => 'Shipping costs',
+                'UnitPriceGross' => $shippingData['sShippingcosts'],
+                'TaxRate' => $shippingData['sShippingcostsTax'],
+            ];
+
+            if ($useFallbackShipping) {
+                $item['ArticleNumber'] = key_exists('sArticleNumber', $shippingData)
+                    ? $shippingData['sArticleNumber'] : 'shipping';
+                $item['Quantity'] = 1;
+                $item['Description'] = 'shipping';
+            }
+
+            $system = Shopware()->System();
+            $userGroup = Shopware()->Db()->fetchRow('
+                SELECT * FROM s_core_customergroups WHERE groupkey = ?
+            ', [$system->sUSERGROUP]);
+            if ($userGroup['tax'] == 0) {
+                $cost = $item['UnitPriceGross'];
+                $tax = $item['TaxRate'];
+                $item['UnitPriceGross'] = number_format($cost / 100 * $tax +  $cost , 2);
+            }
+
+            return $item;
+        }
+
+        /**
+         * @param null $orderId
+         * @return mixed
+         * @throws Zend_Db_Statement_Exception
+         */
+        private function usesShippingItemFallback($orderId = null)
+        {
+            $configured = !!(Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()
+                ->get('RatePayUseFallbackShippingItem'));
+
+            if (!$orderId) {
+                return $configured;
+//                return boolval($result['ratepay_fallback_shipping']);
+            }
+
+            $query = "SELECT ratepay_fallback_shipping FROM `s_order_attributes` WHERE orderID = ?";
+            $result = Shopware()->Db()->executeQuery($query, [$orderId])->fetch()["ratepay_fallback_shipping"];
+
+            return is_null($result) ? false : (boolval($result) || $configured);
         }
 
     }

@@ -12,7 +12,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullDelivery'])) {
             return false;
         }
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if (!in_array($order->getPayment()->getName(), $paymentMethods)) {
             return false;
         }
@@ -38,7 +38,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullCancellation'])) {
             return false;
         }
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if (!in_array($order->getPayment()->getName(), $paymentMethods)) {
             return false;
         }
@@ -65,7 +65,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullReturn'])) {
             return false;
         }
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if (!in_array($order->getPayment()->getName(), $paymentMethods)) {
             return false;
         }
@@ -85,6 +85,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
      * Sends Ratepay notification of order status change when new status meets criteria.
      *
      * @param \Shopware\Models\Order\Order $order
+     * @throws Zend_Db_Adapter_Exception
      */
     public function informRatepayOfOrderStatusChange(Shopware\Models\Order\Order $order)
     {

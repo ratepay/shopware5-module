@@ -5,8 +5,12 @@
  * Date: 12.06.18
  * Time: 13:49
  */
+namespace RpayRatePay\Bootstrapping;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+use Shopware\Components\Model\ModelRepository;
+use RpayRatePay\Bootstrapping\Bootstrapper;
+
+class TranslationsSetup extends Bootstrapper
 {
     private $translations = [];
 
@@ -14,35 +18,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup exte
      * @throws Exception
      */
     public function install() {
-        $availableLocales = ['de_DE','en_EN'];
-
-        try {
-            $form = $this->bootstrap->Form();
-            $shopRepository = Shopware()->Models()->getRepository('\Shopware\Models\Shop\Locale');
-            foreach ($availableLocales as $locale) {
-                /* @var \Shopware\Models\Shop\Locale */
-                $localeModel = $shopRepository->findOneBy(compact('locale'));
-                if ($localeModel === null) {
-                    continue;
-                }
-
-                $snippets = $this->loadConfig('locale/backend/'.$locale.'.json');
-                foreach ($snippets as $element => $snippet) {
-                    $elementModel = $form->getElement($element);
-                    if ($elementModel === null) {
-                        continue;
-                    }
-
-                    $translationModel = new \Shopware\Models\Config\ElementTranslation();
-                    $translationModel->setLabel($snippet);
-                    $translationModel->setLocale($localeModel);
-                    $elementModel->addTranslation($translationModel);
-                }
-            }
-        } catch (Exception $exception) {
-            $this->bootstrap->uninstall();
-            throw new Exception("Can not create translation." . $exception->getMessage());
-        }
+        $this->languageUpdate();
     }
 
     /**
@@ -50,7 +26,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_TranslationsSetup exte
      * @throws Exception
      */
     public function update() {
-        $this->install();
         $this->languageUpdate();
     }
 

@@ -7,10 +7,13 @@
  * Code by Ratepay GmbH  <http://www.ratepay.com/>
  */
 function changeFirstday(firstday) {
+
+    const BANK_TRANSFER = 28;
+
     $('#paymentFirstday').val(firstday);
     var button = $('button[type=submit]');
 
-    if (firstday == 28) {
+    if (firstday == BANK_TRANSFER) {
         if ($('#debitDetails') !== "") {
             $('#debitDetails').hide();
         }

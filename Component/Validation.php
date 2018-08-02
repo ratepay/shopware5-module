@@ -60,7 +60,7 @@
          *
          * Saves the CustomerModel and initiate the Class
          */
-        public function __construct($config)
+        public function __construct($config = null)
         {
             $this->_user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
             $this->_payment = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $this->_user->getPaymentId());
@@ -119,7 +119,7 @@
 
             $return = false;
             if (!is_null($birthday)) {
-                if( $birthday->diff($today)->y >= 18 && $birthday->diff($today)->y <= 120 )
+                if ($birthday->diff($today)->y >= 18 && $birthday->diff($today)->y <= 120)
                 {
                     $return = true;
                 }
@@ -143,9 +143,12 @@
 
             $return = false;
             if (!is_null($birthday)) {
+                if (!$birthday instanceof \DateTime) {
+                    $birthday = new \DateTime($birthday);
+                }
+
                 if (preg_match("/^\d{4}-\d{2}-\d{2}$/", $birthday->format('Y-m-d')) !== 0)
                 {
-
                     $return = true;
                 }
             }

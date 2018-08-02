@@ -14,6 +14,12 @@
      */
     class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util
     {
+        protected $debitPayTypes = [
+            '2' => "DIRECT-DEBIT",
+            '28' => "BANK-TRANSFER",
+            '2,28' => "FIRSTDAY-SWITCH"
+        ];
+        
         /**
          * Return the methodname for RatePAY
          *
@@ -35,6 +41,17 @@
                     return 'INSTALLMENT0';
                     break;
             }
+        }
+
+        /**
+         * Return the debit pay type depending on payment first day
+         * 
+         * @param $paymentFirstday
+         * @return String
+         */
+        public function getDebitPayType($paymentFirstday)
+        {
+            return $this->debitPayTypes[$paymentFirstday];
         }
 
     }
