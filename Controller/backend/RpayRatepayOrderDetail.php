@@ -365,15 +365,18 @@
             $orderItems = Shopware()->Db()->fetchAll("SELECT *, (`quantity` - `delivered` - `cancelled`) AS `quantityDeliver` FROM `s_order_details` "
                                                      . "INNER JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
                                                      . "WHERE `orderID`=?", array($orderId));
+            
             foreach ($orderItems as $row) {
                 if ($row['quantityDeliver'] == 0) {
                     continue;
                 }
+
                 if ((substr($row['articleordernumber'], 0, 5) == 'Debit')
                     || (substr($row['articleordernumber'], 0, 6) == 'Credit')
                 ) {
                     $onlyDebit = false;
                 }
+
                 $items = $row;
             }
 
@@ -388,7 +391,18 @@
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'credit';
                 $this->_modelFactory->setOrderId($order['ordernumber']);
-                $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
+
+                $rpRate = Shopware()->Db()->fetchRow("SELECT id FROM `s_core_paymentmeans` WHERE `name`=?", array('rpayratepayrate'));
+                $rpRate0 = Shopware()->Db()->fetchRow("SELECT id FROM `s_core_paymentmeans` WHERE `name`=?", array('rpayratepayrate0'));
+
+                if(
+                    $subOperation === 'debit' &&
+                    ($order['paymentID'] == $rpRate['id'] || $order['paymentID'] == $rpRate0['id'])
+                ) {
+                    $result = false;
+                } else {
+                    $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
+                }
 
                 if ($result === true) {
                     if ($subOperation === 'credit' || $subOperation === 'debit') {
@@ -397,9 +411,7 @@
                         } else {
                             $event = 'Nachlass wurde hinzugefügt';
                         }
-                        $bind = array(
-                            'delivered' => 1
-                        );
+                        $bind = array('delivered' => 1);
                     } else {
                         $event = 'Artikel wurde hinzugefügt';
                     }
@@ -416,7 +428,9 @@
                     }
                 }
             }
+
             $this->setNewOrderState($orderId);
+
             $this->View()->assign(array(
                     "result"  => $result,
                     "success" => true

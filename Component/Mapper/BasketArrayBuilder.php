@@ -267,9 +267,12 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
             $item->getQuantity() == 0) {
             return true;
         }
+
         if ($item->quantity == 0) {
             return true;
         }
+
+        return false;
     }
 
     /**

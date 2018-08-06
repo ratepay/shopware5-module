@@ -594,15 +594,15 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $confirmationDeliver = $rb->callConfirmationDeliver($mbHead, $mbContent);
         $this->_logging->logRequest($confirmationDeliver->getRequestRaw(), $confirmationDeliver->getResponseRaw());
 
-        if ($confirmationDeliver->isSuccessful()) {
-            return true;
-        } elseif ($this->_retry == false && (int)$confirmationDeliver->getReasonCode() == 2300) {
-            $this->_retry = true;
-            return $this->callRequest('ConfirmationDeliver', $operationData);
-        }
-        return false;
+            if ($confirmationDeliver->isSuccessful()) {
+                return true;
+            } elseif ($this->_retry == false && (int)$confirmationDeliver->getReasonCode() == 2300) {
+                $this->_retry = true;
+                return $this->callRequest('ConfirmationDeliver', $operationData);
+            }
 
-    }
+            return false;
+        }
 
     /**
      * call a payment change (return, cancellation, order change)
@@ -808,17 +808,17 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         return $securityCode;
     }
 
-    /**
-     * @return bool
-     */
-    private function isNetPriceAllowed()
-    {
-        $net = false;
-        if (empty($this->_orderId)) {
+        /**
+         * @return bool
+         */
+        private function isNetPriceAllowed()
+        {
+            $net = false;
+            if (empty($this->_orderId)) {
 //                $system = Shopware()->System();
 //                $groupKey = $system->sUSERGROUP;
-            return $net;
-        }
+                return $net;
+            }
 
         $user = Shopware()->Db()->fetchRow('
                 SELECT * FROM s_order
