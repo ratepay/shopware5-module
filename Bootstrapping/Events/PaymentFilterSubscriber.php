@@ -7,6 +7,10 @@
  */
 namespace RpayRatePay\Bootstrapping\Events;
 
+use RatePAY\Service\Util;
+use RpayRatePay\Component\Service\ConfigLoader;
+use RpayRatePay\Component\Service\ValidationLib as ValidationService;
+
 class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
@@ -52,10 +56,10 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
             $customerAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
 
-            if ($this->existsAndNotEmpty('getCountry', $customerAddressBilling)) {
+            if (Util::existsAndNotEmpty($customerAddressBilling,'getCountry')) {
                 $countryBilling = $customerAddressBilling->getCountry();
             } else {
-                if ($this->existsAndNotEmpty('getCountryId', $user->getBilling())) {
+                if (Util::existsAndNotEmpty($user->getBilling(),'getCountryId')) {
                     $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
                 }
             }
@@ -63,10 +67,10 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
             if (Shopware()->Session()->checkoutShippingAddressId > 0 && Shopware()->Session()->checkoutShippingAddressId != Shopware()->Session()->checkoutBillingAddressId) {
                 $customerAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
 
-                if ($this->existsAndNotEmpty('getCountry', $customerAddressShipping)) {
+                if (Util::existsAndNotEmpty($customerAddressShipping, 'getCountry')) {
                     $countryDelivery = $customerAddressShipping->getCountry();
                 } else {
-                    if ($this->existsAndNotEmpty('getCountryId', $user->getShipping())) {
+                    if (Util::existsAndNotEmpty($user->getShipping(), 'getCountryId')) {
                         $countryDelivery = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getShipping()->getCountryId());
                     }
                 }
@@ -86,11 +90,13 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         //get current shopId
         $shopId = Shopware()->Shop()->getId();
 
-        $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
+        $backend = false;
+        $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling, $backend);
         foreach ($config AS $payment => $data) {
             $show[$payment] = $data['status'] == 2 ? true : false;
 
-            $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($config);
+            $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user);
+
             $validation->setAllowedCurrencies($data['currency']);
             $validation->setAllowedCountriesBilling($data['country-code-billing']);
             $validation->setAllowedCountriesDelivery($data['country-code-delivery']);
@@ -111,13 +117,8 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
                 $show[$payment] = false;
             }
 
-            if ($validation->isCompanyNameSet()) {
-                $show[$payment] = $data['b2b'] == '1' && $show[$payment] ? true : false;
-                $data['limit_max'] = ($data['limit_max_b2b'] > 0) ? $data['limit_max_b2b'] : $data['limit_max'];
-            }
-
             if (!$validation->isBillingAddressSameLikeShippingAddress()) {
-                $show[$payment] = (bool) $data['address'] && $show[$payment] ? true : false;
+                $show[$payment] = (bool) $data['address'] && $show[$payment];
             }
 
             if (Shopware()->Modules()->Basket()) {
@@ -125,8 +126,9 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
                 $basket = $basket['totalAmount'];
 
                 Shopware()->Pluginlogger()->info('BasketAmount: ' . $basket);
+                $isB2b = $validation->isCompanyNameSet();
 
-                if ($basket < $data['limit_min'] || $basket > $data['limit_max']) {
+                if (!ValidationService::areAmountsValid($isB2b,$data, $basket)) {
                     $show[$payment] = false;
                 }
             }
@@ -177,22 +179,15 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
      * @param $country
      * @return array
      */
-    private function getRatePayPluginConfigByCountry($shopId, $country) {
-        //fetch correct config for current shop based on user country
-        $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
+    private function getRatePayPluginConfigByCountry($shopId, $country, $backend = false) {
+
+        $configLoader = new ConfigLoader(Shopware()->Db());
+
         $payments = array("installment", "invoice", "debit", "installment0");
         $paymentConfig = array();
 
         foreach ($payments AS $payment) {
-            $qry = "SELECT * 
-                        FROM `rpay_ratepay_config` AS rrc
-                          JOIN `rpay_ratepay_config_payment` AS rrcp
-                            ON rrcp.`rpay_id` = rrc.`" . $payment . "`
-                          LEFT JOIN `rpay_ratepay_config_installment` AS rrci
-                            ON rrci.`rpay_id` = rrc.`" . $payment . "`
-                        WHERE rrc.`shopId` = '" . $shopId . "'
-                             AND rrc.`profileId`= '" . $profileId . "'";
-            $result = Shopware()->Db()->fetchRow($qry);
+            $result = $configLoader->getPluginConfigForPaymentType($shopId, $country->getIso(), $payment, $backend);
 
             if (!empty($result)) {
                 $paymentConfig[$payment] = $result;
@@ -202,18 +197,5 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         return $paymentConfig;
     }
 
-    /**
-     * @param $method
-     * @param $object
-     * @return bool
-     */
-    private function existsAndNotEmpty($method, $object) {
-        if (method_exists($object, $method)) {
-            $var = $object->$method();
-            if (!empty($var) && !is_null($var)) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 }

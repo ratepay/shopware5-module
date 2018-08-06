@@ -38,13 +38,12 @@
             {
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
                 $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
-                //get user of current order and set sandbox mode
-                $orderUser    = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $order->getCustomer()->getId());
-                $orderCountry = Shopware()->Models()->find(
-                    'Shopware\Models\Country\Country',
-                    $orderUser->getBilling()->getCountryId()
-                );
+
+                $attributes = $order->getAttribute();
+                $backend = (bool)($attributes->getRatepayBackend());
+                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
             } else {
+                //TODO: this must actually be an error, I believe
                 $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             }
             $this->_history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
@@ -59,6 +58,8 @@
             $orderID = $this->Request()->getParam('orderID');
             $success = true;
             $bindings = array($orderID);
+            $bind = '';
+            $values = '';
             foreach (array_unique($articleNumbers) as $articleNumber) {
                 $sqlCountEntrys = "SELECT `id`, COUNT(*) AS 'count', SUM(`quantity`) AS 'quantity' FROM `s_order_details` "
                                   . "WHERE `orderID`=? "
@@ -170,7 +171,6 @@
             $this->_modelFactory->setOrderId($order->getNumber());
             $itemsToDeliver = null;
 
-            $basketItems = array();
             $sendItem = true;
             foreach ($items as $item) {
                 $itemsToDeliver += $item->deliveredItems;

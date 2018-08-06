@@ -81,16 +81,11 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
 
         $itemData = [
             'Description' => $item['articlename'],
-            'ArticleNumber' => $item['ordernumber'],
+            'ArticleNumber' => $item['ordernumber'], //this looks like a strange key
             'Quantity' => $item['quantity'],
             'UnitPriceGross' => $item['priceNumeric'],
             'TaxRate' => $item['tax_rate'],
         ];
-
-        if ($this->allowNetPrice) {
-             $price = $item['priceNumeric'] / 100 * $item['tax_rate'] + $item['priceNumeric'];
-             $itemData['UnitPriceGross'] = $item['priceNumeric'];
-        }
 
         $this->basket['Items'][] = ['Item' => $itemData];
     }
@@ -167,7 +162,7 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      * @param $item
      */
     private function addItemFromObject($item)
-    {        
+    {
         if ($this->hasNoQuantity($item) && empty($this->requestType)) {
             return;
         }
@@ -270,11 +265,14 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     {
         if (method_exists($item, 'getQuantity') &&
             $item->getQuantity() == 0) {
-                return true;
-            }
+            return true;
+        }
+
         if ($item->quantity == 0) {
             return true;
         }
+
+        return false;
     }
 
     /**
