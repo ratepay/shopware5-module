@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
-|Version | `5.0.7` 
+|Version | `5.1.0` 
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -24,74 +24,81 @@
 
 ## Changelog
 
-### Version Version 5.0.7 - Released 2018-07-03
+### Version 5.1.0 - Released 2018-08-02
+* add compatibility to PHP-7.2
+* frontend changes on checkout/payment pages
+* add setting to handle shipping-item with older API
+* manage custom attributes via CrudService
+* add common getter to identify installment-elv 
+
+### Version 5.0.7 - Released 2018-07-03
 * add complete bidirectionally
 * add batch processing
 * refactor Bootstrap
 * fix alternative address option 
 
-### Version Version 5.0.6 - Released 2018-05-07
+### Version 5.0.6 - Released 2018-05-07
 * remove special company name field
 * add terms and conditions
 
-### Version Version 5.0.5.1 - Released 2018-04-26
+### Version 5.0.5.1 - Released 2018-04-26
 * add downward compatibility for old module
 
-### Version Version 5.0.5 - Released 2018-01-24
+### Version 5.0.5 - Released 2018-01-24
 * no partial delivery for installments
 * fix b2b product calculation
 * remove vatId for b2b customers
 * fix order delete function
 
-### Version Version 5.0.4.1 - Released 2017-11-29
+### Version 5.0.4.1 - Released 2017-11-29
 * change company address
 
-### Version Version 5.0.4 - Released 2017-11-17
+### Version 5.0.4 - Released 2017-11-17
 * add payment method installment 0 %
 * code refactoring
 * add optional payment confirm
 
-### Version Version 5.0.3 - Released 2017-09-25
+### Version 5.0.3 - Released 2017-09-25
 * add country belgium
 * add country netherlands
 * add language EN, NL and FR
 
-### Version Version 5.0.2 - Released 2017-08-31
+### Version 5.0.2 - Released 2017-08-31
 * fix multishops
 
-### Version Version 5.0.1 - Released 2017-07-14
+### Version 5.0.1 - Released 2017-07-14
 * new installment calculator design
 * make automatic profile request after module update
 * fix bank account autofill problem
 
-### Version Version 5.0.0 - Released 2017-06-26
+### Version 5.0.0 - Released 2017-06-26
 * change the requests to ne new ratepay library
 * add php 7 compatibility
 * add bidirectional function
 
-### Version Version 4.3.0 - Released 2018-03-01
+### Version 4.3.0 - Released 2018-03-01
 * add backend panels without overwriting them
 * compatibility for Shopware 5.4.0
 
-### Version Version 4.2.93 - Released 2017-11-29
+### Version 4.2.93 - Released 2017-11-29
 * change company address
 
-### Version Version 4.2.92 - Released 2017-07-26
+### Version 4.2.92 - Released 2017-07-26
 * fix credit/debit bug
 
-### Version Version 4.2.91 - Released 2017-04-12
+### Version 4.2.91 - Released 2017-04-12
 * fix for checkout javascript problem
 
-### Version Version 4.2.9 - Released 2017-04-07
+### Version 4.2.9 - Released 2017-04-07
 * change installment elv payment information
 
-### Version Version 4.2.8 - Released 2017-04-07
+### Version 4.2.8 - Released 2017-04-07
 * fix responsive mobile view
 
-### Version Version 4.2.7 - Released 2017-03-21
+### Version 4.2.7 - Released 2017-03-21
 * add payment method installment elv
 
-### Version Version 4.2.6 - Released 2017-03-10
+### Version 4.2.6 - Released 2017-03-10
 * add debit backend function
 * add functionality to refill the inventory after cancellation/retour
 * Fix no debit/credit after retour/cancellation
@@ -99,17 +106,17 @@
 * Fix no cancellation after shipping
 * Fix no retour before shipping
 
-### Version Version 4.2.5 - Released 2017-03-02
+### Version 4.2.5 - Released 2017-03-02
 * SEPA - BIC field removed
 * IBAN country prefix validation removed
 
-### Version Version 4.2.4 - Released 2016-12-20
+### Version 4.2.4 - Released 2016-12-20
 * Fixed DOB issue
 
-### Version Version 4.2.3 - Released 2016-12-20
+### Version 4.2.3 - Released 2016-12-20
 * Fixed sandbox warning
 
-### Version Version 4.2.2 - Released 2016-12-14
+### Version 4.2.2 - Released 2016-12-14
 * Improved payment method activation routine
 * Added invoicing block inside CONFIRMATION DELIVER
 * Improved customer messages in refusals (Extended Response)
@@ -121,12 +128,12 @@
 * Implemented additional max limit on b2b orders
 * Fixed payment change credit method
 
-### Version Version 4.2.1 - Released 2016-08-31
+### Version 4.2.1 - Released 2016-08-31
 * Date of payment is now set automatically (cleareddate)
 * Improved detection of divergent shipping address (Shopware >=5.2.0)
 * Remove deprecated RatePAY additional order attributes on update
 
-### Version Version 4.2.0 - Released 2016-08-29
+### Version 4.2.0 - Released 2016-08-29
 * Mapping of new SWAG address management (Compatibility with Shopware 5.2.x)
 * CSRF protection implemented (Compatibility with Shopware 5.2.x)
 * Fixed compatibility with SWAG import/export function
@@ -134,17 +141,17 @@
 * Compatibility with CH and CHF
 * Further minor changes and fixes
 
-### Version Version 4.1.5 - Released 2016-05-26
+### Version 4.1.5 - Released 2016-05-26
 * Adjusted frontend controller URL (SSL)
 * Conveyed sUniqueID to checkout controller
 
-### Version Version 4.1.4 - Released 2016-04-26
+### Version 4.1.4 - Released 2016-04-26
 * Payment information additionally saved in order additional fields
 
-### Version Version 4.1.3 - Released 2016-04-25
+### Version 4.1.3 - Released 2016-04-25
 * Compatibility with deactivated conditions checkbox
 
-### Version Version 4.1.2 - Released 2016-04-13
+### Version 4.1.2 - Released 2016-04-13
 * Fixed get sandbox bug
 * Changed ZGB/DSE link in SEPA text
 * Enhanced unistall - deleting of Ratepay order attributes
@@ -153,7 +160,7 @@
 * DOB not requested anymore in case of b2b
 * Improved DFP token creation
 
-### Version Version 4.1.1 - Released 2015-11-26
+### Version 4.1.1 - Released 2015-11-26
 * Fixed DFP
 * Fixed DFP DB update bug
 * Fixed JS checkout form validation
@@ -165,7 +172,7 @@
 * Account holder is always customer name by billing address
 * Redesign of rejection page
 
-### Version Version 4.1.0
+### Version 4.1.0
 * fixed compatibility for 5.0.4 - 5.1.1
 * added device-fingerprinting
 * fixed frontend validation

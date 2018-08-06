@@ -9,9 +9,9 @@ namespace RpayRatePay\Bootstrapping\Events;
 
 class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
 {
-
-
-
+    /**
+     * @var Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler
+     */
     private $orderStatusChangeHandler;
 
     public function __construct()
@@ -32,9 +32,9 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
 
     /**
      * Checks if the payment method is a ratepay method. If it is a ratepay method, throw an exception
-     * and forbit to change the payment method
+     * and forbid to change the payment method
      *
-     * @param Enlight_Hook_HookArgs $arguments
+     * @param \Enlight_Hook_HookArgs $arguments
      * @return bool
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
@@ -59,31 +59,33 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
 
     /**
      * Event fired when user saves order.
-     * 
+     *
      * @param Enlight_Hook_HookArgs $arguments
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws \Zend_Db_Adapter_Exception
      */
     public function onBidirectionalSendOrderOperation(\Enlight_Hook_HookArgs $arguments)
     {
         $request = $arguments->getSubject()->Request();
         $parameter = $request->getParams();
-        $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
+        /* @var \Shopware\Models\Order\Order $order */
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
-        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
-        if (!$config->get('RatePayBidirectional') ||
-            !in_array($order->getPayment()->getName(), $paymentMethods)
-        ) {
-            return;
+        if ($this->usesBidirectionalUpdates($order->getPayment()->getName())) {
+            $this->orderStatusChangeHandler->informRatepayOfOrderStatusChange($order);
         }
-
-        $this->orderStatusChangeHandler->informRatepayOfOrderStatusChange($order);
     }
 
     /**
      * Handler for saving in the batch processing dialog box for orders.
      *
-     * @param Enlight_Hook_HookArgs $arguments
-     * @throws Exception
+     * @param \Enlight_Hook_HookArgs $arguments
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws \Zend_Db_Adapter_Exception
      */
     public function afterOrderBatchProcess(\Enlight_Hook_HookArgs $arguments)
     {
@@ -102,6 +104,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
         }
 
         foreach ($orders as $order) {
+            /* @var \Shopware\Models\Order\Order $order */
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $order['id']);
             $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
             if (!in_array($order->getPayment()->getName(), $paymentMethods)) {
@@ -113,11 +116,10 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
     }
 
 
-
     /**
      * Stops Order deletion, when its not permitted
      *
-     * @param Enlight_Hook_HookArgs $arguments
+     * @param \Enlight_Hook_HookArgs $arguments
      * @return bool
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
@@ -205,5 +207,17 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
                 $arguments->stop();
             }
         }
+    }
+
+    /**
+     * @param $paymentName
+     * @return bool
+     */
+    public function usesBidirectionalUpdates($paymentName)
+    {
+        $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+
+        return $config->get('RatePayBidirectional') && in_array($paymentName, $paymentMethods);
     }
 }

@@ -173,10 +173,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      *
      * @param bool $countryCode
      * @return \RatePAY\ModelBuilder
+     * @throws \RatePAY\Exception\ModelException
      */
     private function getHead($countryCode = false) {
-        $systemId = $this->getSystemId();
-        $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+            $systemId = $this->getSystemId();
+            $bootstrap = new \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
 
         $head = [
             'SystemId' => $systemId,
@@ -429,15 +430,16 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         return $paymentDetails;
     }
 
-    /**
-     * @param $operationData
-     * @return bool|array
-     */
-    private function callProfileRequest($operationData)
-    {
-        $systemId = $this->getSystemId();
-        $sandbox = true;
-        $bootstrap = new Shopware_Plugins_Frontend_RpayRatePay_Bootstrap();
+        /**
+         * @param $operationData
+         * @return bool|array
+         * @throws \RatePAY\Exception\ModelException
+         */
+        private function callProfileRequest($operationData)
+        {
+            $systemId = $this->getSystemId();
+            $sandbox = true;
+            $bootstrap = new \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
 
         if (strpos($operationData['profileId'], '_TE_')) {
             $sandbox = true;
@@ -807,94 +809,95 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
     }
 
     /**
-         * @return bool
-         */
-        private function isNetPriceAllowed()
-        {
-            $net = false;
-            if (empty($this->_orderId)) {
+     * @return bool
+     */
+    private function isNetPriceAllowed()
+    {
+        $net = false;
+        if (empty($this->_orderId)) {
 //                $system = Shopware()->System();
 //                $groupKey = $system->sUSERGROUP;
-                return $net;
-            }
-
-            $user = Shopware()->Db()->fetchRow('
-                    SELECT * FROM s_order
-                    WHERE ordernumber = ?
-                ', $this->_orderId);
-            $userGroupId = Shopware()->Db()->fetchRow('
-                    SELECT * FROM s_user
-                    WHERE id = ?
-                ', $user['userID']);
-
-            $groupKey = $userGroupId['customergroup'];
-
-            $b2b = Shopware()->Db()->fetchRow('
-                SELECT company FROM s_user_billingaddress
-                WHERE userID = ?
-            ', $user['userID']);
-
-            $userGroup = Shopware()->Db()->fetchRow('
-                SELECT * FROM s_core_customergroups
-                WHERE groupkey = ?
-            ', [$groupKey]);
-
-            if ((int)$userGroup['tax'] === 0 && !empty($b2b['company'])) {
-                $net = true;
-            }
-
             return $net;
         }
 
-        /**
-         * @param array $shippingData
-         * @param bool $useFallbackShipping
-         * @return array
-         */
-        private function getShippingItemData(PaymentRequestData $shippingData, $useFallbackShipping = false)
-        {
-            $item = [
-                'Description' => 'Shipping costs',
-                'UnitPriceGross' => $shippingData->getShippingCost(),
-                'TaxRate' => $shippingData->getShippingTax(),
-            ];
+        $user = Shopware()->Db()->fetchRow('
+                SELECT * FROM s_order
+                WHERE ordernumber = ?
+            ', $this->_orderId);
+        $userGroupId = Shopware()->Db()->fetchRow('
+                SELECT * FROM s_user
+                WHERE id = ?
+            ', $user['userID']);
 
-            if ($useFallbackShipping) {
-                $item['ArticleNumber'] = 'shipping';
-                $item['Quantity'] = 1;
-                $item['Description'] = 'shipping';
-            }
+        $groupKey = $userGroupId['customergroup'];
 
-            $system = Shopware()->System();
-            $userGroup = Shopware()->Db()->fetchRow('
-                SELECT * FROM s_core_customergroups WHERE groupkey = ?
-            ', [$system->sUSERGROUP]);
-            if ($userGroup['tax'] == 0) {
-                $cost = $item['UnitPriceGross'];
-                $tax = $item['TaxRate'];
-                $item['UnitPriceGross'] = number_format($cost / 100 * $tax +  $cost , 2);
-            }
+        $b2b = Shopware()->Db()->fetchRow('
+            SELECT company FROM s_user_billingaddress
+            WHERE userID = ?
+        ', $user['userID']);
 
-            return $item;
+        $userGroup = Shopware()->Db()->fetchRow('
+            SELECT * FROM s_core_customergroups
+            WHERE groupkey = ?
+        ', [$groupKey]);
+
+        if ((int)$userGroup['tax'] === 0 && !empty($b2b['company'])) {
+            $net = true;
         }
 
-        /**
-         * @param null $orderId
-         * @return mixed
-         * @throws Zend_Db_Statement_Exception
-         */
-        private function usesShippingItemFallback($orderId = null)
-        {
-            $configured = !!(Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()
-                ->get('RatePayUseFallbackShippingItem'));
+        return $net;
+    }
 
-            if (!$orderId) {
-                return $configured;
+    /**
+     * @param array $shippingData
+     * @param bool $useFallbackShipping
+     * @return array
+     */
+    private function getShippingItemData(PaymentRequestData $shippingData, $useFallbackShipping = false)
+    {
+        $item = [
+            'Description' => 'Shipping costs',
+            'UnitPriceGross' => $shippingData->getShippingCost(),
+            'TaxRate' => $shippingData->getShippingTax(),
+        ];
+
+        if ($useFallbackShipping) {
+            $item['ArticleNumber'] = 'shipping';
+            $item['Quantity'] = 1;
+            $item['Description'] = 'shipping';
+        }
+
+        $system = Shopware()->System();
+        $userGroup = Shopware()->Db()->fetchRow('
+            SELECT * FROM s_core_customergroups WHERE groupkey = ?
+        ', [$system->sUSERGROUP]);
+        if ($userGroup['tax'] == 0) {
+            $cost = $item['UnitPriceGross'];
+            $tax = $item['TaxRate'];
+            $item['UnitPriceGross'] = number_format($cost / 100 * $tax +  $cost , 2);
+        }
+
+        return $item;
+    }
+
+    /**
+     * @param null $orderId
+     * @return mixed
+     * @throws Zend_Db_Statement_Exception
+     */
+    private function usesShippingItemFallback($orderId = null)
+    {
+        $configured = !!(Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()
+            ->get('RatePayUseFallbackShippingItem'));
+
+        if (!$orderId) {
+            return $configured;
 //                return boolval($result['ratepay_fallback_shipping']);
-            }
+        }
 
-            $query = "SELECT ratepay_fallback_shipping FROM `s_order_attributes` WHERE orderID = ?";
-            $result = Shopware()->Db()->executeQuery($query, [$orderId])->fetch()["ratepay_fallback_shipping"];
+        $query = "SELECT ratepay_fallback_shipping FROM `s_order_attributes` WHERE orderID = ?";
+        $result = Shopware()->Db()->executeQuery($query, [$orderId])->fetch()["ratepay_fallback_shipping"];
 
-            return is_null($result) ? false : (boolval($result) || $configured);
-        }}
+        return is_null($result) ? false : (boolval($result) || $configured);
+    }
+}
