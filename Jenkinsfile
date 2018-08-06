@@ -36,8 +36,8 @@ pipeline {
         stage('Report') {
             steps {
                 echo "[STAGE] Report"
-                checkstyle canComputeNew: false, defaultEncoding: '', healthy: '', pattern: 'build/logs/checkstyle.xml', unHealthy: ''
-                pmd canComputeNew: false, defaultEncoding: '', healthy: '', pattern: 'build/logs/pmd.xml', unHealthy: ''
+                // checkstyle canComputeNew: false, defaultEncoding: '', healthy: '', pattern: 'build/logs/checkstyle.xml', unHealthy: ''
+                // pmd canComputeNew: false, defaultEncoding: '', healthy: '', pattern: 'build/logs/pmd.xml', unHealthy: ''
                 // junit 'build/junit.xml'
             }
         }
@@ -45,12 +45,10 @@ pipeline {
             agent { label "master" }
             steps {
                 script {
-                    withSonarQubeEnv('SonarQube_local') {
-                        sh '''sonar-scanner \
-                            -Dsonar.projectKey=devmo-shopware5-module \
-                            -Dsonar.sources=./ \
-                            -Dsonar.host.url=$SONAR_HOST_URL \
-                            -Dsonar.login=$SONAR_AUTH_TOKEN'''
+                    def scannerHome = tool name: 'SonarQube Scanner 3.0.1', type: 'hudson.plugins.sonar.SonarRunnerInstallation';
+                    echo "scannerHome = $scannerHome ...."
+                    withSonarQubeEnv() {
+                        sh "$scannerHome/bin/sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN"
                     }
                 }
             }

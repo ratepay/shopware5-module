@@ -5,8 +5,11 @@
  * Date: 12.06.18
  * Time: 13:49
  */
+namespace RpayRatePay\Bootstrapping;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup extends Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Bootstrapper
+use RpayRatePay\Bootstrapping\Bootstrapper;
+
+class PaymentsSetup extends Bootstrapper
 {
     /**
      * @throws Exception
@@ -18,7 +21,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_PaymentsSetup extends 
                 $payment['pluginID'] = $this->bootstrap->getId();
                 $this->bootstrap->createPayment($payment);
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->bootstrap->uninstall();
             throw new Exception("Can not create payment." . $exception->getMessage());
         }

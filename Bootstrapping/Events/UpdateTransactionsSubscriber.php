@@ -1,6 +1,7 @@
 <?php
+namespace RpayRatePay\Bootstrapping\Events;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
+class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
 {
 
     const JOB_NAME = 'Shopware_Cronjob_UpdateRatepayTransactions';
@@ -13,14 +14,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransacti
     }
 
     /**
-     * Eventlistener for frontendcontroller
+     * EventListener for frontend controller
      *
-     * @param Shopware_Components_Cron_CronJob $arguments
+     * @param \Shopware_Components_Cron_CronJob $job
      *
      * @return string
      * @throws Exception
      */
-    public function updateRatepayTransactions(Shopware_Components_Cron_CronJob $job)
+    public function updateRatepayTransactions(\Shopware_Components_Cron_CronJob $job)
     {
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
@@ -30,12 +31,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransacti
 
         try {
             $orderIds = $this->findCandidateOrdersForUpdate($config);
-            $orderProcessor = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
+            $orderProcessor = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
             foreach($orderIds as $orderId) {
+                /* @var \Shopware\Models\Order\Order $order */
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
                 $orderProcessor->informRatepayOfOrderStatusChange($order);
             }
-        } catch(Exception $e) {
+        } catch(\Exception $e) {
             Shopware()->Pluginlogger()->error('Fehler UpdateTransactionsSubscriber: ' .
                 $e->getMessage() . ' ' .
                 $e->getTraceAsString());
@@ -60,7 +62,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransacti
      */
     private function findCandidateOrdersForUpdate($config)
     {
-        $paymentMethods = Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         $orderStatus = [
             $config['RatePayFullDelivery'],
             $config['RatePayFullCancellation'],
@@ -88,7 +90,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_UpdateTransacti
                 AND o.status in ('. join(',', $orderStatus) .") 
                 AND oh.change_date >= :changeDate
                 GROUP BY o.id";
-
 
         $rows = Shopware()->Db()->fetchAll($query, [':changeDate' => $changeDate]);
 
