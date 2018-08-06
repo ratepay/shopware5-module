@@ -191,7 +191,10 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
                 $items['Shipping']['tax_rate'] = $taxRate;
             }
 
-            $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+            $attributes = $order->getAttribute();
+            $backend = (bool)($attributes->getRatepayBackend());
+
+            $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
             $modelFactory->setTransactionId($parameter['transactionId']);
             $modelFactory->setTransactionId($order->getTransactionID());
             $operationData['orderId'] = $order->getId();

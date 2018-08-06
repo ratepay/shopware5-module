@@ -7,6 +7,7 @@
  */
 namespace RpayRatePay\Bootstrapping;
 
+use Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util as Util;
 use RpayRatePay\Bootstrapping\Bootstrapper;
 
 class DatabaseSetup extends Bootstrapper
@@ -37,8 +38,8 @@ class DatabaseSetup extends Bootstrapper
     public function uninstall()
     {
         try {
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_logging`");
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config`");
+            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_logging`");
+            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config`");
 
             /*
              * These tables are not deleted. This makes possible to manage the
@@ -48,10 +49,10 @@ class DatabaseSetup extends Bootstrapper
              * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_shipping`");
              */
 
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
-        } catch (\Exception $exception) {
+            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
+            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
+            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
+        } catch (Exception $exception) {
             throw new Exception('Can not delete RatePAY tables - ' . $exception->getMessage());
         }
     }
@@ -100,7 +101,7 @@ class DatabaseSetup extends Bootstrapper
 
     private function removeSandboxColumns()
     {
-        if ($this->checkIfColumnExists('s_core_config_elements', 'RatePaySandboxDE')) {
+        if (Util::tableHasColumn('s_core_config_elements', 'RatePaySandboxDE')) {
             try {
                 Shopware()->Db()->query(
                     "DELETE FROM `s_core_config_elements` WHERE `s_core_config_elements`.`name` LIKE 'RatePaySandbox%'"
@@ -109,26 +110,5 @@ class DatabaseSetup extends Bootstrapper
                 throw new Exception("Can't remove Sandbox fields` - " . $exception->getMessage());
             }
         }
-    }
-
-    /**
-     * Checks if column exists
-     *
-     * @param string $table
-     * @param string $column
-     * @throws Exception
-     * @return bool
-     */
-    private function checkIfColumnExists($table, $column)
-    {
-        try {
-            $columnExists = Shopware()->Db()->fetchRow(
-                "SHOW COLUMNS FROM `" . $table . "` LIKE '" . $column . "'"
-            );
-        } catch (\Exception $exception) {
-            throw new Exception("Can not enter table " . $table . " - " . $exception->getMessage());
-        }
-
-        return (bool) $columnExists;
     }
 }

@@ -14,7 +14,7 @@ class AdditionalOrderAttributeSetup extends Bootstrapper
     public function install()
     {
         // Attribute management for Shopware 5.0.x - 5.1.x
-        if (!$this->assertMinimumVersion('5.2.0')) {
+        if (!$this->assertMinimumVersion('5.2.2')) {
             $this->bootstrap->Application()->Models()->addAttribute(
                 's_order_attributes',
                 'ratepay',
@@ -23,9 +23,18 @@ class AdditionalOrderAttributeSetup extends Bootstrapper
                 true,
                 0
             );
+            $this->bootstrap->Application()->Models()->addAttribute(
+                's_order_attributes',
+                'ratepay',
+                'backend',
+                'TINYINT(1)',
+                false,
+                0
+            );
         } else {
             $attributeService = $this->bootstrap->get('shopware_attribute.crud_service');
             $attributeService->update('s_order_attributes', 'ratepay_fallback_shipping', 'boolean');
+            $attributeService->update('s_order_attributes', 'ratepay_backend', 'boolean');
         }
 
         $this->bootstrap->get('models')->generateAttributeModels([
@@ -35,10 +44,6 @@ class AdditionalOrderAttributeSetup extends Bootstrapper
 
     public function update()
     {
-        if ($this->fallbackShippingColumnExists()) {
-            return;
-        }
-
         $this->install();
     }
 
@@ -48,30 +53,26 @@ class AdditionalOrderAttributeSetup extends Bootstrapper
         // $service->delete('s_articles_attributes', 'my_column');
     }
 
-    private function fallbackShippingColumnExists()
-    {
-        $query = '
-            SELECT * 
-            FROM information_schema.COLUMNS 
-            WHERE TABLE_NAME = \'s_order_attributes\' 
-            AND COLUMN_NAME = \'ratepay_fallback_shipping\'
-        ';
-
-        $result = Shopware()->Db()->query($query)->fetchAll();
-        return !empty($result);
-    }
-
     /**
      * @param $version
      * @return bool
      */
     private function assertMinimumVersion($version)
     {
-        $expected = explode('.', $version);
-        $configured = explode('.', Shopware()->Config()->version);
+        $sExpected = explode('.', $version);
+        $expected = array_map('intval', $sExpected);
+        $sConfigured = explode('.', Shopware()->Config()->version);
+        $configured = array_map('intval', $sConfigured);
 
-        return ($expected[0] >= $configured[0])
-            && ($expected[1] >= $configured[1])
-            && ($expected[2] >= $configured[2]);
+
+        for ($i=0; $i<3; $i++) {
+            if ($expected[$i] < $configured[$i])
+                return true;
+
+            if ($expected[$i] > $configured[$i])
+                return false;
+        }
+
+        return true;
     }
 }

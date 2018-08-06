@@ -26,21 +26,12 @@ class OrderDetailsProcessSubscriber implements \Enlight\Event\SubscriberInterfac
     public function insertRatepayPositions(\Enlight_Event_EventArgs $arguments)
     {
         $orderNumber = $arguments->getSubject()->sOrderNumber;
+        $order = Shopware()->Models()->getRepository('\Shopware\Models\Order\Order')
+            ->findOneBy(['number' => $orderNumber]);
 
         if ($this->isRatePayPayment($orderNumber)) {
-            $sql = "SELECT `id` FROM `s_order_details` WHERE `ordernumber`=?;";
-            $rows = Shopware()->Db()->fetchAll($sql, array($orderNumber));
-            $values = "";
-            foreach ($rows as $row) {
-                $values .= "(" . $row['id'] . "),";
-            }
-            $values = substr($values, 0, -1);
-            $sqlInsert = "INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES " . $values;
-            try {
-                Shopware()->Db()->query($sqlInsert);
-            } catch (\Exception $exception) {
-                Shopware()->Pluginlogger()->error($exception->getMessage());
-            }
+            $paymentProcessor = new \RpayRatePay\Component\Service\PaymentProcessor(Shopware()->Db());
+            $paymentProcessor->insertRatepayPositions($order);
         }
 
         return $orderNumber;
