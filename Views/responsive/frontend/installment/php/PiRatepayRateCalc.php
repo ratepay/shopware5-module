@@ -161,6 +161,7 @@
 
             $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
             $netPrices = ! $customer->getGroup()->getTax();
+
             $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
 
             $user = Shopware()->Session()->sOrderVariables['sUserData'];
@@ -176,7 +177,7 @@
             $operationData['payment']['rate'] = $this->getRequestCalculationValue();
             $operationData['subtype'] = $subtype;
 
-            $result = $modelFactory->callRequest('CalculationRequest', $operationData);
+            $result = $modelFactory->callCalculationRequest($operationData);
 
             if ($result->isSuccessful()) {
                     $resultArray = $result->getResult();

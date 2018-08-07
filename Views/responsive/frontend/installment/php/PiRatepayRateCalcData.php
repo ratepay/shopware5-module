@@ -165,7 +165,7 @@
         {
             $basket = Shopware()->Session()->sOrderVariables['sBasket'];
 
-            return $basket['AmountNumeric'];
+            return $basket['AmountWithTaxNumeric'];
         }
 
         /**

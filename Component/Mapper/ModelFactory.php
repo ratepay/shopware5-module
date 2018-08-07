@@ -131,7 +131,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         }
     }
 
-    private function callCalculationRequest($operationData) {
+    public function callCalculationRequest($operationData) {
         $mbHead = $this->getHead();
         $mbContent = new RatePAY\ModelBuilder('Content');
 
