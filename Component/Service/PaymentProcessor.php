@@ -108,8 +108,9 @@ class PaymentProcessor
      */
     public function sendPaymentConfirm($transactionId, $order, $backend = false)
     {
+        $netPrices = $order->getNet() === 1;
         $countryCode = PaymentRequestData::findCountryISO($order->getBilling());
-        $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
+        $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices);
         $modelFactory->setTransactionId($transactionId);
         $modelFactory->setOrderId($order->getNumber());
         $modelFactory->callPaymentConfirm($countryCode);

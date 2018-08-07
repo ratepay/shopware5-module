@@ -18,6 +18,7 @@
      * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
      */
 
+use RatePAY\Service\Util;
 use RpayRatePay\Component\Service\SessionLoader;
 use Shopware\Components\CSRFWhitelistAware;
 use \RpayRatePay\Component\Service\PaymentProcessor;
@@ -41,12 +42,24 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
     {
         $Parameter = $this->Request()->getParams();
 
-        if (!isset(Shopware()->Session()->sUserId) && !isset($Parameter['userid'])) {
+        $customerId = null;
+
+        if (isset($Parameter['userid'])) {
+            $customerId = $Parameter['userid'];
+        } else if (isset(Shopware()->Session()->sUserId)) {
+            $customerId = Shopware()->Session()->sUserId;
+        }
+
+        if ($customerId === null) {
             return "RatePAY frontend controller: No user set";
         }
 
+        $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $customerId);
+
+        $netPrices = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::customerCreatesNetOrders($customer);
+
         $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-        $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+        $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
         $this->_logging      = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
     }
 
@@ -186,7 +199,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
     private function _proceedPayment()
     {
 
-        $resultRequest = $this->_modelFactory->callRequest('PaymentRequest');
+        $resultRequest = $this->_modelFactory->callPaymentRequest();
 
         if ($resultRequest->isSuccessful()) {
             $paymentProcessor = new PaymentProcessor(Shopware()->Db());

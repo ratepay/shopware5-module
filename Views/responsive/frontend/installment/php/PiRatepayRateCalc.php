@@ -158,8 +158,10 @@
                 $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
                 $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
             }
-            
-            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+
+            $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
+            $netPrices = ! $customer->getGroup()->getTax();
+            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
 
             $user = Shopware()->Session()->sOrderVariables['sUserData'];
             if (!empty($user['additional']['payment']['name'])) {

@@ -203,6 +203,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $head['External']['OrderId'] = $this->_orderId;
         }
 
+        //side effect
         $this->_sandboxMode = $this->getSandboxMode($countryCode);
 
         $mbHead = new \RatePAY\ModelBuilder('head');

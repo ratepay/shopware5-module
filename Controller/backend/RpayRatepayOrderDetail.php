@@ -29,6 +29,7 @@
          * index action is called if no other action is triggered
          *
          * @return void
+         * @throws \Exception
          */
         public function init()
         {
@@ -37,14 +38,14 @@
             if(null !== $orderId)
             {
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
-                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
 
                 $attributes = $order->getAttribute();
                 $backend = (bool)($attributes->getRatepayBackend());
-                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
+                $netPrices = $order->getNet() === 1;
+                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config, $backend, $netPrices);
             } else {
-                //TODO: this must actually be an error, I believe
-                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+                throw new \Exception('RatepayOrderDetail controller requires parameter orderId');
+                //$this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             }
             $this->_history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
         }
@@ -55,7 +56,7 @@
         public function initPositionsAction()
         {
             $articleNumbers = json_decode($this->Request()->getParam('articleNumber'));
-            $orderID = $this->Request()->getParam('orderID');
+            $orderID = $this->Request()->getParam('orderId');
             $success = true;
             $bindings = array($orderID);
             $bind = '';

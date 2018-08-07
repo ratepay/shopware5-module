@@ -194,7 +194,9 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
             $attributes = $order->getAttribute();
             $backend = (bool)($attributes->getRatepayBackend());
 
-            $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
+            $netPrices = $order->getNet() === 1;
+
+            $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices);
             $modelFactory->setTransactionId($parameter['transactionId']);
             $modelFactory->setTransactionId($order->getTransactionID());
             $operationData['orderId'] = $order->getId();
