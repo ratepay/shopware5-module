@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version 5.1.1 - Released 2018-08-08
+* hotfix plugin update function 
+
 ### Version 5.1.0 - Released 2018-08-02
 * add compatibility to PHP-7.2
 * frontend changes on checkout/payment pages
