@@ -84,7 +84,7 @@ class ShopConfigSetup extends Bootstrapper
      */
     private function getRatepayConfig($profileId, $securityCode, $shopId, $country)
     {
-        $factory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+        $factory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
         $data = array(
             'profileId' => $profileId,
             'securityCode' => $securityCode
