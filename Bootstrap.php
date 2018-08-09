@@ -148,7 +148,7 @@
                 new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
                 new \RpayRatePay\Bootstrapping\TranslationsSetup($this),
                 new \RpayRatePay\Bootstrapping\PaymentsSetup($this),
-                // new \RpayRatePay\Bootstrapping\ShopConfigSetup($this),
+                new \RpayRatePay\Bootstrapping\ShopConfigSetup($this),
                 new \RpayRatePay\Bootstrapping\CronjobSetup($this),
                 new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
             ];
