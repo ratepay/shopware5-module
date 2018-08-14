@@ -16,9 +16,6 @@
     class PiRatepayRateCalc extends PiRatepayRateCalcBase
     {
 
-        //SimpleXML Object
-        private $ratepay;
-
         //Installment Details
 
         /**
@@ -30,12 +27,13 @@
         }
 
         /**
-         * This method send's the conig request to RatePAY or set's a error message
+         * This method send's the config request to RatePAY or set's a error message
          * and returns the config details
          *
+         * @deprecated use ConfigLoader for all loading of Configs
          * @return array $installmentConfigArray
          */
-        public function getRatepayRateConfig()
+        public function getRatepayRateConfig($backend = false)
         {
             $paymentType = $_SESSION['Shopware']['sOrderVariables']['sUserData']['additional']['payment']['name'];
             if ($paymentType == 'rpayratepayrate') {
@@ -51,12 +49,14 @@
             $countryIso = $country->getIso();
             $basketAmount = $this->getRequestAmount();
 
+            $sBackend = $backend ? 1 : 0;
             $qry = "SELECT rrci.`month-allowed`, rrci.`rate-min-normal`, rrci.`interestrate-default`, rrci.`payment-firstday`
                     FROM `rpay_ratepay_config_installment` AS rrci
                       JOIN `rpay_ratepay_config` AS rrc
                         ON rrci.`rpay_id` = rrc.`" . $paymentType . "`
                     WHERE rrc.`shopId` = " . $shopId . "
-                    AND rrc.`country-code-billing` LIKE '%" . $countryIso . "%'";
+                    AND rrc.`country-code-billing` LIKE '%" . $countryIso . "%'
+                    AND rrc.backend = $sBackend;";
 
             //get ratepay config based on shopId
             $rpRateConfig=Shopware()->Db()->fetchRow($qry);
@@ -158,8 +158,11 @@
                 $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
                 $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
             }
-            
-            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+
+            $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
+            $netPrices = ! $customer->getGroup()->getTax();
+
+            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
 
             $user = Shopware()->Session()->sOrderVariables['sUserData'];
             if (!empty($user['additional']['payment']['name'])) {
@@ -174,7 +177,7 @@
             $operationData['payment']['rate'] = $this->getRequestCalculationValue();
             $operationData['subtype'] = $subtype;
 
-            $result = $modelFactory->callRequest('CalculationRequest', $operationData);
+            $result = $modelFactory->callCalculationRequest($operationData);
 
             if ($result->isSuccessful()) {
                     $resultArray = $result->getResult();

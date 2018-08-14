@@ -8,6 +8,8 @@
 
 // namespace RpayRatePay\Component\Mapper;
 
+use RatePAY\Service\Math;
+
 class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
 {
     /**
@@ -28,19 +30,19 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     /**
      * @var bool
      */
-    protected $allowNetPrice;
+    protected $netItemPrices;
 
     /**
      * @var bool
      */
     protected $useFallbackShipping;
 
-    public function __construct($withRetry = false, $requestType = null, $allowNetPrice = false, $useFallbackShipping = false)
+    public function __construct($withRetry = false, $requestType = null, $netItemPrices = false, $useFallbackShipping = false)
     {
         $this->basket = [];
         $this->withRetry = $withRetry;
         $this->requestType = $requestType;
-        $this->allowNetPrice = $allowNetPrice;
+        $this->netItemPrices = $netItemPrices;
         $this->useFallbackShipping = $useFallbackShipping;
     }
 
@@ -51,6 +53,7 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
 
     /**
      * @param $item
+     * @deprecated this is an anti-pattern
      */
     public function addItem($item)
     {
@@ -79,18 +82,16 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
             return;
         }
 
+        $swPrice = $item['priceNumeric'];
+        $unitPriceGross = $this->netItemPrices ? Math::netToGross($swPrice, $item['tax_rate']) : $swPrice;
+
         $itemData = [
             'Description' => $item['articlename'],
-            'ArticleNumber' => $item['ordernumber'],
+            'ArticleNumber' => $item['ordernumber'], //this looks like a strange key, but is correct in shopware session
             'Quantity' => $item['quantity'],
-            'UnitPriceGross' => $item['priceNumeric'],
+            'UnitPriceGross' => $unitPriceGross,
             'TaxRate' => $item['tax_rate'],
         ];
-
-        if ($this->allowNetPrice) {
-             $price = $item['priceNumeric'] / 100 * $item['tax_rate'] + $item['priceNumeric'];
-             $itemData['UnitPriceGross'] = $item['priceNumeric'];
-        }
 
         $this->basket['Items'][] = ['Item' => $itemData];
     }
@@ -172,7 +173,9 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
             return;
         }
 
-        $itemData = null;
+        $swPrice = $item->price;
+        $unitPriceGross = $this->netItemPrices ? Math::netToGross($swPrice, $item->taxRate) : $swPrice;
+
         if (!$this->itemObjectHasName($item)) {
             $itemData = $this->getUnnamedItem($item);
         } else {
@@ -180,7 +183,7 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
                 'Description' => $item->name,
                 'ArticleNumber' => $item->articlenumber,
                 'Quantity' => $item->quantity,
-                'UnitPriceGross' => $item->price,
+                'UnitPriceGross' => $unitPriceGross,
                 'TaxRate' => $item->taxRate,
             );
         }
@@ -201,17 +204,22 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function getUnnamedItem($item)
     {
+
+        $swPrice = $item->getPrice();
+        $unitPriceGross = $this->netItemPrices ? Math::netToGross($swPrice, $item->taxRate) : $swPrice;
+
         $itemData = [
             'Description' => $item->getArticleName(),
             'ArticleNumber' => $item->getArticleNumber(),
             'Quantity' => $item->getQuantity(),
-            'UnitPriceGross' => $item->getPrice(),
+            'UnitPriceGross' => $unitPriceGross,
             'TaxRate' => $item->getTaxRate(),
         ];
 
-        if ($this->allowNetPrice) {
-            $itemData['UnitPriceGross'] = $item->getNetPrice();
-        }
+        //?
+        //if ($this->netItemPrices) {
+        //    $itemData['UnitPriceGross'] =    // $item->getNetPrice();
+        //}
 
         $this->requestType = false;
         return $itemData;
@@ -268,7 +276,16 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function hasNoQuantity($item)
     {
-        return 0 == $item->getQuantity() || 0 == $item->quantity;
+        if (method_exists($item, 'getQuantity') &&
+            $item->getQuantity() == 0) {
+            return true;
+        }
+
+        if ($item->quantity == 0) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

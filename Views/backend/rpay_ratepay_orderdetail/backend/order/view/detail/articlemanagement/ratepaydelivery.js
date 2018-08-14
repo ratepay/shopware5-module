@@ -485,7 +485,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             method: 'POST',
             async: false,
             params: {
-                orderID: id,
+                orderId: id,
                 articleNumber: Ext.JSON.encode(articleNumber)
             },
             success: function (payload) {

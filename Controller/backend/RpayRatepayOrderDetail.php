@@ -29,6 +29,7 @@
          * index action is called if no other action is triggered
          *
          * @return void
+         * @throws \Exception
          */
         public function init()
         {
@@ -37,15 +38,14 @@
             if(null !== $orderId)
             {
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
-                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config);
-                //get user of current order and set sandbox mode
-                $orderUser    = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $order->getCustomer()->getId());
-                $orderCountry = Shopware()->Models()->find(
-                    'Shopware\Models\Country\Country',
-                    $orderUser->getBilling()->getCountryId()
-                );
+
+                $attributes = $order->getAttribute();
+                $backend = (bool)($attributes->getRatepayBackend());
+                $netPrices = $order->getNet() === 1;
+                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config, $backend, $netPrices);
             } else {
-                $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
+                throw new \Exception('RatepayOrderDetail controller requires parameter orderId');
+                //$this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             }
             $this->_history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
         }
@@ -56,9 +56,11 @@
         public function initPositionsAction()
         {
             $articleNumbers = json_decode($this->Request()->getParam('articleNumber'));
-            $orderID = $this->Request()->getParam('orderID');
+            $orderID = $this->Request()->getParam('orderId');
             $success = true;
             $bindings = array($orderID);
+            $bind = '';
+            $values = '';
             foreach (array_unique($articleNumbers) as $articleNumber) {
                 $sqlCountEntrys = "SELECT `id`, COUNT(*) AS 'count', SUM(`quantity`) AS 'quantity' FROM `s_order_details` "
                                   . "WHERE `orderID`=? "
@@ -170,7 +172,6 @@
             $this->_modelFactory->setOrderId($order->getNumber());
             $itemsToDeliver = null;
 
-            $basketItems = array();
             $sendItem = true;
             foreach ($items as $item) {
                 $itemsToDeliver += $item->deliveredItems;
@@ -365,15 +366,18 @@
             $orderItems = Shopware()->Db()->fetchAll("SELECT *, (`quantity` - `delivered` - `cancelled`) AS `quantityDeliver` FROM `s_order_details` "
                                                      . "INNER JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
                                                      . "WHERE `orderID`=?", array($orderId));
+            
             foreach ($orderItems as $row) {
                 if ($row['quantityDeliver'] == 0) {
                     continue;
                 }
+
                 if ((substr($row['articleordernumber'], 0, 5) == 'Debit')
                     || (substr($row['articleordernumber'], 0, 6) == 'Credit')
                 ) {
                     $onlyDebit = false;
                 }
+
                 $items = $row;
             }
 
@@ -388,7 +392,18 @@
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'credit';
                 $this->_modelFactory->setOrderId($order['ordernumber']);
-                $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
+
+                $rpRate = Shopware()->Db()->fetchRow("SELECT id FROM `s_core_paymentmeans` WHERE `name`=?", array('rpayratepayrate'));
+                $rpRate0 = Shopware()->Db()->fetchRow("SELECT id FROM `s_core_paymentmeans` WHERE `name`=?", array('rpayratepayrate0'));
+
+                if(
+                    $subOperation === 'debit' &&
+                    ($order['paymentID'] == $rpRate['id'] || $order['paymentID'] == $rpRate0['id'])
+                ) {
+                    $result = false;
+                } else {
+                    $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
+                }
 
                 if ($result === true) {
                     if ($subOperation === 'credit' || $subOperation === 'debit') {
@@ -397,9 +412,7 @@
                         } else {
                             $event = 'Nachlass wurde hinzugefügt';
                         }
-                        $bind = array(
-                            'delivered' => 1
-                        );
+                        $bind = array('delivered' => 1);
                     } else {
                         $event = 'Artikel wurde hinzugefügt';
                     }
@@ -416,7 +429,9 @@
                     }
                 }
             }
+
             $this->setNewOrderState($orderId);
+
             $this->View()->assign(array(
                     "result"  => $result,
                     "success" => true

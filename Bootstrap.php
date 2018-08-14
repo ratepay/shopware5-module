@@ -43,13 +43,13 @@
 
         public function afterInit()
         {
-            $this->get('Loader')->registerNamespace(
-                'RpayRatePay\\Bootstrapping', $this->Path() . 'Bootstrapping/'
-            );
+            $loader = $this->get('Loader');
 
-            $this->get('Loader')->registerNamespace(
-                'RatePAY', $this->Path() . 'Component/Library/src/'
-            );
+            //Plugin
+            $loader->registerNamespace('RpayRatePay', $this->Path() . '/');
+
+            //library
+            $loader->registerNamespace('RatePAY', $this->Path() . 'Component/Library/src/');
         }
 
         /**
@@ -74,7 +74,7 @@
          * @return mixed
          * @throws Exception
          */
-        public function getPCConfig()
+        public static function getPCConfig()
         {
             $info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .'plugin.json'), true);
             if ($info) {
@@ -230,6 +230,8 @@
                 new \RpayRatePay\Bootstrapping\Events\JavascriptSourceSubscriber($this->Path()),
                 new \RpayRatePay\Bootstrapping\Events\OrderViewExtensionSubscriber($this->Path()),
                 new \RpayRatePay\Bootstrapping\Events\UpdateTransactionsSubscriber(),
+                new \RpayRatePay\Bootstrapping\Events\BackendOrderControllerSubscriber($this->Path()),
+                new \RpayRatePay\Bootstrapping\Events\BackendOrderViewExtensionSubscriber($this->Path()),
             ];
 
             foreach ($subscribers as $subscriber) {

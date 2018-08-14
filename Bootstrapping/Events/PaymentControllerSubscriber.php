@@ -44,10 +44,7 @@ class PaymentControllerSubscriber implements \Enlight\Event\SubscriberInterface
         return $this->path . 'Controller/frontend/RpayRatepay.php';
     }
 
-    /**
-     * @param bool $isBackend
-     */
-    protected function registerMyTemplateDir($isBackend = false)
+    protected function registerMyTemplateDir()
     {
         Shopware()->Template()->addTemplateDir($this->path . 'Views/responsive', 'rpay');
     }

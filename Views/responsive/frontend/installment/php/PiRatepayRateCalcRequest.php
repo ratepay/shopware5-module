@@ -78,6 +78,7 @@
 
     $pi_amount = number_format($pi_amount, 2, $pi_decimalSeperator, $pi_thousandSeperator);
     if ($pi_calculator->getErrorMsg() != '') {
+       // echo "<h1>" . $pi_calculator->getErrorMsg() . "</h1>"; TODO, fix empty error messages
         if ($pi_calculator->getErrorMsg() == 'serveroff') {
             echo "<div class='pirperror' id='pirperror'>" . $pi_lang_error . ":&nbsp;&nbsp;" . $pi_lang_server_off . "</div>";
         }

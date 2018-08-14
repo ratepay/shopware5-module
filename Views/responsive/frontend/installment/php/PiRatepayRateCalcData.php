@@ -19,6 +19,7 @@
         /**
          * This method get the RatePAY profile-id and has to be rewritten
          *
+         * @deprecated
          * @return string
          */
         public function getProfileId()
@@ -164,7 +165,13 @@
         {
             $basket = Shopware()->Session()->sOrderVariables['sBasket'];
 
-            return $basket['AmountNumeric'];
+            $amountNumeric = $basket['AmountNumeric'];
+            $amountWithTaxNumeric  =  $basket['AmountWithTaxNumeric']; //set to zero in gross-price shops
+            if ($amountWithTaxNumeric > 0) {
+                return $amountWithTaxNumeric;
+            }
+
+            return $amountNumeric;
         }
 
         /**
@@ -214,6 +221,8 @@
          * @param string $rate
          * @param string $last_rate
          * @param string $payment_firstday
+         *
+         * TODO: use SessionLoader->setInstallmentData
          */
         public function setData($total_amount, $amount, $interest_rate, $interest_amount, $service_charge, $annual_percentage_rate, $monthly_debit_interest, $number_of_rates, $rate, $last_rate, $payment_firstday)
         {

@@ -113,7 +113,7 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
     /**
      * @param bool $isBackend
      */
-    protected function registerMyTemplateDir($isBackend = false)
+    protected function registerMyTemplateDir()
     {
         Shopware()->Template()->addTemplateDir($this->path . 'Views/responsive', 'rpay');
     }
@@ -127,7 +127,7 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
     private function getRatePayPluginConfig($shopId) {
         //get ratepay config based on shopId
         return Shopware()->Db()->fetchRow(
-            'SELECT * FROM `rpay_ratepay_config` WHERE `shopId`=?',
+            'SELECT * FROM `rpay_ratepay_config` WHERE `shopId`=? AND backend=0',
             array($shopId)
         );
     }

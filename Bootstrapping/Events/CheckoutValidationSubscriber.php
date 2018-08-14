@@ -56,11 +56,14 @@ class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
         $userId = Shopware()->Session()->sUserId;
         if (empty($userId)) {
             Shopware()->Pluginlogger()->warning('RatePAY: sUserId is empty');
-
             return;
         }
+
         Shopware()->Template()->addTemplateDir($this->path . 'Views/');
-        $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation([]);
+        $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
+        $paymentType =  Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
+
+        $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user, $paymentType);
 
         if ($validation->isRatePAYPayment()) {
             $view->sRegisterFinished = 'false';

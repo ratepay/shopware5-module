@@ -24,10 +24,10 @@
     "label": "Belgien Security Code"
   },
   "RatePayProfileIDCH": {
-    "label": "Schweitz Profile-ID"
+    "label": "Schweiz Profile-ID"
   },
   "RatePaySecurityCodeCH": {
-    "label": "Schweitz Security Code"
+    "label": "Schweiz Security Code"
   },
   "RatePayBidirectional": {
     "label":"Bidirektionalität aktivieren (Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert)"

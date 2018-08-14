@@ -24,6 +24,10 @@
 
 ## Changelog
 
+### Version 5.2.0 - Released 2018-08-14
+* add ability to create backend orders
+* add system-wide support for customer groups with net prices
+
 ### Version 5.1.1 - Released 2018-08-08
 * hotfix plugin update function 
 
