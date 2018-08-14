@@ -98,7 +98,7 @@ class ValidationLib
         }
 
         if ($b2b)  {
-            if ($configData['b2b'] !== 1) {
+            if ($configData['b2b'] != "1") { //this is a string, for some reason
                 return false;
             }
 

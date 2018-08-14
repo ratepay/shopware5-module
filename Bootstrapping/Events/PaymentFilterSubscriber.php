@@ -103,33 +103,41 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 
             if ($validation->isRatepayHidden()) {
                 $show[$payment] = false;
+                continue;
             }
 
             if (!$validation->isCurrencyValid($currency)) {
                 $show[$payment] = false;
+                continue;
             }
 
             if (!$validation->isBillingCountryValid($countryBilling)) {
                 $show[$payment] = false;
+                continue;
             }
 
             if (!$validation->isDeliveryCountryValid($countryDelivery)) {
                 $show[$payment] = false;
+                continue;
             }
 
             if (!$validation->isBillingAddressSameLikeShippingAddress()) {
-                $show[$payment] = (bool) $data['address'] && $show[$payment];
+                if (!$data['address']) {
+                    $shop[$payment] = false;
+                    continue;
+                }
             }
 
             if (Shopware()->Modules()->Basket()) {
                 $basket = Shopware()->Modules()->Basket()->sGetAmount();
-                $basket = $basket['totalAmount'];
+                $basket = $basket['totalAmount']; //is this always brutto?
 
                 Shopware()->Pluginlogger()->info('BasketAmount: ' . $basket);
                 $isB2b = $validation->isCompanyNameSet();
 
                 if (!ValidationService::areAmountsValid($isB2b,$data, $basket)) {
                     $show[$payment] = false;
+                    continue;
                 }
             }
         }

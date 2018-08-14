@@ -8,6 +8,7 @@
  */
 namespace RpayRatePay\Bootstrapping\Events;
 
+use RatePAY\Service\Util;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\PaymentProcessor;
 
@@ -77,7 +78,8 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
             $paymentRequestData = $this->orderStructToPaymentRequestData($orderStruct, $paymentType, $customer);
 
-            $paymentRequester = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true);
+            $netItemPrices = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::customerCreatesNetOrders($customer);
+            $paymentRequester = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true, $netItemPrices);
 
             $answer = $paymentRequester->callPaymentRequest($paymentRequestData);
 

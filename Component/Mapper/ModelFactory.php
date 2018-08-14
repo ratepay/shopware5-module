@@ -40,11 +40,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
     private $backend;
 
-    public function __construct($config = null, $backend = false)
+    private $netItemPrices;
+
+    public function __construct($config = null, $backend = false, $netItemPrices = false)
     {
         $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
         $this->_config = $config;
         $this->backend = $backend;
+        $this->netItemPrices = $netItemPrices;
     }
 
     public function setOrderId($orderId)
@@ -128,7 +131,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         }
     }
 
-    private function callCalculationRequest($operationData) {
+    public function callCalculationRequest($operationData) {
         $mbHead = $this->getHead();
         $mbContent = new RatePAY\ModelBuilder('Content');
 
@@ -200,6 +203,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $head['External']['OrderId'] = $this->_orderId;
         }
 
+        //side effect
         $this->_sandboxMode = $this->getSandboxMode($countryCode);
 
         $mbHead = new \RatePAY\ModelBuilder('head');
@@ -523,20 +527,18 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      * @return array
      */
     private function createBasketArray($items, $type = false, $orderId = null) {
-                    $netPriceAllowed = $this->isNetPriceAllowed();
 
-        $useFallbackShipping =$this->usesShippingItemFallback($orderId);
-            $basketFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder(
-                $this->_retry ,
+        $useFallbackShipping = $this->usesShippingItemFallback($orderId);
+        $basketFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder(
+            $this->_retry ,
             $type,
-                    $netPriceAllowed,
-                    $useFallbackShipping
-            );
+            $this->netItemPrices,
+            $useFallbackShipping
+        );
 
-            foreach ($items as $shopItem) {
-                        $basketFactory->addItem ($shopItem);
+        foreach ($items as $shopItem) {
+            $basketFactory->addItem($shopItem);
         }
-
 
         return $basketFactory->toArray();
     }
@@ -808,46 +810,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         return $securityCode;
     }
 
-        /**
-         * @return bool
-         */
-        private function isNetPriceAllowed()
-        {
-            $net = false;
-            if (empty($this->_orderId)) {
-//                $system = Shopware()->System();
-//                $groupKey = $system->sUSERGROUP;
-                return $net;
-            }
-
-        $user = Shopware()->Db()->fetchRow('
-                SELECT * FROM s_order
-                WHERE ordernumber = ?
-            ', $this->_orderId);
-        $userGroupId = Shopware()->Db()->fetchRow('
-                SELECT * FROM s_user
-                WHERE id = ?
-            ', $user['userID']);
-
-        $groupKey = $userGroupId['customergroup'];
-
-        $b2b = Shopware()->Db()->fetchRow('
-            SELECT company FROM s_user_billingaddress
-            WHERE userID = ?
-        ', $user['userID']);
-
-        $userGroup = Shopware()->Db()->fetchRow('
-            SELECT * FROM s_core_customergroups
-            WHERE groupkey = ?
-        ', [$groupKey]);
-
-        if ((int)$userGroup['tax'] === 0 && !empty($b2b['company'])) {
-            $net = true;
-        }
-
-        return $net;
-    }
-
     /**
      * @param array $shippingData
      * @param bool $useFallbackShipping
@@ -871,6 +833,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $userGroup = Shopware()->Db()->fetchRow('
             SELECT * FROM s_core_customergroups WHERE groupkey = ?
         ', [$system->sUSERGROUP]);
+
         if ($userGroup['tax'] == 0) {
             $cost = $item['UnitPriceGross'];
             $tax = $item['TaxRate'];

@@ -189,8 +189,8 @@
         }
 
         /**
-         * @param $object
-         * @param $method
+         * @param object $object
+         * @param string $method
          * @return bool
          */
         public static function existsAndNotEmpty($object, $method)

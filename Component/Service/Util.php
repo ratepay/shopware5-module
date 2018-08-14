@@ -69,4 +69,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util
         }
         return true;
     }
+
+    /**
+     * @param \Shopware\Models\Customer\Customer $customer
+     * @return bool
+     */
+    public static function customerCreatesNetOrders(Shopware\Models\Customer\Customer $customer)
+    {
+       return $customer->getGroup()->getTax() === false;
+    }
 }

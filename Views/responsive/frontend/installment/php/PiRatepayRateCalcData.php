@@ -165,7 +165,13 @@
         {
             $basket = Shopware()->Session()->sOrderVariables['sBasket'];
 
-            return $basket['AmountNumeric'];
+            $amountNumeric = $basket['AmountNumeric'];
+            $amountWithTaxNumeric  =  $basket['AmountWithTaxNumeric']; //set to zero in gross-price shops
+            if ($amountWithTaxNumeric > 0) {
+                return $amountWithTaxNumeric;
+            }
+
+            return $amountNumeric;
         }
 
         /**

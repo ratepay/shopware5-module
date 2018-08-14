@@ -47,8 +47,10 @@ class SessionLoader
 
         $customerIdSession = $sessionArray['customerId'];
 
-        if ($customerIdSession !== $customerId) {
-            throw new \Exception("Attempt to load bank data for wrong customer!");
+        //todo, get rid of cast if possible
+        if ((int)$customerIdSession !== (int)$customerId) {
+            throw new \Exception("Attempt to load bank data for wrong customer! Session Value " .
+                $customerIdSession . " checked value " . $customerId . "." );
         }
 
         $bankCode = $sessionArray['bankcode'];
