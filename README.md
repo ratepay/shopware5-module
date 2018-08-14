@@ -24,6 +24,15 @@
 
 ## Changelog
 
+### Version 5.2.0 - Released 2018-08-14
+
+* add ability to create backend orders
+* add system-wide support for customer groups with net prices
+
+### Version 5.1.1 - Released 2018-08-08
+
+* hotfix for plugin update function
+
 ### Version 5.1.0 - Released 2018-08-02
 * add compatibility to PHP-7.2
 * frontend changes on checkout/payment pages
