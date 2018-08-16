@@ -111,7 +111,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      */
     public function isAgeValid()
     {
-        $today = new DateTime("now");
+        $today = new \DateTime("now");
 
         $birthday = $this->_user->getBirthday();
         if (empty($birthday) || is_null($birthday)) {
