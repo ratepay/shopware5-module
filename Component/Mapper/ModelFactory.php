@@ -577,7 +577,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $document = $documentModel->findOneBy(array('orderId' => $operationData['orderId'], 'type' => 1));
 
         if (!is_null($document)) {
-            $dateObject = new DateTime();
+            $dateObject = new \DateTime();
             $currentDate = $dateObject->format("Y-m-d");
             $currentTime = $dateObject->format("H:m:s");
             $currentDateTime = $currentDate . "T" . $currentTime;
