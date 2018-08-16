@@ -6,8 +6,7 @@
  * Time: 10:16
  */
 
-$env = getenv('TEST_ENV');
-if ('functional' === $env) {
-    require __DIR__ . '/Functional/Bootstrap.php';
-}
+
+require __DIR__ . '/Functional/Bootstrap.php';
+
 

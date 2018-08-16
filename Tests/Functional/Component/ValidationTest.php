@@ -6,7 +6,7 @@
  * Time: 13:31
  */
 
-namespace RpayRatePay\Tests\Component;
+namespace RpayRatePay\Tests\Functional\Component;
 
 use Shopware\Components\Test\Plugin\TestCase;
 
@@ -20,7 +20,7 @@ class ValidationTest extends TestCase
 
         Shopware()->Session()->sUserId = $customer->getId();
 
-        $validator = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation();
+        $validator = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($customer);
         $oldBirthday = $customer->getBirthday();
 
         $aDayTooYoung = $this->findTurns18Tomorrow();
@@ -40,7 +40,7 @@ class ValidationTest extends TestCase
         $customer = $this->getRandomCustomer();
         Shopware()->Session()->sUserId = $customer->getId();
 
-        $validator = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation();
+        $validator = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($customer);
         $oldBirthday = $customer->getBirthday();
 
         $oldEnough = $this->findTurns18Today();
