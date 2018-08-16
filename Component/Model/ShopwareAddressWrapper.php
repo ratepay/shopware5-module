@@ -10,17 +10,13 @@ namespace RpayRatePay\Component\Model;
  */
 class ShopwareAddressWrapper
 {
-    const SHOPWARE_ADDRESS = 'Shopware\Models\Customer\Address';
-    const SHOPWARE_SHIPPING = 'Shopware\Models\Customer\Shipping';
-    const SHOPWARE_BILLING = 'Shopware\Models\Customer\Billing';
-
     /** @var object */
     private $address;
 
-    /** @var \Shopware\Components\Model\ModelManager $em */
+    /** @var \Shopware\Components\Model\ModelManager */
     private $em;
 
-    /** @var string  */
+    /** @var string */
     private $addressClass;
 
 
@@ -28,17 +24,12 @@ class ShopwareAddressWrapper
      * ShopwareAddressWrapper constructor.
      * @param object $address
      * @param \Shopware\Components\Model\ModelManager $em
-     * @throws \Exception
      */
     public function __construct($address, $em)
     {
         $this->address = $address;
         $this->em = $em;
         $this->addressClass = get_class($address);
-
-        if (array_search($this->addressClass, self::getSupportedClasses()) === false) {
-            throw new \Exception('Unsupported object type');
-        }
     }
 
     /**
@@ -47,28 +38,16 @@ class ShopwareAddressWrapper
      */
     public function getCountry()
     {
-        switch($this->addressClass) {
-            case self::SHOPWARE_ADDRESS:
-                return $this->address->getCountry();
-
-            case self::SHOPWARE_SHIPPING:
-            case self::SHOPWARE_BILLING:
-                return $this->em->find('Shopware\Models\Country\Country', $this->address->getCountryId());
-
-            default:
-                throw new \Exception('Unsupported object type');
+        if (method_exists($this->address, 'getCountry')) {
+            return $this->address->getCountry();
         }
+
+
+        if (method_exists($this->address, 'getCountryId')) {
+            return $this->em->find('Shopware\Models\Country\Country', $this->address->getCountryId());
+        }
+
+        return null;
     }
 
-    /**
-     * @return array
-     */
-    private static function getSupportedClasses()
-    {
-        return [
-            self::SHOPWARE_ADDRESS,
-            self::SHOPWARE_BILLING,
-            self::SHOPWARE_SHIPPING
-        ];
-    }
 }
