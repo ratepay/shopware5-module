@@ -3,6 +3,7 @@
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Mapper\BankData;
 use RatePAY\Service\Util;
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\SessionLoader;
 
 /**
@@ -75,7 +76,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             return $checkoutAddressBilling->getCountry()->getIso();
         } else {
             $shopUser = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $this->getSession()->sUserId);
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $shopUser->getBilling()->getCountryId());
+            $userWrapped = new ShopwareCustomerWrapper($shopUser, Shopware()->Models());
+            $country = $userWrapped->getBillingCountry();
             return $country->getIso();
         }
     }

@@ -7,6 +7,8 @@
  */
 namespace RpayRatePay\Component\Service;
 
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+use Shopware\Models\Customer\Billing;
 use Shopware\Models\Customer\Customer;
 
 class ValidationLib
@@ -23,12 +25,10 @@ class ValidationLib
 
         $birthday = $customer->getBirthday();
 
-        //throws exception, method not found
-        //if necessary, we could check for it through reflection
-        //TODO, ask Anni about this
-        /*if (empty($birthday) || is_null($birthday)) {
-            $birthday = $customer->getBilling()->getBirthday();
-        }*/
+        if (empty($birthday) || is_null($birthday)) {
+            $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
+            $birthday = $customerWrapped->getBilling('birthday');
+        }
 
         $return = false;
         if (!is_null($birthday)) {
@@ -51,7 +51,8 @@ class ValidationLib
      */
     public static function isTelephoneNumberSet(Customer $customer)
     {
-        $phone = $customer->getBilling()->getPhone();
+        $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
+        $phone = $customerWrapped->getBilling('phone');
 
         return !empty($phone);
     }
@@ -60,8 +61,8 @@ class ValidationLib
      * Compares billing and shipping addresses.
      * If shipping is null, returns true.
      *
-     * @param Shopware\Models\Customer\Address $billing
-     * @param Shopware\Models\Customer\Address $shipping
+     * @param Shopware\Models\Customer\Address|Shopware\Models\Customer\Billing $billing
+     * @param Shopware\Models\Customer\Address|Shopware\Models\Customer\Shipping $shipping
      */
     public static function areBillingAndShippingSame($billing, $shipping = null)
     {
