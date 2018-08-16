@@ -78,7 +78,7 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
         $changeDate = $this->getLastUpdateDate();
 
         if (empty($changeDate)) {
-            $date = new DateTime();
+            $date = new \DateTime();
             $date->sub(new DateInterval('PT1H'));
             $changeDate = $date->format('Y-m-d H:i:s');
         }
