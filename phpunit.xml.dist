@@ -2,9 +2,9 @@
 <phpunit bootstrap="Tests/Bootstrap.php"
          backupGlobals="false"
          backupStaticAttributes="false"
-         forceCoversAnnotation="true"
-         beStrictAboutCoversAnnotation="true"
-         beStrictAboutOutputDuringTests="true"
+         forceCoversAnnotation="false"
+         beStrictAboutCoversAnnotation="false"
+         beStrictAboutOutputDuringTests="false"
          beStrictAboutTodoAnnotatedTests="true"
          verbose="true">
 
@@ -22,11 +22,11 @@
             <directory suffix=".php">./</directory>
             <exclude>
                 <directory suffix=".php">Tests</directory>
+                <directory suffix=".php">Component/Library</directory>
             </exclude>
         </whitelist>
     </filter>
-
-    <php>
-        <env name="TEST_ENV" value="unit"/>
-    </php>
+    <logging>
+        <log type="coverage-text" target="php://stdout"/>
+    </logging>
 </phpunit>
