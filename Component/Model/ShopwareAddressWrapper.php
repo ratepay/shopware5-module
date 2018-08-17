@@ -33,7 +33,7 @@ class ShopwareAddressWrapper
     }
 
     /**
-     * @return mixed
+     * @return \Shopware\Models\Country\Country
      * @throws \Exception
      */
     public function getCountry()
@@ -42,12 +42,11 @@ class ShopwareAddressWrapper
             return $this->address->getCountry();
         }
 
-
         if (method_exists($this->address, 'getCountryId')) {
             return $this->em->find('Shopware\Models\Country\Country', $this->address->getCountryId());
         }
 
-        return null;
+        throw new \Exception('False object type sent to ShopwareAddressWrapper');
     }
 
 }

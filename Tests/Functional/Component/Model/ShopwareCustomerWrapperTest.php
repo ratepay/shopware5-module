@@ -117,7 +117,7 @@ class ShopwareCustomerWrapperTest extends TestCase
         $this->_testGetShipping__fresh();
         $this->_testGetShippingCountry__fresh();
 
-        if (!class_exists('Shopware\Models\Customer\Billing')) {
+        if (!class_exists('Shopware\Models\Customer\Shipping')) {
             return;
         }
 
