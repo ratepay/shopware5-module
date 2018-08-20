@@ -261,7 +261,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $method = 'INSTALLMENT'; //state
         }
 
-        $mbHead = $this->getHead(PaymentRequestData::findCountryISO($paymentRequestData->getBillingAddress())));
+        $mbHead = $this->getHead(PaymentRequestData::findCountryISO($paymentRequestData->getBillingAddress()));
 
         $mbHead->setCustomerDevice(
             $mbHead->CustomerDevice()->setDeviceToken($paymentRequestData->getDfpToken())
