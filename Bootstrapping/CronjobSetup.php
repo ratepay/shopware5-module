@@ -14,7 +14,7 @@ class CronjobSetup extends Bootstrapper
     public function install()
     {
         $id = Shopware()->Db()->fetchOne('SELECT id from s_crontab WHERE `action` = ?', [self::UPDATE_TRANSACTIONS_ACTION]);
-        if(empty($id)) {
+        if ($id === false) {
             $this->bootstrap->createCronJob('RatePAY Transaction Updater', self::UPDATE_TRANSACTIONS_ACTION, self::UPDATE_TRANSACTIONS_INTERVAL_SECONDS);
         }
     }

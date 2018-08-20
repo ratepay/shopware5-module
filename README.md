@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
-|Version | `5.1.0` 
+|Version | `5.2.2` 
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -23,6 +23,12 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.2.2 - Released 2018-08-17
+* hotfix cronjob install in older shopware versions fails if entry already exists
+
+### Version 5.2.1 - Released 2018-08-16
+* hotfix cronjob class not found error
 
 ### Version 5.2.0 - Released 2018-08-14
 * add ability to create backend orders
