@@ -45,13 +45,12 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         $return = $arguments->getReturn();
         $currency = Shopware()->Config()->get('currency');
         $userId = Shopware()->Session()->sUserId;
-
         if (empty($userId) || empty($currency)) {
             return;
         }
 
         /** @var Shopware\Models\Customer\Customer $user */
-        $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
+        $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
         $wrappedUser = new ShopwareCustomerWrapper($user, Shopware()->Models());
 
         //get country of order
@@ -85,7 +84,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         foreach ($config AS $payment => $data) {
             $show[$payment] = $data['status'] == 2 ? true : false;
 
-            $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user);
+            $validation = $this->getValidator($user);
 
             $validation->setAllowedCurrencies($data['currency']);
             $validation->setAllowedCountriesBilling($data['country-code-billing']);
@@ -170,11 +169,18 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         return $payments;
     }
 
+    private function getValidator($user)
+    {
+        return new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user);
+    }
+
+
     /**
      * Get ratepay plugin config from rpay_ratepay_config table
      *
      * @param $shopId
      * @param $country
+     * @param bool $backend
      * @return array
      */
     private function getRatePayPluginConfigByCountry($shopId, $country, $backend = false) {
@@ -194,6 +200,4 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 
         return $paymentConfig;
     }
-
-
 }

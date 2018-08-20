@@ -36,7 +36,6 @@ class ShopwareAddressWrapperTest extends TestCase
         $wrapper->getCountry();
     }
 
-
     private function getAddressMock()
     {
         $country = Shopware()->Models()->getRepository('Shopware\Models\Country\Country')

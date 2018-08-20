@@ -71,7 +71,7 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     /**
      * @param $item
      */
-    private function addItemFromArray($item)
+    public function addItemFromArray($item)
     {
         if (!$this->requestType && $item['quantity'] == 0) {
             return;
