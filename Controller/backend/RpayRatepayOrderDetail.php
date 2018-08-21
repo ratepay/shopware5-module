@@ -21,6 +21,8 @@
     {
 
         private $_config;
+
+        /** @var Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory */
         private $_modelFactory;
         private $_service;
         private $_history;
@@ -242,14 +244,15 @@
                 // count all item which are in cancellation process
                 $itemsToCancel += $item->cancelledItems;
 
-                if ($item->quantity <= 0) {
+                /*
+                 * Why a continue at the end of a loop
+                 * if ($item->quantity <= 0) {
                     continue;
-                }
+                }*/
             }
 
             //only call the logic if there are items to cancel
-            if($itemsToCancel > 0)
-            {
+            if($itemsToCancel > 0) {
                 $operationData['orderId'] = $orderId;
                 $operationData['items'] = $items;
                 $operationData['subtype'] = 'cancellation';
