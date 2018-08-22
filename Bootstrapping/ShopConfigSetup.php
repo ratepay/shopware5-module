@@ -33,7 +33,6 @@ class ShopConfigSetup extends Bootstrapper
         $configWriter = new RatepayConfigWriter(Shopware()->Db());
 
         $configWriter->truncateConfigTables();
-        Shopware()->Pluginlogger()->info('ShopConfigSetup truncated tables');
 
         $repo = Shopware()->Models()->getRepository('Shopware\Models\Shop\Shop');
         $shops = $repo->findBy(['active' => true]);
@@ -51,7 +50,13 @@ class ShopConfigSetup extends Bootstrapper
     public function uninstall() {}
 
 
-    public function updateRatepayConfig($configLoader, $configWriter, $shopId, $backend)
+    /**
+     * @param $configLoader
+     * @param $configWriter
+     * @param $shopId
+     * @param $backend
+     */
+    private function updateRatepayConfig($configLoader, $configWriter, $shopId, $backend)
     {
         foreach (self::$AVAILABLE_COUNTRIES as $iso) {
             $profileId = $configLoader->getProfileId($iso, $shopId, false, $backend);
