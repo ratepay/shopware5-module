@@ -138,20 +138,20 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
                 return;
             }
         }
-
+        $shippingPriceGross = $this->netItemPrices ? Math::netToGross($item->price, $item->taxRate) : $item->price;
         if ($this->withRetry || $this->useFallbackShipping) {
             $itemData = [
                 'ArticleNumber' => $item->articlenumber,
                 'Quantity' => 1,
                 'Description' => 'shipping',
-                'UnitPriceGross' => $item->price,
+                'UnitPriceGross' => $shippingPriceGross,
                 'TaxRate' => $item->taxRate,
             ];
             $this->basket['Items'][] = ['Item' => $itemData];
         } else {
             $this->basket['Shipping'] = [
                 'Description' => 'Shipping costs',
-                'UnitPriceGross' => $item->price,
+                'UnitPriceGross' => $shippingPriceGross,
                 'TaxRate' => $item->taxRate,
             ];
         }
