@@ -61,7 +61,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return strign
+     * @return string
      */
     public function getMethod()
     {

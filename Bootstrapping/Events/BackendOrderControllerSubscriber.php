@@ -8,6 +8,7 @@
  */
 namespace RpayRatePay\Bootstrapping\Events;
 
+use RatePAY\Service\Math;
 use RatePAY\Service\Util;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\PaymentProcessor;
@@ -123,7 +124,13 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
         $shippingCost = $orderStruct->getShippingCosts();
 
-        $shippingTax = $orderStruct->getShippingCostsNet() - $orderStruct->getSHippingCostsNet();
+        $shippingTax =  Math::taxFromPrices(
+            $orderStruct->getShippingCostsNet(),
+            $shippingCost
+        );
+
+        //looks like vat is always a whole number, so I'll round
+        $shippingTax = round($shippingTax);
 
         $dfpToken = '';
 

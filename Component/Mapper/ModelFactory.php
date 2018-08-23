@@ -830,17 +830,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $item['Description'] = 'shipping';
         }
 
-        $system = Shopware()->System();
-        $userGroup = Shopware()->Db()->fetchRow('
-            SELECT * FROM s_core_customergroups WHERE groupkey = ?
-        ', [$system->sUSERGROUP]);
-
-        if ($userGroup['tax'] == 0) {
-            $cost = $item['UnitPriceGross'];
-            $tax = $item['TaxRate'];
-            $item['UnitPriceGross'] = number_format($cost / 100 * $tax +  $cost , 2);
-        }
-
         return $item;
     }
 
