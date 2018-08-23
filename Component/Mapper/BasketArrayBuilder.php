@@ -101,19 +101,21 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function addShippingItemFromArray($item)
     {
+        $shippingPriceGross = $this->netItemPrices ? Math::netToGross($item['priceNumeric'], $item['tax_rate']) : $item['priceNumeric'];
+
         if ($this->withRetry || $this->useFallbackShipping) {
             $itemData = [
                 'ArticleNumber' => 'shipping',
                 'Quantity' => 1,
                 'Description' => 'shipping',
-                'UnitPriceGross' => $item['priceNumeric'],
+                'UnitPriceGross' => $shippingPriceGross,
                 'TaxRate' => $item['tax_rate'],
             ];
             $this->basket['Items'][] = ['Item' => $itemData];
         } else {
             $this->basket['Shipping'] = [
                 'Description' => 'Shipping costs',
-                'UnitPriceGross' => $item['priceNumeric'],
+                'UnitPriceGross' => $shippingPriceGross,
                 'TaxRate' => $item['tax_rate'],
             ];
         }
