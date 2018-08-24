@@ -124,6 +124,21 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function addShippingItem($item)
     {
+        //handle partial sending
+        if ($this->requestType === 'shipping' || $this->requestType === 'shippingRate') {
+            if ((int)($item->quantity) === 0) {
+                return;
+            }
+        }
+
+        //handle partial cancellation or return
+        if ($this->requestType === 'cancellation' || $this->requestType === 'return') {
+            $amountToCancelOrReturn = $this->getQuantityForRequest($item);
+            if ($amountToCancelOrReturn < 1) {
+                return;
+            }
+        }
+
         if ($this->withRetry || $this->useFallbackShipping) {
             $itemData = [
                 'ArticleNumber' => $item->articlenumber,
