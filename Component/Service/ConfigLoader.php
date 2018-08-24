@@ -98,6 +98,21 @@ class ConfigLoader
 
     /**
      * @param string $countryISO
+     * @param int $shopId
+     * @param bool $backend
+     * @return string
+     */
+    public function getSecurityCode($countryISO, $shopId, $backend = false)
+    {
+        $key = self::getSecurityCodeKey($countryISO, $backend);
+
+        $securityCode = $this->config->get($key, $shopId);
+
+        return $securityCode;
+    }
+
+    /**
+     * @param string $countryISO
      * @param bool $backend
      * @return string
      */
