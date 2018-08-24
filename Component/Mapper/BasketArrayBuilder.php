@@ -101,21 +101,19 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function addShippingItemFromArray($item)
     {
-        $shippingPriceGross = $this->netItemPrices ? Math::netToGross($item['priceNumeric'], $item['tax_rate']) : $item['priceNumeric'];
-
         if ($this->withRetry || $this->useFallbackShipping) {
             $itemData = [
                 'ArticleNumber' => 'shipping',
                 'Quantity' => 1,
                 'Description' => 'shipping',
-                'UnitPriceGross' => $shippingPriceGross,
+                'UnitPriceGross' => $item['priceNumeric'],
                 'TaxRate' => $item['tax_rate'],
             ];
             $this->basket['Items'][] = ['Item' => $itemData];
         } else {
             $this->basket['Shipping'] = [
                 'Description' => 'Shipping costs',
-                'UnitPriceGross' => $shippingPriceGross,
+                'UnitPriceGross' => $item['priceNumeric'],
                 'TaxRate' => $item['tax_rate'],
             ];
         }
@@ -140,20 +138,20 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
                 return;
             }
         }
-        $shippingPriceGross = $this->netItemPrices ? Math::netToGross($item->price, $item->taxRate) : $item->price;
+
         if ($this->withRetry || $this->useFallbackShipping) {
             $itemData = [
                 'ArticleNumber' => $item->articlenumber,
                 'Quantity' => 1,
                 'Description' => 'shipping',
-                'UnitPriceGross' => $shippingPriceGross,
+                'UnitPriceGross' => $item->price,
                 'TaxRate' => $item->taxRate,
             ];
             $this->basket['Items'][] = ['Item' => $itemData];
         } else {
             $this->basket['Shipping'] = [
                 'Description' => 'Shipping costs',
-                'UnitPriceGross' => $shippingPriceGross,
+                'UnitPriceGross' => $item->price,
                 'TaxRate' => $item->taxRate,
             ];
         }
