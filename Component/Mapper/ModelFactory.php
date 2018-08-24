@@ -263,7 +263,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $method = 'INSTALLMENT'; //state
         }
 
-        $mbHead = $this->getHead($paymentRequestData->getBillingAddress()->getCountry()->getIso());
+        $wrapper = new \RpayRatePay\Component\Model\ShopwareAddressWrapper(
+            $paymentRequestData->getBillingAddress(),
+            Shopware()->Models()
+        );
+        $mbHead = $this->getHead($wrapper->getCountry()->getIso());
         $mbHead->setCustomerDevice(
             $mbHead->CustomerDevice()->setDeviceToken($paymentRequestData->getDfpToken())
         );
