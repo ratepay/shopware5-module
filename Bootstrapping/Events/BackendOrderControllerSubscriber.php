@@ -8,6 +8,7 @@
  */
 namespace RpayRatePay\Bootstrapping\Events;
 
+use RatePAY\Service\Math;
 use RatePAY\Service\Util;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\PaymentProcessor;
@@ -121,9 +122,15 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             $items[] = $this->positionStructToArray($positionStruct);
         }
 
-        $shippingCost = $orderStruct->getShippingCosts();
+        $shippingTax =  Math::taxFromPrices(
+            $orderStruct->getShippingCostsNet(),
+            $orderStruct->getShippingCosts()
+        );
 
-        $shippingTax = $orderStruct->getShippingCostsNet() - $orderStruct->getSHippingCostsNet();
+        //looks like vat is always a whole number, so I'll round
+        $shippingTax = round($shippingTax);
+
+        $shippingToSend = $orderStruct->getNetOrder() ? $orderStruct->getShippingCostsNet() : $orderStruct->getShippingCosts();
 
         $dfpToken = '';
 
@@ -133,7 +140,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
         $amount = $orderStruct->getTotal();
 
-        return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingCost, $shippingTax, $dfpToken, $lang, $amount);
+        return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingToSend, $shippingTax, $dfpToken, $lang, $amount);
     }
 
     private function positionStructToArray(\SwagBackendOrder\Components\Order\Struct\PositionStruct $item)

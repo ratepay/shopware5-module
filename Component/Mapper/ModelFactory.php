@@ -1,5 +1,6 @@
 <?php
 
+use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Mapper\BankData;
 use RatePAY\Service\Util;
@@ -818,9 +819,15 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      */
     private function getShippingItemData(PaymentRequestData $shippingData, $useFallbackShipping = false)
     {
+        $priceGross = $this->netItemPrices ?
+            Math::netToGross($shippingData->getShippingCost(), $shippingData->getShippingTax()) :
+            $shippingData->getShippingCost();
+
+        $priceGross = round($priceGross, 2);
+
         $item = [
             'Description' => 'Shipping costs',
-            'UnitPriceGross' => $shippingData->getShippingCost(),
+            'UnitPriceGross' => $priceGross,
             'TaxRate' => $shippingData->getShippingTax(),
         ];
 
@@ -828,17 +835,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $item['ArticleNumber'] = 'shipping';
             $item['Quantity'] = 1;
             $item['Description'] = 'shipping';
-        }
-
-        $system = Shopware()->System();
-        $userGroup = Shopware()->Db()->fetchRow('
-            SELECT * FROM s_core_customergroups WHERE groupkey = ?
-        ', [$system->sUSERGROUP]);
-
-        if ($userGroup['tax'] == 0) {
-            $cost = $item['UnitPriceGross'];
-            $tax = $item['TaxRate'];
-            $item['UnitPriceGross'] = number_format($cost / 100 * $tax +  $cost , 2);
         }
 
         return $item;
