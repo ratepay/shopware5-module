@@ -9,6 +9,8 @@
 namespace RpayRatePay\Component\Mapper;
 
 use RatePAY\Service\Util;
+use RpayRatePay\Component\Model\ShopwareAddressWrapper;
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 
 class PaymentRequestData
 {
@@ -156,7 +158,9 @@ class PaymentRequestData
     public function getBirthday()
     {
         $dateOfBirth = '0000-00-00';
-        $customerBilling = $this->customer->getBilling();
+
+        $customerWrapped = new ShopwareCustomerWrapper($this->customer, Shopware()->Models());
+        $customerBilling = $customerWrapped->getBilling();
 
         if (Util::existsAndNotEmpty($this->customer, 'getBirthday')) {
             $dateOfBirth = $this->customer->getBirthday()->format("Y-m-d"); // From Shopware 5.2 date of birth has moved to customer object
@@ -170,19 +174,14 @@ class PaymentRequestData
     }
 
     /**
-     * @param mixed
-     * @return string|null
+     * @param $addressObject
+     * @return string
+     * @throws \Exception
      */
     public static function findCountryISO($addressObject)
     {
-        $iso = null;
-        if (Util::existsAndNotEmpty($addressObject, "getCountry") &&
-            Util::existsAndNotEmpty($addressObject->getCountry(), "getIso")) {
-            $iso = $addressObject->getCountry()->getIso();
-        } elseif (Util::existsAndNotEmpty($addressObject, "getCountryId")) {
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $addressObject->getCountryId());
-            $iso = $country->getIso();
-        }
+        $addressWrapped = new ShopwareAddressWrapper($addressObject, Shopware()->Models());
+        $iso = $addressWrapped->getCountry()->getIso();
         return $iso;
     }
 }

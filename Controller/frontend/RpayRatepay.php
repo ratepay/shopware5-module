@@ -18,10 +18,10 @@
      * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
      */
 
-use RatePAY\Service\Util;
 use RpayRatePay\Component\Service\SessionLoader;
 use Shopware\Components\CSRFWhitelistAware;
-use \RpayRatePay\Component\Service\PaymentProcessor;
+use RpayRatePay\Component\Service\PaymentProcessor;
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 
 class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
 {
@@ -119,7 +119,10 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $Parameter = $this->Request()->getParams();
 
         $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
+
+        /** @var Shopware\Models\Customer\Customer $userModel */
         $userModel = $customerModel->findOneBy(array('id' => Shopware()->Session()->sUserId));
+        $userWrapped = new ShopwareCustomerWrapper($userModel);
 
         if (isset($Parameter['checkoutBillingAddressId']) && !is_null($Parameter['checkoutBillingAddressId'])) { // From Shopware 5.2 current billing address is sent by parameter
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
@@ -131,7 +134,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 unset(Shopware()->Session()->RatePAY['checkoutShippingAddressId']);
             }
         } else {
-            $customerAddressBilling = $userModel->getBilling();
+            $customerAddressBilling = $userWrapped->getBilling();
         }
 
         $return = 'OK';
@@ -277,7 +280,8 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $shopId = Shopware()->Shop()->getId();
             $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
             $userModel = $customerModel->findOneBy(array('id' => Shopware()->Session()->sUserId));
-            $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $userModel->getBilling()->getCountryId());
+            $userModelWrapped = new ShopwareCustomerWrapper($userModel, Shopware()->Models());
+            $countryBilling = $userModelWrapped->getBillingCountry();
             $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
 
             $this->View()->assign('rpCustomerMsg', $config['error-default']);

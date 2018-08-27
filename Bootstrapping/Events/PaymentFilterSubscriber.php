@@ -8,6 +8,7 @@
 namespace RpayRatePay\Bootstrapping\Events;
 
 use RatePAY\Service\Util;
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 
@@ -33,7 +34,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
      *  - The Country must be germany or austria
      *  - The Currency must be EUR
      *
-     * @param Enlight_Event_EventArgs $arguments
+     * @param \Enlight_Event_EventArgs $arguments
      * @return array|void
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
@@ -44,45 +45,33 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         $return = $arguments->getReturn();
         $currency = Shopware()->Config()->get('currency');
         $userId = Shopware()->Session()->sUserId;
-
         if (empty($userId) || empty($currency)) {
             return;
         }
 
-        $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', Shopware()->Session()->sUserId);
+        /** @var Shopware\Models\Customer\Customer $user */
+        $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
+        $wrappedUser = new ShopwareCustomerWrapper($user, Shopware()->Models());
 
         //get country of order
         if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 find current address information in default billing address
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
             $customerAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
 
-            if (Util::existsAndNotEmpty($customerAddressBilling,'getCountry')) {
-                $countryBilling = $customerAddressBilling->getCountry();
-            } else {
-                if (Util::existsAndNotEmpty($user->getBilling(),'getCountryId')) {
-                    $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
-                }
-            }
+            $countryBilling = $customerAddressBilling->getCountry();
 
             if (Shopware()->Session()->checkoutShippingAddressId > 0 && Shopware()->Session()->checkoutShippingAddressId != Shopware()->Session()->checkoutBillingAddressId) {
                 $customerAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
-
-                if (Util::existsAndNotEmpty($customerAddressShipping, 'getCountry')) {
-                    $countryDelivery = $customerAddressShipping->getCountry();
-                } else {
-                    if (Util::existsAndNotEmpty($user->getShipping(), 'getCountryId')) {
-                        $countryDelivery = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getShipping()->getCountryId());
-                    }
-                }
-
+                $countryDelivery = $customerAddressShipping->getCountry();
             } else {
                 $countryDelivery = $countryBilling;
             }
         } else {
-            $countryBilling = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
-            if (!is_null($user->getShipping()) &&$user->getBilling()->getCountryId() != $user->getShipping()->getCountryId()) {
-                $countryDelivery = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getShipping()->getCountryId());
-            } else {
+
+            $countryBilling = $wrappedUser->getBillingCountry();
+            $countryDelivery = $wrappedUser->getShippingCountry();
+
+            if (is_null($countryDelivery)) {
                 $countryDelivery = $countryBilling;
             }
         }
@@ -95,7 +84,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         foreach ($config AS $payment => $data) {
             $show[$payment] = $data['status'] == 2 ? true : false;
 
-            $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user);
+            $validation = $this->getValidator($user);
 
             $validation->setAllowedCurrencies($data['currency']);
             $validation->setAllowedCountriesBilling($data['country-code-billing']);
@@ -180,11 +169,18 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         return $payments;
     }
 
+    private function getValidator($user)
+    {
+        return new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user);
+    }
+
+
     /**
      * Get ratepay plugin config from rpay_ratepay_config table
      *
      * @param $shopId
      * @param $country
+     * @param bool $backend
      * @return array
      */
     private function getRatePayPluginConfigByCountry($shopId, $country, $backend = false) {
@@ -204,6 +200,4 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 
         return $paymentConfig;
     }
-
-
 }

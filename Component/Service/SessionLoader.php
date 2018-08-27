@@ -9,6 +9,7 @@ namespace  RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Mapper\BankData;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 
 class SessionLoader
 {
@@ -71,11 +72,12 @@ class SessionLoader
      */
     private function findAddressShipping($customer, $billing)
     {
+        $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
         if (isset($this->session->RatePAY['checkoutShippingAddressId']) && $this->session->RatePAY['checkoutShippingAddressId'] > 0) {
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
             $checkoutAddressShipping = $addressModel->findOneBy(array('id' => $this->session->RatePAY['checkoutShippingAddressId'] ? $this->session->RatePAY['checkoutShippingAddressId'] : $this->session->RatePAY['checkoutBillingAddressId']));
         } else {
-            $checkoutAddressShipping = $customer->getShipping() !== null ? $customer->getShipping() : $billing;
+            $checkoutAddressShipping = $customerWrapped->getShipping() !== null ? $customerWrapped->getShipping() : $billing;
         }
         return $checkoutAddressShipping;
     }
@@ -86,11 +88,13 @@ class SessionLoader
      */
     private function findAddressBilling($customer)
     {
+        $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
+
         if (isset($this->session->RatePAY['checkoutBillingAddressId']) && $this->session->RatePAY['checkoutBillingAddressId'] > 0) {
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
             $checkoutAddressBilling = $addressModel->findOneBy(array('id' => $this->session->RatePAY['checkoutBillingAddressId']));
         } else {
-            $checkoutAddressBilling = $customer->getBilling();
+            $checkoutAddressBilling = $customerWrapped->getBilling();
         }
 
         return $checkoutAddressBilling;

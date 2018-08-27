@@ -6,6 +6,7 @@
  * Time: 10:30
  */
 use PHPUnit\Framework\TestCase;
+use Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder as BasketArrayBuilder;
 
 class BasketArrayBuilderTest extends TestCase
 {
@@ -31,7 +32,7 @@ class BasketArrayBuilderTest extends TestCase
 
         return [
             [
-                new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder(false, null, false, false),
+                new BasketArrayBuilder(false, null, false, false),
                 $itemList,
                 []
             ],

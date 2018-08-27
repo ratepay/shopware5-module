@@ -10,6 +10,9 @@
      */
     require_once "PiRatepayRateCalcDataInterface.php";
 
+    //do i need a require here?
+    use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+
     /**
      * Developer needs to specify how the Calculator gets the Data
      */
@@ -26,8 +29,9 @@
         {
             $customer = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')
                 ->findOneBy(array('id' => Shopware()->Session()->sUserId));
+            $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
 
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $customer->getBilling()->getCountryId());
+            $country = $customerWrapped->getBillingCountry();
 
             $profileId = null;
             if('DE' === $country->getIso())
@@ -66,7 +70,8 @@
             $customer = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')
                                   ->findOneBy(array('id' => Shopware()->Session()->sUserId));
 
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $customer->getBilling()->getCountryId());
+            $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
+            $country = $customerWrapped->getBillingCountry();
 
             $securityCode = null;
             if('DE' === $country->getIso())
@@ -90,10 +95,12 @@
          */
         public function isLive()
         {
+            /** @var Shopware\Models\Customer\Customer $customer */
             $customer = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')
                                   ->findOneBy(array('id' => Shopware()->Session()->sUserId));
 
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $customer->getBilling()->getCountryId());
+            $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
+            $country = $customerWrapped->getBillingCountry();
 
             $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
             $sandbox = $modelFactory->getSandboxMode($country->getIso());

@@ -7,6 +7,8 @@
  */
 namespace RpayRatePay\Bootstrapping\Events;
 
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+
 class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
@@ -38,7 +40,7 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
      */
     public function extendTemplates(\Enlight_Event_EventArgs $args)
     {
-        /** @var $action Enlight_Controller_Action */
+        /** @var $action \Enlight_Controller_Action */
         $action = $args->getSubject();
         $request = $action->Request();
         $response = $action->Response();
@@ -72,14 +74,9 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
             'confirm' === $request->getActionName() &&
             strstr($paymentMethod->getName(), 'rpayratepay')
         ) {
-            if (method_exists($user, 'getDefaultBillingAddress')) { // From Shopware 5.2 find current address information in default billing address
-                $view->assign('ratepayPhone', $user->getDefaultBillingAddress()->getPhone());
-                $country = $user->getDefaultBillingAddress()->getCountry()->getIso();
-                $countryCode = $user->getDefaultBillingAddress()->getCountry();
-            } else {
-                $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId())->getIso();
-                $countryCode = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getBilling()->getCountryId());
-            }
+            $userWrapped = new ShopwareCustomerWrapper($user, Shopware()->Models());
+            $phone = $userWrapped->getBilling('phone');
+            $view->assign('ratepayPhone', $phone);
 
             $sandbox = true;
             if ($configPlugin['sandbox'] == 0) {

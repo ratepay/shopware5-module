@@ -1,5 +1,6 @@
 <?php
 
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -27,6 +28,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      * @var Shopware\Models\Customer\Customer
      */
     private $_user;
+
+
+    /**
+     * @var ShopwareCustomerWrapper
+     */
+    private $userWrapped;
 
     /**
      * An Instance of the Shopware-PaymentModel
@@ -57,13 +64,15 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     private $_allowedCountriesDelivery;
 
     /**
-     * Constructor
-     *
-     * Saves the CustomerModel and initiate the Class
+     * Shopware_Plugins_Frontend_RpayRatePay_Component_Validation constructor.
+     * @param $user
+     * @param null $payment
+     * @param bool $backend
      */
     public function __construct($user, $payment = null, $backend = false)
     {
         $this->_user = $user;
+        $this->userWrapped = new ShopwareCustomerWrapper($user, Shopware()->Models());
         $this->_payment = $payment;
     }
 
@@ -106,7 +115,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     /**
      * Checks the Customers Age for RatePAY payments
      *
-     * TODO remove dupliacte code (see isBirthdayValid
+     * TODO remove duplicate code (see isBirthdayValid)
      * @return boolean
      */
     public function isAgeValid()
@@ -115,7 +124,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
 
         $birthday = $this->_user->getBirthday();
         if (empty($birthday) || is_null($birthday)) {
-            $birthday = $this->_user->getBilling()->getBirthday();
+            $birthday = $this->userWrapped->getBilling('birthday');
         }
 
         $return = false;
@@ -161,14 +170,15 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
             $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
             $companyName = $checkoutAddressBilling->getCompany();
         } else {
-            $companyName = $this->_user->getBilling()->getCompany();
+
+            $companyName = $this->userWrapped->getBilling('company');
         }
 
         return !empty($companyName);
     }
 
     /**
-     * Compares the Data of billing- and shippingaddress.
+     * Compares the Data of billing and shipping addresses.
      *
      * @return boolean
      */
@@ -178,14 +188,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
             $billingAddress = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
         } else {
-            $billingAddress = $this->_user->getBilling();
+            $billingAddress = $this->userWrapped->getBilling();
         }
 
         if (Shopware()->Session()->checkoutShippingAddressId > 0) { // From Shopware 5.2 session contains current shipping address
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
             $shippingAddress = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
         } else {
-            $shippingAddress = $this->_user->getShipping();
+            $shippingAddress = $this->userWrapped->getShipping();
         }
 
         $return = ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress);
@@ -194,29 +204,29 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     }
 
     /**
-     * Compares the Country of billing- and shippingaddress.
-     *
-     * @return boolean
+     * @return bool
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
      */
     public function isCountryEqual()
     {
-        $billingAddress = $this->_user->getBilling();
-        $shippingAddress = $this->_user->getShipping();
-        $return = true;
-        if (!is_null($shippingAddress)) {
-            if ($billingAddress->getCountryId() != $shippingAddress->getCountryId()) {
-                $return = false;
+        $billingCountry = $this->userWrapped->getBillingCountry();
+        $shippingCountry = $this->userWrapped->getShippingCountry();
+
+        if (!is_null($shippingCountry)) {
+            if ($billingCountry->getId() != $shippingCountry->getId()) {
+                return false;
             }
         }
 
-        return $return;
+        return true;
     }
 
     /**
-     * Checks if the country is germany or austria
-     *
-     * @param Shopware\Models\Country\Country $country
-     * @return boolean
+     * Searches allowedCurrencies
+     * @param $currency
+     * @return bool
      */
     public function isCurrencyValid($currency)
     {
@@ -246,13 +256,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     }
 
     /**
-     * Checks if payment methods are hidden by session. Methods will be hide just in live/production mode
-     *
      * @return bool
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
      */
     public function isRatepayHidden() {
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-        $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $this->_user->getBilling()->getCountryId())->getIso();
+        $country = $this->userWrapped->getBillingCountry()->getIso();
 
         if('DE' === $country || 'AT' === $country || 'CH' === $country) {
             $sandbox = $config->get('RatePaySandbox' . $country);

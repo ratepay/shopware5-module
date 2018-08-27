@@ -21,12 +21,14 @@
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./</directory>
             <exclude>
-                <directory suffix=".php">Tests</directory>
-                <directory suffix=".php">Component/Library</directory>
+                <directory>Tests</directory>
+                <directory>Component/Library</directory>
+                <directory>Views</directory>
             </exclude>
         </whitelist>
     </filter>
     <logging>
         <log type="coverage-text" target="php://stdout"/>
+        <log type="coverage-html" target="/tmp/report"/>
     </logging>
 </phpunit>
