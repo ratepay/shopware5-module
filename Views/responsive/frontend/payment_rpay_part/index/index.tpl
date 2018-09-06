@@ -22,17 +22,18 @@
     var messageConsoleLogOk       = '{s namespace=RatePAY name=updateUserSuccess}UserDaten erfolgreich aktualisiert.{/s}';
     var messageConsoleLogError    = '{s namespace=RatePAY name=updateUserSuccess}Fehler beim Aktualisieren der UserDaten. Return: {/s}';
 
-    var ratepayAgeNotValid        = false;
-    var isDebitPayment            = false;
-    var isInstallmentPayment      = false;
-    var ratepayCalcRateError      = {$errorRatenrechner};
-
     {if $sUserData.additional.payment.name == 'rpayratepaydebit' }
         var isDebitPayment = true;
+    {else}
+        var isDebitPayment= false;
     {/if}
     {if $sUserData.additional.payment.name == 'rpayratepayinstallment' }
         var isInstallmentPayment = true;
     {/if}
+
+    var ratepayAgeNotValid        = false;
+    var isInstallmentPayment      = false;
+    var ratepayCalcRateError      = isInstallmentPayment && {$errorRatenrechner};
 
     {if $ratepayValidateisAgeValid != 'true'}
         var ratepayAgeNotValid = true;

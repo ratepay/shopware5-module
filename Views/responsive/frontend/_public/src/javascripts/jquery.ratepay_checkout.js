@@ -15,14 +15,12 @@
 
             /* exception if user age is not valid*/
             if(ratepayAgeNotValid == true) {
-                $("#ratepay_error").text(errorMessageAgeNotValid);
-                $("#ratepay_error").parent().removeClass("is--hidden");
+                me.notify(errorMessageAgeNotValid);
             }
 
             /* exception if no rate is calculated */
             if(ratepayCalcRateError == true) {
-                $("#ratepay_error").text(errorMessageCalcRate);
-                $("#ratepay_error").parent().removeClass("is--hidden");
+                me.notify(errorMessageCalcRate);
             }
 
             if ($("#paymentFirstday").val() == me.getBankTransfer()) {
@@ -130,7 +128,6 @@
          * @param event
          */
         onCheckoutButtonClick: function (event) {
-
             var me = this;
 
             /* returns correct YYYY-MM-dd dob */
@@ -244,19 +241,13 @@
 
                 /* error handler */
                 if (error) {
-
                     /** hide the modal window */
                     $('div.ratepay-overlay').hide();
 
-                    $('#ratepay_error').text(errorMessage);
-                    $('#ratepay_error').parent().removeClass('is--hidden');
-                    $('html, body').animate({
-                        scrollTop: $('#ratepay_error').offset().top - 100
-                    }, 1000);
+                    me.notify(errorMessage)
                     return false;
-
                 } else {
-                    $('#ratepay_error').parent().hide();
+                    me.notify('', true);
                 }
 
                 /* update user */
@@ -278,6 +269,20 @@
             }
 
 
+        },
+
+        notify: function (message, isHidden) {
+            var container = $('#ratepay_error');
+            if (isHidden) {
+                container.parent().hide();
+                container.parent().addClass('is--hidden');
+                return;
+            }
+
+            container.text(message);
+            container.parent().removeClass('is--hidden');
+            container.parent().show();
+            $('html, body').animate({ scrollTop: container.offset().top - 100 }, 1000);
         },
 
         /** Destroys the plugin */
