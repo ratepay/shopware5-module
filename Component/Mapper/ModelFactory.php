@@ -6,6 +6,7 @@ use RpayRatePay\Component\Mapper\BankData;
 use RatePAY\Service\Util;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\SessionLoader;
+use RpayRatePay\Component\Service\Logger;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -290,7 +291,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $countryCodeShipping = PaymentRequestData::findCountryISO($checkoutAddressShipping);
 
         if(is_null($countryCodeBilling || is_null($countryCodeShipping))) {
-            Shopware()->Pluginlogger()->error('Country code not loaded....');
+            Logger::singleton()->error('Country code not loaded....');
         }
 
         $mbHead->setArray([
@@ -408,10 +409,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $paymentRequest = $rb->callPaymentRequest($mbHead, $mbContent);
         $this->_logging->logRequest($paymentRequest->getRequestRaw(), $paymentRequest->getResponseRaw());
 
-        /*Shopware()->Pluginlogger()->info("REQUEST");
-        Shopware()->Pluginlogger()->info($paymentRequest->getRequestRaw());
-        Shopware()->Pluginlogger()->info("RESPONSE");
-        Shopware()->Pluginlogger()->info($paymentRequest->getResponseRaw());*/
+        /*Logger::singleton()->info("REQUEST");
+        Logger::singleton()->info($paymentRequest->getRequestRaw());
+        Logger::singleton()->info("RESPONSE");
+        Logger::singleton()->info($paymentRequest->getResponseRaw());*/
         return $paymentRequest;
     }
 

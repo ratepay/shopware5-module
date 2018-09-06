@@ -6,6 +6,7 @@
  * Time: 11:22
  */
 namespace RpayRatePay\Bootstrapping\Events;
+use RpayRatePay\Component\Service\Logger;
 
 class OrderDetailsProcessSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -50,7 +51,7 @@ class OrderDetailsProcessSubscriber implements \Enlight\Event\SubscriberInterfac
                 . "WHERE  `s_order`.`ordernumber`=? AND`s_core_paymentmeans`.`name` LIKE 'rpayratepay%';";
             $isRatepayPayment = (1 <= Shopware()->Db()->fetchOne($isRatePAYpaymentSQL, array($orderNumber)));
         } catch (\Exception $exception) {
-            Shopware()->Pluginlogger()->error($exception->getMessage());
+            Logger::singleton()->error($exception->getMessage());
         }
 
         return (bool) $isRatepayPayment;

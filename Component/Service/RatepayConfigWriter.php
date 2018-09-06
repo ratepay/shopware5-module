@@ -2,6 +2,8 @@
 
 namespace RpayRatePay\Component\Service;
 
+use RpayRatePay\Component\Service\Logger;
+
 class RatepayConfigWriter
 {
     private $db;
@@ -24,7 +26,7 @@ class RatepayConfigWriter
             $this->db->query($configPaymentSql);
             $this->db->query($configInstallmentSql);
         } catch (\Exception $exception) {
-            Shopware()->Pluginlogger()->info($exception->getMessage());
+            Logger::singleton()->info($exception->getMessage());
             return false;
         }
         return true;
@@ -82,7 +84,7 @@ class RatepayConfigWriter
                     $id = $this->db->fetchOne('SELECT `rpay_id` FROM `rpay_ratepay_config_payment` ORDER BY `rpay_id` DESC');
                     $type[$payment] = $id;
                 } catch (\Exception $exception) {
-                    Shopware()->Pluginlogger()->error($exception->getMessage());
+                    Logger::singleton()->error($exception->getMessage());
                     return false;
                 }
             }
@@ -102,7 +104,7 @@ class RatepayConfigWriter
                 try {
                     $this->db->query($paymentSql, $installmentConfig);
                 } catch (\Exception $exception) {
-                    Shopware()->Pluginlogger()->error($exception->getMessage());
+                    Logger::singleton()->error($exception->getMessage());
                     return false;
                 }
 
@@ -154,13 +156,13 @@ class RatepayConfigWriter
 
                     return true;
                 } catch (\Exception $exception) {
-                    Shopware()->Pluginlogger()->error($exception->getMessage());
+                    Logger::singleton()->error($exception->getMessage());
 
                     return false;
                 }
             }
         } else {
-            Shopware()->Pluginlogger()->error('RatePAY: Profile_Request failed!');
+            Logger::singleton()->error('RatePAY: Profile_Request failed!');
 
             if (strstr($profileId, '_0RT') == false) {
                 throw new Exception('RatePAY: Profile_Request failed!');

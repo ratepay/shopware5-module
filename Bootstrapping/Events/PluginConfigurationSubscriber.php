@@ -8,6 +8,7 @@
 namespace RpayRatePay\Bootstrapping\Events;
 
 use RpayRatePay\Component\Service\RatepayConfigWriter;
+use RpayRatePay\Component\Service\Logger;
 
 class PluginConfigurationSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -86,22 +87,22 @@ class PluginConfigurationSubscriber implements \Enlight\Event\SubscriberInterfac
                 if (null !== $credentials[$country]['profileID'] &&
                     null !== $credentials[$country]['securityCode']) {
                     if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileID'], $credentials[$country]['securityCode'], $shopId, $country)) {
-                        Shopware()->PluginLogger()->addNotice('Ruleset for ' . strtoupper($country) . ' successfully updated.');
+                        Logger::singleton()->addNotice('Ruleset for ' . strtoupper($country) . ' successfully updated.');
                     }
                     if ($country == 'de') {
                         if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileID'] . '_0RT', $credentials[$country]['securityCode'], $shopId, $country)) {
-                            Shopware()->PluginLogger()->addNotice('Ruleset 0RT for ' . strtoupper($country) . ' successfully updated.');
+                            Logger::singleton()->addNotice('Ruleset 0RT for ' . strtoupper($country) . ' successfully updated.');
                         }
                     }
                 }
                 if (null !== $credentials[$country]['profileIDBackend'] &&
                     null !== $credentials[$country]['securityCodeBackend']) {
                     if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileIDBackend'], $credentials[$country]['securityCodeBackend'], $shopId, $country, true)) {
-                        Shopware()->PluginLogger()->addNotice('Ruleset BACKEND for ' . strtoupper($country) . ' successfully updated.');
+                        Logger::singleton()->addNotice('Ruleset BACKEND for ' . strtoupper($country) . ' successfully updated.');
                     }
                     if ($country == 'de') {
                         if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileIDBackend'] . '_0RT', $credentials[$country]['securityCodeBackend'], $shopId, $country, true)) {
-                            Shopware()->PluginLogger()->addNotice('Ruleset BACKEND 0RT for ' . strtoupper($country) . ' successfully updated.');
+                            Logger::singleton()->addNotice('Ruleset BACKEND 0RT for ' . strtoupper($country) . ' successfully updated.');
                         }
                     }
                 }

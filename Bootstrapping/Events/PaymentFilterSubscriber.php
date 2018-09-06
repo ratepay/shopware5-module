@@ -11,6 +11,7 @@ use RatePAY\Service\Util;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
+use RpayRatePay\Component\Service\Logger;
 
 class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -121,7 +122,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
                 $basket = Shopware()->Modules()->Basket()->sGetAmount();
                 $basket = $basket['totalAmount']; //is this always brutto?
 
-                Shopware()->Pluginlogger()->info('BasketAmount: ' . $basket);
+                Logger::singleton()->info('BasketAmount: ' . $basket);
                 $isB2b = $validation->isCompanyNameSet();
 
                 if (!ValidationService::areAmountsValid($isB2b,$data, $basket)) {
@@ -137,22 +138,22 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         $payments = array();
         foreach ($return as $payment) {
             if ($payment['name'] === 'rpayratepayinvoice' && !$show['invoice']) {
-                Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Invoice');
+                Logger::singleton()->info('RatePAY: Filter RatePAY-Invoice');
                 $setToDefaultPayment = $paymentModel->getName() === "rpayratepayinvoice" ? : $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === 'rpayratepaydebit' && !$show['debit']) {
-                Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Debit');
+                Logger::singleton()->info('RatePAY: Filter RatePAY-Debit');
                 $setToDefaultPayment = $paymentModel->getName() === "rpayratepaydebit" ? : $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === 'rpayratepayrate' && !$show['installment']) {
-                Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Rate');
+                Logger::singleton()->info('RatePAY: Filter RatePAY-Rate');
                 $setToDefaultPayment = $paymentModel->getName() === "rpayratepayrate" ? : $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === 'rpayratepayrate0' && !$show['installment0']) {
-                Shopware()->Pluginlogger()->info('RatePAY: Filter RatePAY-Rate0');
+                Logger::singleton()->info('RatePAY: Filter RatePAY-Rate0');
                 $setToDefaultPayment = $paymentModel->getName() === "rpayratepayrate0" ? : $setToDefaultPayment;
                 continue;
             }

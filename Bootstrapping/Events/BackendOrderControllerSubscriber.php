@@ -12,6 +12,7 @@ use RatePAY\Service\Math;
 use RatePAY\Service\Util;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\PaymentProcessor;
+use RpayRatePay\Component\Service\Logger;
 
 class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -98,8 +99,8 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             }
 
         } catch(\Exception $e) {
-            Shopware()->Pluginlogger()->error($e->getMessage());
-            Shopware()->Pluginlogger()->error($e->getTraceAsString());
+            Logger::singleton()->error($e->getMessage());
+            Logger::singleton()->error($e->getTraceAsString());
 
             $this->fail($view, [$e->getMessage()]);
         }

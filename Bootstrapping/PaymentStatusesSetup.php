@@ -8,6 +8,7 @@
 namespace RpayRatePay\Bootstrapping;
 
 use RpayRatePay\Bootstrapping\Bootstrapper;
+use RpayRatePay\Component\Service\Logger;
 
 class PaymentStatusesSetup extends Bootstrapper
 {
@@ -21,7 +22,7 @@ class PaymentStatusesSetup extends Bootstrapper
                 155, 'Zahlungsabwicklung durch RatePAY', 155, 'payment', 0
             ));
         } catch (\Exception $exception) {
-            Shopware()->Pluginlogger()->addNotice($exception->getMessage());
+            Logger::singleton()->addNotice($exception->getMessage());
         }
     }
 
