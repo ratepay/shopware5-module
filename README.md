@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
-|Version | `5.2.2` 
+|Version | `5.2.3` 
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
