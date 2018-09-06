@@ -10,6 +10,7 @@ namespace RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use Shopware\Components\Plugin;
+use RpayRatePay\Component\Service\Logger;
 
 class PaymentProcessor
 {
@@ -57,11 +58,11 @@ class PaymentProcessor
     public function insertRatepayPositions($order)
     {
         $sql = "SELECT `id` FROM `s_order_details` WHERE `ordernumber`=?;";
-        Shopware()->Pluginlogger()->info('NOW SETTING ORDER DETAILS: ' . $sql);
+        Logger::singleton()->info('NOW SETTING ORDER DETAILS: ' . $sql);
 
         $rows = $this->db->fetchAll($sql, array($order->getNumber()));
 
-        Shopware()->Pluginlogger()->info('GOT ROWS ' . count($rows));
+        Logger::singleton()->info('GOT ROWS ' . count($rows));
 
         $values = "";
         foreach ($rows as $row) {
@@ -69,11 +70,11 @@ class PaymentProcessor
         }
         $values = substr($values, 0, -1);
         $sqlInsert = "INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES " . $values;
-        Shopware()->Pluginlogger()->info('INSERT NOW ' . $sqlInsert);
+        Logger::singleton()->info('INSERT NOW ' . $sqlInsert);
         try {
             $this->db->query($sqlInsert);
         } catch (Exception $exception) {
-            Shopware()->Pluginlogger()->error($exception->getMessage());
+            Logger::singleton()->error($exception->getMessage());
         }
     }
 

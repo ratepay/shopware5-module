@@ -1,6 +1,8 @@
 <?php
 namespace RpayRatePay\Bootstrapping\Events;
 
+use RpayRatePay\Component\Service\Logger;
+
 class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
 {
 
@@ -38,7 +40,7 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
                 $orderProcessor->informRatepayOfOrderStatusChange($order);
             }
         } catch(\Exception $e) {
-            Shopware()->Pluginlogger()->error('Fehler UpdateTransactionsSubscriber: ' .
+            Logger::singleton()->error('Fehler UpdateTransactionsSubscriber: ' .
                 $e->getMessage() . ' ' .
                 $e->getTraceAsString());
             return $e->getMessage();

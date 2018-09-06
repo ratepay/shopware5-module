@@ -6,6 +6,7 @@
  * Time: 10:23
  */
 namespace RpayRatePay\Bootstrapping\Events;
+use RpayRatePay\Component\Service\Logger;
 
 class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -49,7 +50,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
         if ((!in_array($order->getPayment()->getName(), $paymentMethods) && in_array($newPaymentMethod->getName(), $paymentMethods))
             || (in_array($order->getPayment()->getName(), $paymentMethods) && $newPaymentMethod->getName() != $order->getPayment()->getName())
         ) {
-            Shopware()->Pluginlogger()->addNotice('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
+            Logger::singleton()->addNotice('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
             $arguments->stop();
             throw new Exception('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
         }
@@ -132,7 +133,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['orderID']);
         $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if ($parameter['valid'] != true && in_array($order->getPayment()->getName(), $paymentMethods)) {
-            Shopware()->Pluginlogger()->warning('Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
+            Logger::singleton()->warning('Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
             $arguments->stop();
         }
 
@@ -163,7 +164,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
             . "(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)";
         $count = Shopware()->Db()->fetchOne($sql, array($parameter['id']));
         if ($count > 0) {
-            Shopware()->Pluginlogger()->warning('RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.');
+            Logger::singleton()->warning('RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.');
             $arguments->stop();
         }
         else {
@@ -205,7 +206,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
             $result = $modelFactory->callRequest('PaymentChange', $operationData);
 
             if ($result !== true) {
-                Shopware()->Pluginlogger()->warning('Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');
+                Logger::singleton()->warning('Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');
                 $arguments->stop();
             }
         }

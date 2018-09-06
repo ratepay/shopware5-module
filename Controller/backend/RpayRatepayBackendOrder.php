@@ -21,6 +21,7 @@
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ConfigLoader;
+use RpayRatePay\Component\Service\Logger;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
 {
@@ -42,7 +43,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
      */
     public function setExtendedDataAction()
     {
-        Shopware()->Pluginlogger()->info('Now calling setExtendedData');
+        Logger::singleton()->info('Now calling setExtendedData');
         $params = $this->Request()->getParams();
 
         $iban = trim($params["iban"]);

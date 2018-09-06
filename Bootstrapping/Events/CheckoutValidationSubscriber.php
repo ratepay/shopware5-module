@@ -6,6 +6,7 @@
  * Time: 10:50
  */
 namespace RpayRatePay\Bootstrapping\Events;
+use RpayRatePay\Component\Service\Logger;
 
 class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -55,7 +56,7 @@ class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
 
         $userId = Shopware()->Session()->sUserId;
         if (empty($userId)) {
-            Shopware()->Pluginlogger()->warning('RatePAY: sUserId is empty');
+            Logger::singleton()->warning('RatePAY: sUserId is empty');
             return;
         }
 
@@ -69,13 +70,13 @@ class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
             $view->sRegisterFinished = 'false';
 
             $view->ratepayValidateCompanyName = $validation->isCompanyNameSet() ? 'true' : 'false';
-            Shopware()->Pluginlogger()->info('RatePAY: isCompanyNameSet->' . $view->ratepayValidateCompanyName);
+            Logger::singleton()->info('RatePAY: isCompanyNameSet->' . $view->ratepayValidateCompanyName);
 
             $view->ratepayValidateIsB2B = $validation->isCompanyNameSet() ? 'true' : 'false';
-            Shopware()->Pluginlogger()->info('RatePAY: isB2B->' . $view->ratepayValidateIsB2B);
+            Logger::singleton()->info('RatePAY: isB2B->' . $view->ratepayValidateIsB2B);
 
             $view->ratepayIsBillingAddressSameLikeShippingAddress = $validation->isBillingAddressSameLikeShippingAddress() ? 'true' : 'false';
-            Shopware()->Pluginlogger()->info('RatePAY: isBillingAddressSameLikeShippingAddress->' . $view->ratepayIsBillingAddressSameLikeShippingAddress);
+            Logger::singleton()->info('RatePAY: isBillingAddressSameLikeShippingAddress->' . $view->ratepayIsBillingAddressSameLikeShippingAddress);
 
             if ($view->ratepayValidateIsB2B === false) {
                 $view->ratepayValidateIsBirthdayValid = $validation->isBirthdayValid();

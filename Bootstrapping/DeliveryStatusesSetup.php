@@ -8,6 +8,7 @@
 namespace RpayRatePay\Bootstrapping;
 
 use RpayRatePay\Bootstrapping\Bootstrapper;
+use RpayRatePay\Component\Service\Logger;
 
 class DeliveryStatusesSetup extends Bootstrapper
 {
@@ -21,14 +22,14 @@ class DeliveryStatusesSetup extends Bootstrapper
                 255, 'Teil-(Retoure)', 255, 'state', 0
             ));
         } catch (\Exception $exception) {
-            Shopware()->Pluginlogger()->addNotice($exception->getMessage());
+            Logger::singleton()->addNotice($exception->getMessage());
         }
         try {
             Shopware()->Db()->query($sql, array(
                 265, 'Teil-(Storno)', 265, 'state', 0
             ));
         } catch (\Exception $exception) {
-            Shopware()->Pluginlogger()->addNotice($exception->getMessage());
+            Logger::singleton()->addNotice($exception->getMessage());
         }
     }
 
