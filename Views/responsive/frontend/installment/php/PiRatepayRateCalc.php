@@ -111,8 +111,7 @@
                 $currency = '&euro;';
                 $decimalSeperator = ',';
                 $thousandSepeartor = '.';
-            }
-            else {
+            } else {
                 $currency = '&euro;';
                 $decimalSeperator = '.';
                 $thousandSepeartor = ',';

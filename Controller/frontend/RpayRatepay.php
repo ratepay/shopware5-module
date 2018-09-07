@@ -123,7 +123,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
         /** @var Shopware\Models\Customer\Customer $userModel */
         $userModel = $customerModel->findOneBy(array('id' => Shopware()->Session()->sUserId));
-        $userWrapped = new ShopwareCustomerWrapper($userModel);
+        $userWrapped = new ShopwareCustomerWrapper($userModel, Shopware()->Models());
 
         if (isset($Parameter['checkoutBillingAddressId']) && !is_null($Parameter['checkoutBillingAddressId'])) { // From Shopware 5.2 current billing address is sent by parameter
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
