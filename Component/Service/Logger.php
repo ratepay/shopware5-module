@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 05.09.18
- * Time: 10:17
- */
+
 namespace  RpayRatePay\Component\Service;
 
 class Logger

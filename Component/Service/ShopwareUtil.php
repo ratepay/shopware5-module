@@ -18,9 +18,9 @@ use Shopware;
 class ShopwareUtil
 {
     protected $debitPayTypes = [
-        '2' => "DIRECT-DEBIT",
-        '28' => "BANK-TRANSFER",
-        '2,28' => "FIRSTDAY-SWITCH"
+        '2' => 'DIRECT-DEBIT',
+        '28' => 'BANK-TRANSFER',
+        '2,28' => 'FIRSTDAY-SWITCH'
     ];
 
     /**

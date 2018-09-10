@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: awhittington
- * Date: 11.07.18
- * Time: 09:14
- */
+
 namespace RpayRatePay\Component\Service;
 
 class ConfigLoader
@@ -23,16 +18,15 @@ class ConfigLoader
 
         //TODO parameterize
         $this->config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-
     }
 
-
-    private function getPaymentMeansMap() {
+    private function getPaymentMeansMap()
+    {
         return [
-            "rpayratepayrate" => "installment",
-            "rpayratepayinvoice" => "invoice",
-            "rpayratepaydebit" => "debit",
-            "rpayratepayrate0" => "installment0"
+            'rpayratepayrate' => 'installment',
+            'rpayratepayinvoice' => 'invoice',
+            'rpayratepaydebit' => 'debit',
+            'rpayratepayrate0' => 'installment0'
         ];
     }
 
@@ -43,13 +37,13 @@ class ConfigLoader
     public function getPaymentColumnFromPaymentMeansName($paymentName)
     {
         $map = $this->getPaymentMeansMap();
-        if( array_key_exists($paymentName, $map)) {
+        if (array_key_exists($paymentName, $map)) {
             return $map[$paymentName];
         } else {
             return null;
         }
     }
-    
+
     /**
      * @param int $shopId
      * @param string $countryISO
@@ -64,12 +58,12 @@ class ConfigLoader
 
         $sBackend = $backend ? '1' : '0';
 
-        $qry = "SELECT * 
+        $qry = 'SELECT *
                         FROM `rpay_ratepay_config` AS rrc
                           JOIN `rpay_ratepay_config_payment` AS rrcp
-                            ON rrcp.`rpay_id` = rrc.`" . $paymentColumn . "`
+                            ON rrcp.`rpay_id` = rrc.`' . $paymentColumn . '`
                           LEFT JOIN `rpay_ratepay_config_installment` AS rrci
-                            ON rrci.`rpay_id` = rrc.`" . $paymentColumn . "`
+                            ON rrci.`rpay_id` = rrc.`' . $paymentColumn . "`
                         WHERE rrc.`shopId` = '" . $shopId . "'
                              AND rrc.`profileId`= '" . $profileId . "'
                         AND rrc.backend=$sBackend";

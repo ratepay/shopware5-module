@@ -1,16 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 06.07.18
- * Time: 10:57
- */
-
-// namespace RpayRatePay\Component\Mapper;
 
 use RatePAY\Service\Math;
 
-class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
+class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
 {
     /**
      * @var array
@@ -194,13 +186,13 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
         if (!$this->itemObjectHasName($item)) {
             $itemData = $this->getUnnamedItem($item);
         } else {
-            $itemData = array(
+            $itemData = [
                 'Description' => $item->name,
                 'ArticleNumber' => $item->articlenumber,
                 'Quantity' => $item->quantity,
                 'UnitPriceGross' => $unitPriceGross,
                 'TaxRate' => $item->taxRate,
-            );
+            ];
         }
 
         if (!empty($this->requestType)) {
@@ -219,7 +211,6 @@ class  Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function getUnnamedItem($item)
     {
-
         $swPrice = $item->getPrice();
         $unitPriceGross = $this->netItemPrices ? Math::netToGross($swPrice, $item->taxRate) : $swPrice;
 

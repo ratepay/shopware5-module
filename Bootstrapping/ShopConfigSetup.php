@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 12.06.18
- * Time: 13:49
- */
+
 namespace RpayRatePay\Bootstrapping;
 
 use RpayRatePay\Component\Service\ConfigLoader;
@@ -12,15 +7,16 @@ use RpayRatePay\Component\Service\RatepayConfigWriter;
 
 class ShopConfigSetup extends Bootstrapper
 {
-    public static $AVAILABLE_COUNTRIES = array(
+    public static $AVAILABLE_COUNTRIES = [
         'DE',
         'AT',
         'CH',
         'NL',
         'BE'
-    );
+    ];
 
-    public function install() {
+    public function install()
+    {
         // do nothing
     }
 
@@ -28,7 +24,8 @@ class ShopConfigSetup extends Bootstrapper
      * @return mixed|void
      * @throws \Exception
      */
-    public function update() {
+    public function update()
+    {
         $configLoader = new ConfigLoader(Shopware()->Db());
         $configWriter = new RatepayConfigWriter(Shopware()->Db());
 
@@ -38,7 +35,7 @@ class ShopConfigSetup extends Bootstrapper
         $shops = $repo->findBy(['active' => true]);
 
         /** @var \Shopware\Models\Shop\Shop $shop */
-        foreach($shops as $shop) {
+        foreach ($shops as $shop) {
             $this->updateRatepayConfig($configLoader, $configWriter, $shop->getId(), false);
             $this->updateRatepayConfig($configLoader, $configWriter, $shop->getId(), true);
         }
@@ -47,8 +44,9 @@ class ShopConfigSetup extends Bootstrapper
     /**
      * @return mixed|void
      */
-    public function uninstall() {}
-
+    public function uninstall()
+    {
+    }
 
     /**
      * @param $configLoader
@@ -62,7 +60,7 @@ class ShopConfigSetup extends Bootstrapper
             $profileId = $configLoader->getProfileId($iso, $shopId, false, $backend);
             $securityCode = $configLoader->getSecurityCode($iso, $shopId, $backend);
 
-            if(empty($profileId)) {
+            if (empty($profileId)) {
                 continue;
             }
 

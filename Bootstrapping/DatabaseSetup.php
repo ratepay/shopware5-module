@@ -1,14 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 12.06.18
- * Time: 13:26
- */
+
 namespace RpayRatePay\Bootstrapping;
 
 use RpayRatePay\Component\Service\ShopwareUtil;
-use RpayRatePay\Bootstrapping\Bootstrapper;
 
 class DatabaseSetup extends Bootstrapper
 {
@@ -16,7 +10,8 @@ class DatabaseSetup extends Bootstrapper
      * @return mixed|void
      * @throws Exception
      */
-    public function install() {
+    public function install()
+    {
         $this->createDatabaseTables();
     }
 
@@ -24,7 +19,8 @@ class DatabaseSetup extends Bootstrapper
      * @return mixed|void
      * @throws Exception
      */
-    public function update() {
+    public function update()
+    {
         $this->updateConfigurationTables();
         $this->removeSandboxColumns();
     }

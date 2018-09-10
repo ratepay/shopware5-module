@@ -7,7 +7,6 @@ use Shopware\Components\Test\Plugin\TestCase;
 
 class PaymentFilterSubscriberTest extends TestCase
 {
-
     public function testFilterPayments__returnNullWhenUserEmpty()
     {
         //$address = $this->getRandomAddress();
@@ -22,7 +21,6 @@ class PaymentFilterSubscriberTest extends TestCase
 
         $this->assertNull($returnNothing);
     }
-
 
     public function testFilterPayments__allPaymentTypesTurnedOff()
     {
@@ -66,12 +64,11 @@ class PaymentFilterSubscriberTest extends TestCase
     {
         $mock = $this->getMockBuilder(
             'RpayRatePay\Bootstrapping\Events\PaymentFilterSubscriber'
-        )->setMethods(['getRatePayPluginConfigByCountry',' getValidator'])
+        )->setMethods(['getRatePayPluginConfigByCountry', ' getValidator'])
          ->getMock();
 
         $mock->method('getRatePayPluginConfigByCountry')
             ->willReturn($configResults);
-
 
         $validatorStub = $this->createMock('Shopware_Plugins_Frontend_RpayRatePay_Component_Validation');
 

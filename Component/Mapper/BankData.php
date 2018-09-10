@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: awhittington
- * Date: 17.07.18
- * Time: 09:48
- */
 
 namespace RpayRatePay\Component\Mapper;
-
 
 class BankData
 {
@@ -77,7 +70,6 @@ class BankData
         $this->bankCode = $bankCode;
         $this->accountNumber = $accountNumber;
     }
-
 
     /**
      * @return array
