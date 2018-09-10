@@ -1,20 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 12.06.18
- * Time: 13:49
- */
-namespace RpayRatePay\Bootstrapping;
 
-use RpayRatePay\Bootstrapping\Bootstrapper;
+namespace RpayRatePay\Bootstrapping;
 
 class PaymentsSetup extends Bootstrapper
 {
     /**
      * @throws Exception
      */
-    public function install() {
+    public function install()
+    {
         try {
             $paymentMethods = $this->loadConfig('payment_methods_install.json');
             foreach ($paymentMethods as $payment) {
@@ -23,7 +17,7 @@ class PaymentsSetup extends Bootstrapper
             }
         } catch (\Exception $exception) {
             $this->bootstrap->uninstall();
-            throw new Exception("Can not create payment." . $exception->getMessage());
+            throw new Exception('Can not create payment.' . $exception->getMessage());
         }
     }
 
@@ -31,7 +25,8 @@ class PaymentsSetup extends Bootstrapper
      * @return mixed|void
      * @throws Exception
      */
-    public function update() {
+    public function update()
+    {
         $paymentMethods = $this->loadConfig('payment_methods_update.json');
         foreach ($paymentMethods as $payment) {
             $payment['pluginID'] = $this->bootstrap->getId();
@@ -42,5 +37,7 @@ class PaymentsSetup extends Bootstrapper
     /**
      * @return mixed|void
      */
-    public function uninstall() {}
+    public function uninstall()
+    {
+    }
 }

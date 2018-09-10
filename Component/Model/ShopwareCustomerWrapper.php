@@ -14,10 +14,8 @@ use RatePAY\Service\Util;
  */
 class ShopwareCustomerWrapper
 {
-
     /** @var Customer $customer */
     private $customer;
-
 
     /** @var \Shopware\Components\Model\ModelManager $em */
     private $em;
@@ -115,7 +113,6 @@ class ShopwareCustomerWrapper
         return $rotten;
     }
 
-
     /**
      * @return null|object|\Shopware\Models\Country\Country
      * @throws \Doctrine\ORM\ORMException
@@ -165,8 +162,6 @@ class ShopwareCustomerWrapper
 
         return $country;
     }
-
-
 
     /**
      * @return null|\Shopware\Models\Customer\Address

@@ -1,11 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:23
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
+
 use RpayRatePay\Component\Service\Logger;
 
 class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
@@ -116,7 +112,6 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
         }
     }
 
-
     /**
      * Stops Order deletion, when its not permitted
      *
@@ -157,23 +152,22 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
         if (!in_array($parameter['payment'][0]['name'], $paymentMethods)) {
             return false;
         }
-        $sql = "SELECT COUNT(*) FROM `s_order_details` AS `detail` "
-            . "INNER JOIN `rpay_ratepay_order_positions` AS `position` "
-            . "ON `position`.`s_order_details_id` = `detail`.`id` "
-            . "WHERE `detail`.`orderID`=? AND "
-            . "(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)";
-        $count = Shopware()->Db()->fetchOne($sql, array($parameter['id']));
+        $sql = 'SELECT COUNT(*) FROM `s_order_details` AS `detail` '
+            . 'INNER JOIN `rpay_ratepay_order_positions` AS `position` '
+            . 'ON `position`.`s_order_details_id` = `detail`.`id` '
+            . 'WHERE `detail`.`orderID`=? AND '
+            . '(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)';
+        $count = Shopware()->Db()->fetchOne($sql, [$parameter['id']]);
         if ($count > 0) {
             Logger::singleton()->warning('RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.');
             $arguments->stop();
-        }
-        else {
+        } else {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
 
-            $sqlShipping = "SELECT invoice_shipping FROM s_order WHERE id = ?";
-            $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, array($parameter['id']));
+            $sqlShipping = 'SELECT invoice_shipping FROM s_order WHERE id = ?';
+            $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, [$parameter['id']]);
 
-            $items = array();
+            $items = [];
             $i = 0;
             foreach ($order->getDetails() as $item) {
                 $items[$i]['articlename'] = $item->getArticlename();

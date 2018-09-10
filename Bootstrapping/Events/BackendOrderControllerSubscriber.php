@@ -1,15 +1,8 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:48
- */
 namespace RpayRatePay\Bootstrapping\Events;
 
 use RatePAY\Service\Math;
-use RatePAY\Service\Util;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Service\Logger;
@@ -47,7 +40,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
     {
         Shopware()->Template()->addTemplateDir($this->path . 'Views/');
 
-        return $this->path . "Controller/backend/RpayRatepayBackendOrder.php";
+        return $this->path . 'Controller/backend/RpayRatepayBackendOrder.php';
     }
 
     public function beforeCreateOrderAction(\Enlight_Hook_HookArgs $hookArgs)
@@ -73,7 +66,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
             $swagValidations = $this->runSwagValidations($orderStruct);
 
-            if($swagValidations->getMessages()) {
+            if ($swagValidations->getMessages()) {
                 $this->fail($view, $swagValidations->getMessages());
                 return;
             }
@@ -89,16 +82,14 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
                 //let SWAG write order to db
                 $this->forwardToSWAGBackendOrders($hookArgs);
 
-                $orderId = $view->getAssign("orderId");
+                $orderId = $view->getAssign('orderId');
 
                 $this->doPostProcessing($orderId, $answer, $paymentRequestData);
-
             } else {
                 $customerMessage = $answer->getCustomerMessage();
                 $this->fail($view, [$customerMessage]);
             }
-
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Logger::singleton()->error($e->getMessage());
             Logger::singleton()->error($e->getTraceAsString());
 
@@ -106,10 +97,11 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
         }
     }
 
-    private function orderStructToPaymentRequestData(\SwagBackendOrder\Components\Order\Struct\OrderStruct $orderStruct,
+    private function orderStructToPaymentRequestData(
+        \SwagBackendOrder\Components\Order\Struct\OrderStruct $orderStruct,
                                                      \Shopware\Models\Payment\Payment $paymentType,
-                                                     \Shopware\Models\Customer\Customer $customer)
-    {
+                                                     \Shopware\Models\Customer\Customer $customer
+    ) {
         $method = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
             $paymentType->getName()
         );
@@ -119,11 +111,11 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
         $shipping = Shopware()->Models()->find('Shopware\Models\Customer\Address', $orderStruct->getShippingAddressId());
 
         $items = [];
-        foreach($orderStruct->getPositions() as $positionStruct) {
+        foreach ($orderStruct->getPositions() as $positionStruct) {
             $items[] = $this->positionStructToArray($positionStruct);
         }
 
-        $shippingTax =  Math::taxFromPrices(
+        $shippingTax = Math::taxFromPrices(
             $orderStruct->getShippingCostsNet(),
             $orderStruct->getShippingCosts()
         );
@@ -136,7 +128,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
         $dfpToken = '';
 
         $shop = Shopware()->Models()->find('Shopware\Models\Shop\Shop', $orderStruct->getLanguageShopId());
-        $localeLang =  $shop->getLocale()->getLocale();
+        $localeLang = $shop->getLocale()->getLocale();
         $lang = substr($localeLang, 0, 2);
 
         $amount = $orderStruct->getTotal();
@@ -177,9 +169,9 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
     private function runSwagValidations($orderStruct)
     {
-            $validator = Shopware()->Container()->get('swag_backend_order.order.order_validator');
-            $violations = $validator ->validate($orderStruct);
-            return $violations;
+        $validator = Shopware()->Container()->get('swag_backend_order.order.order_validator');
+        $violations = $validator->validate($orderStruct);
+        return $violations;
     }
 
     private function doPostProcessing($orderId, $answer, $paymentRequestData)
@@ -197,7 +189,8 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
         }
 
         //set order attributes
-        $paymentProcessor->setOrderAttributes($order,
+        $paymentProcessor->setOrderAttributes(
+            $order,
             $answer,
             Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem'),
             true

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: awhittington
- * Date: 12.07.18
- * Time: 13:40
- */
 
 namespace RpayRatePay\Component\Mapper;
 
@@ -126,7 +120,8 @@ class PaymentRequestData
         return $this->dfpToken;
     }
 
-    public function __construct($method,
+    public function __construct(
+        $method,
                                 $customer,
                                 $billingAddress,
                                 $shippingAddress,
@@ -136,8 +131,7 @@ class PaymentRequestData
                                 $dfpToken,
                                 $lang,
                                 $amount
-    )
-    {
+    ) {
         $this->method = $method;
         $this->customer = $customer;
         $this->billingAddress = $billingAddress;
@@ -163,11 +157,11 @@ class PaymentRequestData
         $customerBilling = $customerWrapped->getBilling();
 
         if (Util::existsAndNotEmpty($this->customer, 'getBirthday')) {
-            $dateOfBirth = $this->customer->getBirthday()->format("Y-m-d"); // From Shopware 5.2 date of birth has moved to customer object
-        } else if (Util::existsAndNotEmpty($customerBilling, 'getBirthday')) {
-            $dateOfBirth = $customerBilling->getBirthday()->format("Y-m-d");
-        } else if (Util::existsAndNotEmpty($this->billingAddress, 'getBirthday')) {
-            $dateOfBirth = $this->billingAddress->getBirthday()->format("Y-m-d");
+            $dateOfBirth = $this->customer->getBirthday()->format('Y-m-d'); // From Shopware 5.2 date of birth has moved to customer object
+        } elseif (Util::existsAndNotEmpty($customerBilling, 'getBirthday')) {
+            $dateOfBirth = $customerBilling->getBirthday()->format('Y-m-d');
+        } elseif (Util::existsAndNotEmpty($this->billingAddress, 'getBirthday')) {
+            $dateOfBirth = $this->billingAddress->getBirthday()->format('Y-m-d');
         }
 
         return $dateOfBirth;

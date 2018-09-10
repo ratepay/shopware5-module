@@ -1,7 +1,6 @@
 <?php
-namespace RpayRatePay\Bootstrapping;
 
-use RpayRatePay\Bootstrapping\Bootstrapper;
+namespace RpayRatePay\Bootstrapping;
 
 class CronjobSetup extends Bootstrapper
 {

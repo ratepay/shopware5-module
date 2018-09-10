@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 11:25
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
 
 class JavascriptSourceSubscriber implements \Enlight\Event\SubscriberInterface
@@ -37,9 +32,9 @@ class JavascriptSourceSubscriber implements \Enlight\Event\SubscriberInterface
      */
     public function addJsFiles()
     {
-        $jsPath = array(
+        $jsPath = [
             $this->path . 'Views/responsive/frontend/_public/src/javascripts/jquery.ratepay_checkout.js'
-        );
+        ];
 
         return new \Doctrine\Common\Collections\ArrayCollection($jsPath);
     }
