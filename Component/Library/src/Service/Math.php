@@ -1,6 +1,7 @@
 <?php
 
 namespace RatePAY\Service;
+use RpayRatePay\Component\Service\Logger;
 
 
 /**
@@ -13,20 +14,15 @@ class Math
     /**
      * @param float $netPrice
      * @param float|int $taxPercentage
-     * @param bool $round
+     * @param bool $roundToTwoDecimals
      * @return float
      */
-    public static function netToGross($netPrice, $taxPercentage, $round = false)
+    public static function netToGross($netPrice, $taxPercentage, $roundToTwoDecimals = false)
     {
-        $withTax = $netPrice + $netPrice * $taxPercentage / 100;
+        $withTax = $netPrice + ($netPrice * $taxPercentage / 100);
+        $precision = $roundToTwoDecimals ? 2 : 3;
 
-        if (!$round) {
-            return $withTax;
-        }
-
-        $rounded = round($withTax, 2);
-
-        return $rounded;
+        return round($withTax, $precision);
     }
 
     /**

@@ -826,7 +826,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             Math::netToGross($shippingData->getShippingCost(), $shippingData->getShippingTax()) :
             $shippingData->getShippingCost();
 
-        $priceGross = money_format('%.2n', $priceGross);
+        $priceGross = round($priceGross, 3);
 
         $item = [
             'Description' => 'Shipping costs',
