@@ -7,6 +7,8 @@
      * @package pi_ratepay_rate_calculator
      * Code by Ratepay GmbH  <http://www.ratepay.com/>
      */
+    use RpayRatePay\Component\Service\ShopwareUtil;
+
     $pi_calculator = new PiRatepayRateCalc();
 
     $pi_calculator->unsetData();
@@ -18,7 +20,7 @@
     $pi_firstday = $pi_calculator->getRequestFirstday();
 
     if ($pi_config['payment_firstday'] && ! empty($pi_config['payment_firstday'])) {
-        $serviceUtil = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util();
+        $serviceUtil = new ShopwareUtil();
         $debitPayType = $serviceUtil->getDebitPayType($pi_config['payment_firstday']);
     } else {
         $pi_config['payment_firstday'] = 28;

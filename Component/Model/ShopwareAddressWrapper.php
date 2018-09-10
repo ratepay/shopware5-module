@@ -19,7 +19,6 @@ class ShopwareAddressWrapper
     /** @var string */
     private $addressClass;
 
-
     /**
      * ShopwareAddressWrapper constructor.
      * @param object $address

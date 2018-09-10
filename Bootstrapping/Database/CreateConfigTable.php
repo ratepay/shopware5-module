@@ -7,7 +7,7 @@
  */
 namespace RpayRatePay\Bootstrapping\Database;
 
-use Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util as Util;
+use RpayRatePay\Component\Service\ShopwareUtil;
 
 class CreateConfigTable
 {
@@ -46,7 +46,7 @@ class CreateConfigTable
     {
         $database->query($this->getQuery());
 
-        $hasColumnBackend = Util::tableHasColumn('rpay_ratepay_config', 'backend');
+        $hasColumnBackend = ShopwareUtil::tableHasColumn('rpay_ratepay_config', 'backend');
 
         if (!$hasColumnBackend) {
             $sql = "ALTER TABLE rpay_ratepay_config ADD COLUMN backend int(1) NOT NULL";

@@ -19,6 +19,7 @@
  */
 
 use RpayRatePay\Component\Service\SessionLoader;
+use RpayRatePay\Component\Service\ShopwareUtil;
 use Shopware\Components\CSRFWhitelistAware;
 use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
@@ -57,7 +58,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
         $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $customerId);
 
-        $netPrices = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::customerCreatesNetOrders($customer);
+        $netPrices = ShopwareUtil::customerCreatesNetOrders($customer);
 
         $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
         $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
