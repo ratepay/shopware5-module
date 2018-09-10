@@ -7,6 +7,7 @@ use RatePAY\Service\Util;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\Logger;
+use RpayRatePay\Component\Service\ShopwareUtil;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -380,7 +381,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         }
         $elv = false;
         if (!empty($installmentDetails)) {
-            $serviceUtil = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util();
+            $serviceUtil = new ShopwareUtil();
 
             $contentArr['Payment']['DebitPayType'] = $serviceUtil->getDebitPayType(
                 $this->getSession()->RatePAY['ratenrechner']['payment_firstday']

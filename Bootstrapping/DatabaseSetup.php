@@ -2,7 +2,7 @@
 
 namespace RpayRatePay\Bootstrapping;
 
-use Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util as Util;
+use RpayRatePay\Component\Service\ShopwareUtil;
 
 class DatabaseSetup extends Bootstrapper
 {
@@ -97,7 +97,7 @@ class DatabaseSetup extends Bootstrapper
 
     private function removeSandboxColumns()
     {
-        if (Util::tableHasColumn('s_core_config_elements', 'RatePaySandboxDE')) {
+        if (ShopwareUtil::tableHasColumn('s_core_config_elements', 'RatePaySandboxDE')) {
             try {
                 Shopware()->Db()->query(
                     "DELETE FROM `s_core_config_elements` WHERE `s_core_config_elements`.`name` LIKE 'RatePaySandbox%'"

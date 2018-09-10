@@ -73,7 +73,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
             $paymentRequestData = $this->orderStructToPaymentRequestData($orderStruct, $paymentType, $customer);
 
-            $netItemPrices = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::customerCreatesNetOrders($customer);
+            $netItemPrices = \RpayRatePay\Component\Service\ShopwareUtil::customerCreatesNetOrders($customer);
             $paymentRequester = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true, $netItemPrices);
 
             $answer = $paymentRequester->callPaymentRequest($paymentRequestData);
@@ -102,7 +102,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
                                                      \Shopware\Models\Payment\Payment $paymentType,
                                                      \Shopware\Models\Customer\Customer $customer
     ) {
-        $method = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
+        $method = \RpayRatePay\Component\Service\ShopwareUtil::getPaymentMethod(
             $paymentType->getName()
         );
 

@@ -116,7 +116,7 @@ class SessionLoader
 
     public function getPaymentRequestData()
     {
-        $method = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
+        $method = ShopwareUtil::getPaymentMethod(
             $this->session->sOrderVariables['sUserData']['additional']['payment']['name']
         );
 
