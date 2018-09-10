@@ -1,13 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:53
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
 
-use RatePAY\Service\Util;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
@@ -57,18 +51,17 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         //get country of order
         if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 find current address information in default billing address
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $customerAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
+            $customerAddressBilling = $addressModel->findOneBy(['id' => Shopware()->Session()->checkoutBillingAddressId]);
 
             $countryBilling = $customerAddressBilling->getCountry();
 
             if (Shopware()->Session()->checkoutShippingAddressId > 0 && Shopware()->Session()->checkoutShippingAddressId != Shopware()->Session()->checkoutBillingAddressId) {
-                $customerAddressShipping = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
+                $customerAddressShipping = $addressModel->findOneBy(['id' => Shopware()->Session()->checkoutShippingAddressId]);
                 $countryDelivery = $customerAddressShipping->getCountry();
             } else {
                 $countryDelivery = $countryBilling;
             }
         } else {
-
             $countryBilling = $wrappedUser->getBillingCountry();
             $countryDelivery = $wrappedUser->getShippingCountry();
 
@@ -82,7 +75,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 
         $backend = false;
         $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling, $backend);
-        foreach ($config AS $payment => $data) {
+        foreach ($config as $payment => $data) {
             $show[$payment] = $data['status'] == 2 ? true : false;
 
             $validation = $this->getValidator($user);
@@ -125,7 +118,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
                 Logger::singleton()->info('BasketAmount: ' . $basket);
                 $isB2b = $validation->isCompanyNameSet();
 
-                if (!ValidationService::areAmountsValid($isB2b,$data, $basket)) {
+                if (!ValidationService::areAmountsValid($isB2b, $data, $basket)) {
                     $show[$payment] = false;
                     continue;
                 }
@@ -135,26 +128,26 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         $paymentModel = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
         $setToDefaultPayment = false;
 
-        $payments = array();
+        $payments = [];
         foreach ($return as $payment) {
             if ($payment['name'] === 'rpayratepayinvoice' && !$show['invoice']) {
                 Logger::singleton()->info('RatePAY: Filter RatePAY-Invoice');
-                $setToDefaultPayment = $paymentModel->getName() === "rpayratepayinvoice" ? : $setToDefaultPayment;
+                $setToDefaultPayment = $paymentModel->getName() === 'rpayratepayinvoice' ?: $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === 'rpayratepaydebit' && !$show['debit']) {
                 Logger::singleton()->info('RatePAY: Filter RatePAY-Debit');
-                $setToDefaultPayment = $paymentModel->getName() === "rpayratepaydebit" ? : $setToDefaultPayment;
+                $setToDefaultPayment = $paymentModel->getName() === 'rpayratepaydebit' ?: $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === 'rpayratepayrate' && !$show['installment']) {
                 Logger::singleton()->info('RatePAY: Filter RatePAY-Rate');
-                $setToDefaultPayment = $paymentModel->getName() === "rpayratepayrate" ? : $setToDefaultPayment;
+                $setToDefaultPayment = $paymentModel->getName() === 'rpayratepayrate' ?: $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === 'rpayratepayrate0' && !$show['installment0']) {
                 Logger::singleton()->info('RatePAY: Filter RatePAY-Rate0');
-                $setToDefaultPayment = $paymentModel->getName() === "rpayratepayrate0" ? : $setToDefaultPayment;
+                $setToDefaultPayment = $paymentModel->getName() === 'rpayratepayrate0' ?: $setToDefaultPayment;
                 continue;
             }
             $payments[] = $payment;
@@ -175,7 +168,6 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         return new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user);
     }
 
-
     /**
      * Get ratepay plugin config from rpay_ratepay_config table
      *
@@ -184,14 +176,14 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
      * @param bool $backend
      * @return array
      */
-    private function getRatePayPluginConfigByCountry($shopId, $country, $backend = false) {
-
+    private function getRatePayPluginConfigByCountry($shopId, $country, $backend = false)
+    {
         $configLoader = new ConfigLoader(Shopware()->Db());
 
-        $payments = array("installment", "invoice", "debit", "installment0");
-        $paymentConfig = array();
+        $payments = ['installment', 'invoice', 'debit', 'installment0'];
+        $paymentConfig = [];
 
-        foreach ($payments AS $payment) {
+        foreach ($payments as $payment) {
             $result = $configLoader->getPluginConfigForPaymentType($shopId, $country->getIso(), $payment, $backend);
 
             if (!empty($result)) {

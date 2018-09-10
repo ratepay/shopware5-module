@@ -23,7 +23,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 WHERE o.id = ?
                 AND (rop.delivered != 0 OR rop.cancelled != 0 OR rop.returned != 0)';
 
-        $count = Shopware()->Db()->fetchOne($query, array($order->getId()));
+        $count = Shopware()->Db()->fetchOne($query, [$order->getId()]);
 
         return (int)$count === 0;
     }
@@ -49,10 +49,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 WHERE o.id = ?
                 AND (rop.delivered !=0 OR rop.cancelled != 0 OR rop.returned != 0)';
 
-        $count = Shopware()->Db()->fetchOne($query, array($order->getId()));
+        $count = Shopware()->Db()->fetchOne($query, [$order->getId()]);
 
         return (int)$count === 0;
-
     }
 
     /**
@@ -76,7 +75,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 WHERE o.id = ?
                 AND (rop.delivered = 0 OR rop.cancelled != 0 OR rop.returned != 0)';
 
-        $count = Shopware()->Db()->fetchOne($query, array($order->getId()));
+        $count = Shopware()->Db()->fetchOne($query, [$order->getId()]);
 
         return (int)$count === 0;
     }
@@ -96,11 +95,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
         $netPrices = $order->getNet() === 1;
         $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices);
-        $history      = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
+        $history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
 
         $shippingCosts = $order->getInvoiceShipping();
 
-        $items = array();
+        $items = [];
         $i = 0;
         foreach ($order->getDetails() as $item) {
             $items[$i]['articlename'] = $item->getArticlename();
@@ -128,15 +127,15 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
             if ($result === true) {
                 foreach ($items as $item) {
-                    $bind = array(
+                    $bind = [
                         'delivered' => $item['quantity']
-                    );
+                    ];
 
                     $this->updateItem($order->getId(), $item['ordernumber'], $bind);
                     if ($item['quantity'] <= 0) {
                         continue;
                     }
-                    $history->logHistory($order->getId(), "Artikel wurde versand.", $item['articlename'], $item['ordernumber'], $item['quantity']);
+                    $history->logHistory($order->getId(), 'Artikel wurde versand.', $item['articlename'], $item['ordernumber'], $item['quantity']);
                 }
             }
         }
@@ -151,14 +150,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
             if ($result === true) {
                 foreach ($items as $item) {
-                    $bind = array(
+                    $bind = [
                         'cancelled' => $item['quantity']
-                    );
+                    ];
                     $this->updateItem($order->getId(), $item['ordernumber'], $bind);
                     if ($item['quantity'] <= 0) {
                         continue;
                     }
-                    $history->logHistory($order->getId(), "Artikel wurde storniert.", $item['articlename'], $item['ordernumber'], $item['quantity']);
+                    $history->logHistory($order->getId(), 'Artikel wurde storniert.', $item['articlename'], $item['ordernumber'], $item['quantity']);
                 }
             }
         }
@@ -173,14 +172,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
             if ($result === true) {
                 foreach ($items as $item) {
-                    $bind = array(
+                    $bind = [
                         'returned' => $item['quantity']
-                    );
+                    ];
                     $this->updateItem($order->getId(), $item['ordernumber'], $bind);
                     if ($item['quantity'] <= 0) {
                         continue;
                     }
-                    $history->logHistory($order->getId(), "Artikel wurde retourniert.", $item['articlename'], $item['ordernumber'], $item['quantity']);
+                    $history->logHistory($order->getId(), 'Artikel wurde retourniert.', $item['articlename'], $item['ordernumber'], $item['quantity']);
                 }
             }
         }
@@ -199,9 +198,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         if ($articleOrderNumber === 'shipping') {
             Shopware()->Db()->update('rpay_ratepay_order_shipping', $bind, '`s_order_id`=' . $orderID);
         } else {
-            $positionId = Shopware()->Db()->fetchOne("SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?", array($orderID, $articleOrderNumber));
+            $positionId = Shopware()->Db()->fetchOne('SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?', [$orderID, $articleOrderNumber]);
             Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
         }
     }
-
 }

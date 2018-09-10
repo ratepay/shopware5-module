@@ -24,13 +24,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
 {
     private $str;
 
-    public static function getPaymentMethods() {
-        return array(
+    public static function getPaymentMethods()
+    {
+        return [
             'rpayratepayinvoice',
             'rpayratepayrate',
             'rpayratepaydebit',
             'rpayratepayrate0',
-        );
+        ];
     }
 
     /**
@@ -62,7 +63,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
      */
     public function getVersion()
     {
-        $info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .'plugin.json'), true);
+        $info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'plugin.json'), true);
         if ($info) {
             return $info['currentVersion'];
         } else {
@@ -78,7 +79,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
      */
     public static function getPCConfig()
     {
-        $info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .'plugin.json'), true);
+        $info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'plugin.json'), true);
         if ($info) {
             return $info['payment_confirm'];
         } else {
@@ -93,11 +94,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
      */
     public function getCapabilities()
     {
-        return array(
+        return [
             'install' => true,
-            'update'  => true,
-            'enable'  => true
-        );
+            'update' => true,
+            'enable' => true
+        ];
     }
 
     /**
@@ -130,10 +131,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
 
         $this->Plugin()->setActive(true);
 
-        return array(
+        return [
             'success' => true,
-            'invalidateCache' => array('frontend', 'backend')
-        );
+            'invalidateCache' => ['frontend', 'backend']
+        ];
     }
 
     /**
@@ -164,10 +165,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
 
         \RpayRatePay\Component\Service\Logger::singleton()->addNotice('Successful module update');
 
-        return array(
+        return [
             'success' => true,
-            'invalidateCache' => array('frontend', 'backend')
-        );
+            'invalidateCache' => ['frontend', 'backend']
+        ];
     }
 
     /**
@@ -178,7 +179,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
         $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
         $metaDataCache->deleteAll();
         Shopware()->Models()->generateAttributeModels(
-            array('s_order_attributes')
+            ['s_order_attributes']
         );
     }
 
@@ -218,11 +219,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
         return true;
     }
 
-        public function onRegisterSubscriber()
-        {
-            $subscribers = [
-                new \RpayRatePay\Bootstrapping\Events\OrderOperationsSubscriber(),
-                new \RpayRatePay\Bootstrapping\Events\TemplateExtensionSubscriber($this->Path()),
+    public function onRegisterSubscriber()
+    {
+        $subscribers = [
+            new \RpayRatePay\Bootstrapping\Events\OrderOperationsSubscriber(),
+            new \RpayRatePay\Bootstrapping\Events\TemplateExtensionSubscriber($this->Path()),
             new \RpayRatePay\Bootstrapping\Events\PaymentControllerSubscriber($this->Path()),
             new \RpayRatePay\Bootstrapping\Events\LoggingControllerSubscriber($this->Path()),
             new \RpayRatePay\Bootstrapping\Events\OrderDetailControllerSubscriber($this->Path()),

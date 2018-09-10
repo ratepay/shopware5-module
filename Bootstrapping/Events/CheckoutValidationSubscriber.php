@@ -1,11 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:50
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
+
 use RpayRatePay\Component\Service\Logger;
 
 class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
@@ -38,9 +34,9 @@ class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
      */
     public function preValidation(\Enlight_Event_EventArgs $arguments)
     {
-        $request  = $arguments->getSubject()->Request();
+        $request = $arguments->getSubject()->Request();
         $response = $arguments->getSubject()->Response();
-        $view     = $arguments->getSubject()->View();
+        $view = $arguments->getSubject()->View();
 
         if (!$request->isDispatched()
             || $response->isException()
@@ -62,7 +58,7 @@ class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
 
         Shopware()->Template()->addTemplateDir($this->path . 'Views/');
         $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
-        $paymentType =  Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
+        $paymentType = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
 
         $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user, $paymentType);
 

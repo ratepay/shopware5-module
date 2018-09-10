@@ -2,8 +2,6 @@
 
 namespace RpayRatePay\Component\Service;
 
-use RpayRatePay\Component\Service\Logger;
-
 class RatepayConfigWriter
 {
     private $db;
@@ -32,7 +30,6 @@ class RatepayConfigWriter
         return true;
     }
 
-
     /**
      * Sends a Profile_request and saves the data into the Database
      *
@@ -48,32 +45,31 @@ class RatepayConfigWriter
     public function writeRatepayConfig($profileId, $securityCode, $shopId, $country, $backend = false)
     {
         $factory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
-        $data = array(
+        $data = [
             'profileId' => $profileId,
             'securityCode' => $securityCode
-        );
+        ];
 
         $response = $factory->callRequest('ProfileRequest', $data);
 
-        $payments = array('invoice', 'elv', 'installment');
+        $payments = ['invoice', 'elv', 'installment'];
 
         if (is_array($response) && $response !== false) {
-
-            foreach ($payments AS $payment) {
+            foreach ($payments as $payment) {
                 if (strstr($profileId, '_0RT') !== false) {
                     if ($payment !== 'installment') {
                         continue;
                     }
                 }
 
-                $dataPayment = array(
+                $dataPayment = [
                     $response['result']['merchantConfig']['activation-status-' . $payment],
                     $response['result']['merchantConfig']['b2b-' . $payment] == 'yes' ? 1 : 0,
                     $response['result']['merchantConfig']['tx-limit-' . $payment . '-min'],
                     $response['result']['merchantConfig']['tx-limit-' . $payment . '-max'],
                     $response['result']['merchantConfig']['tx-limit-' . $payment . '-max-b2b'],
                     $response['result']['merchantConfig']['delivery-address-' . $payment] == 'yes' ? 1 : 0,
-                );
+                ];
 
                 $paymentSql = 'INSERT INTO `rpay_ratepay_config_payment`'
                     . '(`status`, `b2b`,`limit_min`,`limit_max`,'
@@ -90,13 +86,13 @@ class RatepayConfigWriter
             }
 
             if ($response['result']['merchantConfig']['activation-status-installment'] == 2) {
-                $installmentConfig = array(
+                $installmentConfig = [
                     $type['installment'],
                     $response['result']['installmentConfig']['month-allowed'],
                     $response['result']['installmentConfig']['valid-payment-firstdays'],
                     $response['result']['installmentConfig']['rate-min-normal'],
                     $response['result']['installmentConfig']['interestrate-default'],
-                );
+                ];
                 $paymentSql = 'INSERT INTO `rpay_ratepay_config_installment`'
                     . '(`rpay_id`, `month-allowed`,`payment-firstday`,`interestrate-default`,'
                     . '`rate-min-normal`)'
@@ -107,14 +103,13 @@ class RatepayConfigWriter
                     Logger::singleton()->error($exception->getMessage());
                     return false;
                 }
-
             }
 
             if (strstr($profileId, '_0RT') !== false) {
                 $qry = "UPDATE rpay_ratepay_config SET installment0 = '" . $type['installment'] . "' WHERE profileId = '" . substr($profileId, 0, -4) . "'";
                 $this->db->query($qry);
             } else {
-                $data = array(
+                $data = [
                     $response['result']['merchantConfig']['profile-id'],
                     $type['invoice'],
                     $type['installment'],
@@ -131,7 +126,7 @@ class RatepayConfigWriter
                     $backend,
                     //shopId always needs be the last line
                     $shopId
-                );
+                ];
 
                 $activePayments[] = '"rpayratepayinvoice"';
                 $activePayments[] = '"rpayratepaydebit"';
@@ -139,7 +134,7 @@ class RatepayConfigWriter
                 $activePayments[] = '"rpayratepayrate0"';
 
                 if (count($activePayments) > 0) {
-                    $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(",", $activePayments) . ') AND `active` <> 0';
+                    $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(',', $activePayments) . ') AND `active` <> 0';
                 }
                 $configSql = 'INSERT INTO `rpay_ratepay_config`'
                     . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`,'

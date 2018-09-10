@@ -21,7 +21,6 @@ use RpayRatePay\Component\Service\Logger;
  */
 class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Controllers_Backend_ExtJs
 {
-
     private $_config;
 
     /** @var Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory */
@@ -38,9 +37,8 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
     public function init()
     {
         //set correct subshop for backend processes
-        $orderId = $this->Request()->getParam("orderId");
-        if(null !== $orderId)
-        {
+        $orderId = $this->Request()->getParam('orderId');
+        if (null !== $orderId) {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
 
             $attributes = $order->getAttribute();
@@ -62,23 +60,22 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         $articleNumbers = json_decode($this->Request()->getParam('articleNumber'));
         $orderID = $this->Request()->getParam('orderId');
         $success = true;
-        $bindings = array($orderID);
+        $bindings = [$orderID];
         $bind = '';
         $values = '';
         foreach (array_unique($articleNumbers) as $articleNumber) {
             $sqlCountEntrys = "SELECT `id`, COUNT(*) AS 'count', SUM(`quantity`) AS 'quantity' FROM `s_order_details` "
-                              . "WHERE `orderID`=? "
-                              . "AND `articleordernumber` = ? "
-                              . "ORDER BY `id` ASC";
+                              . 'WHERE `orderID`=? '
+                              . 'AND `articleordernumber` = ? '
+                              . 'ORDER BY `id` ASC';
             try {
-                $row = Shopware()->Db()->fetchRow($sqlCountEntrys, array($orderID, $articleNumber));
+                $row = Shopware()->Db()->fetchRow($sqlCountEntrys, [$orderID, $articleNumber]);
                 if ($row['count'] > 1) { // article already in order, update its quantity
-                    $sqlUpdate = "UPDATE `s_order_details` SET `quantity`=? WHERE `id`=?";
-                    $sqlDelete = "DELETE FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber` = ? AND `id`!=?";
-                    Shopware()->Db()->query($sqlUpdate, array($row['quantity'], $row['id']));
-                    Shopware()->Db()->query($sqlDelete, array($orderID, $articleNumber, $row['id']));
-                }
-                else {
+                    $sqlUpdate = 'UPDATE `s_order_details` SET `quantity`=? WHERE `id`=?';
+                    $sqlDelete = 'DELETE FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber` = ? AND `id`!=?';
+                    Shopware()->Db()->query($sqlUpdate, [$row['quantity'], $row['id']]);
+                    Shopware()->Db()->query($sqlDelete, [$orderID, $articleNumber, $row['id']]);
+                } else {
                     $bindings[] = $articleNumber;
                     $bind .= '?,';
                 }
@@ -90,29 +87,28 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
 
         if (!is_null($bind)) { // add new items to order
             $bind = substr($bind, 0, -1);
-            $sqlSelectIDs = "SELECT `id` FROM `s_order_details` "
+            $sqlSelectIDs = 'SELECT `id` FROM `s_order_details` '
                             . "WHERE `orderID`=? AND `articleordernumber` IN ($bind) ";
             try {
                 $detailIDs = Shopware()->Db()->fetchAll($sqlSelectIDs, $bindings);
                 foreach ($detailIDs as $row) {
-                    $values .= "(" . $row['id'] . "),";
+                    $values .= '(' . $row['id'] . '),';
                 }
                 $values = substr($values, 0, -1);
-                $sqlInsert = "INSERT INTO `rpay_ratepay_order_positions` "
-                             . "(`s_order_details_id`) "
-                             . "VALUES " . $values;
+                $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` '
+                             . '(`s_order_details_id`) '
+                             . 'VALUES ' . $values;
                 Shopware()->Db()->query($sqlInsert);
             } catch (Exception $exception) {
                 $success = false;
-                Logger::singleton()->error('Exception:' . $exception->getMessage(), " SQL:" . $sqlInsert);
+                Logger::singleton()->error('Exception:' . $exception->getMessage(), ' SQL:' . $sqlInsert);
             }
         }
 
-
         $this->View()->assign(
-            array(
-                "success" => $success
-            )
+            [
+                'success' => $success
+            ]
         );
     }
 
@@ -121,14 +117,14 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      */
     public function loadHistoryStoreAction()
     {
-        $orderId = $this->Request()->getParam("orderId");
+        $orderId = $this->Request()->getParam('orderId');
         $history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
         $historyData = $history->getHistory($orderId);
         $this->View()->assign(
-            array(
-                "data"    => $historyData,
-                "success" => true
-            )
+            [
+                'data' => $historyData,
+                'success' => true
+            ]
         );
     }
 
@@ -137,27 +133,27 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      */
     public function loadPositionStoreAction()
     {
-        $orderId = $this->Request()->getParam("orderId");
-        $zero = $this->Request()->getParam("setToZero");
+        $orderId = $this->Request()->getParam('orderId');
+        $zero = $this->Request()->getParam('setToZero');
         $data = $this->getFullBasket($orderId);
-        $positions = array();
+        $positions = [];
         if ($zero) {
             foreach ($data as $row) {
                 $row['quantityDeliver'] = 0;
                 $row['quantityReturn'] = 0;
                 $positions[] = $row;
             }
-        }
-        else {
+        } else {
             $positions = $data;
         }
-        $total = Shopware()->Db()->fetchOne("SELECT count(*) FROM `s_order_details` WHERE `s_order_details`.`orderID`=?;", array($orderId));
+        $total = Shopware()->Db()->fetchOne('SELECT count(*) FROM `s_order_details` WHERE `s_order_details`.`orderID`=?;', [$orderId]);
 
-        $this->View()->assign(array(
-                "data"    => $positions,
-                "total"   => $total,
-                "success" => true
-            )
+        $this->View()->assign(
+            [
+                'data' => $positions,
+                'total' => $total,
+                'success' => true
+            ]
         );
     }
 
@@ -166,10 +162,10 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      */
     public function deliverItemsAction()
     {
-        $orderId = $this->Request()->getParam("orderId");
-        $items = json_decode($this->Request()->getParam("items"));
+        $orderId = $this->Request()->getParam('orderId');
+        $items = json_decode($this->Request()->getParam('items'));
         $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
-        $order = $orderModel->findOneBy(array('id' => $orderId));
+        $order = $orderModel->findOneBy(['id' => $orderId]);
 
         $payment = $order->getPayment()->getName();
         $this->_modelFactory->setTransactionId($order->getTransactionID());
@@ -200,32 +196,34 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
 
             if ($result === true || $sendItem == false) {
                 foreach ($items as $item) {
-                    $bind = array(
+                    $bind = [
                         'delivered' => $item->delivered + $item->deliveredItems
-                    );
+                    ];
                     $this->updateItem($orderId, $item->articlenumber, $bind);
                     if ($item->quantity <= 0) {
                         continue;
                     }
 
                     if ($sendItem == true) {
-                        $this->_history->logHistory($orderId, "Artikel wurde versand.", $item->name, $item->articlenumber, $item->quantity);
+                        $this->_history->logHistory($orderId, 'Artikel wurde versand.', $item->name, $item->articlenumber, $item->quantity);
                     } else {
-                        $this->_history->logHistory($orderId, "Artikel wurde für versand vorbereitet.", $item->name, $item->articlenumber, $item->quantity);
+                        $this->_history->logHistory($orderId, 'Artikel wurde für versand vorbereitet.', $item->name, $item->articlenumber, $item->quantity);
                     }
                 }
             }
 
             $this->setNewOrderState($orderId, 'delivery');
-            $this->View()->assign(array(
-                    "result"  => $result,
-                    "success" => true
-                )
+            $this->View()->assign(
+                [
+                    'result' => $result,
+                    'success' => true
+                ]
             );
         } else {
-            $this->View()->assign(array(
-                    "success" => false
-                )
+            $this->View()->assign(
+                [
+                    'success' => false
+                ]
             );
         }
     }
@@ -235,10 +233,10 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      */
     public function cancelItemsAction()
     {
-        $orderId = $this->Request()->getParam("orderId");
-        $items = json_decode($this->Request()->getParam("items"));
+        $orderId = $this->Request()->getParam('orderId');
+        $items = json_decode($this->Request()->getParam('items'));
         $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
-        $order = $orderModel->findOneBy(array('id' => $orderId));
+        $order = $orderModel->findOneBy(['id' => $orderId]);
         $this->_modelFactory->setTransactionId($order->getTransactionID());
         $itemsToCancel = null;
 
@@ -254,7 +252,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         }
 
         //only call the logic if there are items to cancel
-        if($itemsToCancel > 0) {
+        if ($itemsToCancel > 0) {
             $operationData['orderId'] = $orderId;
             $operationData['items'] = $items;
             $operationData['subtype'] = 'cancellation';
@@ -263,9 +261,9 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
 
             if ($result === true) {
                 foreach ($items as $item) {
-                    $bind = array(
+                    $bind = [
                         'cancelled' => $item->cancelled + $item->cancelledItems
-                    );
+                    ];
                     $this->updateItem($orderId, $item->articlenumber, $bind);
                     if ($item->cancelledItems <= 0) {
                         continue;
@@ -275,24 +273,23 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                         $this->_updateArticleStock($item->articlenumber, $item->cancelledItems);
                     }
 
-                    $this->_history->logHistory($orderId, "Artikel wurde storniert.", $item->name, $item->articlenumber, $item->cancelledItems);
+                    $this->_history->logHistory($orderId, 'Artikel wurde storniert.', $item->name, $item->articlenumber, $item->cancelledItems);
                 }
             }
             $this->setNewOrderState($orderId, 'cancellation');
-            $this->View()->assign(array(
-                    "result"  => $result,
-                    "success" => true
-                )
+            $this->View()->assign(
+                [
+                    'result' => $result,
+                    'success' => true
+                ]
+            );
+        } else {
+            $this->View()->assign(
+                [
+                    'success' => false
+                ]
             );
         }
-        else
-        {
-            $this->View()->assign(array(
-                    "success" => false
-                )
-            );
-        }
-
     }
 
     /**
@@ -300,10 +297,10 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      */
     public function returnItemsAction()
     {
-        $orderId = $this->Request()->getParam("orderId");
-        $items = json_decode($this->Request()->getParam("items"));
+        $orderId = $this->Request()->getParam('orderId');
+        $items = json_decode($this->Request()->getParam('items'));
         $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
-        $order = $orderModel->findOneBy(array('id' => $orderId));
+        $order = $orderModel->findOneBy(['id' => $orderId]);
         $this->_modelFactory->setTransactionId($order->getTransactionID());
         $itemsToReturn = null;
 
@@ -316,8 +313,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         }
 
         //only call the logic if there are items to return
-        if($itemsToReturn > 0)
-        {
+        if ($itemsToReturn > 0) {
             $operationData['orderId'] = $orderId;
             $operationData['items'] = $items;
             $operationData['subtype'] = 'return';
@@ -326,9 +322,9 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
 
             if ($result === true) {
                 foreach ($items as $item) {
-                    $bind = array(
+                    $bind = [
                         'returned' => $item->returned + $item->returnedItems
-                    );
+                    ];
                     $this->updateItem($orderId, $item->articlenumber, $bind);
                     if ($item->returnedItems <= 0) {
                         continue;
@@ -338,22 +334,23 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                         $this->_updateArticleStock($item->articlenumber, $item->returnedItems);
                     }
 
-                    $this->_history->logHistory($orderId, "Artikel wurde retourniert.", $item->name, $item->articlenumber, $item->returnedItems);
+                    $this->_history->logHistory($orderId, 'Artikel wurde retourniert.', $item->name, $item->articlenumber, $item->returnedItems);
                 }
             }
 
             $this->setNewOrderState($orderId, 'return');
 
-            $this->View()->assign(array(
-                    "result"  => $result,
-                    "success" => true
-                )
+            $this->View()->assign(
+                [
+                    'result' => $result,
+                    'success' => true
+                ]
             );
-        } else
-        {
-            $this->View()->assign(array(
-                    "success" => false
-                )
+        } else {
+            $this->View()->assign(
+                [
+                    'success' => false
+                ]
             );
         }
     }
@@ -364,13 +361,13 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
     public function addAction()
     {
         $onlyDebit = true;
-        $orderId = $this->Request()->getParam("orderId");
-        $insertedIds = json_decode($this->Request()->getParam("insertedIds"));
-        $subOperation = $this->Request()->getParam("suboperation");
-        $order = Shopware()->Db()->fetchRow("SELECT * FROM `s_order` WHERE `id`=?", array($orderId));
-        $orderItems = Shopware()->Db()->fetchAll("SELECT *, (`quantity` - `delivered` - `cancelled`) AS `quantityDeliver` FROM `s_order_details` "
-                                                 . "INNER JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-                                                 . "WHERE `orderID`=?", array($orderId));
+        $orderId = $this->Request()->getParam('orderId');
+        $insertedIds = json_decode($this->Request()->getParam('insertedIds'));
+        $subOperation = $this->Request()->getParam('suboperation');
+        $order = Shopware()->Db()->fetchRow('SELECT * FROM `s_order` WHERE `id`=?', [$orderId]);
+        $orderItems = Shopware()->Db()->fetchAll('SELECT *, (`quantity` - `delivered` - `cancelled`) AS `quantityDeliver` FROM `s_order_details` '
+                                                 . 'INNER JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` '
+                                                 . 'WHERE `orderID`=?', [$orderId]);
 
         foreach ($orderItems as $row) {
             if ($row['quantityDeliver'] == 0) {
@@ -398,10 +395,10 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             $operationData['subtype'] = 'credit';
             $this->_modelFactory->setOrderId($order['ordernumber']);
 
-            $rpRate = Shopware()->Db()->fetchRow("SELECT id FROM `s_core_paymentmeans` WHERE `name`=?", array('rpayratepayrate'));
-            $rpRate0 = Shopware()->Db()->fetchRow("SELECT id FROM `s_core_paymentmeans` WHERE `name`=?", array('rpayratepayrate0'));
+            $rpRate = Shopware()->Db()->fetchRow('SELECT id FROM `s_core_paymentmeans` WHERE `name`=?', ['rpayratepayrate']);
+            $rpRate0 = Shopware()->Db()->fetchRow('SELECT id FROM `s_core_paymentmeans` WHERE `name`=?', ['rpayratepayrate0']);
 
-            if(
+            if (
                 $subOperation === 'debit' &&
                 ($order['paymentID'] == $rpRate['id'] || $order['paymentID'] == $rpRate0['id'])
             ) {
@@ -417,14 +414,13 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                     } else {
                         $event = 'Nachlass wurde hinzugefügt';
                     }
-                    $bind = array('delivered' => 1);
+                    $bind = ['delivered' => 1];
                 } else {
                     $event = 'Artikel wurde hinzugefügt';
                 }
 
                 foreach ($insertedIds as $id) {
-
-                    $newItems = Shopware()->Db()->fetchRow("SELECT * FROM `s_order_details` WHERE `id`=?", array($id));
+                    $newItems = Shopware()->Db()->fetchRow('SELECT * FROM `s_order_details` WHERE `id`=?', [$id]);
                     $this->updateItem($orderId, $newItems['articleordernumber'], $bind);
 
                     if ($newItems['quantity'] <= 0) {
@@ -437,10 +433,11 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
 
         $this->setNewOrderState($orderId);
 
-        $this->View()->assign(array(
-                "result"  => $result,
-                "success" => true
-            )
+        $this->View()->assign(
+            [
+                'result' => $result,
+                'success' => true
+            ]
         );
     }
 
@@ -455,9 +452,8 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
     {
         if ($articleordernumber === 'shipping') {
             Shopware()->Db()->update('rpay_ratepay_order_shipping', $bind, '`s_order_id`=' . $orderID);
-        }
-        else {
-            $positionId = Shopware()->Db()->fetchOne("SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?", array($orderID, $articleordernumber));
+        } else {
+            $positionId = Shopware()->Db()->fetchOne('SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?', [$orderID, $articleordernumber]);
             Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
         }
     }
@@ -468,9 +464,10 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      * @param $article
      * @param $count
      */
-    protected function _updateArticleStock($article, $count) {
+    protected function _updateArticleStock($article, $count)
+    {
         $repository = Shopware()->Models()->getRepository('Shopware\Models\Article\Detail');
-        $article = $repository->findOneBy(array('number' => $article));
+        $article = $repository->findOneBy(['number' => $article]);
         $article->setInStock($article->getInStock() + $count);
         Shopware()->Models()->persist($article);
         Shopware()->Models()->flush();
@@ -485,10 +482,10 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         $data = Shopware()->Models()->getRepository('Shopware\Models\Article\Article')->getArticleBaseDataQuery($id)->getArrayResult();
         $data[0]['mainPrices'] = $this->getPrices($data[0]['mainDetail']['id'], $data[0]['tax']);
         $this->View()->assign(
-            array(
-                "data"    => $data[0],
-                "success" => true
-            )
+            [
+                'data' => $data[0],
+                'success' => true
+            ]
         );
     }
 
@@ -540,23 +537,23 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      */
     private function getShippingFromDBAsItem($orderId)
     {
-        $sql = "SELECT "
-               . "`invoice_shipping` AS `price`, "
-               . "(1 - `delivered` - `cancelled`) AS `quantityDeliver`, "
-               . "(`delivered` - `returned`) AS `quantityReturn`, "
-               . "`delivered`, "
-               . "`cancelled`, "
-               . "`returned`, "
-               . "`s_core_tax`.`tax` AS `tax_rate` "
-               . "FROM `s_order` "
-               . "LEFT JOIN `rpay_ratepay_order_shipping` ON `s_order_id`=`s_order`.`id` "
-               . "LEFT JOIN `s_premium_dispatch` ON `s_order`.`dispatchID`=`s_premium_dispatch`.`id` "
-               . "LEFT JOIN `s_core_tax` ON `s_premium_dispatch`.`tax_calculation`=`s_core_tax`.`id` "
-               . "WHERE `s_order`.`id` = ?";
-        $shippingRow = Shopware()->Db()->fetchRow($sql, array($orderId));
+        $sql = 'SELECT '
+               . '`invoice_shipping` AS `price`, '
+               . '(1 - `delivered` - `cancelled`) AS `quantityDeliver`, '
+               . '(`delivered` - `returned`) AS `quantityReturn`, '
+               . '`delivered`, '
+               . '`cancelled`, '
+               . '`returned`, '
+               . '`s_core_tax`.`tax` AS `tax_rate` '
+               . 'FROM `s_order` '
+               . 'LEFT JOIN `rpay_ratepay_order_shipping` ON `s_order_id`=`s_order`.`id` '
+               . 'LEFT JOIN `s_premium_dispatch` ON `s_order`.`dispatchID`=`s_premium_dispatch`.`id` '
+               . 'LEFT JOIN `s_core_tax` ON `s_premium_dispatch`.`tax_calculation`=`s_core_tax`.`id` '
+               . 'WHERE `s_order`.`id` = ?';
+        $shippingRow = Shopware()->Db()->fetchRow($sql, [$orderId]);
         if (isset($shippingRow['quantityDeliver'])) {
             if ($shippingRow['tax_rate'] == null) {
-                $shippingRow['tax_rate'] = Shopware()->Db()->fetchOne("SELECT MAX(`tax`) FROM `s_core_tax`");
+                $shippingRow['tax_rate'] = Shopware()->Db()->fetchOne('SELECT MAX(`tax`) FROM `s_core_tax`');
             }
             $shippingRow['quantity'] = 1;
             $shippingRow['articleID'] = 0;
@@ -576,24 +573,24 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      */
     private function getFullBasket($orderId)
     {
-        $sql = "SELECT "
-               . "`articleID`, "
-               . "`name`, "
-               . "`articleordernumber`, "
-               . "`price`, "
-               . "`quantity`, "
-               . "(`quantity` - `delivered` - `cancelled`) AS `quantityDeliver`, "
-               . "(`delivered` - `returned`) AS `quantityReturn`, "
-               . "`delivered`, "
-               . "`cancelled`, "
-               . "`returned`, "
-               . "`tax_rate` "
-               . "FROM `s_order_details` AS detail "
-               . "INNER JOIN `rpay_ratepay_order_positions` AS ratepay ON detail.`id`=ratepay.`s_order_details_id` "
-               . "WHERE detail.`orderId`=? "
-               . "ORDER BY detail.`id`;";
+        $sql = 'SELECT '
+               . '`articleID`, '
+               . '`name`, '
+               . '`articleordernumber`, '
+               . '`price`, '
+               . '`quantity`, '
+               . '(`quantity` - `delivered` - `cancelled`) AS `quantityDeliver`, '
+               . '(`delivered` - `returned`) AS `quantityReturn`, '
+               . '`delivered`, '
+               . '`cancelled`, '
+               . '`returned`, '
+               . '`tax_rate` '
+               . 'FROM `s_order_details` AS detail '
+               . 'INNER JOIN `rpay_ratepay_order_positions` AS ratepay ON detail.`id`=ratepay.`s_order_details_id` '
+               . 'WHERE detail.`orderId`=? '
+               . 'ORDER BY detail.`id`;';
 
-        $data = Shopware()->Db()->fetchAll($sql, array($orderId));
+        $data = Shopware()->Db()->fetchAll($sql, [$orderId]);
         $shipping = $this->getShippingFromDBAsItem($orderId);
         if (!is_null($shipping)) {
             $data[] = $shipping;
@@ -610,37 +607,33 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
     private function setNewOrderState($orderId, $operation = null)
     {
         $sql = "SELECT COUNT((`quantity` - `delivered` - `cancelled`)) AS 'itemsLeft' "
-               . "FROM `s_order_details` "
-               . "JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` "
-               . "WHERE `orderID`=? AND (`quantity` - `delivered` - `cancelled`) > 0";
+               . 'FROM `s_order_details` '
+               . 'JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` '
+               . 'WHERE `orderID`=? AND (`quantity` - `delivered` - `cancelled`) > 0';
         try {
-            $orderComplete = Shopware()->Db()->fetchOne($sql, array($orderId));
+            $orderComplete = Shopware()->Db()->fetchOne($sql, [$orderId]);
 
-            if($operation === 'cancellation')
-            {
+            if ($operation === 'cancellation') {
                 $newState = $orderComplete == 0 ? $this->_config['RatePayPartialCancellation'] : $this->_config['RatePayFullCancellation'];
-            } elseif($operation === 'delivery') {
+            } elseif ($operation === 'delivery') {
                 //only set if order is not partial returned / cancelled
-                if($orderComplete != $this->_config['RatePayPartialReturn'] && $orderComplete != $this->_config['RatePayPartialCancellation'])
-                {
+                if ($orderComplete != $this->_config['RatePayPartialReturn'] && $orderComplete != $this->_config['RatePayPartialCancellation']) {
                     $newState = $orderComplete == 0 ? $this->_config['RatePayFullDelivery'] : $this->_config['RatePayPartialDelivery'];
                 }
-            } elseif($operation === 'return') {
-                $newState = $orderComplete == 0 ? $this->_config['RatePayFullReturn']: $this->_config['RatePayFullCancellation'];
+            } elseif ($operation === 'return') {
+                $newState = $orderComplete == 0 ? $this->_config['RatePayFullReturn'] : $this->_config['RatePayFullCancellation'];
             }
 
             // return if no status update
-            if(null === $newState)
-            {
+            if (null === $newState) {
                 return;
             }
 
-            Shopware()->Db()->update('s_order', array(
+            Shopware()->Db()->update('s_order', [
                 'status' => $newState
-            ), '`id`=' . $orderId);
+            ], '`id`=' . $orderId);
         } catch (Exception $exception) {
             Logger::singleton()->error($exception->getMessage());
         }
     }
-
 }

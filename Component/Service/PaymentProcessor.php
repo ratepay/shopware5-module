@@ -1,16 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: awhittington
- * Date: 16.07.18
- * Time: 11:21
- */
 
 namespace RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
-use Shopware\Components\Plugin;
-use RpayRatePay\Component\Service\Logger;
 
 class PaymentProcessor
 {
@@ -28,8 +20,8 @@ class PaymentProcessor
     public function initShipping($order)
     {
         $this->db->query(
-            "INSERT INTO `rpay_ratepay_order_shipping` (`s_order_id`) VALUES(?)",
-            array($order->getId())
+            'INSERT INTO `rpay_ratepay_order_shipping` (`s_order_id`) VALUES(?)',
+            [$order->getId()]
         );
     }
 
@@ -42,12 +34,12 @@ class PaymentProcessor
     {
         $this->db->update( //wird wohl nicht gehen, da das Custom-Feld nicht da ist
             's_order_attributes',
-            array(
+            [
                 'attribute5' => $paymentRequestResult->getDescriptor(),
                 'attribute6' => $paymentRequestResult->getTransactionId(),
                 'ratepay_fallback_shipping' => $fallbackShipping,
                 'ratepay_backend' => $backend,
-            ),
+            ],
             'orderID=' . $order->getId()
         );
     }
@@ -57,19 +49,19 @@ class PaymentProcessor
      */
     public function insertRatepayPositions($order)
     {
-        $sql = "SELECT `id` FROM `s_order_details` WHERE `ordernumber`=?;";
+        $sql = 'SELECT `id` FROM `s_order_details` WHERE `ordernumber`=?;';
         Logger::singleton()->info('NOW SETTING ORDER DETAILS: ' . $sql);
 
-        $rows = $this->db->fetchAll($sql, array($order->getNumber()));
+        $rows = $this->db->fetchAll($sql, [$order->getNumber()]);
 
         Logger::singleton()->info('GOT ROWS ' . count($rows));
 
-        $values = "";
+        $values = '';
         foreach ($rows as $row) {
-            $values .= "(" . $row['id'] . "),";
+            $values .= '(' . $row['id'] . '),';
         }
         $values = substr($values, 0, -1);
-        $sqlInsert = "INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES " . $values;
+        $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES ' . $values;
         Logger::singleton()->info('INSERT NOW ' . $sqlInsert);
         try {
             $this->db->query($sqlInsert);
@@ -97,7 +89,8 @@ class PaymentProcessor
         Shopware()->Models()->flush($order);
 
         Shopware()->Modules()->Order()
-            ->setPaymentStatus($order->getId(),
+            ->setPaymentStatus(
+                $order->getId(),
                 self::PAYMENT_STATUS_COMPLETELY_PAID,
                 false
             );
@@ -118,5 +111,4 @@ class PaymentProcessor
         $modelFactory->setOrderId($order->getNumber());
         $modelFactory->callPaymentConfirm($countryCode);
     }
-
 }

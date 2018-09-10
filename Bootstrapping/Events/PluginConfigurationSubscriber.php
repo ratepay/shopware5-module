@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:58
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
 
 use RpayRatePay\Component\Service\RatepayConfigWriter;
@@ -12,7 +7,7 @@ use RpayRatePay\Component\Service\Logger;
 
 class PluginConfigurationSubscriber implements \Enlight\Event\SubscriberInterface
 {
-    protected $_countries = array('de', 'at', 'ch', 'nl', 'be');
+    protected $_countries = ['de', 'at', 'ch', 'nl', 'be'];
 
     /**
      * @var string
@@ -51,27 +46,27 @@ class PluginConfigurationSubscriber implements \Enlight\Event\SubscriberInterfac
             return;
         }
 
-        $shopCredentials = array();
+        $shopCredentials = [];
 
         foreach ($parameter['elements'] as $element) {
-            foreach ($this->_countries AS $country) {
+            foreach ($this->_countries as $country) {
                 if ($element['name'] === 'RatePayProfileID' . strtoupper($country)) {
-                    foreach($element['values'] as $element) {
+                    foreach ($element['values'] as $element) {
                         $shopCredentials[$element['shopId']][$country]['profileID'] = trim($element['value']);
                     }
                 }
-                if ($element['name'] === 'RatePaySecurityCode'  . strtoupper($country)) {
-                    foreach($element['values'] as $element) {
+                if ($element['name'] === 'RatePaySecurityCode' . strtoupper($country)) {
+                    foreach ($element['values'] as $element) {
                         $shopCredentials[$element['shopId']][$country]['securityCode'] = trim($element['value']);
                     }
                 }
                 if ($element['name'] === 'RatePayProfileID' . strtoupper($country) . 'Backend') {
-                    foreach($element['values'] as $element) {
+                    foreach ($element['values'] as $element) {
                         $shopCredentials[$element['shopId']][$country]['profileIDBackend'] = trim($element['value']);
                     }
                 }
                 if ($element['name'] === 'RatePaySecurityCode' . strtoupper($country) . 'Backend') {
-                    foreach($element['values'] as $element) {
+                    foreach ($element['values'] as $element) {
                         $shopCredentials[$element['shopId']][$country]['securityCodeBackend'] = trim($element['value']);
                     }
                 }
@@ -82,8 +77,8 @@ class PluginConfigurationSubscriber implements \Enlight\Event\SubscriberInterfac
 
         $rpayConfigWriter->truncateConfigTables();
 
-        foreach($shopCredentials as $shopId => $credentials) {
-            foreach ($this->_countries AS $country) {
+        foreach ($shopCredentials as $shopId => $credentials) {
+            foreach ($this->_countries as $country) {
                 if (null !== $credentials[$country]['profileID'] &&
                     null !== $credentials[$country]['securityCode']) {
                     if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileID'], $credentials[$country]['securityCode'], $shopId, $country)) {

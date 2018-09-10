@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: awhittington
- * Date: 09.07.18
- * Time: 16:03
- */
+
 namespace RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
@@ -36,8 +31,7 @@ class ValidationLib
                 $birthday = new \DateTime($birthday);
             }
 
-            if (preg_match("/^\d{4}-\d{2}-\d{2}$/", $birthday->format('Y-m-d')) !== 0)
-            {
+            if (preg_match("/^\d{4}-\d{2}-\d{2}$/", $birthday->format('Y-m-d')) !== 0) {
                 $return = true;
             }
         }
@@ -66,18 +60,18 @@ class ValidationLib
      */
     public static function areBillingAndShippingSame($billing, $shipping = null)
     {
-        $classFunctions = array(
+        $classFunctions = [
             'getCompany',
             'getFirstname',
             'getLastName',
             'getStreet',
             'getZipCode',
             'getCity',
-        );
+        ];
 
         if (!is_null($shipping)) {
             foreach ($classFunctions as $function) {
-                if (strval(call_user_func(array($billing, $function))) != strval(call_user_func(array($shipping, $function)))) {
+                if (strval(call_user_func([$billing, $function])) != strval(call_user_func([$shipping, $function]))) {
                     return false;
                 }
             }
@@ -98,8 +92,8 @@ class ValidationLib
             return false;
         }
 
-        if ($b2b)  {
-            if ($configData['b2b'] != "1") { //this is a string, for some reason
+        if ($b2b) {
+            if ($configData['b2b'] != '1') { //this is a string, for some reason
                 return false;
             }
 
@@ -108,7 +102,6 @@ class ValidationLib
             if ($totalAmount > $b2bmax) {
                 return false;
             }
-
         } else {
             if ($totalAmount > $configData['limit_max']) {
                 return false;
