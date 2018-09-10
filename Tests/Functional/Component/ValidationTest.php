@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: awhittington
- * Date: 02.07.18
- * Time: 13:31
- */
 
 namespace RpayRatePay\Tests\Functional\Component;
 
@@ -12,10 +6,9 @@ use Shopware\Components\Test\Plugin\TestCase;
 
 class ValidationTest extends TestCase
 {
-
     public function testIsBirthdayValid__tooYoung()
     {
-        $this->markTestSKipped("Method does not have expected behavior.");
+        $this->markTestSKipped('Method does not have expected behavior.');
         $customer = $this->getRandomCustomer();
 
         Shopware()->Session()->sUserId = $customer->getId();
@@ -78,15 +71,14 @@ class ValidationTest extends TestCase
 
     private function getRandomCustomer()
     {
-          $ids = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')
+        $ids = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')
               ->createQueryBuilder('c')
               ->select('c.id')
               ->getQuery()
               ->getArrayResult();
 
-          shuffle($ids);
+        shuffle($ids);
 
-          return Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')->find(array_shift($ids));
+        return Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')->find(array_shift($ids));
     }
-
 }

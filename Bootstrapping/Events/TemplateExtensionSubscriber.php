@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:38
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
 
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
@@ -69,7 +64,7 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
             return;
         }
 
-        if(
+        if (
             'checkout' === $request->getControllerName() &&
             'confirm' === $request->getActionName() &&
             strstr($paymentMethod->getName(), 'rpayratepay')
@@ -89,12 +84,13 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
             $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
 
             //if no DF token is set, receive all the necessary data to set it and extend template
-            if(true == $configPlugin['device-fingerprint-status'] && !Shopware()->Session()->RatePAY['dfpToken']) {
+            if (true == $configPlugin['device-fingerprint-status'] && !Shopware()->Session()->RatePAY['dfpToken']) {
                 $view->assign('snippetId', $configPlugin['device-fingerprint-snippet-id']);
 
                 try {
                     $sId = Shopware()->SessionID();
-                } catch (\Exception $exception) {}
+                } catch (\Exception $exception) {
+                }
 
                 $tokenFirstPart = (!empty($sId)) ? $sId : rand();
 
@@ -121,11 +117,12 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
      * @param $shopId
      * @return mixed
      */
-    private function getRatePayPluginConfig($shopId) {
+    private function getRatePayPluginConfig($shopId)
+    {
         //get ratepay config based on shopId
         return Shopware()->Db()->fetchRow(
             'SELECT * FROM `rpay_ratepay_config` WHERE `shopId`=? AND backend=0',
-            array($shopId)
+            [$shopId]
         );
     }
 }

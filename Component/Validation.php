@@ -2,6 +2,7 @@
 
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
+
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation; either
@@ -21,14 +22,12 @@ use RpayRatePay\Component\Service\ValidationLib as ValidationService;
  */
 class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
 {
-
     /**
      * An Instance of the Shopware-CustomerModel
      *
      * @var Shopware\Models\Customer\Customer
      */
     private $_user;
-
 
     /**
      * @var ShopwareCustomerWrapper
@@ -81,7 +80,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      *
      * @param $currencyStr
      */
-    public function setAllowedCurrencies($currenciesStr) {
+    public function setAllowedCurrencies($currenciesStr)
+    {
         $this->_allowedCurrencies = explode(',', $currenciesStr);
     }
 
@@ -90,7 +90,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      *
      * @param $currencyStr
      */
-    public function setAllowedCountriesBilling($countriesStr) {
+    public function setAllowedCountriesBilling($countriesStr)
+    {
         $this->_allowedCountriesBilling = explode(',', $countriesStr);
     }
 
@@ -99,7 +100,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      *
      * @param $currencyStr
      */
-    public function setAllowedCountriesDelivery($countriesStr) {
+    public function setAllowedCountriesDelivery($countriesStr)
+    {
         $this->_allowedCountriesDelivery = explode(',', $countriesStr);
     }
 
@@ -109,7 +111,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      */
     public function isRatePAYPayment()
     {
-        return in_array($this->_payment->getName(), array("rpayratepayinvoice", "rpayratepayrate", "rpayratepaydebit", "rpayratepayrate0"));
+        return in_array($this->_payment->getName(), ['rpayratepayinvoice', 'rpayratepayrate', 'rpayratepaydebit', 'rpayratepayrate0']);
     }
 
     /**
@@ -120,7 +122,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      */
     public function isAgeValid()
     {
-        $today = new \DateTime("now");
+        $today = new \DateTime('now');
 
         $birthday = $this->_user->getBirthday();
         if (empty($birthday) || is_null($birthday)) {
@@ -129,8 +131,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
 
         $return = false;
         if (!is_null($birthday)) {
-            if ($birthday->diff($today)->y >= 18 && $birthday->diff($today)->y <= 120)
-            {
+            if ($birthday->diff($today)->y >= 18 && $birthday->diff($today)->y <= 120) {
                 $return = true;
             }
         }
@@ -167,10 +168,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     {
         if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 session contains current billing address
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $checkoutAddressBilling = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
+            $checkoutAddressBilling = $addressModel->findOneBy(['id' => Shopware()->Session()->checkoutBillingAddressId]);
             $companyName = $checkoutAddressBilling->getCompany();
         } else {
-
             $companyName = $this->userWrapped->getBilling('company');
         }
 
@@ -186,14 +186,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     {
         if (Shopware()->Session()->checkoutBillingAddressId > 0) { // From Shopware 5.2 session contains current billing address
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $billingAddress = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutBillingAddressId));
+            $billingAddress = $addressModel->findOneBy(['id' => Shopware()->Session()->checkoutBillingAddressId]);
         } else {
             $billingAddress = $this->userWrapped->getBilling();
         }
 
         if (Shopware()->Session()->checkoutShippingAddressId > 0) { // From Shopware 5.2 session contains current shipping address
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $shippingAddress = $addressModel->findOneBy(array('id' => Shopware()->Session()->checkoutShippingAddressId));
+            $shippingAddress = $addressModel->findOneBy(['id' => Shopware()->Session()->checkoutShippingAddressId]);
         } else {
             $shippingAddress = $this->userWrapped->getShipping();
         }
@@ -261,11 +261,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function isRatepayHidden() {
+    public function isRatepayHidden()
+    {
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
         $country = $this->userWrapped->getBillingCountry()->getIso();
 
-        if('DE' === $country || 'AT' === $country || 'CH' === $country) {
+        if ('DE' === $country || 'AT' === $country || 'CH' === $country) {
             $sandbox = $config->get('RatePaySandbox' . $country);
         }
 
@@ -280,5 +281,4 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     {
         return $this->_user;
     }
-
 }
