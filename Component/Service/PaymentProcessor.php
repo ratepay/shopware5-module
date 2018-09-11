@@ -99,6 +99,8 @@ class PaymentProcessor
     /**
      * @param $transactionId
      * @param \Shopware\Models\Order\Order $order
+     * @param bool $backend
+     * @throws \Exception
      */
     public function sendPaymentConfirm($transactionId, $order, $backend = false)
     {
