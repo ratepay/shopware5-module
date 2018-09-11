@@ -24,6 +24,13 @@
 
 ## Changelog
 
+### Version 5.2.3 - Released 2018-08-28
+* Fix tax on shipping item in backend orders
+* Improve compatibility with other (payment) modules
+* Extend plugin update function to preserve backend credentials
+* Fix problems with partial send/cancel/return operations
+* Fix payment request error on versions of Shopware earlier than 5.2.0
+
 ### Version 5.2.2 - Released 2018-08-17
 * hotfix cronjob install in older shopware versions fails if entry already exists
 
