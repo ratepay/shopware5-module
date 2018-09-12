@@ -50,7 +50,7 @@ class RatepayConfigWriter
             'securityCode' => $securityCode
         ];
 
-        $response = $factory->callRequest('ProfileRequest', $data);
+        $response = $factory->callProfileRequest($data);
 
         $payments = ['invoice', 'elv', 'installment'];
 
