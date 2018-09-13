@@ -2,8 +2,6 @@
 
 namespace RpayRatePay\Component\Model;
 
-
-
 /**
  * Class ShopwareAddressWrapper
  * @package RpayRatePay\Component\Model
@@ -18,7 +16,6 @@ class ShopwareAddressWrapper
 
     /** @var string */
     private $addressClass;
-
 
     /**
      * ShopwareAddressWrapper constructor.
@@ -48,5 +45,4 @@ class ShopwareAddressWrapper
 
         throw new \Exception('False object type sent to ShopwareAddressWrapper');
     }
-
 }

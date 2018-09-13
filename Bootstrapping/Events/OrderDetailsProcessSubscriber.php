@@ -1,11 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 11:22
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
+
+use RpayRatePay\Component\Service\Logger;
 
 class OrderDetailsProcessSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -45,12 +42,12 @@ class OrderDetailsProcessSubscriber implements \Enlight\Event\SubscriberInterfac
     {
         $isRatepayPayment = false;
         try {
-            $isRatePAYpaymentSQL = "SELECT COUNT(*) FROM `s_order` "
-                . "JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id`=`s_order`.`paymentID` "
+            $isRatePAYpaymentSQL = 'SELECT COUNT(*) FROM `s_order` '
+                . 'JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id`=`s_order`.`paymentID` '
                 . "WHERE  `s_order`.`ordernumber`=? AND`s_core_paymentmeans`.`name` LIKE 'rpayratepay%';";
-            $isRatepayPayment = (1 <= Shopware()->Db()->fetchOne($isRatePAYpaymentSQL, array($orderNumber)));
+            $isRatepayPayment = (1 <= Shopware()->Db()->fetchOne($isRatePAYpaymentSQL, [$orderNumber]));
         } catch (\Exception $exception) {
-            Shopware()->Pluginlogger()->error($exception->getMessage());
+            Logger::singleton()->error($exception->getMessage());
         }
 
         return (bool) $isRatepayPayment;

@@ -96,7 +96,7 @@ class ShoppingBasket extends AbstractModel
                 $amount += floatval($unitPrice);
             }
             
-            $this->admittedFields['Amount']['value'] = $amount;
+            $this->admittedFields['Amount']['value'] = round($amount, 2);
         }
 
         return parent::toArray();

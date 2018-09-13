@@ -7,7 +7,6 @@ use Shopware\Components\Test\Plugin\TestCase;
 
 class ShopwareAddressWrapperTest extends TestCase
 {
-
     public function testGetCountry()
     {
         $address = $this->getAddressMock();
@@ -40,7 +39,6 @@ class ShopwareAddressWrapperTest extends TestCase
     {
         $country = Shopware()->Models()->getRepository('Shopware\Models\Country\Country')
             ->findOneBy(['iso' => 'DE']);
-
 
         $stub = $this->createMock('Shopware\Models\Customer\Address');
 

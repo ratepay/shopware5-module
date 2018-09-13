@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 11:18
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
 
 class BackendOrderViewExtensionSubscriber implements \Enlight\Event\SubscriberInterface

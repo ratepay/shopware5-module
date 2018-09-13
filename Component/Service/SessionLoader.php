@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: awhittington
- * Date: 18.07.18
- * Time: 16:09
- */
+
 namespace  RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Mapper\BankData;
@@ -50,8 +45,8 @@ class SessionLoader
 
         //todo, get rid of cast if possible
         if ((int)$customerIdSession !== (int)$customerId) {
-            throw new \Exception("Attempt to load bank data for wrong customer! Session Value " .
-                $customerIdSession . " checked value " . $customerId . "." );
+            throw new \Exception('Attempt to load bank data for wrong customer! Session Value ' .
+                $customerIdSession . ' checked value ' . $customerId . '.');
         }
 
         $bankCode = $sessionArray['bankcode'];
@@ -75,13 +70,13 @@ class SessionLoader
         $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
         if (isset($this->session->RatePAY['checkoutShippingAddressId']) && $this->session->RatePAY['checkoutShippingAddressId'] > 0) {
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $checkoutAddressShipping = $addressModel->findOneBy(array('id' => $this->session->RatePAY['checkoutShippingAddressId'] ? $this->session->RatePAY['checkoutShippingAddressId'] : $this->session->RatePAY['checkoutBillingAddressId']));
+            $checkoutAddressShipping = $addressModel->findOneBy(['id' => $this->session->RatePAY['checkoutShippingAddressId'] ? $this->session->RatePAY['checkoutShippingAddressId'] : $this->session->RatePAY['checkoutBillingAddressId']]);
         } else {
             $checkoutAddressShipping = $customerWrapped->getShipping() !== null ? $customerWrapped->getShipping() : $billing;
         }
         return $checkoutAddressShipping;
     }
-    
+
     /**
      * @param \Shopware\Models\Customer\Customer $customer
      * @return mixed
@@ -92,7 +87,7 @@ class SessionLoader
 
         if (isset($this->session->RatePAY['checkoutBillingAddressId']) && $this->session->RatePAY['checkoutBillingAddressId'] > 0) {
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $checkoutAddressBilling = $addressModel->findOneBy(array('id' => $this->session->RatePAY['checkoutBillingAddressId']));
+            $checkoutAddressBilling = $addressModel->findOneBy(['id' => $this->session->RatePAY['checkoutBillingAddressId']]);
         } else {
             $checkoutAddressBilling = $customerWrapped->getBilling();
         }
@@ -121,7 +116,7 @@ class SessionLoader
 
     public function getPaymentRequestData()
     {
-        $method = \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::getPaymentMethod(
+        $method = ShopwareUtil::getPaymentMethod(
             $this->session->sOrderVariables['sUserData']['additional']['payment']['name']
         );
 
@@ -153,10 +148,10 @@ class SessionLoader
             $shippingTax,
             $dfpToken,
             $lang,
-            $amount);
+            $amount
+        );
     }
-    
-    
+
     public function setInstallmentData($total_amount, $amount, $interest_rate, $interest_amount, $service_charge, $annual_percentage_rate, $monthly_debit_interest, $number_of_rates, $rate, $last_rate, $payment_firstday)
     {
         /* Saving Data as example in the Session */

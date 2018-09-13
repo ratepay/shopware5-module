@@ -1,9 +1,11 @@
 <?php
+
 namespace RpayRatePay\Bootstrapping\Events;
+
+use RpayRatePay\Component\Service\Logger;
 
 class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
 {
-
     const JOB_NAME = 'Shopware_Cronjob_UpdateRatepayTransactions';
 
     public static function getSubscribedEvents()
@@ -32,18 +34,18 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
         try {
             $orderIds = $this->findCandidateOrdersForUpdate($config);
             $orderProcessor = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
-            foreach($orderIds as $orderId) {
+            foreach ($orderIds as $orderId) {
                 /* @var \Shopware\Models\Order\Order $order */
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
                 $orderProcessor->informRatepayOfOrderStatusChange($order);
             }
-        } catch(\Exception $e) {
-            Shopware()->Pluginlogger()->error('Fehler UpdateTransactionsSubscriber: ' .
+        } catch (\Exception $e) {
+            Logger::singleton()->error('Fehler UpdateTransactionsSubscriber: ' .
                 $e->getMessage() . ' ' .
                 $e->getTraceAsString());
             return $e->getMessage();
         }
-        return "Success";
+        return 'Success';
     }
 
     /**
@@ -69,9 +71,8 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
             $config['RatePayFullReturn'],
         ];
 
-
         $paymentMethodsWrapped = [];
-        foreach($paymentMethods as $paymentMethod) {
+        foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodsWrapped[] = "'{$paymentMethod}'";
         }
 
@@ -86,10 +87,10 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
         $query = 'SELECT o.id FROM s_order o
                 INNER JOIN s_order_history oh ON oh.orderID = o.id
                 LEFT JOIN s_core_paymentmeans cp ON cp.id = o.paymentID
-                WHERE cp.name in ('. join(',', $paymentMethodsWrapped) . ')
-                AND o.status in ('. join(',', $orderStatus) .") 
+                WHERE cp.name in (' . join(',', $paymentMethodsWrapped) . ')
+                AND o.status in (' . join(',', $orderStatus) . ')
                 AND oh.change_date >= :changeDate
-                GROUP BY o.id";
+                GROUP BY o.id';
 
         $rows = Shopware()->Db()->fetchAll($query, [':changeDate' => $changeDate]);
 

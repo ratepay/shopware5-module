@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:38
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
 
 class PaymentControllerSubscriber implements \Enlight\Event\SubscriberInterface

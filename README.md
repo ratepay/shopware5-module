@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
-|Version | `5.2.2` 
+|Version | `5.2.4`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Installation | see below
@@ -24,6 +24,21 @@
 
 ## Changelog
 
+### Version 5.2.4 - Released 2018-09-13
+* Fix Update Function
+* Update Readme
+* Fix and Wrap Logging, Should use Container
+* Fix Rounding Discrepancies in Shops with Net Prices
+* Fix extra indents of code and PSR2 formatting
+* Put util in psr4 namespace
+
+### Version 5.2.3 - Released 2018-08-28
+* Fix tax on shipping item in backend orders
+* Improve compatibility with other (payment) modules
+* Extend plugin update function to preserve backend credentials
+* Fix problems with partial send/cancel/return operations
+* Fix payment request error on versions of Shopware earlier than 5.2.0
+
 ### Version 5.2.2 - Released 2018-08-17
 * hotfix cronjob install in older shopware versions fails if entry already exists
 
@@ -35,20 +50,20 @@
 * add system-wide support for customer groups with net prices
 
 ### Version 5.1.1 - Released 2018-08-08
-* hotfix plugin update function 
+* hotfix plugin update function
 
 ### Version 5.1.0 - Released 2018-08-02
 * add compatibility to PHP-7.2
 * frontend changes on checkout/payment pages
 * add setting to handle shipping-item with older API
 * manage custom attributes via CrudService
-* add common getter to identify installment-elv 
+* add common getter to identify installment-elv
 
 ### Version 5.0.7 - Released 2018-07-03
 * add complete bidirectionally
 * add batch processing
 * refactor Bootstrap
-* fix alternative address option 
+* fix alternative address option
 
 ### Version 5.0.6 - Released 2018-05-07
 * remove special company name field

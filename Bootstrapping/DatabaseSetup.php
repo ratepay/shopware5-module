@@ -1,14 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 12.06.18
- * Time: 13:26
- */
+
 namespace RpayRatePay\Bootstrapping;
 
-use Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util as Util;
-use RpayRatePay\Bootstrapping\Bootstrapper;
+use RpayRatePay\Component\Service\ShopwareUtil;
 
 class DatabaseSetup extends Bootstrapper
 {
@@ -16,7 +10,8 @@ class DatabaseSetup extends Bootstrapper
      * @return mixed|void
      * @throws Exception
      */
-    public function install() {
+    public function install()
+    {
         $this->createDatabaseTables();
     }
 
@@ -24,7 +19,8 @@ class DatabaseSetup extends Bootstrapper
      * @return mixed|void
      * @throws Exception
      */
-    public function update() {
+    public function update()
+    {
         $this->updateConfigurationTables();
         $this->removeSandboxColumns();
     }
@@ -101,7 +97,7 @@ class DatabaseSetup extends Bootstrapper
 
     private function removeSandboxColumns()
     {
-        if (Util::tableHasColumn('s_core_config_elements', 'RatePaySandboxDE')) {
+        if (ShopwareUtil::tableHasColumn('s_core_config_elements', 'RatePaySandboxDE')) {
             try {
                 Shopware()->Db()->query(
                     "DELETE FROM `s_core_config_elements` WHERE `s_core_config_elements`.`name` LIKE 'RatePaySandbox%'"

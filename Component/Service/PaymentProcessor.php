@@ -1,15 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: awhittington
- * Date: 16.07.18
- * Time: 11:21
- */
 
 namespace RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
-use Shopware\Components\Plugin;
 
 class PaymentProcessor
 {
@@ -27,8 +20,8 @@ class PaymentProcessor
     public function initShipping($order)
     {
         $this->db->query(
-            "INSERT INTO `rpay_ratepay_order_shipping` (`s_order_id`) VALUES(?)",
-            array($order->getId())
+            'INSERT INTO `rpay_ratepay_order_shipping` (`s_order_id`) VALUES(?)',
+            [$order->getId()]
         );
     }
 
@@ -41,12 +34,12 @@ class PaymentProcessor
     {
         $this->db->update( //wird wohl nicht gehen, da das Custom-Feld nicht da ist
             's_order_attributes',
-            array(
+            [
                 'attribute5' => $paymentRequestResult->getDescriptor(),
                 'attribute6' => $paymentRequestResult->getTransactionId(),
                 'ratepay_fallback_shipping' => $fallbackShipping,
                 'ratepay_backend' => $backend,
-            ),
+            ],
             'orderID=' . $order->getId()
         );
     }
@@ -56,24 +49,24 @@ class PaymentProcessor
      */
     public function insertRatepayPositions($order)
     {
-        $sql = "SELECT `id` FROM `s_order_details` WHERE `ordernumber`=?;";
-        Shopware()->Pluginlogger()->info('NOW SETTING ORDER DETAILS: ' . $sql);
+        $sql = 'SELECT `id` FROM `s_order_details` WHERE `ordernumber`=?;';
+        Logger::singleton()->info('NOW SETTING ORDER DETAILS: ' . $sql);
 
-        $rows = $this->db->fetchAll($sql, array($order->getNumber()));
+        $rows = $this->db->fetchAll($sql, [$order->getNumber()]);
 
-        Shopware()->Pluginlogger()->info('GOT ROWS ' . count($rows));
+        Logger::singleton()->info('GOT ROWS ' . count($rows));
 
-        $values = "";
+        $values = '';
         foreach ($rows as $row) {
-            $values .= "(" . $row['id'] . "),";
+            $values .= '(' . $row['id'] . '),';
         }
         $values = substr($values, 0, -1);
-        $sqlInsert = "INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES " . $values;
-        Shopware()->Pluginlogger()->info('INSERT NOW ' . $sqlInsert);
+        $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES ' . $values;
+        Logger::singleton()->info('INSERT NOW ' . $sqlInsert);
         try {
             $this->db->query($sqlInsert);
         } catch (Exception $exception) {
-            Shopware()->Pluginlogger()->error($exception->getMessage());
+            Logger::singleton()->error($exception->getMessage());
         }
     }
 
@@ -96,7 +89,8 @@ class PaymentProcessor
         Shopware()->Models()->flush($order);
 
         Shopware()->Modules()->Order()
-            ->setPaymentStatus($order->getId(),
+            ->setPaymentStatus(
+                $order->getId(),
                 self::PAYMENT_STATUS_COMPLETELY_PAID,
                 false
             );
@@ -105,6 +99,8 @@ class PaymentProcessor
     /**
      * @param $transactionId
      * @param \Shopware\Models\Order\Order $order
+     * @param bool $backend
+     * @throws \Exception
      */
     public function sendPaymentConfirm($transactionId, $order, $backend = false)
     {
@@ -115,5 +111,4 @@ class PaymentProcessor
         $modelFactory->setOrderId($order->getNumber());
         $modelFactory->callPaymentConfirm($countryCode);
     }
-
 }

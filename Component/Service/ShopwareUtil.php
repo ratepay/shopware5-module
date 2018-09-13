@@ -1,5 +1,8 @@
 <?php
 
+namespace RpayRatePay\Component\Service;
+use Shopware;
+
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation; either
@@ -12,12 +15,12 @@
  * You should have received a copy of the GNU General Public License along with this program;
  * if not, see <http://www.gnu.org/licenses/>.
  */
-class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util
+class ShopwareUtil
 {
     protected $debitPayTypes = [
-        '2' => "DIRECT-DEBIT",
-        '28' => "BANK-TRANSFER",
-        '2,28' => "FIRSTDAY-SWITCH"
+        '2' => 'DIRECT-DEBIT',
+        '28' => 'BANK-TRANSFER',
+        '2,28' => 'FIRSTDAY-SWITCH'
     ];
 
     /**
@@ -76,6 +79,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util
      */
     public static function customerCreatesNetOrders(Shopware\Models\Customer\Customer $customer)
     {
-       return $customer->getGroup()->getTax() === false;
+        return $customer->getGroup()->getTax() === false;
     }
 }

@@ -1,11 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:50
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
+
+use RpayRatePay\Component\Service\Logger;
 
 class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -37,9 +34,9 @@ class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
      */
     public function preValidation(\Enlight_Event_EventArgs $arguments)
     {
-        $request  = $arguments->getSubject()->Request();
+        $request = $arguments->getSubject()->Request();
         $response = $arguments->getSubject()->Response();
-        $view     = $arguments->getSubject()->View();
+        $view = $arguments->getSubject()->View();
 
         if (!$request->isDispatched()
             || $response->isException()
@@ -55,13 +52,13 @@ class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
 
         $userId = Shopware()->Session()->sUserId;
         if (empty($userId)) {
-            Shopware()->Pluginlogger()->warning('RatePAY: sUserId is empty');
+            Logger::singleton()->warning('RatePAY: sUserId is empty');
             return;
         }
 
         Shopware()->Template()->addTemplateDir($this->path . 'Views/');
         $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
-        $paymentType =  Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
+        $paymentType = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
 
         $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user, $paymentType);
 
@@ -69,13 +66,13 @@ class CheckoutValidationSubscriber implements \Enlight\Event\SubscriberInterface
             $view->sRegisterFinished = 'false';
 
             $view->ratepayValidateCompanyName = $validation->isCompanyNameSet() ? 'true' : 'false';
-            Shopware()->Pluginlogger()->info('RatePAY: isCompanyNameSet->' . $view->ratepayValidateCompanyName);
+            Logger::singleton()->info('RatePAY: isCompanyNameSet->' . $view->ratepayValidateCompanyName);
 
             $view->ratepayValidateIsB2B = $validation->isCompanyNameSet() ? 'true' : 'false';
-            Shopware()->Pluginlogger()->info('RatePAY: isB2B->' . $view->ratepayValidateIsB2B);
+            Logger::singleton()->info('RatePAY: isB2B->' . $view->ratepayValidateIsB2B);
 
             $view->ratepayIsBillingAddressSameLikeShippingAddress = $validation->isBillingAddressSameLikeShippingAddress() ? 'true' : 'false';
-            Shopware()->Pluginlogger()->info('RatePAY: isBillingAddressSameLikeShippingAddress->' . $view->ratepayIsBillingAddressSameLikeShippingAddress);
+            Logger::singleton()->info('RatePAY: isBillingAddressSameLikeShippingAddress->' . $view->ratepayIsBillingAddressSameLikeShippingAddress);
 
             if ($view->ratepayValidateIsB2B === false) {
                 $view->ratepayValidateIsBirthdayValid = $validation->isBirthdayValid();

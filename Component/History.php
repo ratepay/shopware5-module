@@ -19,7 +19,6 @@
      */
     class Shopware_Plugins_Frontend_RpayRatePay_Component_History
     {
-
         /**
          * Logs the History for an Request
          *
@@ -31,10 +30,10 @@
          */
         public function logHistory($orderId, $event, $name = '', $articlenumber = '', $quantity = '')
         {
-            $sql = "INSERT INTO `rpay_ratepay_order_history` "
-                . "(`orderId`, `event`, `articlename`, `articlenumber`, `quantity`) "
-                . "VALUES(?, ?, ?, ?, ?)";
-            Shopware()->Db()->query($sql, array($orderId, $event, $name, $articlenumber, $quantity));
+            $sql = 'INSERT INTO `rpay_ratepay_order_history` '
+                . '(`orderId`, `event`, `articlename`, `articlenumber`, `quantity`) '
+                . 'VALUES(?, ?, ?, ?, ?)';
+            Shopware()->Db()->query($sql, [$orderId, $event, $name, $articlenumber, $quantity]);
         }
 
         /**
@@ -46,12 +45,11 @@
          */
         public function getHistory($orderId)
         {
-            $sql = "SELECT * FROM `rpay_ratepay_order_history`"
-                . " WHERE `orderId`=? "
-                . "ORDER BY `id` DESC";
-            $history = Shopware()->Db()->fetchAll($sql, array($orderId));
+            $sql = 'SELECT * FROM `rpay_ratepay_order_history`'
+                . ' WHERE `orderId`=? '
+                . 'ORDER BY `id` DESC';
+            $history = Shopware()->Db()->fetchAll($sql, [$orderId]);
 
             return $history;
         }
-
     }

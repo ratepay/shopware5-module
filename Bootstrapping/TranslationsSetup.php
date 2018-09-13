@@ -1,14 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 12.06.18
- * Time: 13:49
- */
-namespace RpayRatePay\Bootstrapping;
 
-use Shopware\Components\Model\ModelRepository;
-use RpayRatePay\Bootstrapping\Bootstrapper;
+namespace RpayRatePay\Bootstrapping;
 
 class TranslationsSetup extends Bootstrapper
 {
@@ -17,7 +9,8 @@ class TranslationsSetup extends Bootstrapper
     /**
      * @throws Exception
      */
-    public function install() {
+    public function install()
+    {
         $this->languageUpdate();
     }
 
@@ -25,28 +18,30 @@ class TranslationsSetup extends Bootstrapper
      * @return mixed|void
      * @throws Exception
      */
-    public function update() {
+    public function update()
+    {
         $this->languageUpdate();
     }
 
     /**
      * @return mixed|void
      */
-    public function uninstall() {}
-
+    public function uninstall()
+    {
+    }
 
     private function languageUpdate()
     {
-        $locales = array(
+        $locales = [
             2 => 'en_EN',
             108 => 'fr_FR',
             176 => 'nl_NL',
-        );
+        ];
 
         $germanMessages = $this->getInstalledGermanMessages();
 
         foreach ($germanMessages as $messageName) {
-            foreach ($locales AS $locale => $code) {
+            foreach ($locales as $locale => $code) {
                 $lang = Shopware()->Db()->fetchRow(
                     "SELECT `name` FROM `s_core_snippets` WHERE `namespace` LIKE 'RatePay' AND `localeID` = " . $locale . " AND `name` = '" . $messageName . "'"
                 );
@@ -54,13 +49,13 @@ class TranslationsSetup extends Bootstrapper
                 if (empty($lang)) {
                     $translation = $this->getTranslatedMessage($code, $messageName);
                     if (!empty($translation)) {
-                        Shopware()->Db()->insert('s_core_snippets', array(
+                        Shopware()->Db()->insert('s_core_snippets', [
                             'namespace' => 'RatePay',
                             'localeID' => $locale,
                             'shopID' => 1,
                             'name' => $messageName,
                             'value' => $translation,
-                        ));
+                        ]);
                     }
                 }
             }
@@ -77,7 +72,7 @@ class TranslationsSetup extends Bootstrapper
             "SELECT `name` FROM `s_core_snippets` WHERE `namespace` LIKE 'RatePay' AND `localeID` = 1"
         );
 
-        return array_map(function($item) {
+        return array_map(function ($item) {
             return $item['name'];
         }, $messages);
     }
@@ -90,9 +85,10 @@ class TranslationsSetup extends Bootstrapper
      * @return mixed
      * @throws Exception
      */
-    private function getTranslatedMessage($locale, $name) {
+    private function getTranslatedMessage($locale, $name)
+    {
         if (empty($this->translations) || !array_key_exists($locale, $this->translations)) {
-            $this->translations[$locale] = $this->loadConfig('locale/frontend/'.$locale.'.json');
+            $this->translations[$locale] = $this->loadConfig('locale/frontend/' . $locale . '.json');
         }
 
         return $this->translations[$locale][$name];

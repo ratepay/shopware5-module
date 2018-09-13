@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 12.06.18
- * Time: 14:02
- */
+
 namespace RpayRatePay\Bootstrapping;
 
 abstract class Bootstrapper
@@ -26,17 +21,17 @@ abstract class Bootstrapper
     /**
      * @return mixed
      */
-    public abstract function install();
+    abstract public function install();
 
     /**
      * @return mixed
      */
-    public abstract function update();
+    abstract public function update();
 
     /**
      * @return mixed
      */
-    public abstract function uninstall();
+    abstract public function uninstall();
 
     /**
      * @param $configFile

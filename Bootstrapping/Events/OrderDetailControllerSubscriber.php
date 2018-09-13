@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:48
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
 
 class OrderDetailControllerSubscriber implements \Enlight\Event\SubscriberInterface
@@ -39,6 +34,6 @@ class OrderDetailControllerSubscriber implements \Enlight\Event\SubscriberInterf
     {
         Shopware()->Template()->addTemplateDir($this->path . 'Views/');
 
-        return $this->path . "Controller/backend/RpayRatepayOrderDetail.php";
+        return $this->path . 'Controller/backend/RpayRatepayOrderDetail.php';
     }
 }

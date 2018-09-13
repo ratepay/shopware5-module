@@ -1,27 +1,29 @@
 <?php
 
-    /**
-     * This program is free software; you can redistribute it and/or modify it under the terms of
-     * the GNU General Public License as published by the Free Software Foundation; either
-     * version 3 of the License, or (at your option) any later version.
-     *
-     * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-     * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-     * See the GNU General Public License for more details.
-     *
-     * You should have received a copy of the GNU General Public License along with this program;
-     * if not, see <http://www.gnu.org/licenses/>.
-     *
-     * RpayRatepay
-     *
-     * @category   RatePAY
-     * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
-     */
+/**
+ * This program is free software; you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, see <http://www.gnu.org/licenses/>.
+ *
+ * RpayRatepay
+ *
+ * @category   RatePAY
+ * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
+ */
 
 use RpayRatePay\Component\Service\SessionLoader;
+use RpayRatePay\Component\Service\ShopwareUtil;
 use Shopware\Components\CSRFWhitelistAware;
 use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+use RpayRatePay\Component\Service\Logger;
 
 class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
 {
@@ -46,21 +48,21 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
         if (isset($Parameter['userid'])) {
             $customerId = $Parameter['userid'];
-        } else if (isset(Shopware()->Session()->sUserId)) {
+        } elseif (isset(Shopware()->Session()->sUserId)) {
             $customerId = Shopware()->Session()->sUserId;
         }
 
         if ($customerId === null) {
-            return "RatePAY frontend controller: No user set";
+            return 'RatePAY frontend controller: No user set';
         }
 
         $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $customerId);
 
-        $netPrices = Shopware_Plugins_Frontend_RpayRatePay_Component_Service_Util::customerCreatesNetOrders($customer);
+        $netPrices = ShopwareUtil::customerCreatesNetOrders($customer);
 
         $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
         $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
-        $this->_logging      = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
+        $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
     }
 
     /**
@@ -69,42 +71,42 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
     public function indexAction()
     {
         Shopware()->Session()->RatePAY['errorRatenrechner'] = 'false';
-        if (preg_match("/^rpayratepay(invoice|rate|debit|rate0)$/", $this->getPaymentShortName())) {
+        if (preg_match('/^rpayratepay(invoice|rate|debit|rate0)$/', $this->getPaymentShortName())) {
             if ($this->getPaymentShortName() === 'rpayratepayrate' && !isset(Shopware()->Session()->RatePAY['ratenrechner'])
             ) {
                 Shopware()->Session()->RatePAY['errorRatenrechner'] = 'true';
                 $this->redirect(
                     Shopware()->Front()->Router()->assemble(
-                        array(
-                            'controller'  => 'checkout',
-                            'action'      => 'confirm',
+                        [
+                            'controller' => 'checkout',
+                            'action' => 'confirm',
                             'forceSecure' => true
-                        )
+                        ]
                     )
                 );
             } elseif ($this->getPaymentShortName() === 'rpayratepayrate0' && !isset(Shopware()->Session()->RatePAY['ratenrechner'])) {
                 Shopware()->Session()->RatePAY['errorRatenrechner'] = 'true';
                 $this->redirect(
                     Shopware()->Front()->Router()->assemble(
-                        array(
-                            'controller'  => 'checkout',
-                            'action'      => 'confirm',
+                        [
+                            'controller' => 'checkout',
+                            'action' => 'confirm',
                             'forceSecure' => true
-                        )
+                        ]
                     )
                 );
             } else {
-                Shopware()->Pluginlogger()->info('proceed');
+                Logger::singleton()->info('proceed');
                 $this->_proceedPayment();
             }
         } else {
             $this->redirect(
                 Shopware()->Front()->Router()->assemble(
-                    array(
-                        'controller'  => 'checkout',
-                        'action'      => 'confirm',
+                    [
+                        'controller' => 'checkout',
+                        'action' => 'confirm',
                         'forceSecure' => true
-                    )
+                    ]
                 )
             );
         }
@@ -121,12 +123,12 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
 
         /** @var Shopware\Models\Customer\Customer $userModel */
-        $userModel = $customerModel->findOneBy(array('id' => Shopware()->Session()->sUserId));
-        $userWrapped = new ShopwareCustomerWrapper($userModel);
+        $userModel = $customerModel->findOneBy(['id' => Shopware()->Session()->sUserId]);
+        $userWrapped = new ShopwareCustomerWrapper($userModel, Shopware()->Models());
 
         if (isset($Parameter['checkoutBillingAddressId']) && !is_null($Parameter['checkoutBillingAddressId'])) { // From Shopware 5.2 current billing address is sent by parameter
             $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $customerAddressBilling = $addressModel->findOneBy(array('id' => $Parameter['checkoutBillingAddressId']));
+            $customerAddressBilling = $addressModel->findOneBy(['id' => $Parameter['checkoutBillingAddressId']]);
             Shopware()->Session()->RatePAY['checkoutBillingAddressId'] = $Parameter['checkoutBillingAddressId'];
             if (isset($Parameter['checkoutShippingAddressId']) && !is_null($Parameter['checkoutShippingAddressId'])) {
                 Shopware()->Session()->RatePAY['checkoutShippingAddressId'] = $Parameter['checkoutShippingAddressId'];
@@ -138,32 +140,31 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         }
 
         $return = 'OK';
-        $updateUserData = array();
-        $updateAddressData = array();
+        $updateUserData = [];
+        $updateAddressData = [];
 
         if (!is_null($customerAddressBilling)) {
             if (method_exists($customerAddressBilling, 'getBirthday')) {
-                $updateAddressData['phone'] = $Parameter['ratepay_phone'] ? : $customerAddressBilling->getPhone();
-                if ($customerAddressBilling->getCompany() !== "") {
-                    $updateAddressData['company'] = $Parameter['ratepay_company'] ? : $customerAddressBilling->getCompany();
+                $updateAddressData['phone'] = $Parameter['ratepay_phone'] ?: $customerAddressBilling->getPhone();
+                if ($customerAddressBilling->getCompany() !== '') {
+                    $updateAddressData['company'] = $Parameter['ratepay_company'] ?: $customerAddressBilling->getCompany();
                 } else {
-                    $updateAddressData['birthday'] = $Parameter['ratepay_dob'] ? : $customerAddressBilling->getBirthday()->format("Y-m-d");
+                    $updateAddressData['birthday'] = $Parameter['ratepay_dob'] ?: $customerAddressBilling->getBirthday()->format('Y-m-d');
                 }
 
                 try {
                     Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // ToDo: Why parameter?
-                    Shopware()->Pluginlogger()->info('Kundendaten aktualisiert.');
+                    Logger::singleton()->info('Kundendaten aktualisiert.');
                 } catch (Exception $exception) {
-                    Shopware()->Pluginlogger()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
+                    Logger::singleton()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
-
             } elseif (method_exists($userModel, 'getBirthday')) { // From Shopware 5.2 birthday is moved to customer object
-                $updateAddressData['phone'] = $Parameter['ratepay_phone'] ? : $customerAddressBilling->getPhone();
+                $updateAddressData['phone'] = $Parameter['ratepay_phone'] ?: $customerAddressBilling->getPhone();
                 if (!is_null($customerAddressBilling->getCompany())) {
-                    $updateAddressData['company'] = $Parameter['ratepay_company'] ? : $customerAddressBilling->getCompany();
+                    $updateAddressData['company'] = $Parameter['ratepay_company'] ?: $customerAddressBilling->getCompany();
                 } else {
-                    $updateUserData['birthday'] = $Parameter['ratepay_dob'] ? : $userModel->getBirthday()->format("Y-m-d");
+                    $updateUserData['birthday'] = $Parameter['ratepay_dob'] ?: $userModel->getBirthday()->format('Y-m-d');
                 }
 
                 try {
@@ -173,9 +174,9 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                     if (count($updateAddressData) > 0) {
                         Shopware()->Db()->update('s_user_addresses', $updateAddressData, 'id=' . $Parameter['checkoutBillingAddressId']);
                     }
-                    Shopware()->Pluginlogger()->info('Kundendaten aktualisiert.');
+                    Logger::singleton()->info('Kundendaten aktualisiert.');
                 } catch (Exception $exception) {
-                    Shopware()->Pluginlogger()->error('Fehler beim Updaten der User oder Address daten: ' . $exception->getMessage());
+                    Logger::singleton()->error('Fehler beim Updaten der User oder Address daten: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
             } else {
@@ -201,7 +202,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      */
     private function _proceedPayment()
     {
-
         $resultRequest = $this->_modelFactory->callPaymentRequest();
 
         if ($resultRequest->isSuccessful()) {
@@ -217,18 +217,18 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
                     $paymentProcessor->initShipping($order);
                 }
-
             } catch (Exception $exception) {
-                Shopware()->Pluginlogger()->error($exception->getMessage());
+                Logger::singleton()->error($exception->getMessage());
             }
 
             try {
-                $paymentProcessor->setOrderAttributes($order,
+                $paymentProcessor->setOrderAttributes(
+                    $order,
                     $resultRequest,
                     Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem')
                 );
             } catch (Exception $exception) {
-                Shopware()->Pluginlogger()->error($exception->getMessage());
+                Logger::singleton()->error($exception->getMessage());
             }
 
             $paymentProcessor->setPaymentStatusPaid($order);
@@ -248,12 +248,12 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
              * redirect to success page
              */
             $this->redirect(
-                array(
-                    'controller'  => 'checkout',
-                    'action'      => 'finish',
+                [
+                    'controller' => 'checkout',
+                    'action' => 'finish',
                     'sUniqueID' => $uniqueId,
                     'forceSecure' => true
-                )
+                ]
             );
         } else {
             $this->_customerMessage = $resultRequest->getCustomerMessage();
@@ -269,7 +269,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      */
     private function _error()
     {
-        $this->View()->loadTemplate("frontend/payment_rpay_part/RatePAYErrorpage.tpl");
+        $this->View()->loadTemplate('frontend/payment_rpay_part/RatePAYErrorpage.tpl');
         $customerMessage = $this->_customerMessage;
 
         if (!empty($customerMessage)) {
@@ -279,7 +279,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
             $shopId = Shopware()->Shop()->getId();
             $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
-            $userModel = $customerModel->findOneBy(array('id' => Shopware()->Session()->sUserId));
+            $userModel = $customerModel->findOneBy(['id' => Shopware()->Session()->sUserId]);
             $userModelWrapped = new ShopwareCustomerWrapper($userModel, Shopware()->Models());
             $countryBilling = $userModelWrapped->getBillingCountry();
             $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
@@ -295,7 +295,8 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      * @param $country
      * @return array
      */
-    private function getRatePayPluginConfigByCountry($shopId, $country, $backend=false) {
+    private function getRatePayPluginConfigByCountry($shopId, $country, $backend = false)
+    {
         //fetch correct config for current shop based on user country
         $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
 
@@ -309,9 +310,9 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             `shopId` =?
             AND
             `profileId`=?
-            AND 
+            AND
             backend=?
-        ', array($shopId, $profileId, $backend));
+        ', [$shopId, $profileId, $backend]);
     }
 
     /**
@@ -347,5 +348,4 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             'calcRequest'
         ];
     }
-
 }

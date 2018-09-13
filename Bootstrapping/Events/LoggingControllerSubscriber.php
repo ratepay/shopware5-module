@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 13.06.18
- * Time: 10:46
- */
+
 namespace RpayRatePay\Bootstrapping\Events;
 
 class LoggingControllerSubscriber implements \Enlight\Event\SubscriberInterface
@@ -37,8 +32,8 @@ class LoggingControllerSubscriber implements \Enlight\Event\SubscriberInterface
      */
     public function onLoggingBackendController()
     {
-        Shopware()->Template()->addTemplateDir($this->path. 'Views/');
+        Shopware()->Template()->addTemplateDir($this->path . 'Views/');
 
-        return $this->path . "Controller/backend/RpayRatepayLogging.php";
+        return $this->path . 'Controller/backend/RpayRatepayLogging.php';
     }
 }

@@ -21,10 +21,10 @@
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ConfigLoader;
+use RpayRatePay\Component\Service\Logger;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
 {
-
     /**
      * @param string $namespace
      * @param string $name
@@ -42,20 +42,21 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
      */
     public function setExtendedDataAction()
     {
-        Shopware()->Pluginlogger()->info('Now calling setExtendedData');
+        Logger::singleton()->info('Now calling setExtendedData');
         $params = $this->Request()->getParams();
 
-        $iban = trim($params["iban"]);
-        $accountNumber = trim($params["accountNumber"]);
-        $bankCode = trim($params["bankCode"]);
-        $customerId = $params["customerId"];
+        $iban = trim($params['iban']);
+        $accountNumber = trim($params['accountNumber']);
+        $bankCode = trim($params['bankCode']);
+        $customerId = $params['customerId'];
 
         $sessionLoader = new SessionLoader(Shopware()->BackendSession());
 
         $sessionLoader->setBankData(
             $customerId,
             $accountNumber ? $accountNumber : $iban,
-            $bankCode, Shopware()->BackendSession()
+            $bankCode,
+            Shopware()->BackendSession()
         );
 
         $this->view->assign([
@@ -95,7 +96,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $configLoader = new ConfigLoader(Shopware()->Db());
 
         //TODO: put magic strings in consts
-        $nullPercent = $paymentMeansName ==='rpayratepayrate0';
+        $nullPercent = $paymentMeansName === 'rpayratepayrate0';
         $profileId = $configLoader->getProfileId($countryIso, $shopId, $nullPercent, true);
 
         $securityCodeKey = ConfigLoader::getSecurityCodeKey($countryIso, true);
@@ -202,7 +203,6 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
 
         $paymentSubtype = $params['paymentSubtype'];
 
-
         $calcParamSet = !empty($params['value']) && !empty($params['type']);
 
         $type = $calcParamSet ? $params['type'] : 'time';
@@ -220,7 +220,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
             return;
         }
 
-        $plan =  json_decode($result, true);
+        $plan = json_decode($result, true);
 
         $sessionLoader = new SessionLoader(Shopware()->BackendSession());
 
@@ -243,7 +243,6 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
             'plan' => $plan,
         ]);
     }
-
 
     public function updatePaymentSubtypeAction()
     {

@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: eiriarte-mendez
- * Date: 10.07.18
- * Time: 11:26
- */
-namespace RpayRatePay\Bootstrapping;
 
-use RpayRatePay\Bootstrapping\Bootstrapper;
+namespace RpayRatePay\Bootstrapping;
 
 class AdditionalOrderAttributeSetup extends Bootstrapper
 {
@@ -64,13 +57,14 @@ class AdditionalOrderAttributeSetup extends Bootstrapper
         $sConfigured = explode('.', Shopware()->Config()->version);
         $configured = array_map('intval', $sConfigured);
 
-
-        for ($i=0; $i<3; $i++) {
-            if ($expected[$i] < $configured[$i])
+        for ($i = 0; $i < 3; $i++) {
+            if ($expected[$i] < $configured[$i]) {
                 return true;
+            }
 
-            if ($expected[$i] > $configured[$i])
+            if ($expected[$i] > $configured[$i]) {
                 return false;
+            }
         }
 
         return true;

@@ -7,7 +7,6 @@ use Shopware\Components\Test\Plugin\TestCase;
 
 class ShopwareCustomerWrapperTest extends TestCase
 {
-
     public function testGetBilling()
     {
         $this->_testGetBilling__fresh();
@@ -64,7 +63,6 @@ class ShopwareCustomerWrapperTest extends TestCase
 
         $billing = $wrapper->getBilling();
         $this->assertNotNull($billing->getCountryId());
-
     }
 
     private function _testGetBillingCountry__rotten()
@@ -178,7 +176,6 @@ class ShopwareCustomerWrapperTest extends TestCase
 
         $defaultBilling = new \Shopware\Models\Customer\Billing();
         $defaultBilling->setPhone('1111111111');
-
 
         $country = Shopware()->Models()->getRepository('Shopware\Models\Country\Country')
             ->findOneBy(['iso' => 'DE']);
