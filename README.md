@@ -25,7 +25,12 @@
 ## Changelog
 
 ### Version 5.2.4 - Released 2018-09-13
-
+* Fix Update Function
+* Update Readme
+* Fix and Wrap Logging, Should use Container
+* Fix Rounding Discrepancies in Shops with Net Prices
+* Fix extra indents of code and PSR2 formatting
+* Put util in psr4 namespace
 
 ### Version 5.2.3 - Released 2018-08-28
 * Fix tax on shipping item in backend orders
