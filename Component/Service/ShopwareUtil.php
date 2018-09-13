@@ -43,6 +43,9 @@ class ShopwareUtil
             case 'rpayratepayrate0':
                 return 'INSTALLMENT0';
                 break;
+            case 'rpayratepayprepayment':
+                return 'PREPAYMENT';
+                break;
         }
     }
 

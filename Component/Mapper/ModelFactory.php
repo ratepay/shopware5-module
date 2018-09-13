@@ -121,6 +121,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
                 return $this->callProfileRequest($operationData);
                 break;
             case 'PaymentRequest':
+                Logger::singleton()->error('call');
                 return $this->callPaymentRequest();
                 break;
             case 'ConfirmationDeliver':
@@ -266,7 +267,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         }
 
         $method = $paymentRequestData->getMethod();
-
         if ($method == 'INSTALLMENT0') {
             $this->setZPercent(); //side effect
             $method = 'INSTALLMENT'; //state
@@ -374,6 +374,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
                 'Amount' => $paymentRequestData->getAmount()
             ]
         ];
+
 
         if (!empty($company)) {
             $contentArr['Customer']['CompanyName'] = $checkoutAddressBilling->getCompany();

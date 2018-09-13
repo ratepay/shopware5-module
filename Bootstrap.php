@@ -31,6 +31,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             'rpayratepayrate',
             'rpayratepaydebit',
             'rpayratepayrate0',
+            'rpayratepayprepayment',
         ];
     }
 
