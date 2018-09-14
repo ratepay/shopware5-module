@@ -52,7 +52,7 @@ class RatepayConfigWriter
 
         $response = $factory->callRequest('ProfileRequest', $data);
 
-        $payments = ['invoice', 'elv', 'installment'];
+        $payments = ['invoice', 'elv', 'installment', 'prepayment'];
 
         if (is_array($response) && $response !== false) {
             foreach ($payments as $payment) {
@@ -116,6 +116,7 @@ class RatepayConfigWriter
                     $type['elv'],
                     0,
                     0,
+                    $type['prepayment'],
                     $response['result']['merchantConfig']['eligibility-device-fingerprint'] ?: 'no',
                     $response['result']['merchantConfig']['device-fingerprint-snippet-id'],
                     strtoupper($response['result']['merchantConfig']['country-code-billing']),
@@ -132,17 +133,18 @@ class RatepayConfigWriter
                 $activePayments[] = '"rpayratepaydebit"';
                 $activePayments[] = '"rpayratepayrate"';
                 $activePayments[] = '"rpayratepayrate0"';
+                $activePayments[] = '"rpayratepayprepayment"';
 
                 if (count($activePayments) > 0) {
                     $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(',', $activePayments) . ') AND `active` <> 0';
                 }
                 $configSql = 'INSERT INTO `rpay_ratepay_config`'
-                    . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`,'
+                    . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`, `prepayment`,'
                     . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
                     . '`country-code-billing`, `country-code-delivery`,'
                     . '`currency`,`country`, `sandbox`,'
                     . '`backend`, `shopId`)'
-                    . 'VALUES(' . substr(str_repeat('?,', 15), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
+                    . 'VALUES(' . substr(str_repeat('?,', 16), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
                 try {
                     $this->db->query($configSql, $data);
                     if (count($activePayments) > 0) {

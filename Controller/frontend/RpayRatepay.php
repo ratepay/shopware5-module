@@ -71,7 +71,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
     public function indexAction()
     {
         Shopware()->Session()->RatePAY['errorRatenrechner'] = 'false';
-        if (preg_match('/^rpayratepay(invoice|rate|debit|rate0)$/', $this->getPaymentShortName())) {
+        if (preg_match('/^rpayratepay(invoice|rate|debit|rate0|prepayment)$/', $this->getPaymentShortName())) {
             if ($this->getPaymentShortName() === 'rpayratepayrate' && !isset(Shopware()->Session()->RatePAY['ratenrechner'])
             ) {
                 Shopware()->Session()->RatePAY['errorRatenrechner'] = 'true';
@@ -96,7 +96,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                     )
                 );
             } else {
-                Logger::singleton()->info('proceed');
                 $this->_proceedPayment();
             }
         } else {
@@ -231,7 +230,10 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 Logger::singleton()->error($exception->getMessage());
             }
 
-            $paymentProcessor->setPaymentStatusPaid($order);
+            if ($this->getPaymentShortName() != 'rpayratepayprepayment') {
+                //payment status closed
+                $paymentProcessor->setPaymentStatusPaid($order);
+            }
 
             if (Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPCConfig() == true) {
                 $paymentProcessor->sendPaymentConfirm($resultRequest->getTransactionId(), $order);

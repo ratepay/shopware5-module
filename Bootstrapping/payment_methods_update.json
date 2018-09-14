@@ -7,5 +7,14 @@
     "position": 4,
     "additionaldescription": "Kauf per 0% Finanzierung",
     "template": "RatePAYRate.tpl"
+  },
+  {
+    "name": "rpayratepaprepayment",
+    "description": "Vorkasse",
+    "action": "rpay_ratepay",
+    "active": 1,
+    "position": 5,
+    "additionaldescription": "Kauf per Vorkasse",
+    "template": "RatePAYPrepayment.tpl"
   }
 ]
