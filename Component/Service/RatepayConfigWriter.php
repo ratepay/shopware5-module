@@ -116,6 +116,7 @@ class RatepayConfigWriter
                     $type['elv'],
                     0,
                     0,
+                    $type['prepayment'],
                     $response['result']['merchantConfig']['eligibility-device-fingerprint'] ?: 'no',
                     $response['result']['merchantConfig']['device-fingerprint-snippet-id'],
                     strtoupper($response['result']['merchantConfig']['country-code-billing']),
@@ -124,7 +125,6 @@ class RatepayConfigWriter
                     strtoupper($country),
                     $response['sandbox'],
                     $backend,
-                    $type['prepayment'],
                     //shopId always needs be the last line
                     $shopId
                 ];
@@ -139,11 +139,11 @@ class RatepayConfigWriter
                     $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(',', $activePayments) . ') AND `active` <> 0';
                 }
                 $configSql = 'INSERT INTO `rpay_ratepay_config`'
-                    . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`,'
+                    . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`, `prepayment`,'
                     . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
                     . '`country-code-billing`, `country-code-delivery`,'
                     . '`currency`,`country`, `sandbox`,'
-                    . '`backend`, `prepayment`, `shopId`)'
+                    . '`backend`, `shopId`)'
                     . 'VALUES(' . substr(str_repeat('?,', 16), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
                 try {
                     $this->db->query($configSql, $data);

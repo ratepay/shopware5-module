@@ -201,7 +201,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      */
     private function _proceedPayment()
     {
-        Logger::singleton()->error('proceed');
         $resultRequest = $this->_modelFactory->callPaymentRequest();
 
         if ($resultRequest->isSuccessful()) {
@@ -231,7 +230,10 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 Logger::singleton()->error($exception->getMessage());
             }
 
-            $paymentProcessor->setPaymentStatusPaid($order);
+            if ($this->getPaymentShortName() != 'rpayratepayprepayment') {
+                //payment status closed
+                $paymentProcessor->setPaymentStatusPaid($order);
+            }
 
             if (Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPCConfig() == true) {
                 $paymentProcessor->sendPaymentConfirm($resultRequest->getTransactionId(), $order);
