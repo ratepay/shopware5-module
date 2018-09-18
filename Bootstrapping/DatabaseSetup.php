@@ -8,7 +8,7 @@ class DatabaseSetup extends Bootstrapper
 {
     /**
      * @return mixed|void
-     * @throws Exception
+     * @throws \Exception
      */
     public function install()
     {
@@ -17,7 +17,7 @@ class DatabaseSetup extends Bootstrapper
 
     /**
      * @return mixed|void
-     * @throws Exception
+     * @throws \Exception
      */
     public function update()
     {
@@ -29,7 +29,7 @@ class DatabaseSetup extends Bootstrapper
      * Drops all RatePAY database tables
      *
      * @return mixed|void
-     * @throws Exception
+     * @throws \Exception
      */
     public function uninstall()
     {
@@ -48,13 +48,13 @@ class DatabaseSetup extends Bootstrapper
             //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
             //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
             //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
-        } catch (Exception $exception) {
-            throw new Exception('Can not delete RatePAY tables - ' . $exception->getMessage());
+        } catch (\Exception $exception) {
+            throw new \Exception('Can not delete RatePAY tables - ' . $exception->getMessage());
         }
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     protected function createDatabaseTables()
     {
@@ -74,7 +74,7 @@ class DatabaseSetup extends Bootstrapper
             }
         } catch (\Exception $exception) {
             $this->bootstrap->uninstall();
-            throw new Exception('Can not create Database.' . $exception->getMessage());
+            throw new \Exception('Can not create Database.' . $exception->getMessage());
         }
     }
 
@@ -91,10 +91,13 @@ class DatabaseSetup extends Bootstrapper
                 $generator(Shopware()->Db());
             }
         } catch (\Exception $exception) {
-            throw new Exception('Can not update Database.' . $exception->getMessage());
+            throw new \Exception('Can not update Database.' . $exception->getMessage());
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function removeSandboxColumns()
     {
         if (ShopwareUtil::tableHasColumn('s_core_config_elements', 'RatePaySandboxDE')) {
@@ -103,7 +106,7 @@ class DatabaseSetup extends Bootstrapper
                     "DELETE FROM `s_core_config_elements` WHERE `s_core_config_elements`.`name` LIKE 'RatePaySandbox%'"
                 );
             } catch (\Exception $exception) {
-                throw new Exception("Can't remove Sandbox fields` - " . $exception->getMessage());
+                throw new \Exception("Can't remove Sandbox fields` - " . $exception->getMessage());
             }
         }
     }

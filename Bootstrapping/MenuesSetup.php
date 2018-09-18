@@ -5,7 +5,7 @@ namespace RpayRatePay\Bootstrapping;
 class MenuesSetup extends Bootstrapper
 {
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function install()
     {
@@ -23,13 +23,12 @@ class MenuesSetup extends Bootstrapper
             );
         } catch (\Exception $exception) {
             $this->bootstrap->uninstall();
-            throw new Exception('Can not create menu entry.' . $exception->getMessage());
+            throw new \Exception('Can not create menu entry.' . $exception->getMessage());
         }
     }
 
     /**
-     * @return mixed|void
-     * @throws Exception
+     * @return void
      */
     public function update()
     {

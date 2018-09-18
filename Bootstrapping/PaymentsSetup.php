@@ -5,7 +5,7 @@ namespace RpayRatePay\Bootstrapping;
 class PaymentsSetup extends Bootstrapper
 {
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function install()
     {
@@ -17,13 +17,13 @@ class PaymentsSetup extends Bootstrapper
             }
         } catch (\Exception $exception) {
             $this->bootstrap->uninstall();
-            throw new Exception('Can not create payment.' . $exception->getMessage());
+            throw new \Exception('Can not create payment.' . $exception->getMessage());
         }
     }
 
     /**
      * @return mixed|void
-     * @throws Exception
+     * @throws \Exception
      */
     public function update()
     {

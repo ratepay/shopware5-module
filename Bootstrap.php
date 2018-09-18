@@ -67,7 +67,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
         if ($info) {
             return $info['currentVersion'];
         } else {
-            throw new Exception('The plugin has an invalid version file.');
+            throw new \Exception('The plugin has an invalid version file.');
         }
     }
 
@@ -83,7 +83,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
         if ($info) {
             return $info['payment_confirm'];
         } else {
-            throw new Exception('The plugin has an invalid version file.');
+            throw new \Exception('The plugin has an invalid version file.');
         }
     }
 

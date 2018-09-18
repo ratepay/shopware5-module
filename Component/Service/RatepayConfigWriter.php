@@ -160,7 +160,7 @@ class RatepayConfigWriter
             Logger::singleton()->error('RatePAY: Profile_Request failed!');
 
             if (strstr($profileId, '_0RT') == false) {
-                throw new Exception('RatePAY: Profile_Request failed!');
+                throw new \Exception('RatePAY: Profile_Request failed!');
             }
         }
     }
