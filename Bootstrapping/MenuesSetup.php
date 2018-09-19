@@ -2,6 +2,8 @@
 
 namespace RpayRatePay\Bootstrapping;
 
+use RpayRatePay\Component\Service\Logger;
+
 class MenuesSetup extends Bootstrapper
 {
     /**
@@ -10,6 +12,16 @@ class MenuesSetup extends Bootstrapper
     public function install()
     {
         try {
+            $existing = $this->bootstrap->Menu()->findOneBy([
+                'controller' => 'RpayRatepayLogging',
+                'action' => 'index',
+            ]);
+
+            if($existing) {
+                Logger::singleton()->info('DELETING RpayRatepayLogging menu item');
+                Shopware()->Db()->delete('s_core_menu', ['id=?' => $existing->getId()]);
+            }
+
             $parent = $this->bootstrap->Menu()->findOneBy(['label' => 'logfile']);
             $this->bootstrap->createMenuItem(
                 [

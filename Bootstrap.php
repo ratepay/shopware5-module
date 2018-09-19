@@ -18,6 +18,9 @@
  * @package    RpayRatePAY
  * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
  */
+
+use RpayRatePay\Component\Service\Logger;
+
 require_once __DIR__ . '/Component/CSRFWhitelistAware.php';
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Components_Plugin_Bootstrap
@@ -109,6 +112,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
      */
     public function install()
     {
+        Logger::singleton()->info('INSTALL Plugin Bootstrap');
         $this->subscribeEvent('Enlight_Controller_Front_StartDispatch', 'onRegisterSubscriber');
         $this->str = 'Shopware_Console_Add_Command';
         $this->subscribeEvent('' . $this->str . '', 'onRegisterSubscriber');
@@ -147,6 +151,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
      */
     public function update($version)
     {
+
+        Logger::singleton()->info('UPDATE Plugin Bootstrap ' . $version);
         $queue = [
             new \RpayRatePay\Bootstrapping\FormsSetup($this),
             new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
@@ -163,7 +169,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             $bootstrapper->update();
         }
 
-        \RpayRatePay\Component\Service\Logger::singleton()->addNotice('Successful module update');
+        Logger::singleton()->addNotice('Successful module update');
 
         return [
             'success' => true,
@@ -191,6 +197,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
      */
     public function uninstall()
     {
+        Logger::singleton()->info('UNINSTALL Plugin Bootstrap ');
         $queue = [
             new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
         ];
