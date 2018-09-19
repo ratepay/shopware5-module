@@ -38,6 +38,8 @@ class CreateConfigTable
      */
     public function __invoke($database)
     {
+        $database->query('DROP TABLE IF EXISTS `rpay_ratepay_config`');
+
         $database->query($this->getQuery());
 
         $hasColumnBackend = ShopwareUtil::tableHasColumn('rpay_ratepay_config', 'backend');

@@ -34,8 +34,8 @@ class DatabaseSetup extends Bootstrapper
     public function uninstall()
     {
         try {
-            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_logging`");
-            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config`");
+            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_logging`");
+            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config`");
 
             /*
              * These tables are not deleted. This makes possible to manage the
@@ -45,13 +45,14 @@ class DatabaseSetup extends Bootstrapper
              * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_shipping`");
              */
 
-            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
-            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
-            //Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
+            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
+            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
+            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
         } catch (\Exception $exception) {
             throw new \Exception('Can not delete RatePAY tables - ' . $exception->getMessage());
         }
     }
+
 
     /**
      * @throws \Exception
@@ -78,6 +79,9 @@ class DatabaseSetup extends Bootstrapper
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function updateConfigurationTables()
     {
         $tables = [
