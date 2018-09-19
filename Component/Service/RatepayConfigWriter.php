@@ -39,11 +39,11 @@ class RatepayConfigWriter
      * @param string $country
      * @param bool $backend
      *
-     * @return mixed
-     * @throws exception
+     * @return bool
      */
     public function writeRatepayConfig($profileId, $securityCode, $shopId, $country, $backend = false)
     {
+        //TODO: put factory in constructor so we can test this method
         $factory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
         $data = [
             'profileId' => $profileId,
@@ -52,115 +52,114 @@ class RatepayConfigWriter
 
         $response = $factory->callRequest('ProfileRequest', $data);
 
+        if (!is_array($response) || $response === false) {
+            Logger::singleton()->info('RatePAY: Profile_Request failed for profileId ' . $profileId);
+            return false;
+        }
+
         $payments = ['invoice', 'elv', 'installment'];
 
-        if (is_array($response) && $response !== false) {
-            foreach ($payments as $payment) {
-                if (strstr($profileId, '_0RT') !== false) {
-                    if ($payment !== 'installment') {
-                        continue;
-                    }
-                }
-
-                $dataPayment = [
-                    $response['result']['merchantConfig']['activation-status-' . $payment],
-                    $response['result']['merchantConfig']['b2b-' . $payment] == 'yes' ? 1 : 0,
-                    $response['result']['merchantConfig']['tx-limit-' . $payment . '-min'],
-                    $response['result']['merchantConfig']['tx-limit-' . $payment . '-max'],
-                    $response['result']['merchantConfig']['tx-limit-' . $payment . '-max-b2b'],
-                    $response['result']['merchantConfig']['delivery-address-' . $payment] == 'yes' ? 1 : 0,
-                ];
-
-                $paymentSql = 'INSERT INTO `rpay_ratepay_config_payment`'
-                    . '(`status`, `b2b`,`limit_min`,`limit_max`,'
-                    . '`limit_max_b2b`, `address`)'
-                    . 'VALUES(' . substr(str_repeat('?,', 6), 0, -1) . ');';
-                try {
-                    $this->db->query($paymentSql, $dataPayment);
-                    $id = $this->db->fetchOne('SELECT `rpay_id` FROM `rpay_ratepay_config_payment` ORDER BY `rpay_id` DESC');
-                    $type[$payment] = $id;
-                } catch (\Exception $exception) {
-                    Logger::singleton()->error($exception->getMessage());
-                    return false;
-                }
-            }
-
-            if ($response['result']['merchantConfig']['activation-status-installment'] == 2) {
-                $installmentConfig = [
-                    $type['installment'],
-                    $response['result']['installmentConfig']['month-allowed'],
-                    $response['result']['installmentConfig']['valid-payment-firstdays'],
-                    $response['result']['installmentConfig']['rate-min-normal'],
-                    $response['result']['installmentConfig']['interestrate-default'],
-                ];
-                $paymentSql = 'INSERT INTO `rpay_ratepay_config_installment`'
-                    . '(`rpay_id`, `month-allowed`,`payment-firstday`,`interestrate-default`,'
-                    . '`rate-min-normal`)'
-                    . 'VALUES(' . substr(str_repeat('?,', 5), 0, -1) . ');';
-                try {
-                    $this->db->query($paymentSql, $installmentConfig);
-                } catch (\Exception $exception) {
-                    Logger::singleton()->error($exception->getMessage());
-                    return false;
-                }
-            }
-
+        $type = [];
+        //INSERT INTO rpay_ratepay_config_payment AND sets $type[]
+        foreach ($payments as $payment) {
             if (strstr($profileId, '_0RT') !== false) {
-                $qry = "UPDATE rpay_ratepay_config SET installment0 = '" . $type['installment'] . "' WHERE profileId = '" . substr($profileId, 0, -4) . "'";
-                $this->db->query($qry);
-            } else {
-                $data = [
-                    $response['result']['merchantConfig']['profile-id'],
-                    $type['invoice'],
-                    $type['installment'],
-                    $type['elv'],
-                    0,
-                    0,
-                    $response['result']['merchantConfig']['eligibility-device-fingerprint'] ?: 'no',
-                    $response['result']['merchantConfig']['device-fingerprint-snippet-id'],
-                    strtoupper($response['result']['merchantConfig']['country-code-billing']),
-                    strtoupper($response['result']['merchantConfig']['country-code-delivery']),
-                    strtoupper($response['result']['merchantConfig']['currency']),
-                    strtoupper($country),
-                    $response['sandbox'],
-                    $backend,
-                    //shopId always needs be the last line
-                    $shopId
-                ];
-
-                $activePayments[] = '"rpayratepayinvoice"';
-                $activePayments[] = '"rpayratepaydebit"';
-                $activePayments[] = '"rpayratepayrate"';
-                $activePayments[] = '"rpayratepayrate0"';
-
-                if (count($activePayments) > 0) {
-                    $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(',', $activePayments) . ') AND `active` <> 0';
-                }
-                $configSql = 'INSERT INTO `rpay_ratepay_config`'
-                    . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`,'
-                    . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
-                    . '`country-code-billing`, `country-code-delivery`,'
-                    . '`currency`,`country`, `sandbox`,'
-                    . '`backend`, `shopId`)'
-                    . 'VALUES(' . substr(str_repeat('?,', 15), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
-                try {
-                    $this->db->query($configSql, $data);
-                    if (count($activePayments) > 0) {
-                        $this->db->query($updateSqlActivePaymentMethods);
-                    }
-
-                    return true;
-                } catch (\Exception $exception) {
-                    Logger::singleton()->error($exception->getMessage());
-
-                    return false;
+                if ($payment !== 'installment') {
+                    continue;
                 }
             }
-        } else {
-            Logger::singleton()->error('RatePAY: Profile_Request failed!');
 
-            if (strstr($profileId, '_0RT') == false) {
-                throw new \Exception('RatePAY: Profile_Request failed!');
+            $dataPayment = [
+                $response['result']['merchantConfig']['activation-status-' . $payment],
+                $response['result']['merchantConfig']['b2b-' . $payment] == 'yes' ? 1 : 0,
+                $response['result']['merchantConfig']['tx-limit-' . $payment . '-min'],
+                $response['result']['merchantConfig']['tx-limit-' . $payment . '-max'],
+                $response['result']['merchantConfig']['tx-limit-' . $payment . '-max-b2b'],
+                $response['result']['merchantConfig']['delivery-address-' . $payment] == 'yes' ? 1 : 0,
+            ];
+
+            $paymentSql = 'INSERT INTO `rpay_ratepay_config_payment`'
+                . '(`status`, `b2b`,`limit_min`,`limit_max`,'
+                . '`limit_max_b2b`, `address`)'
+                . 'VALUES(' . substr(str_repeat('?,', 6), 0, -1) . ');';
+            try {
+                $this->db->query($paymentSql, $dataPayment);
+                $id = $this->db->fetchOne('SELECT `rpay_id` FROM `rpay_ratepay_config_payment` ORDER BY `rpay_id` DESC');
+                $type[$payment] = $id;
+            } catch (\Exception $exception) {
+                Logger::singleton()->error($exception->getMessage());
+                return false;
+            }
+        }
+
+        //performs insert into the 'config installment' table
+        if ($response['result']['merchantConfig']['activation-status-installment'] == 2) {
+            $installmentConfig = [
+                $type['installment'],
+                $response['result']['installmentConfig']['month-allowed'],
+                $response['result']['installmentConfig']['valid-payment-firstdays'],
+                $response['result']['installmentConfig']['rate-min-normal'],
+                $response['result']['installmentConfig']['interestrate-default'],
+            ];
+            $paymentSql = 'INSERT INTO `rpay_ratepay_config_installment`'
+                . '(`rpay_id`, `month-allowed`,`payment-firstday`,`interestrate-default`,'
+                . '`rate-min-normal`)'
+                . 'VALUES(' . substr(str_repeat('?,', 5), 0, -1) . ');';
+            try {
+                $this->db->query($paymentSql, $installmentConfig);
+            } catch (\Exception $exception) {
+                Logger::singleton()->error($exception->getMessage());
+                return false;
+            }
+        }
+
+        //updates 0% field in rpay_ratepay_config or inserts into rpay_ratepay_config THIS MEANS WE HAVE TO SEND the 0RT profiles last
+        if (strstr($profileId, '_0RT') !== false) {
+            $qry = "UPDATE rpay_ratepay_config SET installment0 = '" . $type['installment'] . "' WHERE profileId = '" . substr($profileId, 0, -4) . "'";
+            $this->db->query($qry);
+        } else {
+            $data = [
+                $response['result']['merchantConfig']['profile-id'],
+                $type['invoice'],
+                $type['installment'],
+                $type['elv'],
+                0,
+                0,
+                $response['result']['merchantConfig']['eligibility-device-fingerprint'] ?: 'no',
+                $response['result']['merchantConfig']['device-fingerprint-snippet-id'],
+                strtoupper($response['result']['merchantConfig']['country-code-billing']),
+                strtoupper($response['result']['merchantConfig']['country-code-delivery']),
+                strtoupper($response['result']['merchantConfig']['currency']),
+                strtoupper($country),
+                $response['sandbox'],
+                $backend,
+                //shopId always needs be the last line
+                $shopId
+            ];
+
+            $activePayments[] = '"rpayratepayinvoice"';
+            $activePayments[] = '"rpayratepaydebit"';
+            $activePayments[] = '"rpayratepayrate"';
+            $activePayments[] = '"rpayratepayrate0"';
+
+            $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(',', $activePayments) . ') AND `active` <> 0';
+
+            $configSql = 'INSERT INTO `rpay_ratepay_config`'
+                . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`,'
+                . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
+                . '`country-code-billing`, `country-code-delivery`,'
+                . '`currency`,`country`, `sandbox`,'
+                . '`backend`, `shopId`)'
+                . 'VALUES(' . substr(str_repeat('?,', 15), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
+            try {
+                $this->db->query($configSql, $data);
+                if (count($activePayments) > 0) {
+                    $this->db->query($updateSqlActivePaymentMethods);
+                }
+
+                return true;
+            } catch (\Exception $exception) {
+                Logger::singleton()->error($exception->getMessage());
+                return false;
             }
         }
     }

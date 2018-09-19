@@ -2,6 +2,7 @@
 
 namespace RpayRatePay\Bootstrapping\Events;
 
+use RatePAY\RequestBuilder;
 use RpayRatePay\Component\Service\RatepayConfigWriter;
 use RpayRatePay\Component\Service\Logger;
 
