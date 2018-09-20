@@ -79,7 +79,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                     $bindings[] = $articleNumber;
                     $bind .= '?,';
                 }
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 $success = false;
                 Logger::singleton()->error('Exception:' . $exception->getMessage());
             }
@@ -99,7 +99,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                              . '(`s_order_details_id`) '
                              . 'VALUES ' . $values;
                 Shopware()->Db()->query($sqlInsert);
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 $success = false;
                 Logger::singleton()->error('Exception:' . $exception->getMessage(), ' SQL:' . $sqlInsert);
             }
@@ -632,7 +632,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             Shopware()->Db()->update('s_order', [
                 'status' => $newState
             ], '`id`=' . $orderId);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Logger::singleton()->error($exception->getMessage());
         }
     }

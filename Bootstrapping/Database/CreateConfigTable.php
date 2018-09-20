@@ -33,11 +33,13 @@ class CreateConfigTable
     }
 
     /**
-     * @param Enlight_Components_Db_Adapter_Pdo_Mysql $database
-     * @throws Zend_Db_Adapter_Exception
+     * @param \Enlight_Components_Db_Adapter_Pdo_Mysql $database
+     * @throws \Zend_Db_Adapter_Exception
      */
     public function __invoke($database)
     {
+        $database->query('DROP TABLE IF EXISTS `rpay_ratepay_config`');
+
         $database->query($this->getQuery());
 
         $hasColumnBackend = ShopwareUtil::tableHasColumn('rpay_ratepay_config', 'backend');

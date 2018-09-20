@@ -21,7 +21,7 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
      * @param \Shopware_Components_Cron_CronJob $job
      *
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
     public function updateRatepayTransactions(\Shopware_Components_Cron_CronJob $job)
     {
@@ -60,7 +60,7 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
     /**
      * @param $config
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     private function findCandidateOrdersForUpdate($config)
     {

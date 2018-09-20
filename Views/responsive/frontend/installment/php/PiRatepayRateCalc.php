@@ -92,7 +92,7 @@
             try {
                 $this->requestRateDetails($subtype);
                 $this->setData($this->getDetailsTotalAmount(), $this->getDetailsAmount(), $this->getDetailsInterestRate(), $this->getDetailsInterestAmount(), $this->getDetailsServiceCharge(), $this->getDetailsAnnualPercentageRate(), $this->getDetailsMonthlyDebitInterest(), $this->getDetailsNumberOfRates(), $this->getDetailsRate(), $this->getDetailsLastRate(), $this->getDetailsPaymentFirstday());
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->unsetData();
                 $this->setErrorMsg($e->getMessage());
             }
@@ -213,7 +213,7 @@
             else {
                 $this->setMsg('');
                 $this->emptyDetails();
-                throw new Exception($result->getReasonMessage());
+                throw new \Exception($result->getReasonMessage());
             }
         }
 

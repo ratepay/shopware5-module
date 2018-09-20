@@ -36,6 +36,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws \Exception
      */
     public function beforeSaveOrderInBackend(\Enlight_Hook_HookArgs $arguments)
     {
@@ -48,7 +49,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
         ) {
             Logger::singleton()->addNotice('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
             $arguments->stop();
-            throw new Exception('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
+            throw new \Exception('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
         }
 
         return false;
@@ -83,6 +84,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      * @throws \Zend_Db_Adapter_Exception
+     * @throws \Exception
      */
     public function afterOrderBatchProcess(\Enlight_Hook_HookArgs $arguments)
     {
@@ -97,7 +99,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
         $orders = $request->getParam('orders');
 
         if (count($orders) < 1) {
-            throw new Exception('No order selected');
+            throw new \Exception('No order selected');
         }
 
         foreach ($orders as $order) {

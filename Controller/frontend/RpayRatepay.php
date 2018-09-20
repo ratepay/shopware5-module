@@ -155,7 +155,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 try {
                     Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // ToDo: Why parameter?
                     Logger::singleton()->info('Kundendaten aktualisiert.');
-                } catch (Exception $exception) {
+                } catch (\Exception $exception) {
                     Logger::singleton()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
@@ -175,7 +175,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                         Shopware()->Db()->update('s_user_addresses', $updateAddressData, 'id=' . $Parameter['checkoutBillingAddressId']);
                     }
                     Logger::singleton()->info('Kundendaten aktualisiert.');
-                } catch (Exception $exception) {
+                } catch (\Exception $exception) {
                     Logger::singleton()->error('Fehler beim Updaten der User oder Address daten: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
@@ -217,7 +217,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
                     $paymentProcessor->initShipping($order);
                 }
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 Logger::singleton()->error($exception->getMessage());
             }
 
@@ -227,7 +227,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                     $resultRequest,
                     Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem')
                 );
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 Logger::singleton()->error($exception->getMessage());
             }
 
