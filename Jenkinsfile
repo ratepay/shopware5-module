@@ -46,7 +46,6 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool name: 'SonarQube Scanner 3.0.1', type: 'hudson.plugins.sonar.SonarRunnerInstallation';
-                    echo "scannerHome = $scannerHome ...."
                     withSonarQubeEnv() {
                         sh "$scannerHome/bin/sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN"
                     }
@@ -56,6 +55,16 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo "[STAGE] Deploy"
+                sh '''tar --exclude=build -czf ./build/RpayRatePayBase.tar .
+                mkdir -p build/dist/Frontend/RpayRatePay
+                tar -xzf build/RpayRatePayBase.tar -C build/dist/Frontend/RpayRatePay/
+
+                cd build/dist
+                zip -r RpayRatePay.zip Frontend -x \\*.git\\* -x \\*.DS_Store\\* -x  \\*.idea\\*
+
+                cd ../../
+                rm -rf build/dist/Frontend build/RpayRatePayBase.zip'''
+                archiveArtifacts 'build/dist/RpayRatePay.zip'
             }
         }
     }
