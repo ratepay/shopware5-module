@@ -5,10 +5,10 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
-|Version | `5.2.4`
+|Version | `5.2.5`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
-|Installation | see below
+|Full Documentation | https://ratepay.gitbook.io/shopware/
 
 ## Installation
 1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `engine/Shopware/Plugins/Community/Frontend`
@@ -23,6 +23,12 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.2.5 - Released 2018-19-20
+* fix cronjob duplications during update
+* fix global namespacing to php and shopware classes
+* fix uninstall routine to remove menues
+* improve stability of update routine
 
 ### Version 5.2.4 - Released 2018-09-13
 * Fix Update Function
