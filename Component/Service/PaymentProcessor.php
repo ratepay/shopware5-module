@@ -65,7 +65,7 @@ class PaymentProcessor
         Logger::singleton()->info('INSERT NOW ' . $sqlInsert);
         try {
             $this->db->query($sqlInsert);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Logger::singleton()->error($exception->getMessage());
         }
     }

@@ -49,8 +49,8 @@ class ShopConfigSetup extends Bootstrapper
     }
 
     /**
-     * @param $configLoader
-     * @param $configWriter
+     * @param ConfigLoader $configLoader
+     * @param RatepayConfigWriter $configWriter
      * @param $shopId
      * @param $backend
      */
