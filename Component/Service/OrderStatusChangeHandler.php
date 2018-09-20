@@ -123,7 +123,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
             $operationData['orderId'] = $order->getId();
             $operationData['items'] = $items;
             $modelFactory->setOrderId($order->getNumber());
-            $result = $modelFactory->callRequest('ConfirmationDeliver', $operationData);
+            $result = $modelFactory->callConfirmationDeliver($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {
@@ -146,7 +146,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
             $operationData['items'] = $items;
             $operationData['subtype'] = 'cancellation';
             $modelFactory->setOrderId($order->getNumber());
-            $result = $modelFactory->callRequest('PaymentChange', $operationData);
+            $result = $modelFactory->callPaymentChange($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {
@@ -168,7 +168,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
             $operationData['items'] = $items;
             $operationData['subtype'] = 'return';
             $modelFactory->setOrderId($order->getNumber());
-            $result = $modelFactory->callRequest('PaymentChange', $operationData);
+            $result = $modelFactory->callPaymentChange($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {

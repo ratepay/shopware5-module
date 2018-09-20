@@ -197,7 +197,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
             $operationData['orderId'] = $order->getId();
             $operationData['items'] = $items;
             $operationData['subtype'] = 'cancellation';
-            $result = $modelFactory->callRequest('PaymentChange', $operationData);
+            $result = $modelFactory->callPaymentChange($operationData);
 
             if ($result !== true) {
                 Logger::singleton()->warning('Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');

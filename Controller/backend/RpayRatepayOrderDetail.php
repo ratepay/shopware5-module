@@ -191,7 +191,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             $result = false;
 
             if ($sendItem == true) {
-                $result = $this->_modelFactory->callRequest('ConfirmationDeliver', $operationData);
+                $result = $this->_modelFactory->callConfirmationDeliver($operationData);
             }
 
             if ($result === true || $sendItem == false) {
@@ -257,7 +257,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             $operationData['items'] = $items;
             $operationData['subtype'] = 'cancellation';
             $this->_modelFactory->setOrderId($order->getNumber());
-            $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
+            $result = $this->_modelFactory->callPaymentChange($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {
@@ -318,7 +318,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             $operationData['items'] = $items;
             $operationData['subtype'] = 'return';
             $this->_modelFactory->setOrderId($order->getNumber());
-            $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
+            $result = $this->_modelFactory->callPaymentChange($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {
@@ -404,7 +404,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             ) {
                 $result = false;
             } else {
-                $result = $this->_modelFactory->callRequest('PaymentChange', $operationData);
+                $result = $this->_modelFactory->callPaymentChange($operationData);
             }
 
             if ($result === true) {
