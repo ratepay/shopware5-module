@@ -166,8 +166,10 @@ class ShopwareCustomerWrapper
         $billingRotten = $this->getBillingRotten();
 
         if (is_null($billingRotten)) {
-            return $billingRotten->getLastName();
+            return null;
         }
+
+        return $billingRotten->getLastName();
     }
 
     /**
