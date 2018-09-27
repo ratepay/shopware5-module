@@ -138,6 +138,36 @@ class ShopwareCustomerWrapper
         return $country;
     }
 
+    public function getBillingFirstName()
+    {
+        $billingFresh = $this->getBillingFresh();
+
+        if (!is_null($billingFresh)) {
+            return $billingFresh->getFirstname();
+        }
+
+        $billingRotten = $this->getBillingRotten();
+
+        if (is_null($billingRotten)) {
+            return $billingRotten->getFirstName();
+        }
+    }
+
+    public function getBillingLastName()
+    {
+        $billingFresh = $this->getBillingFresh();
+
+        if (!is_null($billingFresh)) {
+            return $billingFresh->getLastname();
+        }
+
+        $billingRotten = $this->getBillingRotten();
+
+        if (is_null($billingRotten)) {
+            return $billingRotten->getLastName();
+        }
+    }
+
     /**
      * @return null|object|\Shopware\Models\Country\Country
      * @throws \Doctrine\ORM\ORMException
