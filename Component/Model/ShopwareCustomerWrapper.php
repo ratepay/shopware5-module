@@ -37,6 +37,11 @@ class ShopwareCustomerWrapper
      */
     public function getShipping($property = null)
     {
+        $shippingId = Shopware()->Session()->offsetGet('checkoutShippingAddressId');
+        if (!empty($shippingId)) {
+            return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingId);
+        }
+
         if (is_null($property)) {
             return $this->getShippingChaotic();
         }
@@ -67,6 +72,11 @@ class ShopwareCustomerWrapper
      */
     public function getBilling($property = null)
     {
+        $billingId = Shopware()->Session()->offsetGet('checkoutBillingAddressId');
+        if (!empty($billingId)) {
+            return Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
+        }
+
         if (is_null($property)) {
             return $this->getBillingChaotic();
         }
@@ -74,7 +84,6 @@ class ShopwareCustomerWrapper
         $getter = 'get' . ucfirst($property);
 
         $billingFresh = $this->getBillingFresh();
-
         if (!is_null($billingFresh)) {
             if (Util::existsAndNotEmpty($billingFresh, $getter)) {
                 return $billingFresh->$getter();
