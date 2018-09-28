@@ -8,10 +8,19 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
 {
     const JOB_NAME = 'Shopware_Cronjob_UpdateRatepayTransactions';
 
+    /**
+     * @var string
+     */
+    protected $__cronjobLastExecutionDate;
+
+    /**
+     * @return array
+     */
     public static function getSubscribedEvents()
     {
         return [
             self::JOB_NAME => 'updateRatepayTransactions',
+            'UpdateRatepayTransactions' => 'updateRatepayTransactions',
         ];
     }
 
@@ -28,21 +37,31 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
         if (!$config->get('RatePayBidirectional')) {
-            return 'Bidrectionality is turned off.';
+            Logger::singleton()->info('RatePAY bidirectionality is turned off.');
+            return 'RatePAY bidirectionality is turned off.';
         }
 
         try {
             $orderIds = $this->findCandidateOrdersForUpdate($config);
+            $totalOrders = count($orderIds);
             $orderProcessor = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
-            foreach ($orderIds as $orderId) {
+            foreach ($orderIds as $key => $orderId) {
                 /* @var \Shopware\Models\Order\Order $order */
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
+                Logger::singleton()->info(
+                    sprintf(
+                        '[%d/%d] Processing order %d ...notify needed updated to RatePAY',
+                        ($key + 1),
+                        $totalOrders,
+                        $orderId
+                    )
+                );
                 $orderProcessor->informRatepayOfOrderStatusChange($order);
             }
         } catch (\Exception $e) {
-            Logger::singleton()->error('Fehler UpdateTransactionsSubscriber: ' .
-                $e->getMessage() . ' ' .
-                $e->getTraceAsString());
+            Logger::singleton()->error(
+                sprintf('Fehler UpdateTransactionsSubscriber: %s %s', $e->getMessage(), $e->getTraceAsString())
+            );
             return $e->getMessage();
         }
         return 'Success';
@@ -53,8 +72,17 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
      */
     private function getLastUpdateDate()
     {
-        $query = 'SELECT `end` FROM s_crontab WHERE `action` = ?';
-        return Shopware()->Db()->fetchOne($query, [self::JOB_NAME]);
+        if (empty($this->_cronjobLastExecutionDate)) {
+            $query = 'SELECT `next`, `interval` FROM s_crontab WHERE `action` = ?';
+            $row = Shopware()->Db()->fetchRow($query, [self::JOB_NAME]);
+
+            $date = new \DateTime($row['next']);
+            $date->sub(new \DateInterval('PT' . $row['interval'] . 'S'));
+
+            $this->_cronjobLastExecutionDate = $date;
+        }
+
+        return $this->_cronjobLastExecutionDate;
     }
 
     /**
@@ -71,18 +99,18 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
             $config['RatePayFullReturn'],
         ];
 
-        $paymentMethodsWrapped = [];
-        foreach ($paymentMethods as $paymentMethod) {
-            $paymentMethodsWrapped[] = "'{$paymentMethod}'";
-        }
+        $paymentMethodsWrapped = array_reduce($paymentMethods, function ($list, $method) {
+            $list[] = "'" . $method . "'";
+            return $list;
+        }, []);
 
-        $changeDate = $this->getLastUpdateDate();
-
-        if (empty($changeDate)) {
+        $date = $this->getLastUpdateDate();
+        if (empty($date)) {
             $date = new \DateTime();
-            $date->sub(new \DateInterval('PT1H'));
-            $changeDate = $date->format('Y-m-d H:i:s');
         }
+
+        $date->sub(new \DateInterval('PT1H'));
+        $changeDate = $date->format('Y-m-d H:i:s');
 
         $query = 'SELECT o.id FROM s_order o
                 INNER JOIN s_order_history oh ON oh.orderID = o.id
