@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
-|Version | `5.2.5`
+|Version | `5.2.6`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -24,7 +24,11 @@
 
 ## Changelog
 
-### Version 5.2.5 - Released 2018-19-20
+### Version 5.2.6 - Released 2018-10-01
+* fix ignored updates in bidirectional process
+* fix usage of addresses for shipping/billing during checkout
+
+### Version 5.2.5 - Released 2018-09-20
 * fix cronjob duplications during update
 * fix global namespacing to php and shopware classes
 * fix uninstall routine to remove menues
