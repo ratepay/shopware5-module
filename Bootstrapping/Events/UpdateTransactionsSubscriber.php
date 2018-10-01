@@ -36,7 +36,7 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
     {
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
-        if (!$config->get('RatePayBidirectional')) {
+        if (!$this->hasBiDirectionalityActivated($config)) {
             Logger::singleton()->info('RatePAY bidirectionality is turned off.');
             return 'RatePAY bidirectionality is turned off.';
         }
@@ -92,18 +92,37 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
      */
     private function findCandidateOrdersForUpdate($config)
     {
-        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         $orderStatus = [
             $config['RatePayFullDelivery'],
             $config['RatePayFullCancellation'],
             $config['RatePayFullReturn'],
         ];
+        $paymentMethods = $this->getAllowedPaymentMethods();
+        $changeDate = $this->getChangeDateLimit();
 
-        $paymentMethodsWrapped = array_reduce($paymentMethods, function ($list, $method) {
-            $list[] = "'" . $method . "'";
-            return $list;
-        }, []);
+        $query = 'SELECT o.id FROM s_order o
+                INNER JOIN s_order_history oh ON oh.orderID = o.id
+                LEFT JOIN s_core_paymentmeans cp ON cp.id = o.paymentID
+                WHERE cp.name in (' . join(',', $paymentMethods) . ')
+                AND o.status in (' . join(',', $orderStatus) . ')
+                AND oh.change_date >= :changeDate
+                GROUP BY o.id';
 
+        $rows = Shopware()->Db()->fetchAll($query, [':changeDate' => $changeDate]);
+
+        return array_column($rows, 'id');
+    }
+
+    /**
+     * Gets the bottom limits to fetch order updates.
+     * This is important to keep a well performing process, due to
+     * an unknown amount of orders could take a long of time.
+     *
+     * @return string
+     * @throws \Exception
+     */
+    private function getChangeDateLimit()
+    {
         $date = $this->getLastUpdateDate();
         if (empty($date)) {
             $date = new \DateTime();
@@ -112,16 +131,28 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
         $date->sub(new \DateInterval('PT1H'));
         $changeDate = $date->format('Y-m-d H:i:s');
 
-        $query = 'SELECT o.id FROM s_order o
-                INNER JOIN s_order_history oh ON oh.orderID = o.id
-                LEFT JOIN s_core_paymentmeans cp ON cp.id = o.paymentID
-                WHERE cp.name in (' . join(',', $paymentMethodsWrapped) . ')
-                AND o.status in (' . join(',', $orderStatus) . ')
-                AND oh.change_date >= :changeDate
-                GROUP BY o.id';
+        return $changeDate;
+    }
 
-        $rows = Shopware()->Db()->fetchAll($query, [':changeDate' => $changeDate]);
+    /**
+     * @return mixed
+     */
+    private function getAllowedPaymentMethods()
+    {
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $quotedPaymentMethods = array_map(function ($method) {
+            return "'" . $method . "'";
+        }, $paymentMethods);
 
-        return array_column($rows, 'id');
+        return $quotedPaymentMethods;
+    }
+
+    /**
+     * @param $config
+     * @return bool
+     */
+    private function hasBiDirectionalityActivated($config)
+    {
+        return (bool)$config->get('RatePayBidirectional');
     }
 }
