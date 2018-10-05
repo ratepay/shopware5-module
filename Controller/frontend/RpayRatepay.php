@@ -38,7 +38,10 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
     private $_customerMessage;
 
     /**
-     * Initiates the Object
+     * @return string
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
      */
     public function init()
     {
@@ -143,6 +146,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $updateAddressData = [];
 
         if (!is_null($customerAddressBilling)) {
+            //shopware before 5.2 ... we could try changing order of if and ifelse
             if (method_exists($customerAddressBilling, 'getBirthday')) {
                 $updateAddressData['phone'] = $Parameter['ratepay_phone'] ?: $customerAddressBilling->getPhone();
                 if ($customerAddressBilling->getCompany() !== '') {
@@ -152,7 +156,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 }
 
                 try {
-                    Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // ToDo: Why parameter?
+                    Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // TODO: Parameterize or make otherwise safe
                     Logger::singleton()->info('Kundendaten aktualisiert.');
                 } catch (Exception $exception) {
                     Logger::singleton()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
