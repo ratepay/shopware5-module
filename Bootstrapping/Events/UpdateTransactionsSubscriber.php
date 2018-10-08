@@ -8,10 +8,19 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
 {
     const JOB_NAME = 'Shopware_Cronjob_UpdateRatepayTransactions';
 
+    /**
+     * @var string
+     */
+    protected $__cronjobLastExecutionDate;
+
+    /**
+     * @return array
+     */
     public static function getSubscribedEvents()
     {
         return [
             self::JOB_NAME => 'updateRatepayTransactions',
+            'UpdateRatepayTransactions' => 'updateRatepayTransactions',
         ];
     }
 
@@ -21,28 +30,38 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
      * @param \Shopware_Components_Cron_CronJob $job
      *
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
     public function updateRatepayTransactions(\Shopware_Components_Cron_CronJob $job)
     {
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
-        if (!$config->get('RatePayBidirectional')) {
-            return 'Bidrectionality is turned off.';
+        if (!$this->hasBiDirectionalityActivated($config)) {
+            Logger::singleton()->info('RatePAY bidirectionality is turned off.');
+            return 'RatePAY bidirectionality is turned off.';
         }
 
         try {
             $orderIds = $this->findCandidateOrdersForUpdate($config);
+            $totalOrders = count($orderIds);
             $orderProcessor = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
-            foreach ($orderIds as $orderId) {
+            foreach ($orderIds as $key => $orderId) {
                 /* @var \Shopware\Models\Order\Order $order */
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
+                Logger::singleton()->info(
+                    sprintf(
+                        '[%d/%d] Processing order %d ...notify needed updated to RatePAY',
+                        ($key + 1),
+                        $totalOrders,
+                        $orderId
+                    )
+                );
                 $orderProcessor->informRatepayOfOrderStatusChange($order);
             }
         } catch (\Exception $e) {
-            Logger::singleton()->error('Fehler UpdateTransactionsSubscriber: ' .
-                $e->getMessage() . ' ' .
-                $e->getTraceAsString());
+            Logger::singleton()->error(
+                sprintf('Fehler UpdateTransactionsSubscriber: %s %s', $e->getMessage(), $e->getTraceAsString())
+            );
             return $e->getMessage();
         }
         return 'Success';
@@ -53,41 +72,38 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
      */
     private function getLastUpdateDate()
     {
-        $query = 'SELECT `end` FROM s_crontab WHERE `action` = ?';
-        return Shopware()->Db()->fetchOne($query, [self::JOB_NAME]);
+        if (empty($this->_cronjobLastExecutionDate)) {
+            $query = 'SELECT `next`, `interval` FROM s_crontab WHERE `action` = ?';
+            $row = Shopware()->Db()->fetchRow($query, [self::JOB_NAME]);
+
+            $date = new \DateTime($row['next']);
+            $date->sub(new \DateInterval('PT' . $row['interval'] . 'S'));
+
+            $this->_cronjobLastExecutionDate = $date;
+        }
+
+        return $this->_cronjobLastExecutionDate;
     }
 
     /**
      * @param $config
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     private function findCandidateOrdersForUpdate($config)
     {
-        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         $orderStatus = [
             $config['RatePayFullDelivery'],
             $config['RatePayFullCancellation'],
             $config['RatePayFullReturn'],
         ];
-
-        $paymentMethodsWrapped = [];
-        foreach ($paymentMethods as $paymentMethod) {
-            $paymentMethodsWrapped[] = "'{$paymentMethod}'";
-        }
-
-        $changeDate = $this->getLastUpdateDate();
-
-        if (empty($changeDate)) {
-            $date = new \DateTime();
-            $date->sub(new \DateInterval('PT1H'));
-            $changeDate = $date->format('Y-m-d H:i:s');
-        }
+        $paymentMethods = $this->getAllowedPaymentMethods();
+        $changeDate = $this->getChangeDateLimit();
 
         $query = 'SELECT o.id FROM s_order o
                 INNER JOIN s_order_history oh ON oh.orderID = o.id
                 LEFT JOIN s_core_paymentmeans cp ON cp.id = o.paymentID
-                WHERE cp.name in (' . join(',', $paymentMethodsWrapped) . ')
+                WHERE cp.name in (' . join(',', $paymentMethods) . ')
                 AND o.status in (' . join(',', $orderStatus) . ')
                 AND oh.change_date >= :changeDate
                 GROUP BY o.id';
@@ -95,5 +111,48 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
         $rows = Shopware()->Db()->fetchAll($query, [':changeDate' => $changeDate]);
 
         return array_column($rows, 'id');
+    }
+
+    /**
+     * Gets the bottom limits to fetch order updates.
+     * This is important to keep a well performing process, due to
+     * an unknown amount of orders could take a long of time.
+     *
+     * @return string
+     * @throws \Exception
+     */
+    private function getChangeDateLimit()
+    {
+        $date = $this->getLastUpdateDate();
+        if (empty($date)) {
+            $date = new \DateTime();
+        }
+
+        $date->sub(new \DateInterval('PT1H'));
+        $changeDate = $date->format('Y-m-d H:i:s');
+
+        return $changeDate;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getAllowedPaymentMethods()
+    {
+        $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
+        $quotedPaymentMethods = array_map(function ($method) {
+            return "'" . $method . "'";
+        }, $paymentMethods);
+
+        return $quotedPaymentMethods;
+    }
+
+    /**
+     * @param $config
+     * @return bool
+     */
+    private function hasBiDirectionalityActivated($config)
+    {
+        return (bool)$config->get('RatePayBidirectional');
     }
 }

@@ -20,8 +20,8 @@ class CreateOrderShippingTable
     }
 
     /**
-     * @param Enlight_Components_Db_Adapter_Pdo_Mysql $database
-     * @throws Zend_Db_Adapter_Exception
+     * @param \Enlight_Components_Db_Adapter_Pdo_Mysql $database
+     * @throws \Zend_Db_Adapter_Exception
      */
     public function __invoke($database)
     {

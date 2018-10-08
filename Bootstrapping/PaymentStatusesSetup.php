@@ -7,7 +7,7 @@ use RpayRatePay\Component\Service\Logger;
 class PaymentStatusesSetup extends Bootstrapper
 {
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function install()
     {
@@ -23,7 +23,7 @@ class PaymentStatusesSetup extends Bootstrapper
 
     /**
      * @return mixed|void
-     * @throws Exception
+     * @throws \Exception
      */
     public function update()
     {

@@ -36,7 +36,7 @@ abstract class Bootstrapper
     /**
      * @param $configFile
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     public function loadConfig($configFile)
     {
@@ -44,7 +44,7 @@ abstract class Bootstrapper
             return json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . $configFile), true);
         }
 
-        throw new Exception("Unable to load configuration file '$configFile'");
+        throw new \Exception("Unable to load configuration file '$configFile'");
     }
 
     public function getName()

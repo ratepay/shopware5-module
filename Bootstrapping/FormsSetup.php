@@ -5,7 +5,7 @@ namespace RpayRatePay\Bootstrapping;
 class FormsSetup extends Bootstrapper
 {
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function install()
     {
@@ -27,13 +27,13 @@ class FormsSetup extends Bootstrapper
             $this->bootstrap->addFormTranslations($translations);
         } catch (\Exception $exception) {
             $this->bootstrap->uninstall();
-            throw new Exception('Can not create config elements.' . $exception->getMessage());
+            throw new \Exception('Can not create config elements.' . $exception->getMessage());
         }
     }
 
     /**
      * @return mixed|void
-     * @throws Exception
+     * @throws \Exception
      */
     public function update()
     {

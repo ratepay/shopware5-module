@@ -7,7 +7,7 @@ class TranslationsSetup extends Bootstrapper
     private $translations = [];
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function install()
     {
@@ -16,7 +16,7 @@ class TranslationsSetup extends Bootstrapper
 
     /**
      * @return mixed|void
-     * @throws Exception
+     * @throws \Exception
      */
     public function update()
     {
@@ -64,7 +64,7 @@ class TranslationsSetup extends Bootstrapper
 
     /**
      * @return array
-     * @throws Zend_Db_Adapter_Exception
+     * @throws \Zend_Db_Adapter_Exception
      */
     private function getInstalledGermanMessages()
     {
@@ -83,7 +83,7 @@ class TranslationsSetup extends Bootstrapper
      * @param $locale
      * @param $name
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     private function getTranslatedMessage($locale, $name)
     {
