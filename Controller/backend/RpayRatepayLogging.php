@@ -1,6 +1,8 @@
 <?php
 
-    /**
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+
+/**
      * This program is free software; you can redistribute it and/or modify it under the terms of
      * the GNU General Public License as published by the Free Software Foundation; either
      * version 3 of the License, or (at your option) any later version.
@@ -38,29 +40,41 @@
             $start = intval($this->Request()->getParam('start'));
             $limit = intval($this->Request()->getParam('limit'));
             $orderId = $this->Request()->getParam('orderId');
+
             if (!is_null($orderId)) {
                 $transactionId = Shopware()->Db()->fetchOne('SELECT `transactionId` FROM `s_order` WHERE `id`=?', [$orderId]);
                 $sqlTotal = 'SELECT COUNT(*) FROM `rpay_ratepay_logging` WHERE `transactionId`=?';
-                $sql = 'SELECT log.*, `s_user_billingaddress`.`firstname`,`s_user_billingaddress`.`lastname` FROM `rpay_ratepay_logging` AS `log` '
-                    . 'LEFT JOIN `s_order` ON `log`.`transactionId`=`s_order`.`transactionID`'
-                    . 'LEFT JOIN `s_user_billingaddress` ON `s_order`.`userID`=`s_user_billingaddress`.`userID`'
-                    . 'WHERE `log`.`transactionId`=?'
+
+                $sql = 'SELECT log.*, s_user.id as user_id FROM `rpay_ratepay_logging` AS `log` '
+                    . 'LEFT JOIN `s_order` ON `log`.`transactionId`=`s_order`.`transactionID` '
+                    . 'LEFT JOIN s_user ON s_order.userID=s_user.id '
+                    . 'WHERE log.transactionId=?'
                     . 'ORDER BY `id` DESC';
+
                 $data = Shopware()->Db()->fetchAll($sql, [$transactionId]);
                 $total = Shopware()->Db()->fetchOne($sqlTotal, [$transactionId]);
             } else {
                 $sqlTotal = 'SELECT COUNT(*) FROM `rpay_ratepay_logging`';
-                $sql = 'SELECT log.*, `s_user_billingaddress`.`firstname`,`s_user_billingaddress`.`lastname` FROM `rpay_ratepay_logging` AS `log` '
-                    . 'LEFT JOIN `s_order` ON `log`.`transactionId`=`s_order`.`transactionID`'
-                    . 'LEFT JOIN `s_user_billingaddress` ON `s_order`.`userID`=`s_user_billingaddress`.`userID`'
-                    . 'ORDER BY `id` DESC '
-                    . "LIMIT $start,$limit";
+
+                $sql = 'SELECT log.*, s_user.id as user_id FROM `rpay_ratepay_logging` AS `log` '
+                    . 'LEFT JOIN `s_order` ON `log`.`transactionId`=`s_order`.`transactionID` '
+                    . 'LEFT JOIN s_user ON s_order.userID=s_user.id '
+                    . 'ORDER BY `id` DESC';
+
                 $data = Shopware()->Db()->fetchAll($sql);
                 $total = Shopware()->Db()->fetchOne($sqlTotal);
             }
 
             $store = [];
             foreach ($data as $row) {
+
+                if ($row['user_id']) {
+                    $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $row['user_id']);
+                    $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
+                    $row['firstname'] = $customerWrapped->getBillingFirstName();
+                    $row['lastname'] = $customerWrapped->getBillingLastName();
+                }
+
                 $matchesRequest = [];
                 preg_match("/(.*)(<\?.*)/s", $row['request'], $matchesRequest);
                 $row['request'] = $matchesRequest[1] . "\n" . $this->formatXml(trim($matchesRequest[2]));
