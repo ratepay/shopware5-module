@@ -58,58 +58,39 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
     public function initPositionsAction()
     {
         $articleNumbers = json_decode($this->Request()->getParam('articleNumber'));
-        $orderID = $this->Request()->getParam('orderId');
+        $orderId = $this->Request()->getParam('orderId');
         $success = true;
-        $bindings = [$orderID];
-        $bind = '';
-        $values = '';
+        $articleNumberToInsert = [];
+
+        $sqlCountEntries = "
+          SELECT `id`, COUNT(*) AS 'count', SUM(`quantity`) AS 'quantity' FROM `s_order_details`
+          WHERE `orderID`=? 
+          AND `articleordernumber`=?
+          GROUP BY `id`
+        ";
+
         foreach (array_unique($articleNumbers) as $articleNumber) {
-            $sqlCountEntrys = "SELECT `id`, COUNT(*) AS 'count', SUM(`quantity`) AS 'quantity' FROM `s_order_details` "
-                              . 'WHERE `orderID`=? '
-                              . 'AND `articleordernumber` = ? '
-                              . 'ORDER BY `id` ASC';
             try {
-                $row = Shopware()->Db()->fetchRow($sqlCountEntrys, [$orderID, $articleNumber]);
+                $row = Shopware()->Db()->fetchRow($sqlCountEntries, [$orderId, $articleNumber]);
                 if ($row['count'] > 1) { // article already in order, update its quantity
                     $sqlUpdate = 'UPDATE `s_order_details` SET `quantity`=? WHERE `id`=?';
                     $sqlDelete = 'DELETE FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber` = ? AND `id`!=?';
                     Shopware()->Db()->query($sqlUpdate, [$row['quantity'], $row['id']]);
-                    Shopware()->Db()->query($sqlDelete, [$orderID, $articleNumber, $row['id']]);
+                    Shopware()->Db()->query($sqlDelete, [$orderId, $articleNumber, $row['id']]);
                 } else {
-                    $bindings[] = $articleNumber;
-                    $bind .= '?,';
+                    $articleNumberToInsert[] = $articleNumber;
                 }
             } catch (\Exception $exception) {
+                Logger::singleton()->warn('Unable to initialize order position ' . $articleNumber . '. ' . $exception->getMessage());
                 $success = false;
-                Logger::singleton()->error('Exception:' . $exception->getMessage());
             }
         }
 
-        if (!is_null($bind)) { // add new items to order
-            $bind = substr($bind, 0, -1);
-            $sqlSelectIDs = 'SELECT `id` FROM `s_order_details` '
-                            . "WHERE `orderID`=? AND `articleordernumber` IN ($bind) ";
-            try {
-                $detailIDs = Shopware()->Db()->fetchAll($sqlSelectIDs, $bindings);
-                foreach ($detailIDs as $row) {
-                    $values .= '(' . $row['id'] . '),';
-                }
-                $values = substr($values, 0, -1);
-                $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` '
-                             . '(`s_order_details_id`) '
-                             . 'VALUES ' . $values;
-                Shopware()->Db()->query($sqlInsert);
-            } catch (\Exception $exception) {
-                $success = false;
-                Logger::singleton()->error('Exception:' . $exception->getMessage(), ' SQL:' . $sqlInsert);
-            }
+        if (!empty($articleNumberToInsert)) { // add new items to order
+            $success = $this->insertNewPositionsToOrder($articleNumberToInsert, $orderId);
         }
 
-        $this->View()->assign(
-            [
-                'success' => $success
-            ]
-        );
+        $this->View()->assign(compact('success'));
     }
 
     /**
@@ -165,18 +146,20 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         $orderId = $this->Request()->getParam('orderId');
         $items = json_decode($this->Request()->getParam('items'));
         $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
-        $order = $orderModel->findOneBy(['id' => $orderId]);
+        $order = Shopware()->Models()
+            ->getRepository('Shopware\Models\Order\Order')
+            ->findOneBy(['id' => $orderId]);
 
         $payment = $order->getPayment()->getName();
         $this->_modelFactory->setTransactionId($order->getTransactionID());
         $this->_modelFactory->setOrderId($order->getNumber());
-        $itemsToDeliver = null;
+        $itemsToDeliver = 0;
 
         $sendItem = true;
         foreach ($items as $item) {
             $itemsToDeliver += $item->deliveredItems;
 
-            if ($payment == 'rpayratepayrate0' || $payment == 'rpayratepayrate') {
+            if (in_array($payment, ['rpayratepayrate0', 'rpayratepayrate'])) {
                 if (($item->maxQuantity - $item->deliveredItems - $item->cancelled - $item->retournedItems - $item->delivered) !== 0) {
                     $itemsToDeliver += $item->delivered;
                     $sendItem = false;
@@ -369,6 +352,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                                                  . 'INNER JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` '
                                                  . 'WHERE `orderID`=?', [$orderId]);
 
+        $items = null;
         foreach ($orderItems as $row) {
             if ($row['quantityDeliver'] == 0) {
                 continue;
@@ -388,7 +372,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             $items = $shippingRow;
         }
 
-        if ($onlyDebit == false) {
+        if ($onlyDebit === false) {
             $this->_modelFactory->setTransactionId($order['transactionID']);
             $operationData['orderId'] = $orderId;
             $operationData['items'] = $items;
@@ -635,5 +619,37 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         } catch (\Exception $exception) {
             Logger::singleton()->error($exception->getMessage());
         }
+    }
+
+    /**
+     * @param $articleOrderNumbers
+     * @param $orderId
+     * @return bool
+     */
+    private function insertNewPositionsToOrder($articleOrderNumbers, $orderId)
+    {
+        $articleBinds = array_map(function ($item) {
+            return '?';
+        }, $articleOrderNumbers);
+        $orderDetailIdsQuery = 'SELECT `id` FROM `s_order_details` 
+          WHERE `orderID`=? AND `articleordernumber` IN (' . join(', ', $articleBinds) . ')';
+
+        try {
+            $queryArguments = array_merge([$orderId], $articleOrderNumbers);
+            $orderDetailIds = array_map(
+                function ($item) {
+                    return $item['id'];
+                },
+                Shopware()->Db()->fetchAll($orderDetailIdsQuery, $queryArguments)
+            );
+            $newValues = '(' . implode('), (', $orderDetailIds) . ')';
+            $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES ' . $newValues;
+            Shopware()->Db()->query($sqlInsert);
+        } catch (\Exception $exception) {
+            Logger::singleton()->error($exception->getMessage() . '. SQL:' . $sqlInsert);
+            return false;
+        }
+
+        return true;
     }
 }

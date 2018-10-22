@@ -100,8 +100,8 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
     private function orderStructToPaymentRequestData(
         \SwagBackendOrder\Components\Order\Struct\OrderStruct $orderStruct,
-                                                     \Shopware\Models\Payment\Payment $paymentType,
-                                                     \Shopware\Models\Customer\Customer $customer
+         \Shopware\Models\Payment\Payment $paymentType,
+         \Shopware\Models\Customer\Customer $customer
     ) {
         $method = \RpayRatePay\Component\Service\ShopwareUtil::getPaymentMethod(
             $paymentType->getName()

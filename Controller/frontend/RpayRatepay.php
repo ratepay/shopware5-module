@@ -73,35 +73,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      */
     public function indexAction()
     {
-        Shopware()->Session()->RatePAY['errorRatenrechner'] = 'false';
-        if (preg_match('/^rpayratepay(invoice|rate|debit|rate0|prepayment)$/', $this->getPaymentShortName())) {
-            if ($this->getPaymentShortName() === 'rpayratepayrate' && !isset(Shopware()->Session()->RatePAY['ratenrechner'])
-            ) {
-                Shopware()->Session()->RatePAY['errorRatenrechner'] = 'true';
-                $this->redirect(
-                    Shopware()->Front()->Router()->assemble(
-                        [
-                            'controller' => 'checkout',
-                            'action' => 'confirm',
-                            'forceSecure' => true
-                        ]
-                    )
-                );
-            } elseif ($this->getPaymentShortName() === 'rpayratepayrate0' && !isset(Shopware()->Session()->RatePAY['ratenrechner'])) {
-                Shopware()->Session()->RatePAY['errorRatenrechner'] = 'true';
-                $this->redirect(
-                    Shopware()->Front()->Router()->assemble(
-                        [
-                            'controller' => 'checkout',
-                            'action' => 'confirm',
-                            'forceSecure' => true
-                        ]
-                    )
-                );
-            } else {
-                $this->_proceedPayment();
-            }
-        } else {
+        if (!$this->isRatePayPayment()) {
             $this->redirect(
                 Shopware()->Front()->Router()->assemble(
                     [
@@ -111,7 +83,27 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                     ]
                 )
             );
+            return;
         }
+
+        if (!$this->isInstallmentPaymentWithoutCalculation()) {
+            Logger::singleton()->info('Proceed with RatePAY payment');
+            Shopware()->Session()->RatePAY['errorRatenrechner'] = 'false';
+            $this->_proceedPayment();
+            return;
+        }
+
+        Logger::singleton()->info('RatePAY installment has incomplete calculation');
+        Shopware()->Session()->RatePAY['errorRatenrechner'] = 'true';
+        $this->redirect(
+            Shopware()->Front()->Router()->assemble(
+                [
+                    'controller' => 'checkout',
+                    'action' => 'confirm',
+                    'forceSecure' => true
+                ]
+            )
+        );
     }
 
     /**
@@ -157,9 +149,9 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
                 try {
                     Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // TODO: Parameterize or make otherwise safe
-                    Logger::singleton()->info('Kundendaten aktualisiert.');
+                    Logger::singleton()->info('Customer data was updated');
                 } catch (\Exception $exception) {
-                    Logger::singleton()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
+                    Logger::singleton()->error('RatePAY was unable to update customer data: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
             } elseif (method_exists($userModel, 'getBirthday')) { // From Shopware 5.2 birthday is moved to customer object
@@ -177,9 +169,9 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                     if (count($updateAddressData) > 0) {
                         Shopware()->Db()->update('s_user_addresses', $updateAddressData, 'id=' . $Parameter['checkoutBillingAddressId']);
                     }
-                    Logger::singleton()->info('Kundendaten aktualisiert.');
+                    Logger::singleton()->info('Customer data was updated');
                 } catch (\Exception $exception) {
-                    Logger::singleton()->error('Fehler beim Updaten der User oder Address daten: ' . $exception->getMessage());
+                    Logger::singleton()->error('RatePAY was unable to update customer data: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
             } else {
@@ -308,16 +300,11 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
         //get ratepay config based on shopId and profileId
         return Shopware()->Db()->fetchRow('
-            SELECT
-            *
-            FROM
-            `rpay_ratepay_config`
-            WHERE
-            `shopId` =?
-            AND
-            `profileId`=?
-            AND
-            backend=?
+            SELECT *
+            FROM `rpay_ratepay_config`
+            WHERE `shopId` =?
+            AND `profileId`=?
+            AND backend=?
         ', [$shopId, $profileId, $backend]);
     }
 
@@ -353,5 +340,22 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             'calcDesign',
             'calcRequest'
         ];
+    }
+
+    /**
+     * @return bool
+     */
+    private function isRatePayPayment()
+    {
+        return 1 === preg_match('/^rpayratepay(invoice|rate|debit|rate0|prepayment)$/', $this->getPaymentShortName());
+    }
+
+    /**
+     * @return bool
+     */
+    private function isInstallmentPaymentWithoutCalculation()
+    {
+        return in_array($this->getPaymentShortName(), ['rpayratepayrate', 'rpayratepayrate0'])
+            && !isset(Shopware()->Session()->RatePAY['ratenrechner']);
     }
 }
