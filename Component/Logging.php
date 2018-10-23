@@ -59,7 +59,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Logging
         try {
             Shopware()->Db()->insert('rpay_ratepay_logging', $bind);
         } catch (\Exception $exception) {
-            Logger::singleton()->error('Fehler beim Loggen: ' . $exception->getMessage());
+            Logger::singleton()->error('RatePAY was unable to log order history: ' . $exception->getMessage());
         }
     }
 }

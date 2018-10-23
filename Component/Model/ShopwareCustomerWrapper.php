@@ -2,6 +2,7 @@
 
 namespace RpayRatePay\Component\Model;
 
+use RpayRatePay\Component\Service\Logger;
 use Shopware\Models\Customer\Customer;
 use RatePAY\Service\Util;
 
@@ -130,6 +131,12 @@ class ShopwareCustomerWrapper
      */
     public function getBillingCountry()
     {
+        $shippingId = Shopware()->Session()->offsetGet('checkoutShippingAddressId');
+        if (!empty($shippingId)) {
+            Logger::singleton()->info(__METHOD__ . ' --> ' . $shippingId);
+            return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingId);
+        }
+
         $billingFresh = $this->getBillingFresh();
 
         if (!is_null($billingFresh)) {

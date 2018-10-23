@@ -113,10 +113,19 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
      */
     public function install()
     {
+        parent::install();
+
         Logger::singleton()->info('INSTALL Plugin Bootstrap');
-        $this->subscribeEvent('Enlight_Controller_Front_StartDispatch', 'onRegisterSubscriber');
-        $this->str = 'Shopware_Console_Add_Command';
-        $this->subscribeEvent('' . $this->str . '', 'onRegisterSubscriber');
+
+        Logger::singleton()->info('RatePAY: event subscription');
+        $this->subscribeEvent(
+            'Enlight_Controller_Front_StartDispatch',
+            'onRegisterSubscriber'
+        );
+        $this->subscribeEvent(
+            'Shopware_Console_Add_Command',
+            'onRegisterSubscriber'
+        );
 
         $queue = [
             new \RpayRatePay\Bootstrapping\PaymentsSetup($this),
@@ -130,15 +139,21 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
         ];
 
+        Logger::singleton()->info('RatePAY: bootstrap routines');
         foreach ($queue as $bootstrapper) {
             $bootstrapper->install();
+            Logger::singleton()->info('[OK] ' . get_class($bootstrapper));
         }
 
         $this->Plugin()->setActive(true);
+        Logger::singleton()->info('RatePAY: Successful module installation');
 
         return [
             'success' => true,
-            'invalidateCache' => ['frontend', 'backend']
+            'invalidateCache' => [
+                'frontend',
+                'backend'
+            ]
         ];
     }
 
@@ -152,7 +167,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
      */
     public function update($version)
     {
-
         Logger::singleton()->info('UPDATE Plugin Bootstrap ' . $version);
         $queue = [
             new \RpayRatePay\Bootstrapping\FormsSetup($this),
@@ -166,10 +180,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
 
         $this->_dropOrderAdditionalAttributes();
 
+        Logger::singleton()->info('RatePAY: bootstrap routines');
         foreach ($queue as $bootstrapper) {
             $bootstrapper->update();
+            Logger::singleton()->info('[OK] ' . get_class($bootstrapper));
         }
 
+        Logger::singleton()->info('RatePAY: Successful module update');
         Logger::singleton()->addNotice('Successful module update');
 
         return [
@@ -179,8 +196,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
     }
 
     /**
-    * drops additional attributes for ratepay orders in s_order_attributes
-    */
+     * drops additional attributes for ratepay orders in s_order_attributes
+     */
     public function _dropOrderAdditionalAttributes()
     {
         $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
@@ -248,6 +265,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
 
         foreach ($subscribers as $subscriber) {
             Shopware()->Events()->addSubscriber($subscriber);
+//            Logger::singleton()->info('[OK] ' . get_class($subscriber));
         }
     }
 }

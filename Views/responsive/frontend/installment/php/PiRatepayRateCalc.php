@@ -49,7 +49,7 @@ require_once 'PiRatepayRateCalcBase.php';
             $userId = Shopware()->Session()->sUserId;
 
             $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
-            $userWrapped = new ShopwareCustomerWrapper($customer);
+            $userWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
             $countryIso = $userWrapped->getBillingCountry()->getIso();
 
             $basketAmount = $this->getRequestAmount();
