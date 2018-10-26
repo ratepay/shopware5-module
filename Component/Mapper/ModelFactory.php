@@ -284,7 +284,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $checkoutAddressShipping = $paymentRequestData->getShippingAddress();
         $company = $checkoutAddressBilling->getCompany();
 
-        if (empty($company)) {
+        if (empty($company) && $customer->getAccountMode() === 0) {
             $dateOfBirth = $paymentRequestData->getBirthday();
         }
 
@@ -375,17 +375,22 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             ]
         ];
 
-        if (!empty($company)) {
+        if (empty($company) && $customer->getAccountMode() === 1) {
+            Logger::singleton()->error('Company field cannot be empty when accountmode is 1!');
+        }
+
+        if (!empty($company) || $customer->getAccountMode() === 1) {
             $contentArr['Customer']['CompanyName'] = $checkoutAddressBilling->getCompany();
             $contentArr['Customer']['VatId'] = $checkoutAddressBilling->getVatId();
         }
+
         $elv = false;
         if (!empty($installmentDetails)) {
             $serviceUtil = new ShopwareUtil();
 
             $contentArr['Payment']['DebitPayType'] = $serviceUtil->getDebitPayType(
                 $this->getSession()->RatePAY['ratenrechner']['payment_firstday']
-                );
+            );
 
             if ($contentArr['Payment']['DebitPayType'] == 'DIRECT-DEBIT') {
                 $elv = true;

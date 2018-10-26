@@ -6,15 +6,20 @@
     {block name='ratepay_frontend_birthday'}
         <div class="register--birthdate">
             <label for="register_personal_birthdate" class="birthday--label">
-                {s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthday}Geburtsdatum{/s}*
+                <strong>{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthday}Geburtsdatum{/s}</strong>
             </label>
             <br />
+
             <div class="rp-birthday field--select">
-                <input 
+                <label for="register_personal_birthdate" class="birthday--label">
+                    {s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthdayTag}Tag{/s}*
+                </label>
+                <br />
+                <input
                     type="text"
                     id="ratepay_birthday"
-                    name="ratepay[personal][birthday]" 
-                    maxlength="2" 
+                    name="ratepay[personal][birthday]"
+                    maxlength="2"
                     placeholder="Tag"
                     required="required"
                     aria-required="true"
@@ -29,7 +34,11 @@
             </div>
 
             <div class="rp-birthmonth field--select">
-                <input 
+                <label for="register_personal_birthdate" class="birthday--label">
+                    {s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthdayMonth}Monat{/s}*
+                </label>
+                <br />
+                <input
                     type="text"
                     id="ratepay_birthmonth"
                     name="ratepay[personal][birthmonth]"
@@ -48,7 +57,11 @@
             </div>
 
             <div class="rp-birthyear field--select">
-                <input 
+                <label for="register_personal_birthdate" class="birthday--label">
+                    {s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthdayYear}Jahr{/s}*
+                </label>
+                <br />
+                <input
                     type="text"
                     id="ratepay_birthyear"
                     name="ratepay[personal][birthyear]"

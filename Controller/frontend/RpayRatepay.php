@@ -148,12 +148,19 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 $updateAddressData['phone'] = $Parameter['ratepay_phone'] ?: $customerAddressBilling->getPhone();
                 if ($customerAddressBilling->getCompany() !== '') {
                     $updateAddressData['company'] = $Parameter['ratepay_company'] ?: $customerAddressBilling->getCompany();
+                    $updateUserData['accountmode'] = 1;
                 } else {
                     $updateAddressData['birthday'] = $Parameter['ratepay_dob'] ?: $customerAddressBilling->getBirthday()->format('Y-m-d');
+                    $updateUserData['accountmode'] = 0;
                 }
 
                 try {
                     Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // ToDo: Why parameter?
+
+                    if ($updateUserData > 0) {
+                        Shopware()->Db()->update('s_user', $updateUserData, 'id=' . $Parameter['userid']);
+                    }
+
                     Logger::singleton()->info('Kundendaten aktualisiert.');
                 } catch (\Exception $exception) {
                     Logger::singleton()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
@@ -163,8 +170,10 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 $updateAddressData['phone'] = $Parameter['ratepay_phone'] ?: $customerAddressBilling->getPhone();
                 if (!is_null($customerAddressBilling->getCompany())) {
                     $updateAddressData['company'] = $Parameter['ratepay_company'] ?: $customerAddressBilling->getCompany();
+                    $updateUserData['accountmode'] = 1;
                 } else {
                     $updateUserData['birthday'] = $Parameter['ratepay_dob'] ?: $userModel->getBirthday()->format('Y-m-d');
+                    $updateUserData['accountmode'] = 0;
                 }
 
                 try {

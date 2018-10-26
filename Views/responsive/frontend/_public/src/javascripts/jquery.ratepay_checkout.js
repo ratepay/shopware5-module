@@ -183,7 +183,15 @@
 
                 /* dob validation */
                 if ($('#ratepay_birthyear').length) { /* only do the check if dob form exists */
-                    if ($('#ratepay_birthyear').val() != '' && $('#ratepay_birthmonth').val() != '' && $('#ratepay_birthday').val() != '') {
+                    var year = $('#ratepay_birthyear').val();
+                    var month = $('#ratepay_birthmonth').val();
+                    var day = $('#ratepay_birthday').val();
+
+                    if (
+                        (year != '' && year != '0000' && !isNaN(year))
+                        && (month != '' && month != '00' && month < 13 && !isNaN(month))
+                        && (day != '' && day != '00' && day < 32 && !isNaN(day))
+                    ) {
                         dob = new Date($('#ratepay_birthyear').val() + '-' + $('#ratepay_birthmonth').val() + '-' + $('#ratepay_birthday').val());
 
                         /* validate age */
@@ -197,6 +205,7 @@
                     } else {
                         error = true;
                         userUpdate = false;
+                        errorMessage = errorMessageDobNotValid;
                     }
                 }
 

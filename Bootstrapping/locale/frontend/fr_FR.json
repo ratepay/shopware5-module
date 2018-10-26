@@ -5,6 +5,7 @@
   "dob_info": "Date de naissance",
   "dobtooyoung": "Veuillez vérifier les informations fournies. Pour utiliser le moyen de paiement sélectionné, vous devez être âgé de plus de 18 ans et la date de naissance doit être renseignée selon le format TT.MM.JJJJ.')",
   "invalidAge": "Veuillez vérifier les informations fournies. Pour utiliser le moyen de paiement sélectionné, vous devez être âgé de plus de 18 ans et la date de naissance doit être renseignée selon le format TT.MM.JJJJ.",
+  "dobnotvalid": "Please enter a valid date of birth",
   "invaliddata": "Afin de procéder à l'achat, veuillez indiquer le moyen de paiement et fournir les informations suivantes :",
   "ok": "ok",
   "phonenumbernotvalid": "Veuillez fournir un numéro de téléphone valide pour le moyen de paiement choisi.",
