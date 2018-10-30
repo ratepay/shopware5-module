@@ -154,7 +154,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
                 try {
                     Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // ToDo: Why parameter?
-
                     Logger::singleton()->info('Kundendaten aktualisiert.');
                 } catch (\Exception $exception) {
                     Logger::singleton()->error('Fehler beim Updaten der Userdaten: ' . $exception->getMessage());
