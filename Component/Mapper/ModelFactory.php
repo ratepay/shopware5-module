@@ -284,7 +284,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $checkoutAddressShipping = $paymentRequestData->getShippingAddress();
         $company = $checkoutAddressBilling->getCompany();
 
-        if (empty($company) && $customer->getAccountMode() === 0) {
+        if (empty($company)) {
             $dateOfBirth = $paymentRequestData->getBirthday();
         }
 
@@ -375,11 +375,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             ]
         ];
 
-        if (empty($company) && $customer->getAccountMode() === 1) {
-            Logger::singleton()->error('Company field cannot be empty when accountmode is 1!');
-        }
-
-        if (!empty($company) || $customer->getAccountMode() === 1) {
+        if (!empty($company)) {
             $contentArr['Customer']['CompanyName'] = $checkoutAddressBilling->getCompany();
             $contentArr['Customer']['VatId'] = $checkoutAddressBilling->getVatId();
         }
