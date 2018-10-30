@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version 5.3.0 - To be released 2018-10-15
+* tdb
+
 ### Version 5.2.6 - Released 2018-10-01
 * fix ignored updates in bidirectional process
 * fix usage of addresses for shipping/billing during checkout

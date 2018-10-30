@@ -40,7 +40,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
             defaults: {
                 flex: 1
             }
-        }
+        };
+
         me.dockedItems = [
             {
                 xtype: 'toolbar',

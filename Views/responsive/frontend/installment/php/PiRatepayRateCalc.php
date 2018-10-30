@@ -8,7 +8,10 @@
      * @package pi_ratepay_rate_calculator
      * Code by Ratepay GmbH  <http://www.ratepay.com/>
      */
-    require_once 'PiRatepayRateCalcBase.php';
+
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+
+require_once 'PiRatepayRateCalcBase.php';
 
     /**
      * This is for the communication with RatePAY
@@ -44,9 +47,11 @@
 
             $shopId = Shopware()->Shop()->getId();
             $userId = Shopware()->Session()->sUserId;
-            $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
-            $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
-            $countryIso = $country->getIso();
+
+            $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
+            $userWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
+            $countryIso = $userWrapped->getBillingCountry()->getIso();
+
             $basketAmount = $this->getRequestAmount();
 
             $sBackend = $backend ? 1 : 0;
@@ -147,16 +152,7 @@
                 return "RatePAY frontend controller: No user set";
             }
 
-            $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-
-            if (isset($Parameter['checkoutBillingAddressId']) && !is_null($Parameter['checkoutBillingAddressId'])) { // From Shopware 5.2 current billing address is sent by parameter
-                $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-                $customerAddressBilling = $addressModel->findOneBy(array('id' => $Parameter['checkoutBillingAddressId']));
-                $country = $customerAddressBilling->getCountry();
-            } else {
-                $user = Shopware()->Models()->getRepository('Shopware\Models\Customer\Billing')->findOneBy(array('customerId' => $userId));
-                $country = Shopware()->Models()->find('Shopware\Models\Country\Country', $user->getCountryId());
-            }
+            //$config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
             $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
             $netPrices = ! $customer->getGroup()->getTax();

@@ -2,12 +2,18 @@
 
 class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler
 {
+    const MSG_ARTICLE_WAS_SENT = 'Artikel wurde versand.';
+
+    const MSG_ARTICLE_WAS_CANCELLED = 'Artikel wurde storniert.';
+
+    const MSG_ARTICLE_WAS_RETURNED = 'Artikel wurde retourniert.';
+
     /**
      * @param \Shopware\Models\Order\Order $order
      * @param $config
      * @return bool
      */
-    private function mustSendFullShipped(Shopware\Models\Order\Order $order, $config)
+    private function mustSendFullShipped(\Shopware\Models\Order\Order $order, $config)
     {
         if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullDelivery'])) {
             return false;
@@ -25,7 +31,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
         $count = Shopware()->Db()->fetchOne($query, [$order->getId()]);
 
-        return (int)$count === 0;
+        return 0 === (int)$count;
     }
 
     /**
@@ -33,7 +39,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
      * @param $config
      * @return bool
      */
-    private function mustSendFullCancellation(Shopware\Models\Order\Order $order, $config)
+    private function mustSendFullCancellation(\Shopware\Models\Order\Order $order, $config)
     {
         if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullCancellation'])) {
             return false;
@@ -51,7 +57,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
         $count = Shopware()->Db()->fetchOne($query, [$order->getId()]);
 
-        return (int)$count === 0;
+        return 0 === (int)$count;
     }
 
     /**
@@ -59,7 +65,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
      * @param $config
      * @return bool
      */
-    private function mustSendFullReturn(Shopware\Models\Order\Order $order, $config)
+    private function mustSendFullReturn(\Shopware\Models\Order\Order $order, $config)
     {
         if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullReturn'])) {
             return false;
@@ -77,7 +83,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
         $count = Shopware()->Db()->fetchOne($query, [$order->getId()]);
 
-        return (int)$count === 0;
+        return 0 === (int)$count;
     }
 
     /**
@@ -86,7 +92,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
      * @param \Shopware\Models\Order\Order $order
      * @throws \Zend_Db_Adapter_Exception
      */
-    public function informRatepayOfOrderStatusChange(Shopware\Models\Order\Order $order)
+    public function informRatepayOfOrderStatusChange(\Shopware\Models\Order\Order $order)
     {
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
@@ -100,22 +106,18 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         $shippingCosts = $order->getInvoiceShipping();
 
         $items = [];
-        $i = 0;
         foreach ($order->getDetails() as $item) {
-            $items[$i]['articlename'] = $item->getArticlename();
-            $items[$i]['ordernumber'] = $item->getArticlenumber();
-            $items[$i]['quantity'] = $item->getQuantity();
-            $items[$i]['priceNumeric'] = $item->getPrice();
-            $items[$i]['tax_rate'] = $item->getTaxRate();
-            $taxRate = $item->getTaxRate();
-            $i++;
+            $items[] = $this->getItemForOrderDetails($item);
         }
+
         if (!empty($shippingCosts)) {
-            $items['Shipping']['articlename'] = 'Shipping';
-            $items['Shipping']['ordernumber'] = 'shipping';
-            $items['Shipping']['quantity'] = 1;
-            $items['Shipping']['priceNumeric'] = $shippingCosts;
-            $items['Shipping']['tax_rate'] = $taxRate;
+            $items['Shipping'] = [
+                'articlename' => 'Shipping',
+                'ordernumber' => 'shipping',
+                'quantity' => 1,
+                'priceNumeric' => $shippingCosts,
+                'tax_rate' => $order->getDetails()->first()->getTaxRate(),
+            ];
         }
 
         if ($this->mustSendFullShipped($order, $config)) {
@@ -123,7 +125,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
             $operationData['orderId'] = $order->getId();
             $operationData['items'] = $items;
             $modelFactory->setOrderId($order->getNumber());
-            $result = $modelFactory->callRequest('ConfirmationDeliver', $operationData);
+            $result = $modelFactory->callConfirmationDeliver($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {
@@ -135,7 +137,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                     if ($item['quantity'] <= 0) {
                         continue;
                     }
-                    $history->logHistory($order->getId(), 'Artikel wurde versand.', $item['articlename'], $item['ordernumber'], $item['quantity']);
+                    $history->logHistory($order->getId(), self::MSG_ARTICLE_WAS_SENT, $item['articlename'], $item['ordernumber'], $item['quantity']);
                 }
             }
         }
@@ -146,7 +148,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
             $operationData['items'] = $items;
             $operationData['subtype'] = 'cancellation';
             $modelFactory->setOrderId($order->getNumber());
-            $result = $modelFactory->callRequest('PaymentChange', $operationData);
+            $result = $modelFactory->callPaymentChange($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {
@@ -157,7 +159,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                     if ($item['quantity'] <= 0) {
                         continue;
                     }
-                    $history->logHistory($order->getId(), 'Artikel wurde storniert.', $item['articlename'], $item['ordernumber'], $item['quantity']);
+                    $history->logHistory($order->getId(), self::MSG_ARTICLE_WAS_CANCELLED, $item['articlename'], $item['ordernumber'], $item['quantity']);
                 }
             }
         }
@@ -168,7 +170,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
             $operationData['items'] = $items;
             $operationData['subtype'] = 'return';
             $modelFactory->setOrderId($order->getNumber());
-            $result = $modelFactory->callRequest('PaymentChange', $operationData);
+            $result = $modelFactory->callPaymentChange($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {
@@ -179,7 +181,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                     if ($item['quantity'] <= 0) {
                         continue;
                     }
-                    $history->logHistory($order->getId(), 'Artikel wurde retourniert.', $item['articlename'], $item['ordernumber'], $item['quantity']);
+                    $history->logHistory($order->getId(), self::MSG_ARTICLE_WAS_RETURNED, $item['articlename'], $item['ordernumber'], $item['quantity']);
                 }
             }
         }
@@ -201,5 +203,20 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
             $positionId = Shopware()->Db()->fetchOne('SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?', [$orderID, $articleOrderNumber]);
             Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
         }
+    }
+
+    /**
+     * @param $item
+     * @return array
+     */
+    private function getItemForOrderDetails($item)
+    {
+        return [
+            'articlename' => $item->getArticlename(),
+            'ordernumber' => $item->getArticlenumber(),
+            'quantity' => $item->getQuantity(),
+            'priceNumeric' => $item->getPrice(),
+            'tax_rate' => $item->getTaxRate(),
+        ];
     }
 }

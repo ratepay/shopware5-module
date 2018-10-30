@@ -169,14 +169,15 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                             id: 0,
                                             inStock: 0,
                                             mode: 0,
-                                            price: Ext.getCmp('creditAmount').getValue() * -1,
+                                            price: (-1 * Math.abs(Ext.getCmp('creditAmount').getValue())),
                                             quantity: 1,
                                             statusDescription: "",
                                             statusId: 0,
                                             taxDescription: "",
                                             taxId: 1,
                                             taxRate: 0,
-                                            total: 0
+                                            total: 0,
+                                            changed: me.record.get('changed')
                                         },
                                         success: function (payload) {
                                             var response = Ext.JSON.decode(payload.responseText);
@@ -234,65 +235,66 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                             }
                         ],
                         buttons: [
-                                {
-                                    text: '{s namespace=RatePAY name=ok}Ok{/s}',
-                                    handler: function () {
-                                        var randomnumber = Math.floor(Math.random() * 10001);
-                                        var debitname = 'Debit' + id + '+' + randomnumber;
-                                        Ext.Ajax.request({
-                                                url: '{url controller=Order action=savePosition}',
-                                                method: 'POST',
-                                                async: false,
-                                                params: {
-                                                    orderId: id,
-                                                    articleId: 0,
-                                                    articleName: 'Nachbelastung',
-                                                    articleNumber: debitname,
-                                                    id: 0,
-                                                    inStock: 0,
-                                                    mode: 0,
-                                                    price: Ext.getCmp('debitAmount').getValue(),
-                                                    quantity: 1,
-                                                    statusDescription: "",
-                                                    statusId: 0,
-                                                    taxDescription: "",
-                                                    taxId: 1,
-                                                    taxRate: 0,
-                                                    total: 0
-                                                },
-                                            success: function (payload) {
-                                                var response = Ext.JSON.decode(payload.responseText);
-                                                var articleNumber = new Array();
-                                                var insertedIds = new Array();
-                                                var message;
-                                                articleNumber.push(response.data.articleNumber);
-                                                insertedIds.push(response.data.id);
-                                                if (me.initPositions(articleNumber)) {
-                                                    if (me.paymentChange(id, 'debit', insertedIds)) {
-                                                        message = '{s namespace=RatePAY name=messagedebituccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
-                                                    } else {
-                                                        me.deletePosition(insertedIds);
-                                                        message = '{s namespace=RatePAY name=messagedebitfailrequest}Nachbelastung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
-                                                    }
+                            {
+                                text: '{s namespace=RatePAY name=ok}Ok{/s}',
+                                handler: function () {
+                                    var randomnumber = Math.floor(Math.random() * 10001);
+                                    var debitname = 'Debit' + id + '+' + randomnumber;
+                                    Ext.Ajax.request({
+                                        url: '{url controller=Order action=savePosition}',
+                                        method: 'POST',
+                                        async: false,
+                                        params: {
+                                            orderId: id,
+                                            articleId: 0,
+                                            articleName: 'Nachbelastung',
+                                            articleNumber: debitname,
+                                            id: 0,
+                                            inStock: 0,
+                                            mode: 0,
+                                            price: Math.abs(Ext.getCmp('debitAmount').getValue()),
+                                            quantity: 1,
+                                            statusDescription: "",
+                                            statusId: 0,
+                                            taxDescription: "",
+                                            taxId: 1,
+                                            taxRate: 0,
+                                            total: 0,
+                                            changed: me.record.get('changed')
+                                        },
+                                        success: function (payload) {
+                                            var response = Ext.JSON.decode(payload.responseText);
+                                            var articleNumber = new Array();
+                                            var insertedIds = new Array();
+                                            var message;
+                                            articleNumber.push(response.data.articleNumber);
+                                            insertedIds.push(response.data.id);
+                                            if (me.initPositions(articleNumber)) {
+                                                if (me.paymentChange(id, 'debit', insertedIds)) {
+                                                    message = '{s namespace=RatePAY name=messagedebituccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
                                                 } else {
-                                                    message = '{s namespace=RatePAY name=messagedebitfailposition}Nachbelastung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
+                                                    me.deletePosition(insertedIds);
+                                                    message = '{s namespace=RatePAY name=messagedebitfailrequest}Nachbelastung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
                                                 }
-                                                Ext.getCmp('debitWindow').close();
-                                                Ext.Msg.alert('{s namespace=RatePAY name=messagedebittitle}Nachbelastung hinzuf&uuml;gen{/s}', message);
-                                                me.reloadGrid();
+                                            } else {
+                                                message = '{s namespace=RatePAY name=messagedebitfailposition}Nachbelastung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
                                             }
-                                        });
-                                    }
-                                },
-                                {
-                                    text: '{s namespace=backend/application/main name=detail_window/cancel_button_text}Cancel{/s}',
-                                        handler: function () {
                                             Ext.getCmp('debitWindow').close();
+                                            Ext.Msg.alert('{s namespace=RatePAY name=messagedebittitle}Nachbelastung hinzuf&uuml;gen{/s}', message);
+                                            me.reloadGrid();
                                         }
+                                    });
                                 }
-                            ]
-                        }).show();
-                    }
+                            },
+                            {
+                                text: '{s namespace=backend/application/main name=detail_window/cancel_button_text}Cancel{/s}',
+                                handler: function () {
+                                    Ext.getCmp('debitWindow').close();
+                                }
+                            }
+                        ]
+                    }).show();
+                }
             },
             {
                 iconCls: 'sprite-truck',
@@ -473,12 +475,20 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             }
         });
 
+        me.record.store.reload({
+            callback: function(records, operation, success) {
+                me.record = records.find(function (r) {
+                    return r.internalId === me.record.internalId;
+                });
+            }
+        });
+
         me.reconfigure(me.store);
     },
 
     initPositions: function (articleNumber) {
-        var returnValue = false;
         var me = this;
+        var returnValue = false;
         var id = me.record.get('id');
         Ext.Ajax.request({
             url: '{url controller=RpayRatepayOrderDetail action=initPositions}',
@@ -496,15 +506,15 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
         return returnValue;
     },
 
-    paymentChange: function (id, suboperation, insertedIds) {
+    paymentChange: function (orderId, subOperation, insertedIds) {
         var returnValue = false;
         Ext.Ajax.request({
             url: '{url controller=RpayRatepayOrderDetail action=add}',
             method: 'POST',
             async: false,
             params: {
-                orderId: id,
-                suboperation: suboperation,
+                orderId: orderId,
+                suboperation: subOperation,
                 insertedIds: Ext.JSON.encode(insertedIds)
             },
             success: function (payload) {
@@ -514,6 +524,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
         });
         return returnValue;
     },
+
     deletePosition: function (id) {
         var me = this;
         var orderid = me.record.get('id');

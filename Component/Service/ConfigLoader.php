@@ -26,7 +26,8 @@ class ConfigLoader
             'rpayratepayrate' => 'installment',
             'rpayratepayinvoice' => 'invoice',
             'rpayratepaydebit' => 'debit',
-            'rpayratepayrate0' => 'installment0'
+            'rpayratepayrate0' => 'installment0',
+            'rpayratepayprepayment' => 'prepayment'
         ];
     }
 
