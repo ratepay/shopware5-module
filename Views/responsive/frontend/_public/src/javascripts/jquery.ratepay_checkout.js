@@ -183,9 +183,9 @@
 
                 /* dob validation */
                 if ($('#ratepay_birthyear').length) { /* only do the check if dob form exists */
-                    var year = $('#ratepay_birthyear').val();
-                    var month = $('#ratepay_birthmonth').val();
-                    var day = $('#ratepay_birthday').val();
+                    var year = $('#ratepay_birthyear').val().trim();
+                    var month = $('#ratepay_birthmonth').val().trim();
+                    var day = $('#ratepay_birthday').val().trim();
 
                     if (
                         (year != '' && year != '0000' && !isNaN(year))
