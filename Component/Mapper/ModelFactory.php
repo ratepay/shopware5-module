@@ -595,6 +595,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      *
      * @param $operationData
      * @return bool
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws \RatePAY\Exception\ModelException
      */
     public function callPaymentChange($operationData)
     {

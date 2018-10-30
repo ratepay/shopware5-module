@@ -2,11 +2,14 @@
 
 namespace RpayRatePay\Bootstrapping\Events;
 
+use Doctrine\ORM\Query\Expr;
 use RpayRatePay\Component\Service\Logger;
 
 class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
 {
     const JOB_NAME = 'Shopware_Cronjob_UpdateRatepayTransactions';
+
+    const MSG_NOTIFY_UPDATES_TO_RATEPAY = '[%d/%d] Processing order %d ...notify needed updates to RatePAY';
 
     /**
      * @var string
@@ -49,12 +52,7 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
                 /* @var \Shopware\Models\Order\Order $order */
                 $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
                 Logger::singleton()->info(
-                    sprintf(
-                        '[%d/%d] Processing order %d ...notify needed updated to RatePAY',
-                        ($key + 1),
-                        $totalOrders,
-                        $orderId
-                    )
+                    sprintf(self::MSG_NOTIFY_UPDATES_TO_RATEPAY, ($key + 1), $totalOrders, $orderId)
                 );
                 $orderProcessor->informRatepayOfOrderStatusChange($order);
             }
@@ -64,11 +62,13 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
             );
             return $e->getMessage();
         }
+
         return 'Success';
     }
 
     /**
      * @return mixed
+     * @throws \Exception
      */
     private function getLastUpdateDate()
     {
@@ -92,21 +92,22 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
      */
     private function findCandidateOrdersForUpdate($config)
     {
-        $orderStatus = [
-            $config['RatePayFullDelivery'],
-            $config['RatePayFullCancellation'],
-            $config['RatePayFullReturn'],
+        $allowedOrderStates = [
+            $config->RatePayFullDelivery,
+            $config->RatePayFullCancellation,
+            $config->RatePayFullReturn,
         ];
         $paymentMethods = $this->getAllowedPaymentMethods();
         $changeDate = $this->getChangeDateLimit();
 
-        $query = 'SELECT o.id FROM s_order o
-                INNER JOIN s_order_history oh ON oh.orderID = o.id
-                LEFT JOIN s_core_paymentmeans cp ON cp.id = o.paymentID
-                WHERE cp.name in (' . join(',', $paymentMethods) . ')
-                AND o.status in (' . join(',', $orderStatus) . ')
-                AND oh.change_date >= :changeDate
-                GROUP BY o.id';
+        $query = Shopware()->Db()->select()
+            ->from(['history' => 's_order_history'], null)
+            ->joinLeft(['order' => 's_order'], 'history.orderID = order.id', ['id'])
+            ->joinLeft(['payment' => 's_core_paymentmeans'], 'order.paymentID = payment.id', null)
+            ->where('history.change_date >= :changeDate')
+            ->where('order.status IN (' . join(', ', $allowedOrderStates) . ')')
+            ->where('payment.name IN (' . join(', ', $paymentMethods) . ')')
+            ->distinct(true);
 
         $rows = Shopware()->Db()->fetchAll($query, [':changeDate' => $changeDate]);
 
