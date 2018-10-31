@@ -183,7 +183,15 @@
 
                 /* dob validation */
                 if ($('#ratepay_birthyear').length) { /* only do the check if dob form exists */
-                    if ($('#ratepay_birthyear').val() != '' && $('#ratepay_birthmonth').val() != '' && $('#ratepay_birthday').val() != '') {
+                    var year = $('#ratepay_birthyear').val().trim();
+                    var month = $('#ratepay_birthmonth').val().trim();
+                    var day = $('#ratepay_birthday').val().trim();
+
+                    if (
+                        year.match(/^(1|2)\d{3}$/) // year begins with 1 or 2 followed by three digits
+                        && month.match(/^(0?[1-9]|1[0-2])$/) // month can start with 0 followed by a digit (1-9) or starts with 1 followed by 0, 1 or 2
+                        && day.match(/^(0?[1-9]|(1|2)[0-9]|3[0-1])$/) // comparable to month logic but capable to match numbers from 1-31
+                    ) {
                         dob = new Date($('#ratepay_birthyear').val() + '-' + $('#ratepay_birthmonth').val() + '-' + $('#ratepay_birthday').val());
 
                         /* validate age */
@@ -197,6 +205,7 @@
                     } else {
                         error = true;
                         userUpdate = false;
+                        errorMessage = errorMessageDobNotValid;
                     }
                 }
 

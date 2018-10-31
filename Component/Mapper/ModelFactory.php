@@ -347,13 +347,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $contentArr['Customer']['CompanyName'] = $checkoutAddressBilling->getCompany();
             $contentArr['Customer']['VatId'] = $checkoutAddressBilling->getVatId();
         }
+
         $elv = false;
         if (!empty($installmentDetails)) {
             $serviceUtil = new ShopwareUtil();
 
             $contentArr['Payment']['DebitPayType'] = $serviceUtil->getDebitPayType(
                 $this->getSession()->RatePAY['ratenrechner']['payment_firstday']
-                );
+            );
 
             if ($contentArr['Payment']['DebitPayType'] == 'DIRECT-DEBIT') {
                 $elv = true;

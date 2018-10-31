@@ -5,6 +5,7 @@
   "dob_info": "Please enter a Date of Birth",
   "dobtooyoung": "For the chosen payment method you have to be at least 18 years old.",
   "invalidAge": "For the chosen payment method you have to be at least 18 years old.",
+  "dobnotvalid": "Please enter a valid date of birth",
   "invaliddata": "Please check your data",
   "phonenumbernotvalid": "Please enter a valid telephone number.",
   "ratepayAgbMouseover": "Um RatePAY nutzen zu können müssen sie den AGBs von RatePAY zustimmen",
