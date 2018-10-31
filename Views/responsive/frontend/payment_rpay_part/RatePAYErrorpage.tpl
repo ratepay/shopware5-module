@@ -3,7 +3,7 @@
     <style>
         .content-main {
             min-height: 0rem;
-        }*/
+        }
     </style>
 
     <div class="container block-group">
@@ -18,9 +18,6 @@
         <div class="actions">
             <a class="btn is--center is--large" href="{url controller=checkout action=cart}">
                 {s namespace=frontend/checkout/ajax_add_article name=AjaxAddLinkCart}Warenkorb anzeigen{/s}
-            </a>
-            <a class="btn is--primary is--center is--large" href="{url controller=account action=payment sTarget=checkout}">
-                {s namespace=frontend/account/index name=AccountLinkChangePayment}Zahlungsart ändern{/s}
             </a>
         </div>
     </div>
