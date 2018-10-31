@@ -188,9 +188,9 @@
                     var day = $('#ratepay_birthday').val().trim();
 
                     if (
-                        (year != '' && year != '0000' && !isNaN(year))
-                        && (month != '' && month != '00' && month < 13 && !isNaN(month))
-                        && (day != '' && day != '00' && day < 32 && !isNaN(day))
+                        year.match(/^(1|2)\d{3}$/) // year begins with 1 or 2 followed by three digits
+                        && month.match(/^(0?[1-9]|1[0-2])$/) // month can start with 0 followed by a digit (1-9) or starts with 1 followed by 0, 1 or 2
+                        && day.match(/^(0?[1-9]|(1|2)[0-9]|3[0-1])$/) // comparable to month logic but capable to match numbers from 1-31
                     ) {
                         dob = new Date($('#ratepay_birthyear').val() + '-' + $('#ratepay_birthmonth').val() + '-' + $('#ratepay_birthday').val());
 
