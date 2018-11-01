@@ -134,7 +134,7 @@ class ShopwareCustomerWrapper
         $shippingId = Shopware()->Session()->offsetGet('checkoutShippingAddressId');
         if (!empty($shippingId)) {
             Logger::singleton()->info(__METHOD__ . ' --> ' . $shippingId);
-            return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingId);
+            return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingId)->getCountry();
         }
 
         $billingFresh = $this->getBillingFresh();
