@@ -264,6 +264,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     public function isRatepayHidden()
     {
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
+        die(var_dump($this->userWrapped->getBillingCountry()));
         $country = $this->userWrapped->getBillingCountry()->getIso();
 
         if ('DE' === $country || 'AT' === $country || 'CH' === $country) {

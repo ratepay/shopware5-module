@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
-|Version | `5.2.6`
+|Version | `5.3.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -25,7 +25,10 @@
 ## Changelog
 
 ### Version 5.3.0 - To be released 2018-10-15
-* tdb
+* Improve client side dob validation
+* Fix bidirectionality
+* Add prepayment
+* Add Shopware 5.5 compatibility
 
 ### Version 5.2.6 - Released 2018-10-01
 * fix ignored updates in bidirectional process
