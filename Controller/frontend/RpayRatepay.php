@@ -226,10 +226,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 Logger::singleton()->error($exception->getMessage());
             }
 
-            if ($this->getPaymentShortName() != 'rpayratepayprepayment') {
-                //payment status closed
-                $paymentProcessor->setPaymentStatusPaid($order);
-            }
+            $paymentProcessor->setPaymentStatus($order);
 
             if (Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPCConfig() == true) {
                 $paymentProcessor->sendPaymentConfirm($resultRequest->getTransactionId(), $order);

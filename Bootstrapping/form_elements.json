@@ -286,5 +286,65 @@
       "value": false,
       "scope":1
     }
+  },
+  {
+    "type":"select",
+    "name":"RatePayPrepaidPaymentStatus",
+    "config":{
+      "label": "Status nach Zahlung mit Vorkasse:",
+      "value": 17,
+      "store":"base.PaymentStatus",
+      "displayField":"description",
+      "valueField":"id",
+      "scope":1
+    }
+  },
+  {
+    "type":"select",
+    "name":"RatePayInvoicePaymentStatus",
+    "config":{
+      "label": "Status nach Zahlung mit Rechnung:",
+      "value": 12,
+      "store":"base.PaymentStatus",
+      "displayField":"description",
+      "valueField":"id",
+      "scope":1
+    }
+  },
+  {
+    "type":"select",
+    "name":"RatePayDebitPaymentStatus",
+    "config":{
+      "label": "Status nach Zahlung mit Lastschrift:",
+      "value": 12,
+      "store":"base.PaymentStatus",
+      "displayField":"description",
+      "valueField":"id",
+      "scope":1
+    }
+  },
+  {
+    "type":"select",
+    "name":"RatePayInstallmentPaymentStatus",
+    "config":{
+      "label": "Status nach Zahlung mit Rate:",
+      "value": 12,
+      "store":"base.PaymentStatus",
+      "displayField":"description",
+      "valueField":"id",
+      "scope":1
+    }
+  },
+  {
+    "type":"select",
+    "name":"RatePayInstallment0PaymentStatus",
+    "config":{
+      "label": "Status nach Zahlung mit Nullprozent-Finanzierung:",
+      "value": 12,
+      "store":"base.PaymentStatus",
+      "displayField":"description",
+      "valueField":"id",
+      "scope":1
+    }
   }
 ]
