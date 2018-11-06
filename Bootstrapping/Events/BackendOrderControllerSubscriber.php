@@ -200,10 +200,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
         //insert ratepay positions
         $paymentProcessor->insertRatepayPositions($order);
 
-        if ($paymentMethod != 'PREPAYMENT') {
-            //payment status closed
-            $paymentProcessor->setPaymentStatusPaid($order);
-        }
+        $paymentProcessor->setPaymentStatus($order);
 
         //insert positions
         if (\Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPCConfig() == true) {

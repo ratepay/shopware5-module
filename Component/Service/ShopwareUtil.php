@@ -84,4 +84,32 @@ class ShopwareUtil
     {
         return $customer->getGroup()->getTax() === false;
     }
+
+    /**
+     * @param \Shopware\Models\Payment\Payment $payment
+     * @return int
+     */
+    public static function getStatusAfterRatePayPayment($payment)
+    {
+        $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
+
+        switch ($payment->getName()) {
+            case 'rpayratepayinvoice':
+                return (int)$config->get('RatePayInvoicePaymentStatus');
+            case 'rpayratepayrate':
+                return (int)$config->get('RatePayInstallmentPaymentStatus');
+            case 'rpayratepaydebit':
+                return (int)$config->get('RatePayDebitPaymentStatus');
+            case 'rpayratepayrate0':
+                return (int)$config->get('RatePayInstallment0PaymentStatus');
+            case 'rpayratepayprepayment':
+                return (int)$config->get('RatePayPrepaidPaymentStatus');
+            default:
+                Logger::singleton()->error(
+                    'Unable to define status for unknown method: ' . $payment->getName()
+                );
+                return 17;
+        }
+
+    }
 }

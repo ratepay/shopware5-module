@@ -3,10 +3,10 @@
 namespace RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\Component\Service\ShopwareUtil;
 
 class PaymentProcessor
 {
-    const PAYMENT_STATUS_COMPLETELY_PAID = 12;
     private $db;
 
     public function __construct($db)
@@ -79,19 +79,18 @@ class PaymentProcessor
     /**
      * @param \Shopware\Models\Order\Order $order
      */
-    public function setPaymentStatusPaid($order)
+    public function setPaymentStatus($order)
     {
         //set cleared date
         $dateTime = new \DateTime();
 
         $order->setClearedDate($dateTime);
-
         Shopware()->Models()->flush($order);
 
         Shopware()->Modules()->Order()
             ->setPaymentStatus(
                 $order->getId(),
-                self::PAYMENT_STATUS_COMPLETELY_PAID,
+                ShopwareUtil::getStatusAfterRatePayPayment($order->getPayment()),
                 false
             );
     }

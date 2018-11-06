@@ -145,7 +145,6 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
     {
         $orderId = $this->Request()->getParam('orderId');
         $items = json_decode($this->Request()->getParam('items'));
-        $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
         $order = Shopware()->Models()
             ->getRepository('Shopware\Models\Order\Order')
             ->findOneBy(['id' => $orderId]);
