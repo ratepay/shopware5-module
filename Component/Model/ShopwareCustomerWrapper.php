@@ -2,6 +2,7 @@
 
 namespace RpayRatePay\Component\Model;
 
+use RpayRatePay\Component\Service\Logger;
 use Shopware\Models\Customer\Customer;
 use RatePAY\Service\Util;
 
@@ -130,6 +131,12 @@ class ShopwareCustomerWrapper
      */
     public function getBillingCountry()
     {
+        $shippingId = Shopware()->Session()->offsetGet('checkoutShippingAddressId');
+        if (!empty($shippingId)) {
+            Logger::singleton()->info(__METHOD__ . ' --> ' . $shippingId);
+            return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingId)->getCountry();
+        }
+
         $billingFresh = $this->getBillingFresh();
 
         if (!is_null($billingFresh)) {
@@ -145,6 +152,40 @@ class ShopwareCustomerWrapper
         $country = $this->em->find('Shopware\Models\Country\Country', $billingRotten->getCountryId());
 
         return $country;
+    }
+
+    public function getBillingFirstName()
+    {
+        $billingFresh = $this->getBillingFresh();
+
+        if (!is_null($billingFresh)) {
+            return $billingFresh->getFirstname();
+        }
+
+        $billingRotten = $this->getBillingRotten();
+
+        if (is_null($billingRotten)) {
+            return null;
+        }
+
+        return $billingRotten->getFirstName();
+    }
+
+    public function getBillingLastName()
+    {
+        $billingFresh = $this->getBillingFresh();
+
+        if (!is_null($billingFresh)) {
+            return $billingFresh->getLastname();
+        }
+
+        $billingRotten = $this->getBillingRotten();
+
+        if (is_null($billingRotten)) {
+            return null;
+        }
+
+        return $billingRotten->getLastName();
     }
 
     /**

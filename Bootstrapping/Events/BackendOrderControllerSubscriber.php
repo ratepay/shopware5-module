@@ -72,6 +72,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             }
 
             $paymentRequestData = $this->orderStructToPaymentRequestData($orderStruct, $paymentType, $customer);
+            $method = \RpayRatePay\Component\Service\ShopwareUtil::getPaymentMethod($paymentType->getName());
 
             $netItemPrices = \RpayRatePay\Component\Service\ShopwareUtil::customerCreatesNetOrders($customer);
             $paymentRequester = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true, $netItemPrices);
@@ -84,7 +85,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
                 $orderId = $view->getAssign('orderId');
 
-                $this->doPostProcessing($orderId, $answer, $paymentRequestData);
+                $this->doPostProcessing($orderId, $answer, $paymentRequestData, $method);
             } else {
                 $customerMessage = $answer->getCustomerMessage();
                 $this->fail($view, [$customerMessage]);
@@ -99,8 +100,8 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
     private function orderStructToPaymentRequestData(
         \SwagBackendOrder\Components\Order\Struct\OrderStruct $orderStruct,
-                                                     \Shopware\Models\Payment\Payment $paymentType,
-                                                     \Shopware\Models\Customer\Customer $customer
+         \Shopware\Models\Payment\Payment $paymentType,
+         \Shopware\Models\Customer\Customer $customer
     ) {
         $method = \RpayRatePay\Component\Service\ShopwareUtil::getPaymentMethod(
             $paymentType->getName()
@@ -174,7 +175,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
         return $violations;
     }
 
-    private function doPostProcessing($orderId, $answer, $paymentRequestData)
+    private function doPostProcessing($orderId, $answer, $paymentRequestData, $paymentMethod)
     {
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
 
@@ -199,8 +200,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
         //insert ratepay positions
         $paymentProcessor->insertRatepayPositions($order);
 
-        //payment status closed
-        $paymentProcessor->setPaymentStatusPaid($order);
+        $paymentProcessor->setPaymentStatus($order);
 
         //insert positions
         if (\Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPCConfig() == true) {

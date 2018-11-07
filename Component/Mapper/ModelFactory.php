@@ -106,38 +106,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $this->_transactionId = $transactionId;
     }
 
-    /**
-     * call operation
-     *
-     * @param string $operationType
-     * @param array $operationData
-     * @deprecated
-     * @return bool|array|object
-     */
-    public function callRequest($operationType, array $operationData = [])
-    {
-        switch ($operationType) {
-            case 'ProfileRequest':
-                return $this->callProfileRequest($operationData);
-                break;
-            case 'PaymentRequest':
-                return $this->callPaymentRequest();
-                break;
-            case 'ConfirmationDeliver':
-                return $this->callConfirmationDeliver($operationData);
-                break;
-            case 'PaymentChange':
-                return $this->callPaymentChange($operationData);
-                break;
-            case 'PaymentConfirm':
-                return $this->callPaymentConfirm();
-                break;
-            case 'CalculationRequest':
-                return $this->callCalculationRequest($operationData);
-                break;
-        }
-    }
-
     public function callCalculationRequest($operationData)
     {
         $mbHead = $this->getHead();
@@ -266,7 +234,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         }
 
         $method = $paymentRequestData->getMethod();
-
         if ($method == 'INSTALLMENT0') {
             $this->setZPercent(); //side effect
             $method = 'INSTALLMENT'; //state
@@ -375,17 +342,19 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             ]
         ];
 
+
         if (!empty($company)) {
             $contentArr['Customer']['CompanyName'] = $checkoutAddressBilling->getCompany();
             $contentArr['Customer']['VatId'] = $checkoutAddressBilling->getVatId();
         }
+
         $elv = false;
         if (!empty($installmentDetails)) {
             $serviceUtil = new ShopwareUtil();
 
             $contentArr['Payment']['DebitPayType'] = $serviceUtil->getDebitPayType(
                 $this->getSession()->RatePAY['ratenrechner']['payment_firstday']
-                );
+            );
 
             if ($contentArr['Payment']['DebitPayType'] == 'DIRECT-DEBIT') {
                 $elv = true;
@@ -453,7 +422,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      * @return bool|array
      * @throws \RatePAY\Exception\ModelException
      */
-    private function callProfileRequest($operationData)
+    public function callProfileRequest($operationData)
     {
         $systemId = $this->getSystemId();
         $sandbox = true;
@@ -560,8 +529,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      *
      * @param $operationData
      * @return bool
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws \RatePAY\Exception\ModelException
      */
-    private function callConfirmationDeliver($operationData)
+    public function callConfirmationDeliver($operationData)
     {
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
         $countryCode = $order->getBilling()->getCountry()->getIso();
@@ -612,7 +585,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             return true;
         } elseif ($this->_retry == false && (int)$confirmationDeliver->getReasonCode() == 2300) {
             $this->_retry = true;
-            return $this->callRequest('ConfirmationDeliver', $operationData);
+            return $this->callConfirmationDeliver($operationData);
         }
 
         return false;
@@ -623,8 +596,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      *
      * @param $operationData
      * @return bool
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws \RatePAY\Exception\ModelException
      */
-    private function callPaymentChange($operationData)
+    public function callPaymentChange($operationData)
     {
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
         $countryCode = $order->getBilling()->getCountry()->getIso();
@@ -671,7 +648,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             return true;
         } elseif ($this->_retry == false && (int)$paymentChange->getReasonCode() == 2300) {
             $this->_retry = true;
-            return $this->callRequest('PaymentChange', $operationData);
+            return $this->callPaymentChange($operationData);
         }
         return false;
     }

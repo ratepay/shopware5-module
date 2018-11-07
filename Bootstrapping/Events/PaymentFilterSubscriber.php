@@ -150,6 +150,11 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
                 $setToDefaultPayment = $paymentModel->getName() === 'rpayratepayrate0' ?: $setToDefaultPayment;
                 continue;
             }
+            if ($payment['name'] === 'rpayratepayprepayment' && !$show['prepayment']) {
+                Logger::singleton()->info('RatePAY: Filter RatePAY-Prepayment');
+                $setToDefaultPayment = $paymentModel->getName() === 'rpayratepayprepayment' ?: $setToDefaultPayment;
+                continue;
+            }
             $payments[] = $payment;
         }
 
@@ -180,7 +185,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
     {
         $configLoader = new ConfigLoader(Shopware()->Db());
 
-        $payments = ['installment', 'invoice', 'debit', 'installment0'];
+        $payments = ['installment', 'invoice', 'debit', 'installment0', 'prepayment'];
         $paymentConfig = [];
 
         foreach ($payments as $payment) {

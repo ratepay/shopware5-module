@@ -55,15 +55,14 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo "[STAGE] Deploy"
-                sh '''tar --exclude=build -czf ./build/RpayRatePayBase.tar .
-                mkdir -p build/dist/Frontend/RpayRatePay
-                tar -xzf build/RpayRatePayBase.tar -C build/dist/Frontend/RpayRatePay/
-
-                cd build/dist
-                zip -r RpayRatePay.zip Frontend -x \\*.git\\* -x \\*.DS_Store\\* -x  \\*.idea\\*
-
-                cd ../../
-                rm -rf build/dist/Frontend build/RpayRatePayBase.zip'''
+                sh '''
+                  tar -czf build/dist.tar.gz Bootstrapping Component Controller Views Bootstrap.php plugin.json plugin.png README.md
+                  mkdir -p build/dist/Frontend/RpayRatePay
+                  tar -xzf build/dist.tar.gz -C build/dist/Frontend/RpayRatePay
+                  rm -rf build/dist.tar.gz
+                  cd build/dist
+                  zip -r RpayRatePay.zip Frontend
+                '''
                 archiveArtifacts 'build/dist/RpayRatePay.zip'
             }
         }

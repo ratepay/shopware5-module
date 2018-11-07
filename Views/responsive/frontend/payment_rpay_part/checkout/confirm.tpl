@@ -10,6 +10,8 @@
         ( $sPayment.name == 'rpayratepayrate')
         ||
         ( $sPayment.name == 'rpayratepayrate0')
+        ||
+        ( $sPayment.name == 'rpayratepayprepayment')
     )}
 
     <div class="ratepay-overlay" style="display: none;">
@@ -34,6 +36,11 @@
                             <div class="panel--body is--wide">
 
                                 {if $sPayment.name == 'rpayratepayinvoice'}
+                                    {include file='frontend/payment_rpay_part/RatePAYErrorMessage.tpl'}
+                                    {include file='frontend/payment_rpay_part/RatePAYFormElements.tpl'}
+                                {/if}
+
+                                {if $sPayment.name == 'rpayratepayprepayment'}
                                     {include file='frontend/payment_rpay_part/RatePAYErrorMessage.tpl'}
                                     {include file='frontend/payment_rpay_part/RatePAYFormElements.tpl'}
                                 {/if}

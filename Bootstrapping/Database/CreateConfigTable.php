@@ -19,6 +19,7 @@ class CreateConfigTable
             '`installment` int(2) NOT NULL, ' .
             '`installment0` int(2) NOT NULL, ' .
             '`installmentDebit` int(2) NOT NULL, ' .
+            '`prepayment` int(2) NOT NULL, ' .
             '`device-fingerprint-status` varchar(3) NOT NULL, ' .
             '`device-fingerprint-snippet-id` varchar(55) NULL, ' .
             '`country-code-billing` varchar(30) NULL, ' .
@@ -46,6 +47,12 @@ class CreateConfigTable
 
         if (!$hasColumnBackend) {
             $sql = 'ALTER TABLE rpay_ratepay_config ADD COLUMN backend int(1) NOT NULL';
+            $database->query($sql);
+        }
+
+        $hasColumnPrepayment = ShopwareUtil::tableHasColumn('rpay_ratepay_config', 'prepayment');
+        if (!$hasColumnPrepayment) {
+            $sql = 'ALTER TABLE rpay_ratepay_config ADD COLUMN prepayment int(2) NOT NULL';
             $database->query($sql);
         }
 

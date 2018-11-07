@@ -309,7 +309,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
                 $quantity = ($item->cancelledItems == 0) ? 0 : $item->cancelledItems;
                 break;
             case 'shippingRate':
-                $quantity = ($item->maxQuantity == 0) ? 0 : $item->maxQuantity;
+                $quantity = ($item->maxQuantity == 0) ? 0 : $item->quantity;
                 break;
         }
 

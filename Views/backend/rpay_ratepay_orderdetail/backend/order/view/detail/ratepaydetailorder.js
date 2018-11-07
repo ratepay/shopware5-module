@@ -30,17 +30,15 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydetailorder', {
     isRatePAYOrder: function () {
         var me = this;
         var paymentName = '';
-        for (i = 0; i < me.paymentsStore.data.items.length; i++) {
-            if (me.paymentsStore.data.items[i].data.id == this.record.get('paymentId')) {
-                paymentName = me.paymentsStore.data.items[i].data.name;
+        var counter = 0;
+        var payments = me.paymentsStore.data.items;
+        for (i = 0; i < payments.length; i++) {
+            if (payments[i].data.id == this.record.get('paymentId')) {
+                paymentName = payments[i].data.name;
             }
         }
 
-        if (paymentName.search(/^rpayratepay(invoice|rate|rate0|debit)$/) != -1) {
-            return true;
-        } else {
-            return false;
-        }
+        return (paymentName.search(/^rpayratepay(invoice|rate|rate0|debit|prepayment)$/) !== -1);
     },
 
     /**
