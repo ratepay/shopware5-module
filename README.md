@@ -4,7 +4,7 @@
 |Module | RatePAY Module for Shopware
 |------|----------
 |Author | Annegret Seufert
-|Shop Version | `5.0.x` `5.1.x` `5.2.x` `5.3.x`
+|Shop Version | `5.1.x` - `5.5.x`
 |Version | `5.3.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
@@ -24,11 +24,12 @@
 
 ## Changelog
 
-### Version 5.3.0 - To be released 2018-10-15
+### Version 5.3.0 - Released 2018-11-07
 * Improve client side dob validation
-* Fix bidirectionality
+* Improve bidirectionality process
 * Add prepayment
 * Add Shopware 5.5 compatibility
+* Add configurable payment states
 
 ### Version 5.2.6 - Released 2018-10-01
 * fix ignored updates in bidirectional process
