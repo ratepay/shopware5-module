@@ -43,17 +43,24 @@ class RatepayConfigWriter
      */
     public function writeRatepayConfig($profileId, $securityCode, $shopId, $country, $backend = false)
     {
-        //TODO: put factory in constructor so we can test this method
         $factory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
         $data = [
             'profileId' => $profileId,
             'securityCode' => $securityCode
         ];
 
-        $response = $factory->callProfileRequest($data);
+        try {
+            $response = $factory->callProfileRequest($data);
+        } catch (\Exception $e) {
+            Logger::singleton()->error(
+                'RatePAY: Profile_Request failed for profileId ' . $profileId
+            );
+            return false;
+        }
 
         if (!is_array($response) || $response === false) {
-            Logger::singleton()->info('RatePAY: Profile_Request failed for profileId ' . $profileId);
+            Logger::singleton()
+                ->info('RatePAY: Profile_Request for profileId ' . $profileId . ' was empty ');
             return false;
         }
 
