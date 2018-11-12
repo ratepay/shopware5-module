@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.1.x` - `5.5.x`
-|Version | `5.3.0`
+|Version | `5.3.1`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,10 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.1 - Released 2018-11-12
+* Fix unregistered templates/controllers after update
+* Fix incorrect tax-id for debit/credit items
 
 ### Version 5.3.0 - Released 2018-11-07
 * Improve client side dob validation

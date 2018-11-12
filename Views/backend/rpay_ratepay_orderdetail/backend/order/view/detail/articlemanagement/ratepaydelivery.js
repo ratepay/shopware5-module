@@ -157,6 +157,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                 handler: function () {
                                     var randomnumber = Math.floor(Math.random() * 10001);
                                     var creditname = 'Credit' + id + '-' + randomnumber;
+                                    var firstArticle = me.record.getPositions().data.items[0];
                                     Ext.Ajax.request({
                                         url: '{url controller=Order action=savePosition}',
                                         method: 'POST',
@@ -174,7 +175,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                             statusDescription: "",
                                             statusId: 0,
                                             taxDescription: "",
-                                            taxId: 1,
+                                            taxId: firstArticle.raw.taxId,
                                             taxRate: 0,
                                             total: 0,
                                             changed: me.record.get('changed')
@@ -240,6 +241,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                 handler: function () {
                                     var randomnumber = Math.floor(Math.random() * 10001);
                                     var debitname = 'Debit' + id + '+' + randomnumber;
+                                    var firstArticle = me.record.getPositions().data.items[0];
                                     Ext.Ajax.request({
                                         url: '{url controller=Order action=savePosition}',
                                         method: 'POST',
@@ -257,7 +259,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                             statusDescription: "",
                                             statusId: 0,
                                             taxDescription: "",
-                                            taxId: 1,
+                                            taxId: firstArticle.raw.taxId,
                                             taxRate: 0,
                                             total: 0,
                                             changed: me.record.get('changed')
