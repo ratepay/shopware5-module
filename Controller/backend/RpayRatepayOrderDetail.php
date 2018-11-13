@@ -64,7 +64,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
 
         $sqlCountEntries = "
           SELECT `id`, COUNT(*) AS 'count', SUM(`quantity`) AS 'quantity' FROM `s_order_details`
-          WHERE `orderID`=? 
+          WHERE `orderID`=?
           AND `articleordernumber`=?
           GROUP BY `id`
         ";
@@ -630,7 +630,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         $articleBinds = array_map(function ($item) {
             return '?';
         }, $articleOrderNumbers);
-        $orderDetailIdsQuery = 'SELECT `id` FROM `s_order_details` 
+        $orderDetailIdsQuery = 'SELECT `id` FROM `s_order_details`
           WHERE `orderID`=? AND `articleordernumber` IN (' . join(', ', $articleBinds) . ')';
 
         try {
