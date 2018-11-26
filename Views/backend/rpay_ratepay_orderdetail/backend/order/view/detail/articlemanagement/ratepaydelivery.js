@@ -340,7 +340,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = firstArticle.raw.taxId;
+            item['taxRate'] = firstArticle.raw.taxRate;
             item['maxQuantity'] = row.quantity;
             item['quantity'] = row.quantityDeliver;
             item['delivered'] = row.delivered;
@@ -391,7 +391,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = firstArticle.raw.taxId;
+            item['taxRate'] = firstArticle.raw.taxRate;
             item['quantity'] = row.quantity - row.quantityDeliver - row.cancelled - row.delivered;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;
@@ -441,7 +441,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = firstArticle.raw.taxId;
+            item['taxRate'] = firstArticle.raw.taxRate;
             item['quantity'] = row.quantity - row.quantityDeliver - row.cancelled - row.delivered;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;
