@@ -23,14 +23,7 @@
                     placeholder="Tag"
                     required="required"
                     aria-required="true"
-                    value="
-                        {if $sUserData.billingaddress.birthday}
-                            {$sUserData.billingaddress.birthday|date_format:"%e"}
-                        {/if}
-                        {if $sUserData.additional.user.birthday}
-                            {$sUserData.additional.user.birthday|date_format:"%e"}
-                        {/if}"
-                />
+                    value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday|date_format:'%d'}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday|date_format:'%d'}{/if}"/>
             </div>
 
             <div class="rp-birthmonth field--select">
@@ -46,14 +39,7 @@
                     placeholder="Monat"
                     required="required"
                     aria-required="true"
-                    value="
-                        {if $sUserData.billingaddress.birthday}
-                            {$sUserData.billingaddress.birthday|date_format:"%m"}
-                        {/if}
-                        {if $sUserData.additional.user.birthday}
-                            {$sUserData.additional.user.birthday|date_format:"%m"}
-                        {/if}"
-                />
+                    value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday|date_format:'%m'}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday|date_format:'%m'}{/if}"/>
             </div>
 
             <div class="rp-birthyear field--select">
@@ -69,14 +55,7 @@
                     placeholder="Jahr"
                     required="required"
                     aria-required="true"
-                    value="
-                        {if $sUserData.billingaddress.birthday}
-                            {$sUserData.billingaddress.birthday|date_format:"%Y"}
-                        {/if}
-                        {if $sUserData.additional.user.birthday}
-                            {$sUserData.additional.user.birthday|date_format:"%Y"}
-                        {/if}"
-                />
+                    value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday|date_format:'%Y'}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday|date_format:'%Y'}{/if}"/>
             </div>
             <br style="clear: both">
             <p><small>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um per {$sPayment.description} bezahlen zu können.{/s}</small></p>

@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.1.x` - `5.5.x`
-|Version | `5.3.1`
+|Version | `5.3.2`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,10 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.2 - Released 2018-11-26
+* Fix whitespaces in date of birth fields
+* Fix incorrect tax-id for delivery cost items
 
 ### Version 5.3.1 - Released 2018-11-12
 * Fix unregistered templates/controllers after update

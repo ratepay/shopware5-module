@@ -143,6 +143,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
         var items = new Array();
         var id = me.record.get('id');
         var error = false;
+
+        var firstArticle = me.record.getPositions().data.items[0];
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
@@ -158,7 +160,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = row.tax_rate;
+            item['taxRate'] = firstArticle.raw.taxRate; // row.tax_rate;
             item['quantity'] = row.delivered - row.returned - row.quantityReturn;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;
@@ -199,6 +201,8 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
         var items = new Array();
         var id = me.record.get('id');
         var error = false;
+
+        var firstArticle = me.record.getPositions().data.items[0];
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
@@ -211,7 +215,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = row.tax_rate;
+            item['taxRate'] = firstArticle.raw.taxRate; // row.tax_rate;
             item['quantity'] = row.delivered - row.returned - row.quantityReturn;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;

@@ -327,6 +327,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
         var items = new Array();
         var id = me.record.get('id');
         var error = false;
+        var firstArticle = me.record.getPositions().data.items[0];
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
@@ -339,7 +340,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = row.tax_rate;
+            item['taxRate'] = firstArticle.raw.taxRate;
             item['maxQuantity'] = row.quantity;
             item['quantity'] = row.quantityDeliver;
             item['delivered'] = row.delivered;
@@ -374,6 +375,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
         var items = new Array();
         var id = me.record.get('id');
         var error = false;
+        var firstArticle = me.record.getPositions().data.items[0];
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
@@ -389,7 +391,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = row.tax_rate;
+            item['taxRate'] = firstArticle.raw.taxRate;
             item['quantity'] = row.quantity - row.quantityDeliver - row.cancelled - row.delivered;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;
@@ -423,6 +425,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
         var items = new Array();
         var id = me.record.get('id');
         var error = false;
+        var firstArticle = me.record.getPositions().data.items[0];
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
@@ -438,7 +441,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = row.tax_rate;
+            item['taxRate'] = firstArticle.raw.taxRate;
             item['quantity'] = row.quantity - row.quantityDeliver - row.cancelled - row.delivered;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;
