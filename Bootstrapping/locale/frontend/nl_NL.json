@@ -13,6 +13,6 @@
   "ratepaySEPAInformationHeader": "Opmerking. Na het tot stand komen van deze overeenkomst wordt u het RatePAY machtigingskenmerk medegedeeld. Ik kan binnen acht weken, na afschrijving, het bedrag laten terugboeken. Hierbij gelden de met mijn kredietinstelling overeengekomen voorwaarden.",
   "transactionid": "Transaction-ID",
   "version": "Version",
-  "ratepay_zgb": "De aanvullende <a href='https://www.ratepay.com/terms-nl' target='_blank'>voorwaarden en het gegevensbeschermingsvoorschrift</a> van RatePAY GmbH zijn van toepassing",
-  "ratepay_zgb_n": "De aanvullende <a href='https://www.ratepay.com/terms-nl' target='_blank'>voorwaarden en het gegevensbeschermingsvoorschrift</a> van RatePAY GmbH zijn van toepassing"
+  "ratepay_zgb": "De aanvullende <a href='https://www.ratepay.com/legal' target='_blank'>voorwaarden en het gegevensbeschermingsvoorschrift</a> van RatePAY GmbH zijn van toepassing",
+  "ratepay_zgb_n": "De aanvullende <a href='https://www.ratepay.com/legal' target='_blank'>voorwaarden en het gegevensbeschermingsvoorschrift</a> van RatePAY GmbH zijn van toepassing"
 }
