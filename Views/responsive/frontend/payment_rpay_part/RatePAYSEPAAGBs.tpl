@@ -5,7 +5,7 @@
         <span id="ratepay_sepa" style="display: none;">
         {s namespace=RatePAY name='ratepaySEPAAgbFirst'}Ich willige hiermit in die Weiterleitung meiner Daten an RatePAY GmbH, Franklinstraße 28-29, 10587 Berlin gemäß{/s}
 
-        <a href='http://www.ratepay.com/zusaetzliche-geschaeftsbedingungen-und-datenschutzhinweis-dach' target="_blank" style="text-decoration: underline !important;">RatePAY-Datenschutzerklärung</a>
+        <a href='http://www.ratepay.com/legal' target="_blank" style="text-decoration: underline !important;">RatePAY-Datenschutzerklärung</a>
 
         {s namespace=RatePAY name='ratepaySEPAAgbLast'}
             ein und ermächtige diese, mit diesem Kaufvertrag in Zusammenhang stehende Zahlungen von meinem

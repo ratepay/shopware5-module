@@ -15,6 +15,6 @@
   "ratepaySEPAInformationHeader": "RatePAY GmbH, Franklinstraße 28-29, 10587 Berlin Identifiant du créancier : DE39RPY00000568463 Référence de mandat : (conforme à la référence transmise après conclusion de la vente",
   "transactionid": "Transaction-ID",
   "version": "Version",
-  "ratepay_zgb": "Les <a href='https://www.ratepay.com/zgb-dse' target='_blank'>conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de RatePAY GmbH s´appliquent",
-  "ratepay_zgb_n": "Les <a href='https://www.ratepay.com/zgb-dse' target='_blank'>conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de RatePAY GmbH s´appliquent"
+  "ratepay_zgb": "Les <a href='https://www.ratepay.com/legal' target='_blank'>conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de RatePAY GmbH s´appliquent",
+  "ratepay_zgb_n": "Les <a href='https://www.ratepay.com/legal' target='_blank'>conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de RatePAY GmbH s´appliquent"
 }

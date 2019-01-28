@@ -14,6 +14,6 @@
   "ratepaySEPAInformationHeader": "RatePAY GmbH, Schlüterstr. 39, 10629 Berlin<br/>Gläubiger-ID: DE39RPY00000568463<br/>Mandatsreferenz: (wird nach Kaufabschluss übermittelt)",
   "transactionid": "Transaction-ID",
   "version": "Version",
-  "ratepay_zgb": "The Additional <a href='https://www.ratepay.com/zgb-dse' target='_blank'>General Terms and Conditions and Data Protection Notice</a> of the RatePAY GmbH apply",
-  "ratepay_zgb_n": "The Additional <a href='https://www.ratepay.com/zgb-dse' target='_blank'>General Terms and Conditions and Data Protection Notice</a> apply of the payent menthod"
+  "ratepay_zgb": "The Additional <a href='https://www.ratepay.com/legal' target='_blank'>General Terms and Conditions and Data Protection Notice</a> of the RatePAY GmbH apply",
+  "ratepay_zgb_n": "The Additional <a href='https://www.ratepay.com/legal' target='_blank'>General Terms and Conditions and Data Protection Notice</a> apply of the payent menthod"
 }
