@@ -201,6 +201,23 @@
                             errorMessage = errorMessageValidAge;
                         }
 
+                        /* validate correctness */
+                        if ((month.match(/^(0?[4]|0?[6]|0?[9]|11)$/)) && day == 31) {
+                            error = true;
+                            userUpdate = false;
+                            errorMessage = errorMessageDobNotValid;
+                        }
+
+                        /* check for february 29th */
+                        if (month == 2) {
+                            var isleap = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
+                            if (day > 29 || (day == 29 && !isleap)) {
+                                error = true;
+                                userUpdate = false;
+                                errorMessage = errorMessageDobNotValid;
+                            }
+                        }
+
                         requestParams += '&ratepay_dob=' + dob.yyyymmdd();
                     } else {
                         error = true;
