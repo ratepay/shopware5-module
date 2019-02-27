@@ -24,8 +24,10 @@
 
 ## Changelog
 
-### Version 5.3.5 - To be released 2019-02-27
-* 
+### Version 5.3.5 - Released 2019-02-27
+* Improve backend-side validation of user inputs
+* Interrupt checkout process if errors found
+* Cross-Browser implementation
 
 ### Version 5.3.4 - Released 2019-02-25
 * Extend date of birth validation for correct inputs
