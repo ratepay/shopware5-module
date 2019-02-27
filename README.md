@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.1.x` - `5.5.x`
-|Version | `5.3.4`
+|Version | `5.3.5`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,11 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.5 - Released 2019-02-27
+* Improve backend-side validation of user inputs
+* Interrupt checkout process if errors found
+* Cross-Browser implementation
 
 ### Version 5.3.4 - Released 2019-02-25
 * Extend date of birth validation for correct inputs
