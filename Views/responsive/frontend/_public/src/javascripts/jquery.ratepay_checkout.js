@@ -155,7 +155,7 @@
                 var requestParams = 'userid=' + userId;
                 var dob = false;
                 var userUpdate = true;
-                var error = false;
+                var hasErrors = false;
                 var errorMessage = errorMessageDataComplete;
                 /** show the modal window */
                 $("div.ratepay-overlay").show();
@@ -169,13 +169,13 @@
                         requestParams += '&' + $(this).attr('id') + '=' + $(this).val();
                     }
                     if ($(this).val() == '') {
-                        error = true;
+                        hasErrors = true;
                         userUpdate = false;
                     }
 
                     /* validate sepa direct debit - no error if no blz is set @toDo: fix for international direct debits */
                     if ($(this).attr('id') == 'ratepay_debit_bankcode' && !$(":input#ratepay_debit_accountnumber").val().match(/^\d+$/)) {
-                        error = false;
+                        hasErrors = false;
                         userUpdate = true;
                     }
 
@@ -196,14 +196,14 @@
 
                         /* validate age */
                         if (getAge(dob) < 18 || getAge(dob) > 120) {
-                            error = true;
+                            hasErrors = true;
                             userUpdate = false;
                             errorMessage = errorMessageValidAge;
                         }
 
                         /* validate correctness */
                         if ((month.match(/^(0?[4]|0?[6]|0?[9]|11)$/)) && day == 31) {
-                            error = true;
+                            hasErrors = true;
                             userUpdate = false;
                             errorMessage = errorMessageDobNotValid;
                         }
@@ -212,7 +212,7 @@
                         if (month == 2) {
                             var isleap = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
                             if (day > 29 || (day == 29 && !isleap)) {
-                                error = true;
+                                hasErrors = true;
                                 userUpdate = false;
                                 errorMessage = errorMessageDobNotValid;
                             }
@@ -220,7 +220,7 @@
 
                         requestParams += '&ratepay_dob=' + dob.yyyymmdd();
                     } else {
-                        error = true;
+                        hasErrors = true;
                         userUpdate = false;
                         errorMessage = errorMessageDobNotValid;
                     }
@@ -229,7 +229,7 @@
                 /* phone number validation */
                 if ($('#ratepay_phone').length) { /* only do the check if phone form exists */
                     if ($('#ratepay_phone').val().length < 6) {
-                        error = true;
+                        hasErrors = true;
                         userUpdate = false;
                         errorMessage = errorMessageValidPhone;
                     }
@@ -251,12 +251,12 @@
                 if($('#ratepay_debit_accountnumber').length) {
                     if ((!$("#paymentFirstday")) || $("#paymentFirstday").val() == 2) {
                         if ($('#ratepay_debit_accountnumber').val() == '' || $('#ratepay_debit_accountholder').val() == '') {
-                            error = true;
+                            hasErrors = true;
                             userUpdate = false;
                             errorMessage = errorMessageValidBankData;
                         } else if (!$("#ratepay_debit_accountnumber").val().replace(/ /g, '').match(/^\d+$/)) {
                             if ($('#ratepay_debit_accountnumber').val().replace(/ /g, '').length < 18) {
-                                error = true;
+                                hasErrors = true;
                                 userUpdate = false;
                                 errorMessage = errorMessageValidBankData;
                             }
@@ -266,11 +266,20 @@
                 }
 
                 /* error handler */
-                if (error) {
+                if (hasErrors) {
                     /** hide the modal window */
                     $('div.ratepay-overlay').hide();
 
-                    me.notify(errorMessage)
+                    me.notify(errorMessage);
+
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    }
+
+                    event.stopPropagation();
+                    event.returnValue = false;
+                    event.stop();
+
                     return false;
                 } else {
                     me.notify('', true);

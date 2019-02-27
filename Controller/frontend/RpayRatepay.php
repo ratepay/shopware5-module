@@ -106,17 +106,73 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         );
     }
 
+    public function getQualifiedCustomerDetailsFromParameters()
+    {
+        $parameters = $this->Request()->getParams();
+
+        $qualifiedParameters = [];
+
+        if (ShopwareUtil::hasValueAndIsNotEmpty('checkoutBillingAddressId', $parameters)) {
+            $qualifiedParameters['checkoutBillingAddressId'] = $parameters['checkoutBillingAddressId'];
+        }
+
+        if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_company', $parameters)) {
+            $qualifiedParameters['ratepay_company'] = $parameters['ratepay_company'];
+        }
+
+        if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_phone', $parameters)) {
+            // find out the rules from gateway for validation!
+            $qualifiedParameters['ratepay_phone'] = $parameters['ratepay_phone'];
+        }
+
+        if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_birthyear', $parameters)
+            && ShopwareUtil::hasValueAndIsNotEmpty('ratepay_birthmonth', $parameters)
+            && ShopwareUtil::hasValueAndIsNotEmpty('ratepay_birthday', $parameters)) {
+
+            $day = $parameters['ratepay_birthday'];
+            $month = $parameters['ratepay_birthmonth'];
+            $year = $parameters['ratepay_birthyear'];
+            
+            if (checkdate($month, $day, $year)) {
+                $date = DateTime::createFromFormat('Y-m-d' , "$year-$month-$day");
+                $qualifiedParameters['ratepay_dob'] = $date->format('Y-m-d');
+            }
+        }
+
+        if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_debit_accountnumber', $parameters)) {
+            $qualifiedParameters['ratepay_debit_accountnumber'] = $parameters['ratepay_debit_accountnumber'];
+        }
+
+        if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_debit_updatedebitdata', $parameters)) {
+            $qualifiedParameters['ratepay_debit_updatedebitdata'] = $parameters['ratepay_debit_updatedebitdata'];
+        }
+
+        if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_debit_bankcode', $parameters)) {
+            $qualifiedParameters['ratepay_debit_bankcode'] = $parameters['ratepay_debit_bankcode'];
+        }
+
+        if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_agb', $parameters)) {
+            $qualifiedParameters['ratepay_agb'] = $parameters['ratepay_agb'];
+        }
+
+        if (ShopwareUtil::hasValueAndIsNotEmpty('userid', $parameters)) {
+            $qualifiedParameters['userid'] = $parameters['userid'];
+        }
+
+        return $qualifiedParameters;
+    }
+
     /**
      * Updates phone, ustid, company and the birthday for the current user.
      */
     public function saveUserDataAction()
     {
         Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
-        $Parameter = $this->Request()->getParams();
+        $Parameter = $this->getQualifiedCustomerDetailsFromParameters();
 
         $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
 
-        /** @var Shopware\Models\Customer\Customer $userModel */
+        /** @var Shopware\Models\Customer\Customer $userModel $userModel */
         $userModel = $customerModel->findOneBy(['id' => Shopware()->Session()->sUserId]);
         $userWrapped = new ShopwareCustomerWrapper($userModel, Shopware()->Models());
 
@@ -132,6 +188,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         } else {
             $customerAddressBilling = $userWrapped->getBilling();
         }
+
 
         $return = 'OK';
         $updateUserData = [];

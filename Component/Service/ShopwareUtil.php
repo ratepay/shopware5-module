@@ -112,4 +112,14 @@ class ShopwareUtil
         }
 
     }
+
+    /**
+     * @param $key
+     * @param $array
+     * @return bool
+     */
+    public static function hasValueAndIsNotEmpty($key, $array)
+    {
+        return key_exists($key, $array) && !empty($array[$key]);
+    }
 }
