@@ -29,13 +29,17 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     protected $useFallbackShipping;
 
-    public function __construct($withRetry = false, $requestType = null, $netItemPrices = false, $useFallbackShipping = false)
+    /** @var bool  */
+    protected $useFallbackDiscount;
+
+    public function __construct($withRetry = false, $requestType = null, $netItemPrices = false, $useFallbackShipping = false, $useFallbackDiscount = false)
     {
         $this->basket = [];
         $this->withRetry = $withRetry;
         $this->requestType = $requestType;
         $this->netItemPrices = $netItemPrices;
         $this->useFallbackShipping = $useFallbackShipping;
+        $this->useFallbackDiscount = $useFallbackDiscount;
     }
 
     public function toArray()
@@ -53,6 +57,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
             $this->addItemFromArray($item);
         } elseif ($this->isShippingItem($item) && $this->isBoughtItem($item)) {
             $this->addShippingItem($item);
+        } elseif ($this->isDiscountItem($item) && $this->isBoughtItem($item)) {
+            $this->addDiscountItem($item);
         } elseif ($this->isDebitItem($item) || $this->isCreditItem($item)) {
             $this->addItemForCreditItem($item);
         } elseif (is_object($item)) {
@@ -71,6 +77,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
 
         if ('Shipping' === $item['articlename']) {
             $this->addShippingItemFromArray($item);
+            return;
+        }
+
+        if ($this->isDiscountItem($item)) {
+            $this->addDiscountItemFromArray($item);
             return;
         }
 
@@ -111,6 +122,30 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
         }
     }
 
+    private function addDiscountItemFromArray($item){
+        if ($this->withRetry || $this->useFallbackDiscount) {
+            $itemData = [
+                'ArticleNumber' => $item['ordernumber'],
+                'Quantity' => 1,
+                'Description' => $item['articlename'],
+                'UnitPriceGross' => $item['priceNumeric'],
+                'TaxRate' => $item['tax_rate'],
+            ];
+            $this->basket['Items'][] = ['Item' => $itemData];
+        } else {
+            if(isset($this->basket['Discount'])) {
+                $this->basket['Discount']['UnitPriceGross'] = $this->basket['Discount']['UnitPriceGross'] + $item['priceNumeric'];
+                $this->basket['Discount']['Description'] = $this->basket['Discount']['Description'] . ' & ' . $item['articlename'];
+            } else {
+                $this->basket['Discount'] = [
+                    'Description' => $item['articlename'],
+                    'UnitPriceGross' => $item['priceNumeric'],
+                    'TaxRate' => $item['tax_rate'],
+                ];
+            }
+        }
+    }
+
     /**
      * @param $item
      */
@@ -146,6 +181,45 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
                 'UnitPriceGross' => $item->price,
                 'TaxRate' => $item->taxRate,
             ];
+        }
+    }
+
+    private function addDiscountItem($item) {
+        //handle partial sending
+        if ($this->requestType === 'shipping' || $this->requestType === 'shippingRate') {
+            if ((int)($item->quantity) === 0) {
+                return;
+            }
+        }
+
+        //handle partial cancellation or return
+        if ($this->requestType === 'cancellation' || $this->requestType === 'return') {
+            $amountToCancelOrReturn = $this->getQuantityForRequest($item);
+            if ($amountToCancelOrReturn < 1) {
+                return;
+            }
+        }
+
+        if ($this->withRetry || $this->useFallbackDiscount) {
+            $itemData = [
+                'ArticleNumber' => $item->articlenumber,
+                'Quantity' => 1,
+                'Description' => $item->name,
+                'UnitPriceGross' => $item->price,
+                'TaxRate' => $item->taxRate,
+            ];
+            $this->basket['Items'][] = ['Item' => $itemData];
+        } else {
+            if(isset($this->basket['Discount'])) {
+                $this->basket['Discount']['UnitPriceGross'] = $this->basket['Discount']['UnitPriceGross'] + floatval($item->price);
+                $this->basket['Discount']['Description'] = $this->basket['Discount']['Description'] . ' & ' . $item->name;
+            } else {
+                $this->basket['Discount'] = [
+                    'Description' => $item->name,
+                    'UnitPriceGross' => floatval($item->price),
+                    'TaxRate' => $item->taxRate,
+                ];
+            }
         }
     }
 
@@ -238,6 +312,28 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     public function isShippingItem($item)
     {
         return 'shipping' === $item->articlenumber;
+    }
+
+    /**
+     * @param $item
+     * @return bool
+     */
+    public function isDiscountItem($item)
+    {
+        if(is_array($item)) {
+            if (isset($item['modus'])) {
+                return $item['modus'] != 0 && ($item['modus'] != 4 || $item['price'] < 0);
+            } else if(isset($item['articlenumber'])) {
+                return 'discount' === $item['articlenumber'];
+            }
+        } else if(is_object($item)) {
+            if (isset($item->modus)) {
+                return $item->modus != 0 && ($item->modus != 4 || $item->price < 0);
+            } else if(isset($item->articlenumber)) {
+                return 'discount' === $item->articlenumber;
+            }
+        }
+        return false;
     }
 
     /**

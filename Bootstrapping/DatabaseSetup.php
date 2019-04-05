@@ -43,6 +43,7 @@ class DatabaseSetup extends Bootstrapper
              *
              * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_positions`");
              * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_shipping`");
+             * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_discount`");
              */
 
             Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
@@ -64,6 +65,7 @@ class DatabaseSetup extends Bootstrapper
             new \RpayRatePay\Bootstrapping\Database\CreateConfigTable(),
             new \RpayRatePay\Bootstrapping\Database\CreateOrderPositionsTable(),
             new \RpayRatePay\Bootstrapping\Database\CreateOrderShippingTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateOrderDiscountTable(),
             new \RpayRatePay\Bootstrapping\Database\CreateOrderHistoryTable(),
             new \RpayRatePay\Bootstrapping\Database\CreateConfigPaymentTable(),
             new \RpayRatePay\Bootstrapping\Database\CreateConfigInstallmentTable(),

@@ -44,6 +44,9 @@
   "RatePayUseFallbackShippingItem": {
     "label": "Send shipping costs as basket item"
   },
+  "RatePayUseFallbackDiscountItem": {
+    "label": "Send discount as basket item"
+  },
   "button0": {
     "label": "<b>Credentials for Germany</b>"
   },
