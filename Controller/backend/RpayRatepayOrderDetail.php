@@ -284,33 +284,37 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         $orderModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Order');
         $order = $orderModel->findOneBy(['id' => $orderId]);
         $this->_modelFactory->setTransactionId($order->getTransactionID());
-        $itemsToReturn = null;
+        $itemsToReturn = array_reduce(
+            $items,
+            function ($sum, $item) {
+                return ($sum + $item->returnedItems);
+            },
+            0
+        );
 
         foreach ($items as $item) {
-            // count all item which are in returning process
-            $itemsToReturn += $item->returnedItems;
-            if ($item->quantity <= 0) {
-                continue;
-            }
+        if ($itemsToReturn < 1) {
+            $this->View()->assign([ 'success' => false ]);
         }
 
+
         //only call the logic if there are items to return
-        if ($itemsToReturn > 0) {
-            $operationData['orderId'] = $orderId;
-            $operationData['items'] = $items;
-            $operationData['subtype'] = 'return';
+        $operationData['orderId'] = $orderId;
+        $operationData['items'] = $items;
+        $operationData['subtype'] = 'return';
             $this->_modelFactory->setOrderId($order->getNumber());
             $result = $this->_modelFactory->callPaymentChange($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {
+                if ($item->returnedItems <= 0) {
+                    continue;
+                }
+
                     $bind = [
                         'returned' => $item->returned + $item->returnedItems
                     ];
                     $this->updateItem($orderId, $item->articlenumber, $bind);
-                    if ($item->returnedItems <= 0) {
-                        continue;
-                    }
 
                     if ($this->Request()->getParam('articleStock') == 1) {
                         $this->_updateArticleStock($item->articlenumber, $item->returnedItems);
@@ -325,16 +329,9 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             $this->View()->assign(
                 [
                     'result' => $result,
-                    'success' => true
-                ]
-            );
-        } else {
-            $this->View()->assign(
-                [
-                    'success' => false
-                ]
-            );
-        }
+                'success' => true
+            ]
+        );
     }
 
     /**
