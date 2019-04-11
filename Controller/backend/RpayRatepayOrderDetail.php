@@ -293,23 +293,23 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         );
 
         foreach ($items as $item) {
-        if ($itemsToReturn < 1) {
-            $this->View()->assign([ 'success' => false ]);
-        }
+            if ($itemsToReturn < 1) {
+                $this->View()->assign(['success' => false]);
+            }
 
 
-        //only call the logic if there are items to return
-        $operationData['orderId'] = $orderId;
-        $operationData['items'] = $items;
-        $operationData['subtype'] = 'return';
+            //only call the logic if there are items to return
+            $operationData['orderId'] = $orderId;
+            $operationData['items'] = $items;
+            $operationData['subtype'] = 'return';
             $this->_modelFactory->setOrderId($order->getNumber());
             $result = $this->_modelFactory->callPaymentChange($operationData);
 
             if ($result === true) {
                 foreach ($items as $item) {
-                if ($item->returnedItems <= 0) {
-                    continue;
-                }
+                    if ($item->returnedItems <= 0) {
+                        continue;
+                    }
 
                     $bind = [
                         'returned' => $item->returned + $item->returnedItems
@@ -329,9 +329,10 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             $this->View()->assign(
                 [
                     'result' => $result,
-                'success' => true
-            ]
-        );
+                    'success' => true
+                ]
+            );
+        }
     }
 
     /**
