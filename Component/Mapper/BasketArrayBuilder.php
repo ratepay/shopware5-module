@@ -171,7 +171,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
 
             if (isset($this->basket['Discount'], $this->basket['Discount']['UnitPriceGross'])) {
                 $discount['UnitPriceGross'] = $this->basket['Discount']['UnitPriceGross'] + $item->price;
-                $discount['UnitPriceGross'] = $this->basket['Discount']['Description'] . ', ' . $item->articlenumber;
+                $discount['Description'] = $this->basket['Discount']['Description'] . ', ' . $item->articlenumber;
             }
 
             $this->basket['Discount'] = $discount;

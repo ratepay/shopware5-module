@@ -292,47 +292,47 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             0
         );
 
-        foreach ($items as $item) {
-            if ($itemsToReturn < 1) {
-                $this->View()->assign(['success' => false]);
-            }
 
-
-            //only call the logic if there are items to return
-            $operationData['orderId'] = $orderId;
-            $operationData['items'] = $items;
-            $operationData['subtype'] = 'return';
-            $this->_modelFactory->setOrderId($order->getNumber());
-            $result = $this->_modelFactory->callPaymentChange($operationData);
-
-            if ($result === true) {
-                foreach ($items as $item) {
-                    if ($item->returnedItems <= 0) {
-                        continue;
-                    }
-
-                    $bind = [
-                        'returned' => $item->returned + $item->returnedItems
-                    ];
-                    $this->updateItem($orderId, $item->articlenumber, $bind);
-
-                    if ($this->Request()->getParam('articleStock') == 1) {
-                        $this->_updateArticleStock($item->articlenumber, $item->returnedItems);
-                    }
-
-                    $this->_history->logHistory($orderId, 'Artikel wurde retourniert.', $item->name, $item->articlenumber, $item->returnedItems);
-                }
-            }
-
-            $this->setNewOrderState($orderId, 'return');
-
-            $this->View()->assign(
-                [
-                    'result' => $result,
-                    'success' => true
-                ]
-            );
+        if ($itemsToReturn < 1) {
+            $this->View()->assign(['success' => false]);
+            return;
         }
+
+
+        //only call the logic if there are items to return
+        $operationData['orderId'] = $orderId;
+        $operationData['items'] = $items;
+        $operationData['subtype'] = 'return';
+        $this->_modelFactory->setOrderId($order->getNumber());
+        $result = $this->_modelFactory->callPaymentChange($operationData);
+
+        if ($result === true) {
+            foreach ($items as $item) {
+                if ($item->returnedItems <= 0) {
+                    continue;
+                }
+
+                $bind = [
+                    'returned' => $item->returned + $item->returnedItems
+                ];
+                $this->updateItem($orderId, $item->articlenumber, $bind);
+
+                if ($this->Request()->getParam('articleStock') == 1) {
+                    $this->_updateArticleStock($item->articlenumber, $item->returnedItems);
+                }
+
+                $this->_history->logHistory($orderId, 'Artikel wurde retourniert.', $item->name, $item->articlenumber, $item->returnedItems);
+            }
+        }
+
+        $this->setNewOrderState($orderId, 'return');
+
+        $this->View()->assign(
+            [
+                'result' => $result,
+                'success' => true
+            ]
+        );
     }
 
     /**
