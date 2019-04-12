@@ -163,11 +163,18 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
                 'TaxRate' => $item->taxRate,
             ];
         } else {
-            $this->basket['Discount'] = [
+            $discount = [
                 'Description' => $item->articlenumber,
                 'UnitPriceGross' => $item->price,
                 'TaxRate' => $item->taxRate,
             ];
+
+            if (isset($this->basket['Discount'], $this->basket['Discount']['UnitPriceGross'])) {
+                $discount['UnitPriceGross'] = $this->basket['Discount']['UnitPriceGross'] + $item->price;
+                $discount['UnitPriceGross'] = $this->basket['Discount']['Description'] . ', ' . $item->articlenumber;
+            }
+
+            $this->basket['Discount'] = $discount;
         }
     }
 
