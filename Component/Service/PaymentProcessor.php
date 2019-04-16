@@ -83,7 +83,7 @@ class PaymentProcessor
      */
     public function insertRatepayPositions($order)
     {
-        $sql = 'SELECT `id`, `modus`, `price` FROM `s_order_details` WHERE `ordernumber`=?;';
+        $sql = 'SELECT `id`, `modus`, `price`, `tax_rate` FROM `s_order_details` WHERE `ordernumber`=?;';
         Logger::singleton()->info('NOW SETTING ORDER DETAILS: ' . $sql);
 
         $rows = $this->db->fetchAll($sql, [$order->getNumber()]);
@@ -100,10 +100,10 @@ class PaymentProcessor
             ) {
                 continue; //this position will be written into the `rpay_ratepay_order_discount` table
             }
-            $values .= '(' . $row['id'] . '),';
+            $values .= '(' . $row['id'] . ', ' . $row['tax_rate'] . '),';
         }
         $values = substr($values, 0, -1);
-        $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES ' . $values;
+        $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`, `tax_rate`) VALUES ' . $values;
         Logger::singleton()->info('INSERT NOW ' . $sqlInsert);
         try {
             $this->db->query($sqlInsert);
