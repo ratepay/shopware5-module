@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.1.x` - `5.5.x`
-|Version | `5.3.6`
+|Version | `5.3.7`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -24,9 +24,11 @@
 
 ## Changelog
 
-### Version 5.3.6 - Released 2019-04-16
+### Version 5.3.7 - Released 2019-04-16
 * fix aggregation of discount items
 * fix mix tax rate baskets
+
+### Version 5.3.6 - Released 2019-04-16
 * add functionality for discount as seperate basket-item
 
 ### Version 5.3.5 - Released 2019-02-27
