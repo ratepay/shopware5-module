@@ -2,6 +2,8 @@
 
 namespace RpayRatePay\Bootstrapping\Database;
 
+use RpayRatePay\Component\Service\ShopwareUtil;
+
 class CreateOrderPositionsTable
 {
     /**
