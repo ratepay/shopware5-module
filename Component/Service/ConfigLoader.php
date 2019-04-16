@@ -107,6 +107,22 @@ class ConfigLoader
     }
 
     /**
+     * @param null $shopId
+     * @return bool
+     */
+    public function commitDiscountAsCartItem($shopId = null) {
+        return $this->config->get('RatePayUseFallbackDiscountItem', $shopId) == 1;
+    }
+
+    /**
+     * @param null $shopId
+     * @return bool
+     */
+    public function commitShippingAsCartItem($shopId = null) {
+        return $this->config->get('RatePayUseFallbackShippingItem', $shopId) == 1;
+    }
+
+    /**
      * @param string $countryISO
      * @param bool $backend
      * @return string

@@ -2,6 +2,7 @@
 
 namespace RpayRatePay\Bootstrapping\Events;
 
+use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\Logger;
 
 class OrderDetailsProcessSubscriber implements \Enlight\Event\SubscriberInterface
@@ -27,7 +28,7 @@ class OrderDetailsProcessSubscriber implements \Enlight\Event\SubscriberInterfac
             ->findOneBy(['number' => $orderNumber]);
 
         if ($this->isRatePayPayment($orderNumber)) {
-            $paymentProcessor = new \RpayRatePay\Component\Service\PaymentProcessor(Shopware()->Db());
+            $paymentProcessor = new \RpayRatePay\Component\Service\PaymentProcessor(Shopware()->Db(), new ConfigLoader(Shopware()->Container()->get('db')));
             $paymentProcessor->insertRatepayPositions($order);
         }
 

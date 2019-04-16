@@ -19,6 +19,14 @@ class AdditionalOrderAttributeSetup extends Bootstrapper
             $this->bootstrap->Application()->Models()->addAttribute(
                 's_order_attributes',
                 'ratepay',
+                'fallback_discount',
+                'TINYINT(1)',
+                true,
+                0
+            );
+            $this->bootstrap->Application()->Models()->addAttribute(
+                's_order_attributes',
+                'ratepay',
                 'backend',
                 'TINYINT(1)',
                 false,
@@ -27,6 +35,7 @@ class AdditionalOrderAttributeSetup extends Bootstrapper
         } else {
             $attributeService = $this->bootstrap->get('shopware_attribute.crud_service');
             $attributeService->update('s_order_attributes', 'ratepay_fallback_shipping', 'boolean');
+            $attributeService->update('s_order_attributes', 'ratepay_fallback_discount', 'boolean');
             $attributeService->update('s_order_attributes', 'ratepay_backend', 'boolean');
         }
 

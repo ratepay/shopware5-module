@@ -24,6 +24,7 @@ use Shopware\Components\CSRFWhitelistAware;
 use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\Logger;
+use \RpayRatePay\Component\Service\ConfigLoader;
 
 class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
 {
@@ -36,6 +37,9 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
     private $_modelFactory;
     private $_logging;
     private $_customerMessage;
+
+    /** @var ConfigLoader */
+    protected $_configLoader;
 
     /**
      * @return string
@@ -66,6 +70,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
         $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
         $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
+        $this->_configLoader = new ConfigLoader(Shopware()->Container()->get('db'));
     }
 
     /**
@@ -257,7 +262,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $resultRequest = $this->_modelFactory->callPaymentRequest();
 
         if ($resultRequest->isSuccessful()) {
-            $paymentProcessor = new PaymentProcessor(Shopware()->Db());
+            $paymentProcessor = new PaymentProcessor($this->get('db'), new ConfigLoader($this->get('db')));
 
             Shopware()->Session()->RatePAY['transactionId'] = $resultRequest->getTransactionId();
             $uniqueId = $this->createPaymentUniqueId();
@@ -269,6 +274,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
                     $paymentProcessor->initShipping($order);
                 }
+                $paymentProcessor->initDiscount($order);
             } catch (\Exception $exception) {
                 Logger::singleton()->error($exception->getMessage());
             }
@@ -277,7 +283,9 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 $paymentProcessor->setOrderAttributes(
                     $order,
                     $resultRequest,
-                    Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem')
+                    $this->_configLoader->commitShippingAsCartItem(),
+                    $this->_configLoader->commitDiscountAsCartItem(),
+                    false
                 );
             } catch (\Exception $exception) {
                 Logger::singleton()->error($exception->getMessage());

@@ -8,6 +8,7 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\Logger;
 use RpayRatePay\Component\Service\ShopwareUtil;
+use RpayRatePay\Component\Service\ConfigLoader;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -46,12 +47,20 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
     private $netItemPrices;
 
+    /** @var \Enlight_Components_Db_Adapter_Pdo_Mysql */
+    protected $db;
+
+    /** @var ConfigLoader  */
+    protected $_configLoader;
+
     public function __construct($config = null, $backend = false, $netItemPrices = false)
     {
         $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
         $this->_config = $config;
         $this->backend = $backend;
         $this->netItemPrices = $netItemPrices;
+        $this->db = Shopware()->Container()->get('db');
+        $this->_configLoader = new ConfigLoader(Shopware()->Container()->get('db'));
     }
 
     public function setOrderId($orderId)
@@ -510,11 +519,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
     private function createBasketArray($items, $type = false, $orderId = null)
     {
         $useFallbackShipping = $this->usesShippingItemFallback($orderId);
+        $useFallbackDiscount = $this->usesDiscountItemFallback($orderId);
         $basketFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder(
             $this->_retry,
             $type,
             $this->netItemPrices,
-            $useFallbackShipping
+            $useFallbackShipping,
+            $useFallbackDiscount
         );
 
         foreach ($items as $shopItem) {
@@ -831,17 +842,29 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      */
     private function usesShippingItemFallback($orderId = null)
     {
-        $configured = !!(Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()
-            ->get('RatePayUseFallbackShippingItem'));
+        $default = $this->_configLoader->commitShippingAsCartItem();
 
         if (!$orderId) {
-            return $configured;
-//                return boolval($result['ratepay_fallback_shipping']);
+            return $default;
         }
 
         $query = 'SELECT ratepay_fallback_shipping FROM `s_order_attributes` WHERE orderID = ?';
-        $result = Shopware()->Db()->executeQuery($query, [$orderId])->fetch()['ratepay_fallback_shipping'];
+        $result = $this->db->executeQuery($query, [$orderId])->fetch()['ratepay_fallback_shipping'];
 
-        return is_null($result) ? false : (boolval($result) || $configured);
+        return is_null($result) ? false : (boolval($result) || $default);
+    }
+
+    protected function usesDiscountItemFallback($orderId = null)
+    {
+        $default = $this->_configLoader->commitDiscountAsCartItem();
+
+        if (!$orderId) {
+            return $default;
+        }
+
+        $query = 'SELECT ratepay_fallback_discount FROM `s_order_attributes` WHERE orderID = ?';
+        $result = $this->db->executeQuery($query, [$orderId])->fetchColumn('ratepay_fallback_discount');
+
+        return is_null($result) ? false : (boolval($result) || $default);
     }
 }

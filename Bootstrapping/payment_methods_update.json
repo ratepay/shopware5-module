@@ -9,7 +9,7 @@
     "template": "RatePAYRate.tpl"
   },
   {
-    "name": "rpayratepaprepayment",
+    "name": "rpayratepayprepayment",
     "description": "Vorkasse",
     "action": "rpay_ratepay",
     "active": 1,

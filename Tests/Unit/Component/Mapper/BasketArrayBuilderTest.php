@@ -27,7 +27,7 @@ class BasketArrayBuilderTest extends TestCase
 
         return [
             [
-                new BasketArrayBuilder(false, null, false, false),
+                new BasketArrayBuilder(false, null, false, false, false),
                 $itemList,
                 []
             ],

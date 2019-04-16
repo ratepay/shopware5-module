@@ -288,6 +288,15 @@
     }
   },
   {
+    "type":"checkbox",
+    "name":"RatePayUseFallbackDiscountItem",
+    "config":{
+      "label": "Use fallback discount item:",
+      "value": false,
+      "scope":1
+    }
+  },
+  {
     "type":"select",
     "name":"RatePayPrepaidPaymentStatus",
     "config":{
