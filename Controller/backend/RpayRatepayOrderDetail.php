@@ -608,7 +608,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                . '`delivered`, '
                . '`cancelled`, '
                . '`returned`, '
-               . '`tax_rate` '
+               . 'ratepay.`tax_rate` '
                . 'FROM `s_order_details` AS detail '
                . 'INNER JOIN `rpay_ratepay_order_positions` AS ratepay ON detail.`id`=ratepay.`s_order_details_id` '
                . 'WHERE detail.`orderId`=? '
