@@ -230,18 +230,26 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     {
         if ($this->withRetry || $item->price > 0) {
             $item = [
-                'ArticleNumber' => $item->articleordernumber,
-                'Quantity' => $item->quantity,
+                'ArticleNumber' => $item->articlenumber,
+                'Quantity' => 1 , // $item->quantity,
                 'Description' => $item->articlenumber,
                 'UnitPriceGross' => $item->price,
                 'TaxRate' => $item->taxRate,
             ];
+            $this->basket['Items'][] = ['Item' => $item];
         } else {
-            $this->basket['Discount'] = [
+            $discount = [
                 'Description' => $item->articlenumber,
-                'UnitPriceGross' => $item->price,
+                'UnitPriceGross' => floatval($item->price),
                 'TaxRate' => $item->taxRate,
             ];
+
+            if (isset($this->basket['Discount'], $this->basket['Discount']['UnitPriceGross'])) {
+                $discount['UnitPriceGross'] = $this->basket['Discount']['UnitPriceGross'] + floatval($item->price);
+                $discount['Description'] = $this->basket['Discount']['Description'] . ', ' . $item->articlenumber;
+            }
+
+            $this->basket['Discount'] = $discount;
         }
     }
 

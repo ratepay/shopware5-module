@@ -156,6 +156,10 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
                 error = true;
             }
 
+            if (row.quantityReturn < 1) {
+                continue;
+            }
+
             item['id'] = row.articleID;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
