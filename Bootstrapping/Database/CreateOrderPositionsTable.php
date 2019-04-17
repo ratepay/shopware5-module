@@ -32,7 +32,7 @@ class CreateOrderPositionsTable
 
         $hasColumnTaxRate = ShopwareUtil::tableHasColumn('rpay_ratepay_order_positions', 'tax_rate');
         if (!$hasColumnTaxRate) {
-            $sql = 'ALTER TABLE rpay_ratepay_config ADD COLUMN tax_rate int(2) NULL DEFAULT NULL';
+            $sql = 'ALTER TABLE rpay_ratepay_order_positions ADD COLUMN tax_rate int(2) NULL DEFAULT NULL';
             $database->query($sql);
         }
     }

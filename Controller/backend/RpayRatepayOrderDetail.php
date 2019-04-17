@@ -373,6 +373,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             $this->_modelFactory->setTransactionId($order['transactionID']);
             $operationData['orderId'] = $orderId;
             $operationData['items'] = $items;
+            $operationData['items']['tax_rate'] = 0;
             $operationData['subtype'] = 'credit';
             $this->_modelFactory->setOrderId($order['ordernumber']);
 
@@ -395,7 +396,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                     } else {
                         $event = 'Nachlass wurde hinzugefügt';
                     }
-                    $bind = ['delivered' => 1];
+                    $bind = ['delivered' => 1, 'tax_rate' => 0];
                 } else {
                     $event = 'Artikel wurde hinzugefügt';
                 }
