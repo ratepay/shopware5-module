@@ -9,7 +9,7 @@ class CreateOrderDiscountTable
      */
     protected function getQuery()
     {
-        $query = "CREATE TABLE `rpay_ratepay_order_discount` (
+        $query = "CREATE TABLE IF NOT EXISTS `rpay_ratepay_order_discount` (
           `s_order_id` int(11) NOT NULL,
           `s_order_detail_id` int(11) NOT NULL,
           `delivered` int(11) NOT NULL DEFAULT '0',
