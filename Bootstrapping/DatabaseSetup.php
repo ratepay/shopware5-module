@@ -90,6 +90,7 @@ class DatabaseSetup extends Bootstrapper
             new \RpayRatePay\Bootstrapping\Database\CreateConfigTable(),
             new \RpayRatePay\Bootstrapping\Database\CreateConfigPaymentTable(),
             new \RpayRatePay\Bootstrapping\Database\CreateConfigInstallmentTable(),
+            new \RpayRatePay\Bootstrapping\Database\CreateOrderPositionsTable(),
         ];
 
         try {

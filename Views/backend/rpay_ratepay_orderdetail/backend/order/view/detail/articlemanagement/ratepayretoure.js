@@ -148,6 +148,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
+            var tax_rate = row.tax_rate;
 
             if (row.quantityReturn > (row.quantity - row.returned - row.cancelled)) {
                 error = true;
@@ -156,11 +157,19 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
                 error = true;
             }
 
+            if (row.quantityReturn < 1) {
+                continue;
+            }
+
+            if (row.tax_rate == null) {
+                tax_rate = firstArticle.raw.taxRate;
+            }
+
             item['id'] = row.articleID;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = firstArticle.raw.taxRate; // row.tax_rate;
+            item['taxRate'] = tax_rate;
             item['quantity'] = row.delivered - row.returned - row.quantityReturn;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;
@@ -206,16 +215,21 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
+            var tax_rate = row.tax_rate;
 
             if (row.quantityReturn > (row.quantity - row.returned) || row.delivered == 0) {
                 error = true;
+            }
+
+            if (row.tax_rate == null) {
+                tax_rate = firstArticle.raw.taxRate;
             }
 
             item['id'] = row.articleID;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = firstArticle.raw.taxRate; // row.tax_rate;
+            item['taxRate'] = tax_rate;
             item['quantity'] = row.delivered - row.returned - row.quantityReturn;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;
