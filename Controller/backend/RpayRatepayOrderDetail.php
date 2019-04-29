@@ -528,7 +528,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             . '`delivered`, '
             . '`cancelled`, '
             . '`returned`, '
-            . '`s_core_tax`.`tax` AS `tax_rate` '
+            . '`rpay_ratepay_order_shipping`.`tax_rate` AS `tax_rate` '
             . 'FROM `s_order` '
             . 'LEFT JOIN `rpay_ratepay_order_shipping` ON `s_order_id`=`s_order`.`id` '
             . 'LEFT JOIN `s_premium_dispatch` ON `s_order`.`dispatchID`=`s_premium_dispatch`.`id` '
