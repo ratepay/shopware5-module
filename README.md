@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version 5.3.7 - Released 2019-04-29
+* fix mix tax rate shipping
+
 ### Version 5.3.7 - Released 2019-04-16
 * fix aggregation of discount items
 * fix mix tax rate baskets
