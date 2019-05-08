@@ -122,4 +122,28 @@ class ShopwareUtil
     {
         return key_exists($key, $array) && !empty($array[$key]);
     }
+
+    /**
+     * @param $version
+     * @return bool
+     */
+    public static function assertMinimumShopwareVersion($version)
+    {
+        $sExpected = explode('.', $version);
+        $expected = array_map('intval', $sExpected);
+        $sConfigured = explode('.', Shopware()->Config()->version);
+        $configured = array_map('intval', $sConfigured);
+
+        for ($i = 0; $i < 3; $i++) {
+            if ($expected[$i] < $configured[$i]) {
+                return true;
+            }
+
+            if ($expected[$i] > $configured[$i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

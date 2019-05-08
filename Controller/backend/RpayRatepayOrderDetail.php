@@ -537,8 +537,8 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             . 'WHERE `s_order`.`id` = ?';
         $shippingRow = Shopware()->Db()->fetchRow($sql, [$orderId]);
         if (isset($shippingRow['quantityDeliver'])) {
-            if ($shippingRow['tax_rate'] == null) {
-                $shippingRow['tax_rate'] = $shippingRow['invoice_shipping_net'];
+            if ($shippingRow['tax_rate'] < 0) {
+                $shippingRow['tax_rate'] = Shopware()->Db()->fetchOne('SELECT MAX(`tax`) FROM `s_core_tax`');
             }
             $shippingRow['quantity'] = 1;
             $shippingRow['articleID'] = 0;
