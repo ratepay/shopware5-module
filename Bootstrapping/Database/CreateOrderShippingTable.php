@@ -16,7 +16,7 @@ class CreateOrderShippingTable
             '`delivered` int NOT NULL DEFAULT 0, ' .
             '`cancelled` int NOT NULL DEFAULT 0, ' .
             '`returned` int NOT NULL DEFAULT 0, ' .
-            '`tax_rate` int NULL DEFAULT NULL, ' .
+            '`tax_rate` int NULL DEFAULT -1, ' .
             'PRIMARY KEY (`s_order_id`)' .
             ') ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci';
         return $query;

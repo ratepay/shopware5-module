@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.1.x` - `5.5.x`
-|Version | `5.3.7`
+|Version | `5.3.9`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -24,7 +24,10 @@
 
 ## Changelog
 
-### Version 5.3.7 - Released 2019-04-29
+### Version 5.3.9 - Released 2019-05-09
+* fix tax rate shipping for shopware versions < 5.5.0
+
+### Version 5.3.8 - Released 2019-04-29
 * fix mix tax rate shipping
 
 ### Version 5.3.7 - Released 2019-04-16

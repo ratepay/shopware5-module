@@ -29,9 +29,14 @@ class PaymentProcessor
      */
     public function initShipping($order)
     {
+        $shippingTaxRate = -1;
+        if (ShopwareUtil::assertMinimumShopwareVersion('5.5.0')) {
+            $shippingTaxRate = $order->getInvoiceShippingTaxRate();
+        }
+
         $this->db->query(
             'INSERT INTO `rpay_ratepay_order_shipping` (`s_order_id`, `tax_rate`) VALUES(?, ?)',
-            [$order->getId(), $order->getInvoiceShippingTaxRate()]
+            [$order->getId(), $shippingTaxRate]
         );
     }
 
