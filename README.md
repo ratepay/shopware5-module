@@ -24,8 +24,8 @@
 
 ## Changelog
 
-### Version 5.3.9 - Released 2019-??-??
-* Bugfix ...
+### Version 5.3.9 - Released 2019-05-09
+* fix tax rate shipping for shopware versions < 5.5.0
 
 ### Version 5.3.8 - Released 2019-04-29
 * fix mix tax rate shipping
