@@ -268,7 +268,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             new \RpayRatePay\Bootstrapping\Events\JavascriptSourceSubscriber($this->Path()),
             new \RpayRatePay\Bootstrapping\Events\OrderViewExtensionSubscriber($this->Path()),
             new \RpayRatePay\Bootstrapping\Events\UpdateTransactionsSubscriber(),
-            new \RpayRatePay\Bootstrapping\Events\BackendOrderControllerSubscriber($this->Path()),
+            new \RpayRatePay\Bootstrapping\Events\BackendOrderControllerSubscriber(new \RpayRatePay\Component\Service\ConfigLoader($this->get('db')), $this->Path()),
             new \RpayRatePay\Bootstrapping\Events\BackendOrderViewExtensionSubscriber($this->Path()),
         ];
 

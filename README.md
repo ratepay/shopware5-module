@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.1.x` - `5.5.x`
-|Version | `5.3.5`
+|Version | `5.3.9`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,19 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.9 - Released 2019-05-09
+* fix tax rate shipping for shopware versions < 5.5.0
+
+### Version 5.3.8 - Released 2019-04-29
+* fix mix tax rate shipping
+
+### Version 5.3.7 - Released 2019-04-16
+* fix aggregation of discount items
+* fix mix tax rate baskets
+
+### Version 5.3.6 - Released 2019-04-16
+* add functionality for discount as seperate basket-item
 
 ### Version 5.3.5 - Released 2019-02-27
 * Improve backend-side validation of user inputs

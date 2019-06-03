@@ -219,20 +219,20 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 text: '{s namespace=RatePAY name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
                 handler: function () {
                     Ext.create('Ext.window.Window', {
-                            title: '{s namespace=RatePAY name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
-                            width: 200,
-                            height: 100,
-                            id: 'debitWindow',
-                            resizable: false,
-                            layout: 'fit',
-                            items: [
-                                {
-                                    xtype: 'numberfield',
-                                    id: 'debitAmount',
-                                    allowBlank: false,
-                                    allowDecimals: true,
-                                    minValue: 0.01,
-                                    value: 1.00
+                        title: '{s namespace=RatePAY name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
+                        width: 200,
+                        height: 100,
+                        id: 'debitWindow',
+                        resizable: false,
+                        layout: 'fit',
+                        items: [
+                            {
+                                xtype: 'numberfield',
+                                id: 'debitAmount',
+                                allowBlank: false,
+                                allowDecimals: true,
+                                minValue: 0.01,
+                                value: 1.00
                             }
                         ],
                         buttons: [
@@ -328,19 +328,24 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
         var id = me.record.get('id');
         var error = false;
         var firstArticle = me.record.getPositions().data.items[0];
+
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
+            var tax_rate = row.tax_rate;
 
             if (row.quantityDeliver > (row.quantity - row.delivered - row.cancelled)) {
                 error = true;
+            }
+            if (row.tax_rate == null) {
+                tax_rate = firstArticle.raw.taxRate;
             }
 
             item['id'] = row.articleID;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = firstArticle.raw.taxRate;
+            item['taxRate'] = tax_rate;
             item['maxQuantity'] = row.quantity;
             item['quantity'] = row.quantityDeliver;
             item['delivered'] = row.delivered;
@@ -376,9 +381,11 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
         var id = me.record.get('id');
         var error = false;
         var firstArticle = me.record.getPositions().data.items[0];
+
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
+            var tax_rate = row.tax_rate
 
             if (row.quantityDeliver > (row.quantity - row.cancelled)) {
                 error = true;
@@ -387,11 +394,15 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                 error = true;
             }
 
+            if (row.tax_rate == null) {
+                tax_rate = firstArticle.raw.taxRate;
+            }
+
             item['id'] = row.articleID;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = firstArticle.raw.taxRate;
+            item['taxRate'] = tax_rate;
             item['quantity'] = row.quantity - row.quantityDeliver - row.cancelled - row.delivered;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;
@@ -426,9 +437,11 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
         var id = me.record.get('id');
         var error = false;
         var firstArticle = me.record.getPositions().data.items[0];
+
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
             var item = new Object();
+            var tax_rate = row.tax_rate
 
             if (row.quantityDeliver > (row.quantity - row.cancelled)) {
                 error = true;
@@ -437,11 +450,16 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             if (row.quantity - row.quantityDeliver - row.cancelled - row.delivered < 0) {
                 error = true;
             }
+
+            if (row.tax_rate == null) {
+                tax_rate = firstArticle.raw.taxRate;
+            }
+
             item['id'] = row.articleID;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
-            item['taxRate'] = firstArticle.raw.taxRate;
+            item['taxRate'] = tax_rate;
             item['quantity'] = row.quantity - row.quantityDeliver - row.cancelled - row.delivered;
             item['delivered'] = row.delivered;
             item['returned'] = row.returned;

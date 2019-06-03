@@ -6,6 +6,8 @@ use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Service\Logger;
+use Shopware\Models\Order\Order;
+use RpayRatePay\Component\Service\ConfigLoader;
 
 class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -14,12 +16,20 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
      */
     private $path;
 
+    /** @var ConfigLoader  */
+    protected $_configLoader;
+
     /**
      * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentControllerSubscriber constructor.
-     * @param $path string base path to plugin
+     * @param ConfigLoader $configLoader
+     * @param $path
      */
-    public function __construct($path)
+    public function __construct(
+        ConfigLoader $configLoader,
+        $path
+    )
     {
+        $this->_configLoader = $configLoader;
         $this->path = $path;
     }
 
@@ -177,9 +187,10 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
     private function doPostProcessing($orderId, $answer, $paymentRequestData, $paymentMethod)
     {
+        /** @var Order $order */
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
 
-        $paymentProcessor = new PaymentProcessor(Shopware()->Db());
+        $paymentProcessor = new PaymentProcessor(Shopware()->Db(), $this->_configLoader);
 
         //set the transaction id
         $paymentProcessor->setOrderTransactionId($order, $answer->getTransactionId());
@@ -189,11 +200,14 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             $paymentProcessor->initShipping($order);
         }
 
+        $paymentProcessor->initDiscount($order);
+
         //set order attributes
         $paymentProcessor->setOrderAttributes(
             $order,
             $answer,
-            Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayUseFallbackShippingItem'),
+            $this->_configLoader->commitShippingAsCartItem(),
+            $this->_configLoader->commitDiscountAsCartItem(),
             true
         );
 

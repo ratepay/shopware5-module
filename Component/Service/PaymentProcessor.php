@@ -4,14 +4,24 @@ namespace RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\ShopwareUtil;
+use Shopware\Models\Order\Detail;
 
 class PaymentProcessor
 {
     private $db;
 
-    public function __construct($db)
+    /**
+     * @var ConfigLoader
+     */
+    protected $configLoader;
+
+    public function __construct(
+        $db,
+        ConfigLoader $configLoader
+    )
     {
         $this->db = $db;
+        $this->configLoader = $configLoader;
     }
 
     /**
@@ -19,18 +29,46 @@ class PaymentProcessor
      */
     public function initShipping($order)
     {
+        $shippingTaxRate = -1;
+        if (ShopwareUtil::assertMinimumShopwareVersion('5.5.0')) {
+            $shippingTaxRate = $order->getInvoiceShippingTaxRate();
+        }
+
         $this->db->query(
-            'INSERT INTO `rpay_ratepay_order_shipping` (`s_order_id`) VALUES(?)',
-            [$order->getId()]
+            'INSERT INTO `rpay_ratepay_order_shipping` (`s_order_id`, `tax_rate`) VALUES(?, ?)',
+            [$order->getId(), $shippingTaxRate]
         );
+    }
+
+    /**
+     * @param \Shopware\Models\Order\Order $order
+     */
+    public function initDiscount($order)
+    {
+        if($this->configLoader->commitDiscountAsCartItem() == false) {
+            /** @var Detail $detail */
+            foreach ($order->getDetails() as $detail) {
+                if (
+                    $detail->getMode() != 0 && // no products
+                    ($detail->getMode() != 4 || $detail->getPrice() < 0) // no positive surcharges
+                ) {
+                    $this->db->query(
+                        'INSERT INTO `rpay_ratepay_order_discount` (`s_order_id`, `s_order_detail_id`) VALUES(?, ?)',
+                        [$order->getId(), $detail->getId()]
+                    );
+                }
+            }
+        }
     }
 
     /**
      * @param $order
      * @param $paymentRequestResult
      * @param $fallbackShipping
+     * @param $fallbackDiscount
+     * @param bool $backend
      */
-    public function setOrderAttributes($order, $paymentRequestResult, $fallbackShipping, $backend = false)
+    public function setOrderAttributes($order, $paymentRequestResult, $fallbackShipping, $fallbackDiscount, $backend = false)
     {
         $this->db->update( //wird wohl nicht gehen, da das Custom-Feld nicht da ist
             's_order_attributes',
@@ -38,6 +76,7 @@ class PaymentProcessor
                 'attribute5' => $paymentRequestResult->getDescriptor(),
                 'attribute6' => $paymentRequestResult->getTransactionId(),
                 'ratepay_fallback_shipping' => $fallbackShipping,
+                'ratepay_fallback_discount' => $fallbackDiscount,
                 'ratepay_backend' => $backend,
             ],
             'orderID=' . $order->getId()
@@ -49,19 +88,27 @@ class PaymentProcessor
      */
     public function insertRatepayPositions($order)
     {
-        $sql = 'SELECT `id` FROM `s_order_details` WHERE `ordernumber`=?;';
+        $sql = 'SELECT `id`, `modus`, `price`, `tax_rate` FROM `s_order_details` WHERE `ordernumber`=?;';
         Logger::singleton()->info('NOW SETTING ORDER DETAILS: ' . $sql);
 
         $rows = $this->db->fetchAll($sql, [$order->getNumber()]);
 
         Logger::singleton()->info('GOT ROWS ' . count($rows));
 
+        $commitDiscountAsCartItem = $this->configLoader->commitDiscountAsCartItem();
         $values = '';
         foreach ($rows as $row) {
-            $values .= '(' . $row['id'] . '),';
+
+            if($row['modus'] != 0 && // not a product
+                ($row['modus'] != 4 || $row['price'] < 0) && // not a positive surcharge
+                $commitDiscountAsCartItem == false
+            ) {
+                continue; //this position will be written into the `rpay_ratepay_order_discount` table
+            }
+            $values .= '(' . $row['id'] . ', ' . $row['tax_rate'] . '),';
         }
         $values = substr($values, 0, -1);
-        $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES ' . $values;
+        $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`, `tax_rate`) VALUES ' . $values;
         Logger::singleton()->info('INSERT NOW ' . $sqlInsert);
         try {
             $this->db->query($sqlInsert);
@@ -110,4 +157,6 @@ class PaymentProcessor
         $modelFactory->setOrderId($order->getNumber());
         $modelFactory->callPaymentConfirm($countryCode);
     }
+
+
 }

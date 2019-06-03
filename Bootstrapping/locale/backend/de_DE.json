@@ -44,6 +44,9 @@
   "RatePayUseFallbackShippingItem": {
     "label": "Versandkosten als Warenkorbartikel übermitteln"
   },
+  "RatePayUseFallbackDiscountItem": {
+    "label": "Gutschein als Warenkorbartikel übermitteln"
+  },
   "button0": {
     "label": "<b>Zugangsdaten für Deutschland</b>"
   },
