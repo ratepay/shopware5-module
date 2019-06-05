@@ -29,9 +29,15 @@ class PaymentProcessor
      */
     public function initShipping($order)
     {
-        $shippingTaxRate = -1;
+        // Shopware does have a bug - so this will not work properly
+        // Issue: https://issues.shopware.com/issues/SW-24119
+        $calculatedShippingTaxRate = \RatePAY\Service\Math::taxFromPrices($order->getInvoiceShippingNet(), $order->getInvoiceShipping());
         if (ShopwareUtil::assertMinimumShopwareVersion('5.5.0')) {
-            $shippingTaxRate = $order->getInvoiceShippingTaxRate();
+            // we can not simple calculate the shipping tax cause the values in the database are not properly rounded.
+            // So we do not get the correct shipping tax rate if we calculate it.
+            $shippingTaxRate = $calculatedShippingTaxRate > 0 ? $order->getInvoiceShippingTaxRate() : 0;
+        } else {
+            $shippingTaxRate = round($calculatedShippingTaxRate, 2);
         }
 
         $this->db->query(
@@ -88,7 +94,7 @@ class PaymentProcessor
      */
     public function insertRatepayPositions($order)
     {
-        $sql = 'SELECT `id`, `modus`, `price`, `tax_rate` FROM `s_order_details` WHERE `ordernumber`=?;';
+        $sql = 'SELECT `id`, `modus`, `price`, `taxID`, `tax_rate` FROM `s_order_details` WHERE `ordernumber`=?;';
         Logger::singleton()->info('NOW SETTING ORDER DETAILS: ' . $sql);
 
         $rows = $this->db->fetchAll($sql, [$order->getNumber()]);
@@ -105,6 +111,11 @@ class PaymentProcessor
             ) {
                 continue; //this position will be written into the `rpay_ratepay_order_discount` table
             }
+
+            // Shopware does have a bug - so the tax_rate might be the wrong value.
+            // Issue: https://issues.shopware.com/issues/SW-24119
+            $row['tax_rate'] = $row['taxID'] == 0 ? 0 : $row['tax_rate']; // this is a little fix for this
+
             $values .= '(' . $row['id'] . ', ' . $row['tax_rate'] . '),';
         }
         $values = substr($values, 0, -1);

@@ -2,7 +2,9 @@
 
 namespace RpayRatePay\Bootstrapping\Events;
 
+use RatePAY\Service\Math;
 use RpayRatePay\Component\Service\Logger;
+use Shopware\Models\Order\Detail;
 
 class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -166,11 +168,12 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
         } else {
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
 
-            $sqlShipping = 'SELECT invoice_shipping FROM s_order WHERE id = ?';
-            $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, [$parameter['id']]);
+            $sqlShipping = 'SELECT invoice_shipping, invoice_shipping_net, invoice_shipping_tax_rate FROM s_order WHERE id = ?';
+            $shippingCosts = Shopware()->Db()->fetchRow($sqlShipping, [$parameter['id']]);
 
             $items = [];
             $i = 0;
+            /** @var Detail $item */
             foreach ($order->getDetails() as $item) {
                 $items[$i]['articlename'] = $item->getArticlename();
                 $items[$i]['ordernumber'] = $item->getArticlenumber();
@@ -178,14 +181,28 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
                 $items[$i]['priceNumeric'] = $item->getPrice();
                 $items[$i]['tax_rate'] = $item->getTaxRate();
                 $taxRate = $item->getTaxRate();
+
+                // Shopware does have a bug - so the tax_rate might be the wrong value.
+                // Issue: https://issues.shopware.com/issues/SW-24119
+                $taxRate = $item->getTax() == null ? 0 : $taxRate; // this is a little fix
+                $items[$i]['tax_rate'] = $taxRate;
+
                 $i++;
             }
             if (!empty($shippingCosts)) {
                 $items['Shipping']['articlename'] = 'Shipping';
                 $items['Shipping']['ordernumber'] = 'shipping';
                 $items['Shipping']['quantity'] = 1;
-                $items['Shipping']['priceNumeric'] = $shippingCosts;
-                $items['Shipping']['tax_rate'] = $taxRate;
+                $items['Shipping']['priceNumeric'] = $shippingCosts['invoice_shipping'];
+
+                // Shopware does have a bug - so the tax_rate might be the wrong value.
+                // Issue: https://issues.shopware.com/issues/SW-24119
+                // we can not simple calculate the shipping tax cause the values in the database are not properly rounded.
+                // So we do not get the correct shipping tax rate if we calculate it.
+                $calculatedTaxRate = Math::taxFromPrices(floatval($shippingCosts['invoice_shipping_net']), floatval($shippingCosts['invoice_shipping']));
+                $shippingTaxRate = $calculatedTaxRate > 0 ? $shippingCosts['invoice_shipping_tax_rate'] : 0;
+
+                $items['Shipping']['tax_rate'] = $shippingTaxRate;
             }
 
             $attributes = $order->getAttribute();

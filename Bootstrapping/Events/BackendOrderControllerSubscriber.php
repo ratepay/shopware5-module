@@ -131,8 +131,8 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             $orderStruct->getShippingCosts()
         );
 
-        //looks like vat is always a whole number, so I'll round
-        $shippingTax = round($shippingTax);
+        //looks like vat is always a whole number, so I'll round --> wrong!! // 2019-05-04
+        $shippingTax = round($shippingTax, 2);
 
         $shippingToSend = $orderStruct->getNetOrder() ? $orderStruct->getShippingCostsNet() : $orderStruct->getShippingCosts();
 
@@ -154,7 +154,9 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             'ordernumber' => $item->getNumber(), //should be article number, see BasketArrayBuilder
             'quantity' => $item->getQuantity(),
             'priceNumeric' => $item->getPrice(),
-            'tax_rate' => $item->getTaxRate(),
+            // Shopware does have a bug - so the getTaxRate() might return the wrong value.
+            // Issue: https://issues.shopware.com/issues/SW-24119
+            'tax_rate' => $item->getTaxId() == 0 ? 0 : $item->getTaxRate(), // this is a little fix for that
         ];
 
         return $a;

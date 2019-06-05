@@ -2,6 +2,7 @@
 
 namespace  RpayRatePay\Component\Service;
 
+use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\BankData;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
@@ -131,6 +132,13 @@ class SessionLoader
         $shippingCost = $this->session->sOrderVariables['sBasket']['sShippingcosts'];
 
         $shippingTax = $this->session->sOrderVariables['sBasket']['sShippingcostsTax'];
+
+        // Shopware does have a bug - so getTaxRate will not work properly
+        // Issue: https://issues.shopware.com/issues/SW-24119
+        // we can not simple calculate the shipping tax cause the values in the database are not properly rounded.
+        // So we do not get the correct shipping tax rate if we calculate it.
+        $calculatedTax = Math::taxFromPrices($this->session->sOrderVariables['sBasket']['sShippingcostsNet'], $this->session->sOrderVariables['sBasket']['sShippingcosts']);
+        $shippingTax = $calculatedTax > 0 ? $shippingTax : 0;
 
         $dfpToken = $this->session->RatePAY['dfpToken'];
 
