@@ -133,12 +133,18 @@ class SessionLoader
 
         $shippingTax = $this->session->sOrderVariables['sBasket']['sShippingcostsTax'];
 
-        // Shopware does have a bug - so getTaxRate will not work properly
-        // Issue: https://issues.shopware.com/issues/SW-24119
-        // we can not simple calculate the shipping tax cause the values in the database are not properly rounded.
-        // So we do not get the correct shipping tax rate if we calculate it.
-        $calculatedTax = Math::taxFromPrices($this->session->sOrderVariables['sBasket']['sShippingcostsNet'], $this->session->sOrderVariables['sBasket']['sShippingcosts']);
-        $shippingTax = $calculatedTax > 0 ? $shippingTax : 0;
+
+        $sSystem = Shopware()->Modules()->System();
+        $userData = Shopware()->Session()->sOrderVariables['sUserData'];
+
+        if ($this->isTaxFree($sSystem->sUSERGROUPDATA['tax'], $sSystem->sUSERGROUPDATA['id']) && empty($userData['additional']['charge_vat'])) {
+            // the user must not pay tax
+            $shippingTax = 0;
+            foreach($items as $i=>$item) {
+                $items[$i]['tax_rate'] = 0;
+            }
+        }
+
 
         $dfpToken = $this->session->RatePAY['dfpToken'];
 
@@ -158,6 +164,20 @@ class SessionLoader
             $lang,
             $amount
         );
+    }
+
+    /**
+     * Checks if the current customer should see net prices.
+     *
+     * @param $taxId
+     * @param $customerGroupId
+     *
+     * @return bool
+     */
+    private function isTaxFree($taxId, $customerGroupId)
+    {
+        return (Shopware()->Config()->get('sARTICLESOUTPUTNETTO') && !$taxId)
+            || (!$taxId && $customerGroupId);
     }
 
     public function setInstallmentData($total_amount, $amount, $interest_rate, $interest_amount, $service_charge, $annual_percentage_rate, $monthly_debit_interest, $number_of_rates, $rate, $last_rate, $payment_firstday)

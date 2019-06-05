@@ -139,22 +139,6 @@ class PaymentRequestData
         $this->billingAddress = $billingAddress;
         $this->shippingAddress = $shippingAddress;
         $this->items = $items;
-
-        // Shopware does have a bug - so the tax_rate might be the wrong value.
-        // Issue: https://issues.shopware.com/issues/SW-24119
-        foreach($this->items as $i=>$item) {
-            if(ShopwareUtil::assertMinimumShopwareVersion('5.5.0')) {
-                //$this->items[$i]['tax_rate'] = $item['taxID'] == 0 ? 0 : $item['tax_rate'];
-                $amountNet = $item['amountnetNumeric'];
-                $amountGross = $item['amountNumeric'];
-            } else {
-                $amountNet = floatval(str_replace(',', '.', $item['amountnet']));
-                $amountGross = floatval(str_replace(',', '.', $item['amount']));
-            }
-            $calculatedTaxRate = Math::taxFromPrices($amountNet, $amountGross);
-            $this->items[$i]['tax_rate'] = round($calculatedTaxRate, 2);
-        }
-
         $this->shippingCost = $shippingCost;
         $this->shippingTax = $shippingTax;
         $this->dfpToken = $dfpToken;
