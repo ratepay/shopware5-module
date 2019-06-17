@@ -15,6 +15,7 @@ class CreateOrderDiscountTable
           `delivered` int(11) NOT NULL DEFAULT '0',
           `cancelled` int(11) NOT NULL DEFAULT '0',
           `returned` int(11) NOT NULL DEFAULT '0',
+          `tax_rate` int NULL DEFAULT 0,
           UNIQUE KEY `s_order_id` (`s_order_id`,`s_order_detail_id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         return $query;

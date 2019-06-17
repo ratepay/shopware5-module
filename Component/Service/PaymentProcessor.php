@@ -58,9 +58,10 @@ class PaymentProcessor
                     $detail->getMode() != 0 && // no products
                     ($detail->getMode() != 4 || $detail->getPrice() < 0) // no positive surcharges
                 ) {
+                    $taxRate = $order->getNet() == 1 && $order->getTaxFree() == 1 ? 0 : $detail->getTaxRate();
                     $this->db->query(
-                        'INSERT INTO `rpay_ratepay_order_discount` (`s_order_id`, `s_order_detail_id`) VALUES(?, ?)',
-                        [$order->getId(), $detail->getId()]
+                        'INSERT INTO `rpay_ratepay_order_discount` (`s_order_id`, `s_order_detail_id`, `tax_rate`) VALUES(?, ?, ?)',
+                        [$order->getId(), $detail->getId(), $taxRate]
                     );
                 }
             }
@@ -114,7 +115,7 @@ class PaymentProcessor
 
             // Shopware does have a bug - so the tax_rate might be the wrong value.
             // Issue: https://issues.shopware.com/issues/SW-24119
-            $row['tax_rate'] = $row['taxID'] == 0 ? 0 : $row['tax_rate']; // this is a little fix for this
+            $row['tax_rate'] = $order->getNet() == 1 && $order->getTaxFree() == 1 ? 0 : $row['tax_rate'];
 
             $values .= '(' . $row['id'] . ', ' . $row['tax_rate'] . '),';
         }

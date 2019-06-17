@@ -134,14 +134,22 @@ class SessionLoader
         $shippingTax = $this->session->sOrderVariables['sBasket']['sShippingcostsTax'];
 
 
-        $sSystem = Shopware()->Modules()->System();
         $userData = Shopware()->Session()->sOrderVariables['sUserData'];
 
-        if ($this->isTaxFree($sSystem->sUSERGROUPDATA['tax'], $sSystem->sUSERGROUPDATA['id']) && empty($userData['additional']['charge_vat'])) {
-            // the user must not pay tax
+        if ($userData['additional']['charge_vat'] == false) {
+            // the customergroup must not pay tax
             $shippingTax = 0;
-            foreach($items as $i=>$item) {
+            foreach($items as $i => $item) {
                 $items[$i]['tax_rate'] = 0;
+            }
+        }
+
+        foreach ($items as &$item) {
+            if ($item['modus'] == 2) { //is voucher
+                if (Math::taxFromPrices($item['amountnetNumeric'], $item['amountWithTax']) == 0) {
+                //if ($item['taxID'] == null) { // does not work cause the tax ID is always null in this case.
+                    $item['tax_rate'] = 0;
+                }
             }
         }
 
@@ -164,20 +172,6 @@ class SessionLoader
             $lang,
             $amount
         );
-    }
-
-    /**
-     * Checks if the current customer should see net prices.
-     *
-     * @param $taxId
-     * @param $customerGroupId
-     *
-     * @return bool
-     */
-    private function isTaxFree($taxId, $customerGroupId)
-    {
-        return (Shopware()->Config()->get('sARTICLESOUTPUTNETTO') && !$taxId)
-            || (!$taxId && $customerGroupId);
     }
 
     public function setInstallmentData($total_amount, $amount, $interest_rate, $interest_amount, $service_charge, $annual_percentage_rate, $monthly_debit_interest, $number_of_rates, $rate, $last_rate, $payment_firstday)
