@@ -144,7 +144,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
         $amount = $orderStruct->getTotal();
 
-        return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingToSend, $shippingTax, $dfpToken, $lang, $amount);
+        return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingToSend, $shippingTax, $dfpToken, $lang, $amount, $orderStruct->getCurrencyId());
     }
 
     private function positionStructToArray(\SwagBackendOrder\Components\Order\Struct\PositionStruct $item)

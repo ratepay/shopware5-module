@@ -42,6 +42,9 @@ class PaymentRequestData
 
     private $amount;
 
+    /** @var int */
+    private $currencyId;
+
     /**
      * @return mixed
      */
@@ -122,17 +125,26 @@ class PaymentRequestData
         return $this->dfpToken;
     }
 
+    /**
+     * @return int
+     */
+    public function getCurrencyId()
+    {
+        return $this->currencyId;
+    }
+
     public function __construct(
         $method,
-                                $customer,
-                                $billingAddress,
-                                $shippingAddress,
-                                $items,
-                                $shippingCost,
-                                $shippingTax,
-                                $dfpToken,
-                                $lang,
-                                $amount
+        $customer,
+        $billingAddress,
+        $shippingAddress,
+        $items,
+        $shippingCost,
+        $shippingTax,
+        $dfpToken,
+        $lang,
+        $amount,
+        $currencyId
     ) {
         $this->method = $method;
         $this->customer = $customer;
@@ -144,6 +156,7 @@ class PaymentRequestData
         $this->dfpToken = $dfpToken;
         $this->lang = $lang;
         $this->amount = $amount;
+        $this->currencyId = $currencyId;
     }
 
     /**
