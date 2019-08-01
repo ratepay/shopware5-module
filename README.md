@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version 5.3.10 - Released 2019-06-05
+* fix tax rate
+
 ### Version 5.3.9 - Released 2019-05-09
 * fix tax rate shipping for shopware versions < 5.5.0
 

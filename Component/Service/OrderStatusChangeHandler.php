@@ -129,7 +129,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 'ordernumber' => 'shipping',
                 'quantity' => 1,
                 'priceNumeric' => $shippingCosts,
-                'tax_rate' => $order->getDetails()->first()->getTaxRate(),
+
+                // Shopware does have a bug - so getTaxRate will not work properly
+                // Issue: https://issues.shopware.com/issues/SW-24119
+                // we can not simple calculate the shipping tax cause the values in the database are not properly rounded.
+                // So we do not get the correct shipping tax rate if we calculate it.
+                'tax_rate' => \RatePAY\Service\Math::taxFromPrices($order->getInvoiceShippingNet(), $order->getInvoiceShipping()) > 0 ? $order->getInvoiceShippingTaxRate() : 0
             ];
         }
 
@@ -167,7 +172,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
     }
 
     /**
-     * @param $item
+     * @param \Shopware\Models\Order\Detail $item
      * @return array
      */
     private function getItemForOrderDetails($item)
@@ -177,7 +182,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
             'ordernumber' => $item->getArticlenumber(),
             'quantity' => $item->getQuantity(),
             'priceNumeric' => $item->getPrice(),
-            'tax_rate' => $item->getTaxRate(),
+            // Shopware does have a bug - so getTaxRate will not work properly
+            // Issue: https://issues.shopware.com/issues/SW-24119
+            'tax_rate' => $item->getTax() == null ? 0 : $item->getTaxRate()
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace  RpayRatePay\Component\Service;
 
+use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\BankData;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
@@ -132,6 +133,29 @@ class SessionLoader
 
         $shippingTax = $this->session->sOrderVariables['sBasket']['sShippingcostsTax'];
 
+
+        $userData = Shopware()->Session()->sOrderVariables['sUserData'];
+
+        if ($userData['additional']['charge_vat'] == false) {
+            // the customergroup must not pay tax
+            $shippingTax = 0;
+            foreach($items as $i => $item) {
+                $items[$i]['tax_rate'] = 0;
+            }
+        }
+
+        foreach ($items as &$item) {
+            if ($item['modus'] == 2) { //is voucher
+                if (Math::taxFromPrices($item['amountnetNumeric'], $item['amountWithTax']) == 0) {
+                //if ($item['taxID'] == null) { // does not work cause the tax ID is always null in this case.
+                    $item['tax_rate'] = 0;
+                }
+            }
+        }
+
+        $currencyId = Shopware()->Session()->sOrderVariables['sBasket']['sCurrencyId'];
+
+
         $dfpToken = $this->session->RatePAY['dfpToken'];
 
         $lang = $this->findLangInSession();
@@ -148,7 +172,8 @@ class SessionLoader
             $shippingTax,
             $dfpToken,
             $lang,
-            $amount
+            $amount,
+            $currencyId
         );
     }
 

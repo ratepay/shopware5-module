@@ -137,7 +137,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
     private function getTermFallback($paymentMeansName, $addressObj, $shopId)
     {
         $config = $this->getConfig($paymentMeansName, $addressObj, $shopId);
-        $termString = $config['month-allowed'];
+        $termString = $config['month_allowed'];
         $termArray = explode(',', $termString);
         return $termArray[0];
     }
@@ -178,7 +178,7 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $addressObj = Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
 
         $config = $this->getConfig($paymentMeansName, $addressObj, $shopId);
-        $optionsString = $config['payment-firstday'];
+        $optionsString = $config['payment_firstday'];
         $optionsArray = explode(',', $optionsString);
         $optionsIntArray = array_map('intval', $optionsArray);
 

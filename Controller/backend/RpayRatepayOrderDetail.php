@@ -537,9 +537,6 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             . 'WHERE `s_order`.`id` = ?';
         $shippingRow = Shopware()->Db()->fetchRow($sql, [$orderId]);
         if (isset($shippingRow['quantityDeliver'])) {
-            if ($shippingRow['tax_rate'] < 0) {
-                $shippingRow['tax_rate'] = Shopware()->Db()->fetchOne('SELECT MAX(`tax`) FROM `s_core_tax`');
-            }
             $shippingRow['quantity'] = 1;
             $shippingRow['articleID'] = 0;
             $shippingRow['name'] = 'shipping';
@@ -566,7 +563,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
             . '`delivered`, '
             . '`cancelled`, '
             . '`returned`, '
-            . '`tax_rate` '
+            . '`position`.`tax_rate` as `tax_rate` '
             . 'FROM `s_order_details` as detail '
             . 'INNER JOIN `rpay_ratepay_order_discount` as position ON `position`.`s_order_detail_id` = `detail`.`id` '
             . 'WHERE `position`.`s_order_id` = ?';
