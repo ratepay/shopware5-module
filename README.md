@@ -4,7 +4,7 @@
 |Module | RatePAY Module for Shopware
 |------|----------
 |Author | Annegret Seufert
-|Shop Version | `5.1.x` - `5.5.x`
+|Shop Version | `5.3.x` - `5.4.6`
 |Version | `5.3.10`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
@@ -25,6 +25,8 @@
 ## Changelog
 
 ### Version 5.3.10 - Released 2019-08-01
+* fix "the service `shop` was not found"-issue in backend orders
+* fix different currency issue
 * update install/update/uninstall process
 
 ### Version 5.3.9 - Released 2019-05-09
