@@ -534,13 +534,20 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         $array = $basketFactory->toArray();
 
-        if(is_numeric($currency)) { //currency is the id
+        $currencyRepo = Shopware()->Models()->getRepository(\Shopware\Models\Shop\Currency::class);
+        if($currency instanceof \Shopware\Models\Shop\Currency) {
+            // nothing to do
+        } else if(is_numeric($currency)) { //currency is the id
             /** @var \Shopware\Models\Shop\Currency $currencyEntity */
-            $currencyEntity = Shopware()->Models()->find(\Shopware\Models\Shop\Currency::class, $currency);
-            $currency = $currencyEntity->getCurrency();
-        } else if(!is_string($currency)) { //currency is NOT the iso code
-            //TODO throw an error?
+            $currency = $currencyRepo->find($currency);
+        } else if(is_string($currency)) { //currency is NOT the iso code
+            /** @var \Shopware\Models\Shop\Currency $currencyEntity */
+            $currency = $currencyRepo->findOneBy(['currency' => $currency]);
+        } else {
+            $currency = "EUR"; //fallback
         }
+
+        $currency = $currency instanceof \Shopware\Models\Shop\Currency ? $currency->getCurrency() : $currency;
 
         if($currency) {
             $array['Currency'] = $currency;

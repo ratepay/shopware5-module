@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.1.x` - `5.5.x`
-|Version | `5.3.9`
+|Version | `5.4.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,13 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.4 - Released 2019-08-01
+* fix tax rate
+* fix "the service `shop` was not found"-issue in backend orders
+* fix different currency issue
+* update install/update/uninstall process
+* fix tax issue on request if customer see only net prices.
 
 ### Version 5.3.10 - Released 2019-06-05
 * fix tax rate
