@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.1.x` - `5.5.x`
-|Version | `5.3.9`
+|Version | `5.3.10`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.10 - Released 2019-08-01
+* update install/update/uninstall process
 
 ### Version 5.3.9 - Released 2019-05-09
 * fix tax rate shipping for shopware versions < 5.5.0

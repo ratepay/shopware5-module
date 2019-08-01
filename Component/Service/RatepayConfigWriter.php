@@ -108,8 +108,8 @@ class RatepayConfigWriter
                 $response['result']['installmentConfig']['interestrate-default'],
             ];
             $paymentSql = 'INSERT INTO `rpay_ratepay_config_installment`'
-                . '(`rpay_id`, `month-allowed`,`payment-firstday`,`interestrate-default`,'
-                . '`rate-min-normal`)'
+                . '(`rpay_id`, `month_allowed`,`payment_firstday`,`interestrate_default`,'
+                . '`rate_min_normal`)'
                 . 'VALUES(' . substr(str_repeat('?,', 5), 0, -1) . ');';
             try {
                 $this->db->query($paymentSql, $installmentConfig);
@@ -154,8 +154,8 @@ class RatepayConfigWriter
 
             $configSql = 'INSERT INTO `rpay_ratepay_config`'
                 . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`, `prepayment`,'
-                . '`device-fingerprint-status`, `device-fingerprint-snippet-id`,'
-                . '`country-code-billing`, `country-code-delivery`,'
+                . '`device_fingerprint_status`, `device_fingerprint_snippet_id`,'
+                . '`country_code_billing`, `country_code_delivery`,'
                 . '`currency`,`country`, `sandbox`,'
                 . '`backend`, `shopId`)'
                 . 'VALUES(' . substr(str_repeat('?,', 16), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
