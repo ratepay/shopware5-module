@@ -158,8 +158,6 @@ class PaymentRequestData
     }
 
     /**
-     * @param \Shopware\Models\Customer\Customer $customer
-     * @param \Shopware\Models\Customer\Address $billing
      * @return string
      */
     public function getBirthday()
