@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version 5.4.1 - Released 2019-08-22
+* RATEPLUG-3: backend orders: fix discount item
+
 ### Version 5.4 - Released 2019-08-01
 * fix tax rate
 * fix "the service `shop` was not found"-issue in backend orders
