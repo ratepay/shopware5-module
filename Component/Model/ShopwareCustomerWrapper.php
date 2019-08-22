@@ -38,9 +38,8 @@ class ShopwareCustomerWrapper
      */
     public function getShipping($property = null)
     {
-        $shippingId = Shopware()->Session()->offsetGet('checkoutShippingAddressId');
-        if (!empty($shippingId)) {
-            return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingId);
+        if($shipping = $this->getShippingAddressFromSession()) {
+            return $shipping;
         }
 
         if (is_null($property)) {
@@ -73,9 +72,8 @@ class ShopwareCustomerWrapper
      */
     public function getBilling($property = null)
     {
-        $billingId = Shopware()->Session()->offsetGet('checkoutBillingAddressId');
-        if (!empty($billingId)) {
-            return Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
+        if($billingAddress = $this->getBillingAddressFromSession()) {
+            return $billingAddress;
         }
 
         if (is_null($property)) {
@@ -124,17 +122,14 @@ class ShopwareCustomerWrapper
     }
 
     /**
-     * @return null|object|\Shopware\Models\Country\Country
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
     public function getBillingCountry()
     {
-        $shippingId = Shopware()->Session()->offsetGet('checkoutShippingAddressId');
-        if (!empty($shippingId)) {
-            Logger::singleton()->info(__METHOD__ . ' --> ' . $shippingId);
-            return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingId)->getCountry();
+        if($shipping = $this->getShippingAddressFromSession()) {
+            return $shipping->getCountry();
         }
 
         $billingFresh = $this->getBillingFresh();
@@ -259,5 +254,36 @@ class ShopwareCustomerWrapper
         }
 
         return null;
+    }
+
+    /**
+     * @return \Shopware\Models\Customer\Address|null
+     */
+    protected function getShippingAddressFromSession() {
+        if($this->isAddressAccessibleViaSession()) {
+            $shippingAddressId = Shopware()->Session()->offsetGet('checkoutShippingAddressId');
+            if (!empty($shippingAddressId)) {
+                return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingAddressId)->getCountry();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return \Shopware\Models\Customer\Address|null
+     */
+    protected function getBillingAddressFromSession() {
+        if($this->isAddressAccessibleViaSession()) {
+            $billingAddressId = Shopware()->Session()->offsetGet('checkoutBillingAddressId');
+            if (!empty($billingAddressId)) {
+                return Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingAddressId)->getCountry();
+            }
+        }
+        return null;
+    }
+
+    protected function isAddressAccessibleViaSession() {
+        //validate if the model does exist and if the user uses the frontend or the administration (session will call the `shop`-service)
+        return class_exists('Shopware\Models\Customer\Address') && Shopware()->Container()->has('Shop');
     }
 }

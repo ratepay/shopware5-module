@@ -84,8 +84,8 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
             $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
 
             //if no DF token is set, receive all the necessary data to set it and extend template
-            if (true == $configPlugin['device-fingerprint-status'] && !Shopware()->Session()->RatePAY['dfpToken']) {
-                $view->assign('snippetId', $configPlugin['device-fingerprint-snippet-id']);
+            if (true == $configPlugin['device_fingerprint_status'] && !Shopware()->Session()->RatePAY['dfpToken']) {
+                $view->assign('snippetId', $configPlugin['device_fingerprint_snippet_id']);
 
                 try {
                     $sId = Shopware()->SessionID();

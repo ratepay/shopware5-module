@@ -81,8 +81,8 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
             $validation = $this->getValidator($user);
 
             $validation->setAllowedCurrencies($data['currency']);
-            $validation->setAllowedCountriesBilling($data['country-code-billing']);
-            $validation->setAllowedCountriesDelivery($data['country-code-delivery']);
+            $validation->setAllowedCountriesBilling($data['country_code_billing']);
+            $validation->setAllowedCountriesDelivery($data['country_code_delivery']);
 
             if ($validation->isRatepayHidden()) {
                 $show[$payment] = false;
