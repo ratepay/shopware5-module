@@ -344,7 +344,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $countryBilling = $userModelWrapped->getBillingCountry();
             $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
 
-            $this->View()->assign('rpCustomerMsg', $config['error-default']);
+            $this->View()->assign('rpCustomerMsg', $config['error_default']);
         }
     }
 

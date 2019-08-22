@@ -301,7 +301,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         $shopItems = $paymentRequestData->getItems();
 
-        $shoppingBasket = $this->createBasketArray($shopItems);
+        $shoppingBasket = $this->createBasketArray($paymentRequestData->getCurrencyId(), $shopItems);
 
         if ($paymentRequestData->getShippingCost() > 0) {
             // As we know this is the first request, we do not pass unsaved `orderId`
@@ -511,12 +511,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
     /**
      * create basket array
-     *
+     * @param $currency
      * @param $items
      * @param bool$type* @param null $orderId
      * @return array
      */
-    private function createBasketArray($items, $type = false, $orderId = null)
+    private function createBasketArray($currency, $items, $type = false, $orderId = null)
     {
         $useFallbackShipping = $this->usesShippingItemFallback($orderId);
         $useFallbackDiscount = $this->usesDiscountItemFallback($orderId);
@@ -532,7 +532,28 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $basketFactory->addItem($shopItem);
         }
 
-        return $basketFactory->toArray();
+        $array = $basketFactory->toArray();
+
+        $currencyRepo = Shopware()->Models()->getRepository(\Shopware\Models\Shop\Currency::class);
+        if($currency instanceof \Shopware\Models\Shop\Currency) {
+            // nothing to do
+        } else if(is_numeric($currency)) { //currency is the id
+            /** @var \Shopware\Models\Shop\Currency $currencyEntity */
+            $currency = $currencyRepo->find($currency);
+        } else if(is_string($currency)) { //currency is NOT the iso code
+            /** @var \Shopware\Models\Shop\Currency $currencyEntity */
+            $currency = $currencyRepo->findOneBy(['currency' => $currency]);
+        } else {
+            $currency = "EUR"; //fallback
+        }
+
+        $currency = $currency instanceof \Shopware\Models\Shop\Currency ? $currency->getCurrency() : $currency;
+
+        if($currency) {
+            $array['Currency'] = $currency;
+        }
+
+        return $array;
     }
 
     /**
@@ -547,6 +568,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      */
     public function callConfirmationDeliver($operationData)
     {
+        /** @var \Shopware\Models\Order\Order $order */
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
         $countryCode = $order->getBilling()->getCountry()->getIso();
         $method = $order->getPayment()->getName();
@@ -561,7 +583,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         $mbHead = $this->getHead($countryCode);
 
-        $shoppingItems = $this->createBasketArray($operationData['items'], $type, $operationData['orderId']);
+        $shoppingItems = $this->createBasketArray($order->getCurrency(), $operationData['items'], $type, $operationData['orderId']);
         $shoppingBasket = [
             'ShoppingBasket' => $shoppingItems,
         ];
@@ -614,6 +636,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      */
     public function callPaymentChange($operationData)
     {
+        /** @var \Shopware\Models\Order\Order $order */
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
         $countryCode = $order->getBilling()->getCountry()->getIso();
         $method = $order->getPayment()->getName();
@@ -640,8 +663,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
                     'TaxRate' => $operationData['items']['tax_rate']
                 ]];
             }
+            $shoppingItems['Currency'] = $order->getCurrency();
         } else {
-            $shoppingItems = $this->createBasketArray($operationData['items'], $operationData['subtype'], $operationData['orderId']);
+            $shoppingItems = $this->createBasketArray($order->getCurrency(), $operationData['items'], $operationData['subtype'], $operationData['orderId']);
         }
 
         $shoppingBasket = [

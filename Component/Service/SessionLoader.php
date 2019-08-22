@@ -132,6 +132,8 @@ class SessionLoader
 
         $shippingTax = $this->session->sOrderVariables['sBasket']['sShippingcostsTax'];
 
+        $currencyId = Shopware()->Session()->sOrderVariables['sBasket']['sCurrencyId'];
+
         $dfpToken = $this->session->RatePAY['dfpToken'];
 
         $lang = $this->findLangInSession();
@@ -148,7 +150,8 @@ class SessionLoader
             $shippingTax,
             $dfpToken,
             $lang,
-            $amount
+            $amount,
+            $currencyId
         );
     }
 

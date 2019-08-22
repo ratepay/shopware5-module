@@ -2,6 +2,7 @@
 
 namespace RpayRatePay\Bootstrapping;
 
+use RpayRatePay\Bootstrapping\Database\InstallModels;
 use RpayRatePay\Component\Service\ShopwareUtil;
 
 class DatabaseSetup extends Bootstrapper
@@ -12,7 +13,8 @@ class DatabaseSetup extends Bootstrapper
      */
     public function install()
     {
-        $this->createDatabaseTables();
+        $setup = new InstallModels(Shopware()->Container()->get('models'));
+        $setup->install();
     }
 
     /**
@@ -21,7 +23,9 @@ class DatabaseSetup extends Bootstrapper
      */
     public function update()
     {
-        $this->updateConfigurationTables();
+        $setup = new InstallModels(Shopware()->Container()->get('models'));
+        $setup->update();
+
         $this->removeSandboxColumns();
     }
 
@@ -33,75 +37,8 @@ class DatabaseSetup extends Bootstrapper
      */
     public function uninstall()
     {
-        try {
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_logging`");
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config`");
-
-            /*
-             * These tables are not deleted. This makes possible to manage the
-             * orders after a new Plugin installation
-             *
-             * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_positions`");
-             * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_shipping`");
-             * Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_discount`");
-             */
-
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_order_history`");
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_installment`");
-            Shopware()->Db()->query("DROP TABLE IF EXISTS `rpay_ratepay_config_payment`");
-        } catch (\Exception $exception) {
-            throw new \Exception('Can not delete RatePAY tables - ' . $exception->getMessage());
-        }
-    }
-
-
-    /**
-     * @throws \Exception
-     */
-    protected function createDatabaseTables()
-    {
-        $tables = [
-            new \RpayRatePay\Bootstrapping\Database\CreateLoggingTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateConfigTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateOrderPositionsTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateOrderShippingTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateOrderDiscountTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateOrderHistoryTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateConfigPaymentTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateConfigInstallmentTable(),
-        ];
-
-        try {
-            foreach ($tables as $generator) {
-                $generator(Shopware()->Db());
-            }
-        } catch (\Exception $exception) {
-            $this->bootstrap->uninstall();
-            throw new \Exception('Can not create Database.' . $exception->getMessage());
-        }
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function updateConfigurationTables()
-    {
-        $tables = [
-            new \RpayRatePay\Bootstrapping\Database\CreateConfigTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateConfigPaymentTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateConfigInstallmentTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateOrderPositionsTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateOrderShippingTable(),
-            new \RpayRatePay\Bootstrapping\Database\CreateOrderDiscountTable(),
-        ];
-
-        try {
-            foreach ($tables as $generator) {
-                $generator(Shopware()->Db());
-            }
-        } catch (\Exception $exception) {
-            throw new \Exception('Can not update Database.' . $exception->getMessage());
-        }
+        $setup = new InstallModels(Shopware()->Container()->get('models'));
+        $setup->uninstall();
     }
 
     /**

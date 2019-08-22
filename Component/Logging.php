@@ -47,17 +47,19 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Logging
         $requestXml = preg_replace("/<bank-account-number>(.*)<\/bank-account-number>/", '<bank-account-number>xxxxxxxx</bank-account-number>', $requestXml);
         $requestXml = preg_replace("/<bank-code>(.*)<\/bank-code>/", '<bank-code>xxxxxxxx</bank-code>', $requestXml);
 
-        $bind = [
-            'version' => $version,
-            'operation' => $operation,
-            'suboperation' => $operationSubtype,
-            'transactionId' => $transactionId,
-            'request' => $requestXml,
-            'response' => $responseXml
-        ];
-
         try {
-            Shopware()->Db()->insert('rpay_ratepay_logging', $bind);
+            $log = new \RpayRatePay\Models\Log();
+            $log->setVersion($version);
+            $log->setOperation($operation);
+            $log->setSubOperation($operationSubtype);
+            $log->setTransationId($transactionId);
+            $log->setRequest($requestXml);
+            $log->setResponse($responseXml);
+
+            /** @var \Shopware\Components\Model\ModelManager $em */
+            $em = Shopware()->Container()->get('models');
+            $em->persist($log);
+            $em->flush();
         } catch (\Exception $exception) {
             Logger::singleton()->error('RatePAY was unable to log order history: ' . $exception->getMessage());
         }

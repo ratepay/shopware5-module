@@ -55,32 +55,32 @@ require_once 'PiRatepayRateCalcBase.php';
             $basketAmount = $this->getRequestAmount();
 
             $sBackend = $backend ? 1 : 0;
-            $qry = "SELECT rrci.`month-allowed`, rrci.`rate-min-normal`, rrci.`interestrate-default`, rrci.`payment-firstday`
+            $qry = "SELECT rrci.`month_allowed`, rrci.`rate_min_normal`, rrci.`interestrate_default`, rrci.`payment_firstday`
                     FROM `rpay_ratepay_config_installment` AS rrci
                       JOIN `rpay_ratepay_config` AS rrc
                         ON rrci.`rpay_id` = rrc.`" . $paymentType . "`
                     WHERE rrc.`shopId` = " . $shopId . "
-                    AND rrc.`country-code-billing` LIKE '%" . $countryIso . "%'
+                    AND rrc.`country_code_billing` LIKE '%" . $countryIso . "%'
                     AND rrc.backend = $sBackend;";
 
             //get ratepay config based on shopId
             $rpRateConfig=Shopware()->Db()->fetchRow($qry);
 
-            $interestRate = ((float)$rpRateConfig["interestrate-default"] / 12) / 100;
-            $monthAllowed = explode(',', $rpRateConfig["month-allowed"]);
+            $interestRate = ((float)$rpRateConfig["interestrate_default"] / 12) / 100;
+            $monthAllowed = explode(',', $rpRateConfig["month_allowed"]);
 
             foreach ($monthAllowed AS $month) {
                 $rateAmount = ceil($basketAmount * (($interestRate * pow((1 + $interestRate), $month)) / (pow((1 + $interestRate), $month) - 1)));
-                if($rateAmount >= $rpRateConfig["rate-min-normal"]) {
+                if($rateAmount >= $rpRateConfig["rate_min_normal"]) {
                     $allowedRuntimes[] = $month;
                 }
             }
 
             $installmentConfigArray = array(
-                'interestrate_default' => $rpRateConfig["interestrate-default"],
+                'interestrate_default' => $rpRateConfig["interestrate_default"],
                 'month_allowed' => $allowedRuntimes,
-                'rate_min_normal' => $rpRateConfig["rate-min-normal"],
-                'payment_firstday' => $rpRateConfig["payment-firstday"],
+                'rate_min_normal' => $rpRateConfig["rate_min_normal"],
+                'payment_firstday' => $rpRateConfig["payment_firstday"],
             );
 
             return $installmentConfigArray;
