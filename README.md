@@ -26,6 +26,7 @@
 
 ### Version 5.4.1 - Released 2019-08-22
 * RATEPLUG-3: backend orders: fix discount item
+* RATEPLUG-5: backend orders: fix shipping tax rate
 
 ### Version 5.4 - Released 2019-08-01
 * fix tax rate
