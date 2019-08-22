@@ -129,7 +129,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
         $shippingTax = Math::taxFromPrices(
             $orderStruct->getShippingCostsNet(),
             $orderStruct->getShippingCosts()
-        );
+        ) > 0 ? $orderStruct->getShippingCostsTaxRate() : 0;
 
         //looks like vat is always a whole number, so I'll round
         $shippingTax = round($shippingTax);
