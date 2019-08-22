@@ -149,12 +149,17 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
     private function positionStructToArray(\SwagBackendOrder\Components\Order\Struct\PositionStruct $item)
     {
+        $isDiscount = $item->getMode() != 0 && ($item->getMode() != 4 || $item->getTotal() < 0);
         $a = [
             'articlename' => $item->getName(),
             'ordernumber' => $item->getNumber(), //should be article number, see BasketArrayBuilder
             'quantity' => $item->getQuantity(),
-            'priceNumeric' => $item->getPrice(),
-            'tax_rate' => $item->getTaxRate(),
+            'priceNumeric' => $isDiscount ? $item->getTotal() : $item->getPrice(),
+            'price' => $isDiscount ? $item->getTotal() : $item->getPrice(),
+            // Shopware does have a bug - so the getTaxRate() might return the wrong value.
+            // Issue: https://issues.shopware.com/issues/SW-24119
+            'tax_rate' => $item->getTaxId() == 0 ? 0 : $item->getTaxRate(), // this is a little fix for that
+            'modus' => $item->getMode()
         ];
 
         return $a;
