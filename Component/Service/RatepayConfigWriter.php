@@ -2,13 +2,20 @@
 
 namespace RpayRatePay\Component\Service;
 
+use Doctrine\ORM\OptimisticLockException;
+use RpayRatePay\Models\Config;
+use Shopware\Components\Model\ModelManager;
 class RatepayConfigWriter
 {
     private $db;
 
+    /** @var ModelManager  */
+    protected $modelManager;
+
     public function __construct($db)
     {
         $this->db = $db;
+        $this->modelManager = Shopware()->Models(); //TODO remove it plugin is moved to the SW5.2 plugin engine
     }
 
     /**
@@ -121,28 +128,31 @@ class RatepayConfigWriter
 
         //updates 0% field in rpay_ratepay_config or inserts into rpay_ratepay_config THIS MEANS WE HAVE TO SEND the 0RT profiles last
         if (strstr($profileId, '_0RT') !== false) {
-            $qry = "UPDATE rpay_ratepay_config SET installment0 = '" . $type['installment'] . "' WHERE profileId = '" . substr($profileId, 0, -4) . "'";
-            $this->db->query($qry);
+            /** @var Config $configModel */
+            $configModel = $this->modelManager->getRepository(Config::class)->findOneBy(['profileId' => substr($profileId, 0, -4)]);
+            $configModel->setInstallment0($type['installment']);
+            try {
+                $this->modelManager->flush($configModel);
+            } catch (OptimisticLockException $e) {
+                Logger::singleton()->error($e->getMessage());
+                return false;
+            }
         } else {
-            $data = [
-                $response['result']['merchantConfig']['profile-id'],
-                $type['invoice'],
-                $type['installment'],
-                $type['elv'],
-                0,
-                0,
-                $type['prepayment'],
-                $response['result']['merchantConfig']['eligibility-device-fingerprint'] ?: 'no',
-                $response['result']['merchantConfig']['device-fingerprint-snippet-id'],
-                strtoupper($response['result']['merchantConfig']['country-code-billing']),
-                strtoupper($response['result']['merchantConfig']['country-code-delivery']),
-                strtoupper($response['result']['merchantConfig']['currency']),
-                strtoupper($country),
-                $response['sandbox'],
-                $backend,
-                //shopId always needs be the last line
-                $shopId
-            ];
+            $configModel = new Config();
+            $configModel->setProfileId($response['result']['merchantConfig']['profile-id']);
+            $configModel->setInvoice($type['invoice']);
+            $configModel->setInstallment($type['installment']);
+            $configModel->setDebit($type['elv']);
+            $configModel->setInstallment0(0); // TODO why there is no value?
+            $configModel->setInstallmentDebit(0); // TODO why there is no value?
+            $configModel->setPrepayment($type['prepayment']);
+            $configModel->setCountryCodeBilling(strtoupper($response['result']['merchantConfig']['country-code-billing']));
+            $configModel->setCountryCodeDelivery(strtoupper($response['result']['merchantConfig']['country-code-delivery']));
+            $configModel->setCurrency(strtoupper($response['result']['merchantConfig']['currency']));
+            $configModel->setCountry(strtoupper($country));
+            $configModel->setSandbox($response['sandbox'] == 1);
+            $configModel->setBackend($backend == 1);
+            $configModel->setShopId($shopId);
 
             $activePayments[] = '"rpayratepayinvoice"';
             $activePayments[] = '"rpayratepaydebit"';
@@ -152,15 +162,10 @@ class RatepayConfigWriter
 
             $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(',', $activePayments) . ') AND `active` <> 0';
 
-            $configSql = 'INSERT INTO `rpay_ratepay_config`'
-                . '(`profileId`, `invoice`, `installment`, `debit`, `installment0`, `installmentDebit`, `prepayment`,'
-                . '`device_fingerprint_status`, `device_fingerprint_snippet_id`,'
-                . '`country_code_billing`, `country_code_delivery`,'
-                . '`currency`,`country`, `sandbox`,'
-                . '`backend`, `shopId`)'
-                . 'VALUES(' . substr(str_repeat('?,', 16), 0, -1) . ');'; // In case of altering cols change 14 by amount of affected cols
             try {
-                $this->db->query($configSql, $data);
+                $this->modelManager->persist($configModel);
+                $this->modelManager->flush($configModel);
+
                 if (count($activePayments) > 0) {
                     $this->db->query($updateSqlActivePaymentMethods);
                 }

@@ -3,6 +3,8 @@
 namespace RpayRatePay\Bootstrapping\Events;
 
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ConfigService;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
 
 class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -11,6 +13,12 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
      */
     private $path;
 
+    /** @var ConfigService  */
+    protected $configService;
+
+    /** @var DfpService  */
+    protected $dfpService;
+
     /**
      * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_TemplateExtensionSubscriber constructor.
      * @param $path string base path to plugin
@@ -18,6 +26,8 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
     public function __construct($path)
     {
         $this->path = $path;
+        $this->configService = ConfigService::getInstance(); // TODO: if moved to SW5.2 plugin engine: replace!
+        $this->dfpService = DfpService::getInstance(); // TODO: if moved to SW5.2 plugin engine: replace!
     }
 
     public static function getSubscribedEvents()
@@ -28,7 +38,7 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
     }
 
     /**
-     * @param Enlight_Event_EventArgs $args
+     * @param \Enlight_Event_EventArgs $args
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
@@ -84,20 +94,10 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
             $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
 
             //if no DF token is set, receive all the necessary data to set it and extend template
-            if (true == $configPlugin['device_fingerprint_status'] && !Shopware()->Session()->RatePAY['dfpToken']) {
-                $view->assign('snippetId', $configPlugin['device_fingerprint_snippet_id']);
-
-                try {
-                    $sId = Shopware()->SessionID();
-                } catch (\Exception $exception) {
-                }
-
-                $tokenFirstPart = (!empty($sId)) ? $sId : rand();
-
-                $token = md5($tokenFirstPart . microtime());
-                Shopware()->Session()->RatePAY['dfpToken'] = $token;
-                $view->assign('token', Shopware()->Session()->RatePAY['dfpToken']);
-
+            if (true || $this->dfpService->isDfpIdAlreadyGenerated() == false) {
+                // create id and write it to the session
+                $view->assign('token', $this->dfpService->getDfpId());
+                $view->assign('snippetId', $this->configService->getDfpSnippetId());
                 $view->extendsTemplate('frontend/payment_rpay_part/index/dfp.tpl');
             }
         }
