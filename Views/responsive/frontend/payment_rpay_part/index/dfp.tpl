@@ -3,7 +3,7 @@
 {block name="frontend_index_footer"}
     {$smarty.block.parent}
 
-    {block name="frontend_ratepay_devicefinterprint"}
+    {block name="frontend_ratepay_devicefingerprint"}
         {if $token && $snippetId }
             <script type="text/javascript">
                 let di = {
