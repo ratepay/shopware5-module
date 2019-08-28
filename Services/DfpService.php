@@ -31,46 +31,45 @@ class DfpService
     }
 
     public function isDfpIdAlreadyGenerated() {
-        if($this->container->has('shop')) {
-            $ratePaySession = $this->getRatePaySession();
-            return isset($ratePaySession[self::SESSION_VAR_NAME]) && $ratePaySession[self::SESSION_VAR_NAME] !== null;
-        }
+        return $this->getRatePaySession(self::SESSION_VAR_NAME) !== null;
     }
 
     public function getDfpId() {
-        if($this->container->has('shop')) {
+        $isStoreFront = $this->container->has('shop');
+        if($isStoreFront) {
             if($this->isDfpIdAlreadyGenerated()) {
-                return $this->getRatePaySession()[self::SESSION_VAR_NAME];
+                return $this->getRatePaySession(self::SESSION_VAR_NAME);
             }
             // storefront request
             $sessionId = $this->getSession()->get('sessionId');
-            $isAdmin = false;
         } else {
             //admin or console request
             $sessionId = rand();
-            $isAdmin = true;
         }
 
         $token = md5($sessionId . microtime());
 
-        if($isAdmin === false) {
+        if($isStoreFront) {
             // if it is a storefront request we will safe the token to the session for later access
             // in the admin we only need it once
-            $this->getRatePaySession()[self::SESSION_VAR_NAME] = $token;
+            $this->setRatePaySession(self::SESSION_VAR_NAME, $token);
         }
         return $token;
     }
 
     public function deleteDfpId()
     {
-        $this->getRatePaySession()[self::SESSION_VAR_NAME] = null;
+        $this->setRatePaySession(self::SESSION_VAR_NAME, null);
     }
 
-    /**
-     * @return array
-     */
-    protected function &getRatePaySession() {
-        return $this->getSession()->get('RatePAY');
+
+    protected function setRatePaySession($key, $value) {
+        return $this->getSession()->RatePAY[$key]= $value;
+    }
+
+    protected function getRatePaySession($key) {
+        $session = $this->getSession()->get('RatePAY');
+        return isset($session[$key]) ? $session[$key]: null;
     }
 
     protected function getSession() {
