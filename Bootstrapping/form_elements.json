@@ -369,7 +369,7 @@
     "name": "ratepay/dfp/snippet_id",
     "config":{
       "label": "Snippet ID",
-      "value": "",
+      "value": "ratepay",
       "scope": 1
     }
   }

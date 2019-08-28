@@ -21,7 +21,9 @@ class ConfigService
     }
 
     public function getDfpSnippetId() {
-        return $this->_config->get('ratepay/dfp/snippet_id', 'ratepay');
+        $defaultValue = 'ratepay';
+        $value = $this->_config->get('ratepay/dfp/snippet_id', $defaultValue);
+        return strlen($value) ? $value : $defaultValue;
     }
 
 }
