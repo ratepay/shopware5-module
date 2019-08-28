@@ -1,6 +1,7 @@
 {extends file="parent:frontend/index/index.tpl"}
 
-{block name="frontend_index_footer" append}
+{block name="frontend_index_footer"}
+    {$smarty.block.parent}
 
     {block name="frontend_ratepay_devicefinterprint"}
         {if $token && $snippetId }
