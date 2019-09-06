@@ -8,6 +8,7 @@ use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Service\Logger;
 use Shopware\Models\Order\Order;
 use RpayRatePay\Component\Service\ConfigLoader;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
 
 class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -18,6 +19,9 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
     /** @var ConfigLoader  */
     protected $_configLoader;
+
+    /** @var DfpService  */
+    protected $dfpService;
 
     /**
      * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Events_PaymentControllerSubscriber constructor.
@@ -30,6 +34,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
     )
     {
         $this->_configLoader = $configLoader;
+        $this->dfpService = DfpService::getInstance(); // TODO replace if plugin is moved to SW5.2 plugin engine
         $this->path = $path;
     }
 
@@ -136,15 +141,25 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
         $shippingToSend = $orderStruct->getNetOrder() ? $orderStruct->getShippingCostsNet() : $orderStruct->getShippingCosts();
 
-        $dfpToken = '';
-
         $shop = Shopware()->Models()->find('Shopware\Models\Shop\Shop', $orderStruct->getLanguageShopId());
         $localeLang = $shop->getLocale()->getLocale();
         $lang = substr($localeLang, 0, 2);
 
         $amount = $orderStruct->getTotal();
 
-        return new PaymentRequestData($method, $customer, $billing, $shipping, $items, $shippingToSend, $shippingTax, $dfpToken, $lang, $amount, $orderStruct->getCurrencyId());
+        return new PaymentRequestData(
+            $method,
+            $customer,
+            $billing,
+            $shipping,
+            $items,
+            $shippingToSend,
+            $shippingTax,
+            $this->dfpService->getDfpId(),
+            $lang,
+            $amount,
+            $orderStruct->getCurrencyId()
+        );
     }
 
     private function positionStructToArray(\SwagBackendOrder\Components\Order\Struct\PositionStruct $item)

@@ -263,7 +263,7 @@ class ShopwareCustomerWrapper
         if($this->isAddressAccessibleViaSession()) {
             $shippingAddressId = Shopware()->Session()->offsetGet('checkoutShippingAddressId');
             if (!empty($shippingAddressId)) {
-                return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingAddressId)->getCountry();
+                return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingAddressId);
             }
         }
         return null;
@@ -276,7 +276,7 @@ class ShopwareCustomerWrapper
         if($this->isAddressAccessibleViaSession()) {
             $billingAddressId = Shopware()->Session()->offsetGet('checkoutBillingAddressId');
             if (!empty($billingAddressId)) {
-                return Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingAddressId)->getCountry();
+                return Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingAddressId);
             }
         }
         return null;

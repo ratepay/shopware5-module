@@ -355,5 +355,22 @@
       "valueField":"id",
       "scope":1
     }
+  },
+  {
+    "type":"button",
+    "name":"ratepay/dfp/button",
+    "config":{
+      "label":"<b>Device fingerprinting</b>",
+      "value":""
+    }
+  },
+  {
+    "type": "text",
+    "name": "ratepay/dfp/snippet_id",
+    "config":{
+      "label": "Snippet ID",
+      "value": "ratepay",
+      "scope": 1
+    }
   }
 ]
