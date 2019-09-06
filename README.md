@@ -27,6 +27,7 @@
 ### Version 5.3.11 - Released 2019-08-28
 * RATEPLUG-9: move device fingerprinting config from PROFILE_REQUEST to plugin config & improve processing of device fingerprinting
 * Update README version information
+* RATEPLUG-3: backend orders: fix discount item
 
 ### Version 5.3.10 - Released 2019-08-01
 * fix "the service `shop` was not found"-issue in backend orders
