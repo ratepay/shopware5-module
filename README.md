@@ -4,8 +4,8 @@
 |Module | RatePAY Module for Shopware
 |------|----------
 |Author | Annegret Seufert
-|Shop Version | `5.1.x` - `5.5.x`
-|Version | `5.4.0`
+|Shop Version | `5.5.x` - `5.5.x`
+|Version | `5.4.1`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,10 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.4.2 - Released 2019-08-28
+* RATEPLUG-9: move device fingerprinting config from PROFILE_REQUEST to plugin config & improve processing of device fingerprinting
+* Update README version information
 
 ### Version 5.4.1 - Released 2019-08-22
 * RATEPLUG-3: backend orders: fix discount item

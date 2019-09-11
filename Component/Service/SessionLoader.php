@@ -6,10 +6,14 @@ use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\BankData;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
 
 class SessionLoader
 {
     private $session;
+
+    /** @var DfpService  */
+    protected $dfpService;
 
     /**
      * Session constructor with Shopware params Session or BackendSession.
@@ -18,6 +22,7 @@ class SessionLoader
     public function __construct($session)
     {
         $this->session = $session;
+        $this->dfpService = DfpService::getInstance(); //TODO replace if plugin is moved to SW5-2 plugin engine
     }
 
     /**
@@ -156,8 +161,6 @@ class SessionLoader
         $currencyId = Shopware()->Session()->sOrderVariables['sBasket']['sCurrencyId'];
 
 
-        $dfpToken = $this->session->RatePAY['dfpToken'];
-
         $lang = $this->findLangInSession();
 
         $amount = $this->findAmountInSession();
@@ -170,7 +173,7 @@ class SessionLoader
             $items,
             $shippingCost,
             $shippingTax,
-            $dfpToken,
+            $this->dfpService->getDfpId(),
             $lang,
             $amount,
             $currencyId

@@ -25,6 +25,7 @@ use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\Logger;
 use \RpayRatePay\Component\Service\ConfigLoader;
+use \Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
 
 class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
 {
@@ -40,6 +41,9 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
     /** @var ConfigLoader */
     protected $_configLoader;
+
+    /** @var DfpService */
+    protected $dfpService;
 
     /**
      * @return string
@@ -71,6 +75,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
         $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
         $this->_configLoader = new ConfigLoader(Shopware()->Container()->get('db'));
+        $this->dfpService = DfpService::getInstance();
     }
 
     /**
@@ -300,9 +305,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             /**
              * unset DFI token
              */
-            if (Shopware()->Session()->RatePAY['dfpToken']) {
-                unset(Shopware()->Session()->RatePAY['dfpToken']);
-            }
+            $this->dfpService->deleteDfpId();
 
             /*
              * redirect to success page
