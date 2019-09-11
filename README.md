@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.3.x` - `5.4.6`
-|Version | `5.3.10`
+|Version | `5.3.11`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,10 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.11 - Released 2019-08-28
+* RATEPLUG-9: move device fingerprinting config from PROFILE_REQUEST to plugin config & improve processing of device fingerprinting
+* Update README version information
 
 ### Version 5.3.10 - Released 2019-08-01
 * fix "the service `shop` was not found"-issue in backend orders

@@ -67,16 +67,6 @@ class Config extends ModelEntity
     protected $prepayment;
     /**
      * @var string
-     * @ORM\Column(name="device_fingerprint_status", type="string", length=3, nullable=false)
-     */
-    protected $deviceFingerprintStatus;
-    /**
-     * @var string
-     * @ORM\Column(name="device_fingerprint_snippet_id", type="string", length=55, nullable=true)
-     */
-    protected $deviceFingerprintSnippetId;
-    /**
-     * @var string
      * @ORM\Column(name="country_code_billing", type="string", length=30, nullable=true)
      */
     protected $countryCodeBilling;
@@ -260,38 +250,6 @@ class Config extends ModelEntity
     public function setPrepayment($prepayment)
     {
         $this->prepayment = $prepayment;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDeviceFingerprintStatus()
-    {
-        return $this->deviceFingerprintStatus;
-    }
-
-    /**
-     * @param string $deviceFingerprintStatus
-     */
-    public function setDeviceFingerprintStatus($deviceFingerprintStatus)
-    {
-        $this->deviceFingerprintStatus = $deviceFingerprintStatus;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDeviceFingerprintSnippetId()
-    {
-        return $this->deviceFingerprintSnippetId;
-    }
-
-    /**
-     * @param string $deviceFingerprintSnippetId
-     */
-    public function setDeviceFingerprintSnippetId($deviceFingerprintSnippetId)
-    {
-        $this->deviceFingerprintSnippetId = $deviceFingerprintSnippetId;
     }
 
     /**

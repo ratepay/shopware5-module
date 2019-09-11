@@ -93,14 +93,6 @@ class InstallModels
     {
         $renames = [
             Config::class => [
-                'device-fingerprint-status' => [
-                    'device_fingerprint_status',
-                    'varchar(3) COLLATE utf8_unicode_ci NOT NULL'
-                ],
-                'device-fingerprint-snippet-id' => [
-                    'device_fingerprint_snippet_id',
-                    'varchar(55) COLLATE utf8_unicode_ci DEFAULT NULL'
-                ],
                 'country-code-billing'  => [
                     'country_code_billing',
                     'varchar(30) COLLATE utf8_unicode_ci DEFAULT NULL'
