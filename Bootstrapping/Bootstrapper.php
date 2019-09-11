@@ -5,13 +5,13 @@ namespace RpayRatePay\Bootstrapping;
 abstract class Bootstrapper
 {
     /**
-     * @var Shopware_Components_Plugin_Bootstrap
+     * @var \Shopware_Components_Plugin_Bootstrap
      */
     protected $bootstrap;
 
     /**
      * Shopware_Plugins_Frontend_RpayRatePay_Bootstrapping_Payments constructor.
-     * @param Shopware_Components_Plugin_Bootstrap $bootstrap
+     * @param \Shopware_Components_Plugin_Bootstrap $bootstrap
      */
     public function __construct($bootstrap)
     {
