@@ -136,7 +136,9 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             $orderStruct->getShippingCosts()
         );
 
-        //looks like vat is always a whole number, so I'll round
+        //looks like vat is always a whole number, so I'll round --> wrong!! // 2019-05-04
+        //$shippingTax = round($shippingTax, 2);
+        // RATEPLUG-5: we can't round it to 2 precision cause, we will get not correct values. - so we will round it to zero precision
         $shippingTax = round($shippingTax);
 
         $shippingToSend = $orderStruct->getNetOrder() ? $orderStruct->getShippingCostsNet() : $orderStruct->getShippingCosts();
