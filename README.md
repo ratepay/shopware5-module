@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version 5.4.3 - Released 2019-09-13
+* RATEPLUG-9: fix installer/updater
+
 ### Version 5.4.2 - Released 2019-08-28
 * RATEPLUG-9: move device fingerprinting config from PROFILE_REQUEST to plugin config & improve processing of device fingerprinting
 * Update README version information
