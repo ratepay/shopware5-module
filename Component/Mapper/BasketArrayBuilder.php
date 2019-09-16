@@ -1,18 +1,16 @@
 <?php
-
+namespace RpayRatePay\Component\Mapper;
 use RatePAY\Service\Math;
+use RpayRatePay\Services\Config\ConfigService;
+use Shopware\Models\Order\Order;
+use Shopware\Models\Shop\Currency;
 
-class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
+class BasketArrayBuilder
 {
     /**
      * @var array
      */
     protected $basket;
-
-    /**
-     * @var bool
-     */
-    protected $withRetry;
 
     /**
      * @var null
@@ -22,7 +20,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     /**
      * @var bool
      */
-    protected $netItemPrices;
+    protected $pricesAreInNet;
 
     /**
      * @var bool
@@ -32,14 +30,43 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     /** @var bool  */
     protected $useFallbackDiscount;
 
-    public function __construct($withRetry = false, $requestType = null, $netItemPrices = false, $useFallbackShipping = false, $useFallbackDiscount = false)
+    /**
+     * BasketArrayBuilder constructor.
+     * @param Order|PaymentRequestData $data
+     * @param array $items
+     * @param null $requestType
+     */
+    public function __construct($data, array $items = null, $requestType = null)
     {
+        $configService = Shopware()->Container()->get(ConfigService::class); //TODO
+        $modelManager = Shopware()->Container()->get('models'); //TODO
+
+
         $this->basket = [];
-        $this->withRetry = $withRetry;
         $this->requestType = $requestType;
-        $this->netItemPrices = $netItemPrices;
-        $this->useFallbackShipping = $useFallbackShipping;
-        $this->useFallbackDiscount = $useFallbackDiscount;
+
+        if($data instanceof Order) {
+            $this->basket['Currency'] = $data->getCurrency();
+            $this->pricesAreInNet = $data->getNet() === 1;
+            $this->useFallbackShipping = $data->getAttribute()->getRatepayFallbackShipping() == 1;
+            $this->useFallbackDiscount = $data->getAttribute()->getRatepayFallbackDiscount() == 1;
+        } else if($data instanceof PaymentRequestData) {
+            /** @var PaymentRequestData $paymentRequestData */
+            $paymentRequestData = $data;
+            $this->basket['Currency'] = $modelManager->find(Currency::class, $paymentRequestData->getCurrencyId())->getCurrency();
+            $this->pricesAreInNet = $paymentRequestData->isItemsAreInNet();
+            $this->useFallbackShipping = $configService->isCommitShippingAsCartItem($paymentRequestData->getShop()->getId());
+            $this->useFallbackDiscount = $configService->isCommitDiscountAsCartItem($paymentRequestData->getShop()->getId());
+            if($items == null) {
+                $items = $data->getItems();
+            }
+        } else {
+            throw new \RuntimeException('$data must by type of '.Order::class.' or '.PaymentRequestData::class.'. '. ($data ? get_class($data) : 'null') . ' given');
+        }
+
+        foreach($items as $item) {
+            $this->addItem($item);
+        }
     }
 
     public function toArray()
@@ -86,7 +113,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
         }
 
         $swPrice = $item['priceNumeric'];
-        $unitPriceGross = $this->netItemPrices ? Math::netToGross($swPrice, $item['tax_rate']) : $swPrice;
+        $unitPriceGross = $this->pricesAreInNet ? Math::netToGross($swPrice, $item['tax_rate']) : $swPrice;
 
         $itemData = [
             'Description' => $item['articlename'],
@@ -104,7 +131,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function addShippingItemFromArray($item)
     {
-        if ($this->withRetry || $this->useFallbackShipping) {
+        if ($this->useFallbackShipping) {
             $itemData = [
                 'ArticleNumber' => 'shipping',
                 'Quantity' => 1,
@@ -123,7 +150,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     }
 
     private function addDiscountItemFromArray($item){
-        if ($this->withRetry || $this->useFallbackDiscount) {
+        if ($this->useFallbackDiscount) {
             $itemData = [
                 'ArticleNumber' => $item['ordernumber'],
                 'Quantity' => 1,
@@ -166,7 +193,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
             }
         }
 
-        if ($this->withRetry || $this->useFallbackShipping) {
+        if ($this->useFallbackShipping) {
             $itemData = [
                 'ArticleNumber' => $item->articlenumber,
                 'Quantity' => 1,
@@ -200,7 +227,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
             }
         }
 
-        if ($this->withRetry || $this->useFallbackDiscount) {
+        if ($this->useFallbackDiscount) {
             $itemData = [
                 'ArticleNumber' => $item->articlenumber,
                 'Quantity' => 1,
@@ -228,7 +255,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function addItemForCreditItem($item)
     {
-        if ($this->withRetry || $item->price > 0) {
+        if ($item->price > 0) {
             $item = [
                 'ArticleNumber' => $item->articlenumber,
                 'Quantity' => 1 , // $item->quantity,
@@ -263,7 +290,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
         }
 
         $swPrice = $item->price;
-        $unitPriceGross = $this->netItemPrices ? Math::netToGross($swPrice, $item->taxRate) : $swPrice;
+        $unitPriceGross = $this->pricesAreInNet ? Math::netToGross($swPrice, $item->taxRate) : $swPrice;
 
         if (!$this->itemObjectHasName($item)) {
             $itemData = $this->getUnnamedItem($item);
@@ -294,7 +321,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     private function getUnnamedItem($item)
     {
         $swPrice = $item->getPrice();
-        $unitPriceGross = $this->netItemPrices ? Math::netToGross($swPrice, $item->taxRate) : $swPrice;
+        $unitPriceGross = $this->pricesAreInNet ? Math::netToGross($swPrice, $item->taxRate) : $swPrice;
 
         $itemData = [
             'Description' => $item->getArticleName(),

@@ -1,6 +1,7 @@
 <?php
 
 namespace RpayRatePay\Component\Service;
+use RpayRatePay\Services\Config\ConfigService;
 use Shopware;
 
 /**
@@ -22,6 +23,17 @@ class ShopwareUtil
         '28' => 'BANK-TRANSFER',
         '2,28' => 'FIRSTDAY-SWITCH'
     ];
+
+    /**
+     * @return ConfigService
+     */
+    protected static function getConfigInstance() {
+        return Shopware()->Container()->get(ConfigService::class);
+    }
+
+    protected static function getLoggerInstance() {
+
+    }
 
     /**
      * Return the methodname for RatePAY
@@ -85,33 +97,6 @@ class ShopwareUtil
         return $customer->getGroup()->getTax() === false;
     }
 
-    /**
-     * @param \Shopware\Models\Payment\Payment $payment
-     * @return int
-     */
-    public static function getStatusAfterRatePayPayment($payment)
-    {
-        $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-
-        switch ($payment->getName()) {
-            case 'rpayratepayinvoice':
-                return (int)$config->get('RatePayInvoicePaymentStatus');
-            case 'rpayratepayrate':
-                return (int)$config->get('RatePayInstallmentPaymentStatus');
-            case 'rpayratepaydebit':
-                return (int)$config->get('RatePayDebitPaymentStatus');
-            case 'rpayratepayrate0':
-                return (int)$config->get('RatePayInstallment0PaymentStatus');
-            case 'rpayratepayprepayment':
-                return (int)$config->get('RatePayPrepaidPaymentStatus');
-            default:
-                Logger::singleton()->error(
-                    'Unable to define status for unknown method: ' . $payment->getName()
-                );
-                return 17;
-        }
-
-    }
 
     /**
      * @param $key

@@ -1,0 +1,44 @@
+[
+    {
+        "name": "ratepay/php-library",
+        "version": "0.9.8",
+        "version_normalized": "0.9.8.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/ratepay/php-library.git",
+            "reference": "8c8a450037bdd6456a9dca39715fa42f273fd247"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/ratepay/php-library/zipball/8c8a450037bdd6456a9dca39715fa42f273fd247",
+            "reference": "8c8a450037bdd6456a9dca39715fa42f273fd247",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "5.7.*"
+        },
+        "time": "2019-08-16T17:03:41+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "RatePAY\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Aarne Welschlau",
+                "email": "aarne.welschlau@ratepay.com"
+            }
+        ],
+        "description": "RatePAY API PHP Library",
+        "homepage": "https://dev.ratepay.com"
+    }
+]

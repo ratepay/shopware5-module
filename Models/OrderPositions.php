@@ -23,19 +23,19 @@ class OrderPositions extends ModelEntity
      * @var integer
      * @ORM\Column(name="delivered", type="integer", length=11, nullable=false, options={"default":0})
      */
-    protected $delivered;
+    protected $delivered = 0;
 
     /**
      * @var integer
      * @ORM\Column(name="cancelled", type="integer", length=11, nullable=false, options={"default":0})
      */
-    protected $cancelled;
+    protected $cancelled = 0;
 
     /**
      * @var integer
      * @ORM\Column(name="returned", type="integer", length=11, nullable=false, options={"default":0})
      */
-    protected $returned;
+    protected $returned = 0;
 
     /**
      * @var integer

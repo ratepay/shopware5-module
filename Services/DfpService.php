@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Shopware\Plugins\Community\Frontend\RpayRatePay\Services;
+namespace RpayRatePay\Services;
 
 
 use Shopware\Components\DependencyInjection\Container;
@@ -9,7 +9,7 @@ use Shopware\Components\DependencyInjection\Container;
 /**
  * ServiceClass for device fingerprinting
  * Class DfpService
- * @package Shopware\Plugins\Community\Frontend\RpayRatePay\Services
+ * @package RpayRatePay\Services
  */
 class DfpService
 {
@@ -19,22 +19,19 @@ class DfpService
     /** @var Container  */
     protected $container;
 
-    //TODO remove if plugin is moved to SW5.2 plugin engine
-    private static $instance = null;
-    public static function getInstance(){
-        return self::$instance = (self::$instance ? : new self(Shopware()->Container()));
-    }
-
-    public function __construct(Container $container)
+    public function __construct()
     {
-        $this->container = $container;
+        $this->container = Shopware()->Container(); //TODO - das muss doch irgendwie via DI reinkommen können... oder?
     }
 
     public function isDfpIdAlreadyGenerated() {
         return $this->getRatePaySession(self::SESSION_VAR_NAME) !== null;
     }
 
-    public function getDfpId() {
+    public function getDfpId($backend = false) {
+        if($backend) {
+            return null; //TODO currently it is not supported
+        }
         $isStoreFront = $this->container->has('shop');
         if($isStoreFront) {
             if($this->isDfpIdAlreadyGenerated()) {

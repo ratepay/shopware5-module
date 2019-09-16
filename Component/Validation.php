@@ -111,6 +111,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      */
     public function isRatePAYPayment()
     {
+        // TODO global array with all payments
         return in_array($this->_payment->getName(), ['rpayratepayinvoice', 'rpayratepayrate', 'rpayratepaydebit', 'rpayratepayrate0', 'rpayratepayprepayment']);
     }
 

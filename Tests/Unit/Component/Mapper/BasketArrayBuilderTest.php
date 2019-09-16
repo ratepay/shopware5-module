@@ -1,7 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder as BasketArrayBuilder;
+use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 
 class BasketArrayBuilderTest extends TestCase
 {

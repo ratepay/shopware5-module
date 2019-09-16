@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/plugin.xsd">
+
+    <label lang="de">RatePay Zahlungsmodule</label>
+    <label>RatePay Payment</label>
+
+    <version>6.0.0.1</version>
+    <copyright>Copyright (c) 2019, RatePAY GmbH</copyright>
+    <license>MIT</license>
+    <link>https://www.ratepay.com</link>
+    <author>RatePAY GmbH</author>
+    <compatibility minVersion="5.5.0"/>
+
+    <changelog version="6.0.0">
+        <changes>RATEPLUG-8: Update plugin to the new plugin engine</changes>
+        <changes>fix a few bugs</changes>
+    </changelog>
+
+    <changelog version="5.4.2">
+        <changes>RATEPLUG-9: move device fingerprinting config from PROFILE_REQUEST to plugin config &amp; improve processing of device fingerprinting</changes>
+        <changes>Update README version information</changes>
+    </changelog>
+    <changelog version="5.4.1">
+        <changes>RATEPLUG-3: backend orders: fix discount item</changes>
+        <changes>RATEPLUG-5: backend orders: fix shipping tax rate</changes>
+    </changelog>
+    <changelog version="5.4">
+        <changes>fix tax rate</changes>
+        <changes>fix "the service `shop` was not found"-issue in backend orders</changes>
+        <changes>fix different currency issue</changes>
+        <changes>update install/update/uninstall process</changes>
+        <changes>fix tax issue on request if customer see only net prices.</changes>
+    </changelog>
+    <changelog version="5.3.10">
+        <changes>fix tax rate</changes>
+    </changelog>
+    <changelog version="5.3.9">
+        <changes>fix tax rate shipping for shopware versions 5.5.0
+        </changes>
+    </changelog>
+    <changelog version="5.3.8">
+        <changes>fix mix tax rate shipping</changes>
+    </changelog>
+    <changelog version="5.3.7">
+        <changes>fix aggregation of discount items</changes>
+        <changes>fix mix tax rate baskets</changes>
+    </changelog>
+    <changelog version="5.3.6">
+        <changes>add functionality for discount as seperate basket-item</changes>
+    </changelog>
+    <changelog version="5.3.5">
+        <changes>Improve backend-side validation of user inputs</changes>
+        <changes>Interrupt checkout process if errors found</changes>
+        <changes>Cross-Browser implementation</changes>
+    </changelog>
+    <changelog version="5.3.4">
+        <changes>Extend date of birth validation for correct inputs</changes>
+    </changelog>
+    <changelog version="5.3.3">
+        <changes>Fix RatePAY GmbH Legal link</changes>
+    </changelog>
+    <changelog version="5.3.2">
+        <changes>Fix whitespaces in date of birth fields</changes>
+        <changes>Fix incorrect tax-id for delivery cost items</changes>
+    </changelog>
+    <changelog version="5.3.1">
+        <changes>Fix unregistered templates/controllers after update</changes>
+        <changes>Fix incorrect tax-id for debit/credit items</changes>
+    </changelog>
+    <changelog version="5.3.0">
+        <changes>Improve client side dob validation</changes>
+        <changes>Improve bidirectionality process</changes>
+        <changes>Add prepayment</changes>
+        <changes>Add Shopware 5.5 compatibility</changes>
+        <changes>Add configurable payment states</changes>
+    </changelog>
+    <changelog version="5.2.6">
+        <changes>fix ignored updates in bidirectional process</changes>
+        <changes>fix usage of addresses for shipping/billing during checkout</changes>
+    </changelog>
+    <changelog version="5.2.5">
+        <changes>fix cronjob duplications during update</changes>
+        <changes>fix global namespacing to php and shopware classes</changes>
+        <changes>fix uninstall routine to remove menues</changes>
+        <changes>improve stability of update routine</changes>
+    </changelog>
+    <changelog version="5.2.4">
+        <changes>Fix Update Function</changes>
+        <changes>Update Readme</changes>
+        <changes>Fix and Wrap Logging, Should use Container</changes>
+        <changes>Fix Rounding Discrepancies in Shops with Net Prices</changes>
+        <changes>Fix extra indents of code and PSR2 formatting</changes>
+        <changes>Put util in psr4 namespace</changes>
+    </changelog>
+    <changelog version="5.2.3">
+        <changes>Fix tax on shipping item in backend orders</changes>
+        <changes>Improve compatibility with other (payment) modules</changes>
+        <changes>Extend plugin update function to preserve backend credentials</changes>
+        <changes>Fix problems with partial send/cancel/return operations</changes>
+        <changes>Fix payment request error on versions of Shopware earlier than 5.2.0</changes>
+    </changelog>
+    <changelog version="5.2.2">
+        <changes>hotfix cronjob install in older shopware versions fails if entry already exists</changes>
+    </changelog>
+    <changelog version="5.2.1">
+        <changes>hotfix cronjob class not found error</changes>
+    </changelog>
+    <changelog version="5.2.0">
+        <changes>add ability to create backend orders</changes>
+        <changes>add system-wide support for customer groups with net prices</changes>
+    </changelog>
+    <changelog version="5.1.1">
+        <changes>hotfix plugin update function</changes>
+    </changelog>
+    <changelog version="5.1.0">
+        <changes>add compatibility to PHP-7.2</changes>
+        <changes>frontend changes on checkout/payment pages</changes>
+        <changes>add setting to handle shipping-item with older API</changes>
+        <changes>manage custom attributes via CrudService</changes>
+        <changes>add common getter to identify installment-elv</changes>
+    </changelog>
+    <changelog version="5.0.7">
+        <changes>add complete bidirectionally</changes>
+        <changes>add batch processing</changes>
+        <changes>refactor Bootstrap</changes>
+        <changes>fix alternative address option</changes>
+    </changelog>
+    <changelog version="5.0.6">
+        <changes>remove special company name field</changes>
+        <changes>add terms and conditions</changes>
+    </changelog>
+    <changelog version="5.0.5.1">
+        <changes>add downward compatibility for old module</changes>
+    </changelog>
+    <changelog version="5.0.5">
+        <changes>no partial delivery for installments</changes>
+        <changes>fix b2b product calculation</changes>
+        <changes>remove vatId for b2b customers</changes>
+        <changes>fix order delete function</changes>
+    </changelog>
+    <changelog version="5.0.4.1">
+        <changes>change company address</changes>
+    </changelog>
+    <changelog version="5.0.4">
+        <changes>add payment method installment 0 %</changes>
+        <changes>code refactoring</changes>
+        <changes>add optional payment confirm</changes>
+    </changelog>
+    <changelog version="5.0.3">
+        <changes>add country belgium</changes>
+        <changes>add country netherlands</changes>
+        <changes>add language EN, NL and FR</changes>
+    </changelog>
+    <changelog version="5.0.2">
+        <changes>fix multishops</changes>
+    </changelog>
+    <changelog version="5.0.1">
+        <changes>new installment calculator design</changes>
+        <changes>make automatic profile request after module update</changes>
+        <changes>fix bank account autofill problem</changes>
+    </changelog>
+    <changelog version="5.0.0">
+        <changes>change the requests to ne new ratepay library</changes>
+        <changes>add php 7 compatibility</changes>
+        <changes>add bidirectional function</changes>
+    </changelog>
+    <changelog version="4.3.0">
+        <changes>add backend panels without overwriting them</changes>
+        <changes>compatibility for Shopware 5.4.0</changes>
+    </changelog>
+    <changelog version="4.2.93">
+        <changes>change company address</changes>
+    </changelog>
+    <changelog version="4.2.92">
+        <changes>fix credit/debit bug</changes>
+    </changelog>
+    <changelog version="4.2.91">
+        <changes>fix for checkout javascript problem</changes>
+    </changelog>
+    <changelog version="4.2.9">
+        <changes>change installment elv payment information</changes>
+    </changelog>
+    <changelog version="4.2.8">
+        <changes>fix responsive mobile view</changes>
+    </changelog>
+    <changelog version="4.2.7">
+        <changes>add payment method installment elv</changes>
+    </changelog>
+    <changelog version="4.2.6">
+        <changes>add debit backend function</changes>
+        <changes>add functionality to refill the inventory after cancellation/retour</changes>
+        <changes>Fix no debit/credit after retour/cancellation</changes>
+        <changes>Fix no shipping after cancellation</changes>
+        <changes>Fix no cancellation after shipping</changes>
+        <changes>Fix no retour before shipping</changes>
+    </changelog>
+    <changelog version="4.2.5">
+        <changes>SEPA - BIC field removed</changes>
+        <changes>IBAN country prefix validation removed</changes>
+    </changelog>
+    <changelog version="4.2.4">
+        <changes>Fixed DOB issue</changes>
+    </changelog>
+    <changelog version="4.2.3">
+        <changes>Fixed sandbox warning</changes>
+    </changelog>
+    <changelog version="4.2.2">
+        <changes>Improved payment method activation routine</changes>
+        <changes>Added invoicing block inside CONFIRMATION DELIVER</changes>
+        <changes>Improved customer messages in refusals (Extended Response)</changes>
+        <changes>Few frontend changes</changes>
+        <changes>Changed controller&amp;action check in preValidation to avoid trouble with third party plugin controllers</changes>
+        <changes>Transferred rate calc necessary values to DB and removed CONFIGURATION REQUEST</changes>
+        <changes>Checkout warning in case of sandbox mode</changes>
+        <changes>Implemented additional max limit on b2b orders</changes>
+        <changes>Fixed payment change credit method</changes>
+    </changelog>
+    <changelog version="4.2.1">
+        <changes>Date of payment is now set automatically (cleareddate)</changes>
+        <changes>Improved detection of divergent shipping address (Shopware >=5.2.0)</changes>
+        <changes>Remove deprecated RatePAY additional order attributes on update</changes>
+    </changelog>
+    <changelog version="4.2.0">
+        <changes>Mapping of new SWAG address management (Compatibility with Shopware 5.2.x)</changes>
+        <changes>CSRF protection implemented (Compatibility with Shopware 5.2.x)</changes>
+        <changes>Fixed compatibility with SWAG import/export function</changes>
+        <changes>Improved DFP creation</changes>
+        <changes>Compatibility with CH and CHF</changes>
+        <changes>Further minor changes and fixes</changes>
+    </changelog>
+    <changelog version="4.1.5">
+        <changes>Adjusted frontend controller URL (SSL)</changes>
+        <changes>Conveyed sUniqueID to checkout controller</changes>
+    </changelog>
+    <changelog version="4.1.4">
+        <changes>Payment information additionally saved in order additional fields</changes>
+    </changelog>
+    <changelog version="4.1.3">
+        <changes>Compatibility with deactivated conditions checkbox</changes>
+    </changelog>
+    <changelog version="4.1.2">
+        <changes>Fixed get sandbox bug</changes>
+        <changes>Changed ZGB/DSE link in SEPA text</changes>
+        <changes>Enhanced unistall - deleting of Ratepay order attributes</changes>
+        <changes>Ratepay order attributes now nullable</changes>
+        <changes>Prevented error in case of call by crawler</changes>
+        <changes>DOB not requested anymore in case of b2b</changes>
+        <changes>Improved DFP token creation</changes>
+    </changelog>
+    <changelog version="4.1.1">
+        <changes>Fixed DFP</changes>
+        <changes>Fixed DFP DB update bug</changes>
+        <changes>Fixed JS checkout form validation</changes>
+        <changes>Fixed JS not defined resources</changes>
+        <changes>Fixed JS checkout button hook</changes>
+        <changes>Fixed RR curl bug</changes>
+        <changes>New DB update procedure</changes>
+        <changes>No hiding of payment methods in sandbox mode</changes>
+        <changes>Account holder is always customer name by billing address</changes>
+        <changes>Redesign of rejection page</changes>
+    </changelog>
+    <changelog version="4.1.0">
+        <changes>fixed compatibility for 5.0.4 - 5.1.1</changes>
+        <changes>added device-fingerprinting</changes>
+        <changes>fixed frontend validation</changes>
+        <changes>fixed DB allows NULL</changes>
+        <changes>fixed backend tab "Artikelverwaltung"</changes>
+    </changelog>
+    <changelog version="4.0.3">
+        <changes>Refactored module logic</changes>
+    </changelog>
+    <changelog version="4.0.2">
+        <changes>fixed bug for adjusting correct payment status and oder status</changes>
+        <changes>fixed bug in address validation</changes>
+    </changelog>
+    <changelog version="4.0.1">
+        <changes>fixed SSL &amp; CURL bug</changes>
+        <changes>fixed problems with combined field (street+number)</changes>
+    </changelog>
+    <changelog version="4.0.0">
+        <changes>Shopware 5 module (without responsive design support)</changes>
+    </changelog>
+</plugin>

@@ -1,7 +1,10 @@
 <?php
 
+use Monolog\Logger;
+use RpayRatePay\Component\History;
+use RpayRatePay\Component\Mapper\ModelFactory;
 use RpayRatePay\Component\Service\RatepayHelper as Helper;
-use RpayRatePay\Component\Service\Logger;
+use RpayRatePay\Helper\TaxHelper;
 
 class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler
 {
@@ -14,6 +17,15 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
     const MSG_FULL_DELIVERY_REJECTED = 'Full delivery request was rejected for order: %d. %s';
     const MSG_FULL_RETURN_REJECTED = 'Full return request was rejected for order: %d. %s';
     const MSG_FULL_CANCELLATION_REJECTED = 'Full cancellation request was rejected for order: %d. %s';
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+    public function __construct()
+    {
+        $this->logger = Shopware()->Container()->get('rpay_rate_pay.logger');
+    }
 
     /**
      * @param \Shopware\Models\Order\Order $order
@@ -35,7 +47,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
         $count = (int)Shopware()->Db()->fetchOne($query, [':orderId' => $order->getId()]);
         if ($count > 0) {
-            Logger::singleton()->warning(
+            $this->logger->warning(
                 sprintf('-> Order [%d] has %d "not deliverable" positions', $order->getId(), $count)
             );
         }
@@ -64,7 +76,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
         $count = (int)Shopware()->Db()->fetchOne($query, [':orderId' => $order->getId()]);
         if ($count > 0) {
-            Logger::singleton()->warning(
+            $this->logger->warning(
                 sprintf('-> Order [%d] has %d "not cancellable" positions', $order->getId(), $count)
             );
         }
@@ -92,7 +104,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
         $count = (int)Shopware()->Db()->fetchOne($query, [':orderId' => $order->getId()]);
         if ($count > 0) {
-            Logger::singleton()->warning(
+            $this->logger->warning(
                 sprintf('-> Order [%d] has %d "not returnable" positions', $order->getId(), $count)
             );
         }
@@ -114,7 +126,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         $backend = (bool)($attributes->getRatepayBackend());
 
         $netPrices = $order->getNet() === 1;
-        $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices);
+        $modelFactory = new ModelFactory(null, $backend, $netPrices);
 
         $shippingCosts = $order->getInvoiceShipping();
 
@@ -134,7 +146,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 // Issue: https://issues.shopware.com/issues/SW-24119
                 // we can not simple calculate the shipping tax cause the values in the database are not properly rounded.
                 // So we do not get the correct shipping tax rate if we calculate it.
-                'tax_rate' => \RatePAY\Service\Math::taxFromPrices($order->getInvoiceShippingNet(), $order->getInvoiceShipping()) > 0 ? $order->getInvoiceShippingTaxRate() : 0
+                'tax_rate' => TaxHelper::taxFromPrices($order->getInvoiceShippingNet(), $order->getInvoiceShipping()) > 0 ? $order->getInvoiceShippingTaxRate() : 0
             ];
         }
 
@@ -199,7 +211,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
     private function updateItemStates(\Shopware\Models\Order\Order $order, $state, $items, $history, $historyMsg)
     {
         if (!in_array($state, ['delivered', 'returned', 'cancelled'])) {
-            Logger::singleton()->error('Incorrect item state "' . $state . '" was given.');
+            $this->logger->error('Incorrect item state "' . $state . '" was given.');
             return;
         }
 
@@ -230,8 +242,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
      */
     private function performFullReturnRequest(\Shopware\Models\Order\Order $order, $modelFactory, $items)
     {
-        Logger::singleton()->debug('--> canSendFullReturn');
-        $history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
+        $this->logger->debug('--> canSendFullReturn');
+        $history = new History();
         $operationData = [
             'orderId' => $order->getId(),
             'items' => $items,
@@ -247,9 +259,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 return;
             }
 
-            Logger::singleton()->warning(sprintf(self::MSG_FULL_RETURN_REJECTED, $order->getId()));
+            $this->logger->warning(sprintf(self::MSG_FULL_RETURN_REJECTED, $order->getId()));
         } catch (\Exception $e) {
-            Logger::singleton()->error(
+            $this->logger->error(
                 sprintf(self::MSG_FAILED_SENDING_FULL_RETURN, $order->getId(), $e->getMessage())
             );
         }
@@ -257,8 +269,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
 
     private function performFullCancellationRequest(\Shopware\Models\Order\Order $order, $modelFactory, $items)
     {
-        Logger::singleton()->debug('--> canSendFullCancellation');
-        $history = new \Shopware_Plugins_Frontend_RpayRatePay_Component_History();
+        $this->logger->debug('--> canSendFullCancellation');
+        $history = new History();
         $operationData = [
             'orderId' => $order->getId(),
             'items' => $items,
@@ -274,9 +286,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 return;
             }
 
-            Logger::singleton()->warning(sprintf(self::MSG_FULL_CANCELLATION_REJECTED, $order->getId()));
+            $this->logger->warning(sprintf(self::MSG_FULL_CANCELLATION_REJECTED, $order->getId()));
         } catch (\Exception $e) {
-            Logger::singleton()->error(
+            $this->logger->error(
                 sprintf(self::MSG_FAILED_SENDING_FULL_CANCELLATION, $order->getId(), $e->getMessage())
             );
         }
@@ -289,8 +301,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
      */
     private function performFullDeliveryRequest(\Shopware\Models\Order\Order $order, $modelFactory, $items)
     {
-        Logger::singleton()->debug('--> canSendFullDelivery');
-        $history = new \Shopware_Plugins_Frontend_RpayRatePay_Component_History();
+        $this->logger->debug('--> canSendFullDelivery');
+        $history = new History();
         $operationData = [
             'orderId' => $order->getId(),
             'items' => $items,
@@ -305,9 +317,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 return;
             }
 
-            Logger::singleton()->warning(sprintf(self::MSG_FULL_DELIVERY_REJECTED, $order->getId()));
+            $this->logger->warning(sprintf(self::MSG_FULL_DELIVERY_REJECTED, $order->getId()));
         } catch (\Exception $e) {
-            Logger::singleton()->error(
+            $this->logger->error(
                 sprintf(self::MSG_FAILED_SENDING_FULL_DELIVERY, $order->getId(), $e->getMessage())
             );
         }

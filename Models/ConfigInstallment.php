@@ -6,17 +6,18 @@ use Doctrine\ORM\Mapping as ORM;
 use Shopware\Components\Model\ModelEntity;
 
 /**
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="ConfigInstallmentRepository")
  * @ORM\Table(name="rpay_ratepay_config_installment")
  */
 class ConfigInstallment extends ModelEntity
 {
     /**
-     * @var int
+     * @var ConfigPayment
      * @ORM\Id()
-     * @ORM\Column(name="rpay_id", type="integer", length=2, nullable=false)
+     * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
+     * @ORM\JoinColumn(name="rpay_id", referencedColumnName="rpay_id")
      */
-    protected $rpayId;
+    protected $paymentConfig;
 
     /**
      * @var string
@@ -43,21 +44,20 @@ class ConfigInstallment extends ModelEntity
     protected $rateMinNormal;
 
     /**
-     * @return int
+     * @return ConfigPayment
      */
-    public function getRpayId()
+    public function getPaymentConfig()
     {
-        return $this->rpayId;
+        return $this->paymentConfig;
     }
 
     /**
-     * @param int $rpayId
+     * @param ConfigPayment $paymentConfig
      */
-    public function setRpayId($rpayId)
+    public function setPaymentConfig($paymentConfig)
     {
-        $this->rpayId = $rpayId;
+        $this->paymentConfig = $paymentConfig;
     }
-
     /**
      * @return string
      */

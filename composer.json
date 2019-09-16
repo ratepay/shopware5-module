@@ -1,0 +1,5 @@
+{
+    "require": {
+        "ratepay/php-library": "^0.9.8"
+    }
+}

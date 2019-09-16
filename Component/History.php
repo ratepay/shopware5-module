@@ -1,5 +1,6 @@
 <?php
 
+namespace RpayRatePay\Component;
     /**
      * This program is free software; you can redistribute it and/or modify it under the terms of
      * the GNU General Public License as published by the Free Software Foundation; either
@@ -16,8 +17,9 @@
      *
      * @category   RatePAY
      * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
+     * @deprecated replaced by service
      */
-    class Shopware_Plugins_Frontend_RpayRatePay_Component_History
+    class History
     {
         /**
          * Logs the History for an Request

@@ -6,7 +6,11 @@ use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\BankData;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
+use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Helper\TaxHelper;
+use RpayRatePay\Services\DfpService;
+use Shopware\Models\Customer\Address;
+use Shopware\Models\Customer\Customer;
 
 class SessionLoader
 {
@@ -22,7 +26,7 @@ class SessionLoader
     public function __construct($session)
     {
         $this->session = $session;
-        $this->dfpService = DfpService::getInstance(); //TODO replace if plugin is moved to SW5-2 plugin engine
+        $this->dfpService = Shopware()->Container()->get(DfpService::class);
     }
 
     /**
@@ -68,17 +72,17 @@ class SessionLoader
 
     /**
      * @param \Shopware\Models\Customer\Customer $customer
-     * @param \Shopware\Models\Customer\Address $billing
+     * @param \Shopware\Models\Customer\Address $shipping
      * @return mixed
      */
-    private function findAddressShipping($customer, $billing)
+    private function findAddressShipping($customer, $shippingAddress = null)
     {
-        $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
+        //$customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
         if (isset($this->session->RatePAY['checkoutShippingAddressId']) && $this->session->RatePAY['checkoutShippingAddressId'] > 0) {
-            $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+            $addressModel = Shopware()->Models()->getRepository(Address::class);
             $checkoutAddressShipping = $addressModel->findOneBy(['id' => $this->session->RatePAY['checkoutShippingAddressId'] ? $this->session->RatePAY['checkoutShippingAddressId'] : $this->session->RatePAY['checkoutBillingAddressId']]);
         } else {
-            $checkoutAddressShipping = $customerWrapped->getShipping() !== null ? $customerWrapped->getShipping() : $billing;
+            $checkoutAddressShipping = $shippingAddress ? $shippingAddress : $customer->getDefaultShippingAddress();
         }
         return $checkoutAddressShipping;
     }
@@ -89,13 +93,11 @@ class SessionLoader
      */
     private function findAddressBilling($customer)
     {
-        $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
-
         if (isset($this->session->RatePAY['checkoutBillingAddressId']) && $this->session->RatePAY['checkoutBillingAddressId'] > 0) {
-            $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
+            $addressModel = Shopware()->Models()->getRepository(Address::class);
             $checkoutAddressBilling = $addressModel->findOneBy(['id' => $this->session->RatePAY['checkoutBillingAddressId']]);
         } else {
-            $checkoutAddressBilling = $customerWrapped->getBilling();
+            $checkoutAddressBilling = $customer->getDefaultBillingAddress();
         }
 
         return $checkoutAddressBilling;
@@ -103,8 +105,8 @@ class SessionLoader
 
     private function findAmountInSession()
     {
-        $user = Shopware()->Session()->sOrderVariables['sUserData'];
-        $basket = Shopware()->Session()->sOrderVariables['sBasket'];
+        $user = $this->session->sOrderVariables['sUserData'];
+        $basket = $this->session->sOrderVariables['sBasket'];
         if (!empty($user['additional']['charge_vat'])) {
             return empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
         } else {
@@ -112,25 +114,9 @@ class SessionLoader
         }
     }
 
-    private static function findLangInSession()
-    {
-        $shopContext = Shopware()->Container()->get('shopware_storefront.context_service')->getShopContext();
-        $lang = $shopContext->getShop()->getLocale()->getLocale();
-        $lang = substr($lang, 0, 2);
-        return $lang;
-    }
-
     public function getPaymentRequestData()
     {
-        $method = ShopwareUtil::getPaymentMethod(
-            $this->session->sOrderVariables['sUserData']['additional']['payment']['name']
-        );
-
-        $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $this->session->sUserId);
-
-        $billing = $this->findAddressBilling($customer);
-
-        $shipping = $this->findAddressShipping($customer, $billing);
+        $customer = Shopware()->Models()->find(Customer::class, $this->session->sUserId);
 
         $items = $this->session->sOrderVariables['sBasket']['content'];
 
@@ -139,7 +125,7 @@ class SessionLoader
         $shippingTax = $this->session->sOrderVariables['sBasket']['sShippingcostsTax'];
 
 
-        $userData = Shopware()->Session()->sOrderVariables['sUserData'];
+        $userData = $this->session->sOrderVariables['sUserData'];
 
         if ($userData['additional']['charge_vat'] == false) {
             // the customergroup must not pay tax
@@ -151,32 +137,30 @@ class SessionLoader
 
         foreach ($items as &$item) {
             if ($item['modus'] == 2) { //is voucher
-                if (Math::taxFromPrices($item['amountnetNumeric'], $item['amountWithTax']) == 0) {
+                if (TaxHelper::taxFromPrices($item['amountnetNumeric'], $item['amountWithTax']) == 0) {
                 //if ($item['taxID'] == null) { // does not work cause the tax ID is always null in this case.
                     $item['tax_rate'] = 0;
                 }
             }
         }
 
-        $currencyId = Shopware()->Session()->sOrderVariables['sBasket']['sCurrencyId'];
-
-
-        $lang = $this->findLangInSession();
+        $shopContext = Shopware()->Container()->get('shopware_storefront.context_service')->getShopContext(); // TODO This will crash in the admin
+        $shop = $shopContext->getShop();
 
         $amount = $this->findAmountInSession();
 
         return new PaymentRequestData(
-            $method,
+            $this->session->sOrderVariables['sUserData']['additional']['payment']['name'],
             $customer,
-            $billing,
-            $shipping,
+            $this->findAddressBilling($customer),
+            $this->findAddressShipping($customer, null), //TODO pass selected shipping address
             $items,
             $shippingCost,
             $shippingTax,
             $this->dfpService->getDfpId(),
-            $lang,
+            $shop,
             $amount,
-            $currencyId
+            $this->session->sOrderVariables['sBasket']['sCurrencyId']
         );
     }
 

@@ -1,12 +1,12 @@
 <?php
-
 namespace RpayRatePay\Component\Mapper;
 
-use RatePAY\Service\Math;
-use RatePAY\Service\Util;
-use RpayRatePay\Component\Model\ShopwareAddressWrapper;
-use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
-use RpayRatePay\Component\Service\ShopwareUtil;
+use DateTime;
+use RpayRatePay\Enum\PaymentMethods;
+use Shopware\Models\Customer\Address;
+use Shopware\Models\Customer\Customer;
+use Shopware\Models\Payment\Payment;
+use Shopware\Models\Shop\Shop;
 
 class PaymentRequestData
 {
@@ -16,17 +16,17 @@ class PaymentRequestData
     private $method;
 
     /**
-     * @var \Shopware\Models\Customer\Customer
+     * @var Customer
      */
     private $customer;
 
     /**
-     * @var mixed
+     * @var Address
      */
     private $billingAddress;
 
     /**
-     * @var mixed
+     * @var Address
      */
     private $shippingAddress;
 
@@ -44,6 +44,55 @@ class PaymentRequestData
 
     /** @var int */
     private $currencyId;
+    /**
+     * @var array
+     */
+    private $bankData;
+    /**
+     * @var array
+     */
+    private $installmentDetails;
+    /**
+     * @var boolean
+     */
+    private $itemsAreInNet;
+    /**
+     * @var Shop
+     */
+    private $shop;
+
+    public function __construct(
+        Payment $paymentMethod,
+        Customer $customer,
+        Address $billingAddress,
+        Address $shippingAddress,
+        $items,
+        $shippingCost,
+        $shippingTax,
+        $dfpToken,
+        Shop $shop,
+        $amount,
+        $currencyId,
+        $itemsAreInNet,
+        $bankData = [],
+        $installmentDetails = []
+    ) {
+        $this->method = $paymentMethod;
+        $this->customer = $customer;
+        $this->billingAddress = $billingAddress;
+        $this->shippingAddress = $shippingAddress;
+        $this->items = $items;
+        $this->shippingCost = $shippingCost;
+        $this->shippingTax = $shippingTax;
+        $this->dfpToken = $dfpToken;
+        $this->shop = $shop;
+        $this->lang = substr($shop->getLocale()->getLocale(), 0, 2);
+        $this->amount = $amount;
+        $this->currencyId = $currencyId;
+        $this->itemsAreInNet = $itemsAreInNet;
+        $this->bankData = $bankData;
+        $this->installmentDetails = $installmentDetails;
+    }
 
     /**
      * @return mixed
@@ -70,7 +119,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return \Shopware\Models\Customer\Customer
+     * @return Customer
      */
     public function getCustomer()
     {
@@ -78,7 +127,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return mixed
+     * @return Address
      */
     public function getBillingAddress()
     {
@@ -86,7 +135,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return mixed
+     * @return Address
      */
     public function getShippingAddress()
     {
@@ -133,62 +182,78 @@ class PaymentRequestData
         return $this->currencyId;
     }
 
-    public function __construct(
-        $method,
-        $customer,
-        $billingAddress,
-        $shippingAddress,
-        $items,
-        $shippingCost,
-        $shippingTax,
-        $dfpToken,
-        $lang,
-        $amount,
-        $currencyId
-    ) {
-        $this->method = $method;
-        $this->customer = $customer;
-        $this->billingAddress = $billingAddress;
-        $this->shippingAddress = $shippingAddress;
-        $this->items = $items;
-        $this->shippingCost = $shippingCost;
-        $this->shippingTax = $shippingTax;
-        $this->dfpToken = $dfpToken;
-        $this->lang = $lang;
-        $this->amount = $amount;
-        $this->currencyId = $currencyId;
+    /**
+     * @return array
+     */
+    public function getBankData()
+    {
+        return $this->bankData;
     }
+
+    /**
+     * @param array $bankData
+     */
+    public function setBankData($bankData)
+    {
+        $this->bankData = $bankData;
+    }
+
+    /**
+     * @return array
+     */
+    public function getInstallmentDetails()
+    {
+        return $this->installmentDetails;
+    }
+
+    /**
+     * @param array $installmentDetails
+     */
+    public function setInstallmentDetails($installmentDetails)
+    {
+        $this->installmentDetails = $installmentDetails;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isItemsAreInNet()
+    {
+        return $this->itemsAreInNet;
+    }
+
+    /**
+     * @param bool $itemsAreInNet
+     */
+    public function setItemsAreInNet($itemsAreInNet)
+    {
+        $this->itemsAreInNet = $itemsAreInNet;
+    }
+
+    /**
+     * @return Shop
+     */
+    public function getShop()
+    {
+        return $this->shop;
+    }
+
+    /**
+     * @param Shop $shop
+     */
+    public function setShop($shop)
+    {
+        $this->shop = $shop;
+    }
+
 
     /**
      * @return string
      */
     public function getBirthday()
     {
-        $dateOfBirth = '0000-00-00';
-
-        $customerWrapped = new ShopwareCustomerWrapper($this->customer, Shopware()->Models());
-        $customerBilling = $customerWrapped->getBilling();
-
-        if (Util::existsAndNotEmpty($this->customer, 'getBirthday')) {
-            $dateOfBirth = $this->customer->getBirthday()->format('Y-m-d'); // From Shopware 5.2 date of birth has moved to customer object
-        } elseif (Util::existsAndNotEmpty($customerBilling, 'getBirthday')) {
-            $dateOfBirth = $customerBilling->getBirthday()->format('Y-m-d');
-        } elseif (Util::existsAndNotEmpty($this->billingAddress, 'getBirthday')) {
-            $dateOfBirth = $this->billingAddress->getBirthday()->format('Y-m-d');
-        }
-
-        return $dateOfBirth;
-    }
-
-    /**
-     * @param $addressObject
-     * @return string
-     * @throws \Exception
-     */
-    public static function findCountryISO($addressObject)
-    {
-        $addressWrapped = new ShopwareAddressWrapper($addressObject, Shopware()->Models());
-        $iso = $addressWrapped->getCountry()->getIso();
-        return $iso;
+        /** @var DateTime $birthday */
+        $birthday = $this->customer->getBirthday();
+        return $birthday ? $birthday->format('Y-m-d') : '0000-00-00'; //TODO default birthday configuration?
     }
 }
