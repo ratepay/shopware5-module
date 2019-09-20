@@ -20,7 +20,8 @@ class PaymentDebitService extends AbstractModifyRequest
     {
         foreach ($this->items as $productNumber => $quantity) {
             $position = $this->getOrderPosition($productNumber);
-            //$this->modelManager->flush($position);
+            $position->setDelivered($position->getOrderedQuantity());
+            $this->modelManager->flush($position);
 
             $this->historyLogger->logHistory($position, $quantity, 'Nachbelastung wurde hinzugefügt');
         }
