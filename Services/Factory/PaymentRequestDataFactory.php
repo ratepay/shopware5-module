@@ -45,23 +45,6 @@ class PaymentRequestDataFactory
         $billing = isset($loadedEntities['billingAddress']) ? $loadedEntities['billingAddress'] : $this->modelManager->find(Address::class, $orderStruct->getBillingAddressId());
         $shipping = isset($loadedEntities['shippingAddress']) ? $loadedEntities['shippingAddress'] : $this->modelManager->find(Address::class, $orderStruct->getShippingAddressId());
 
-        $items = [];
-        foreach ($orderStruct->getPositions() as $positionStruct) {
-            $isDiscount = $positionStruct->getMode() != 0 && ($positionStruct->getMode() != 4 || $positionStruct->getTotal() < 0);
-            $items[] = [
-                //TODO use objects!
-                'articlename' => $positionStruct->getName(),
-                'ordernumber' => $positionStruct->getNumber(), //should be article number, see BasketArrayBuilder
-                'quantity' => $positionStruct->getQuantity(),
-                'priceNumeric' => $isDiscount ? $positionStruct->getTotal() : $positionStruct->getPrice(),
-                'price' => $isDiscount ? $positionStruct->getTotal() : $positionStruct->getPrice(),
-                // Shopware does have a bug - so the getTaxRate() might return the wrong value.
-                // Issue: https://issues.shopware.com/issues/SW-24119
-                'tax_rate' => $positionStruct->getTaxId() == 0 ? 0 : $positionStruct->getTaxRate(), // this is a little fix for that
-                'modus' => $positionStruct->getMode()
-            ];
-        }
-
         $shippingTaxRate = TaxHelper::taxFromPrices($orderStruct->getShippingCostsNet(), $orderStruct->getShippingCosts());
         $shippingTax = $shippingTaxRate > 0 ? $orderStruct->getShippingCostsTaxRate() : 0;
 
@@ -75,7 +58,7 @@ class PaymentRequestDataFactory
             $customer,
             $billing,
             $shipping,
-            $items, //TODO use objects!
+            array_merge(['shipping'], $orderStruct->getPositions()),
             $shippingCost,
             $shippingTax,
             $this->dfpService->getDfpId(true),

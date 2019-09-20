@@ -11,10 +11,10 @@ use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Models\ConfigInstallment;
 use RpayRatePay\Models\ConfigPayment;
 use RpayRatePay\Models\Log;
-use RpayRatePay\Models\OrderDiscount;
+use RpayRatePay\Models\Position\Discount;
 use RpayRatePay\Models\OrderHistory;
-use RpayRatePay\Models\OrderPositions;
-use RpayRatePay\Models\OrderShipping;
+use RpayRatePay\Models\Position\Product;
+use RpayRatePay\Models\Position\Shipping;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\Context\InstallContext;
 
@@ -89,10 +89,10 @@ class Database extends AbstractBootstrap
             $this->entityManager->getClassMetadata(ProfileConfig::class),
             $this->entityManager->getClassMetadata(ConfigInstallment::class),
             $this->entityManager->getClassMetadata(ConfigPayment::class),
-            $this->entityManager->getClassMetadata(OrderDiscount::class),
+            $this->entityManager->getClassMetadata(Discount::class),
             $this->entityManager->getClassMetadata(OrderHistory::class),
-            $this->entityManager->getClassMetadata(OrderPositions::class),
-            $this->entityManager->getClassMetadata(OrderShipping::class),
+            $this->entityManager->getClassMetadata(Product::class),
+            $this->entityManager->getClassMetadata(Shipping::class),
             $this->entityManager->getClassMetadata(Log::class),
         ];
     }

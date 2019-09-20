@@ -15,24 +15,19 @@ class PaymentReturnService extends AbstractModifyRequest
 
     protected function getCallName()
     {
-        return "paymentChange";
+        return self::CALL_CHANGE;
     }
 
     protected function processSuccess()
     {
-        //TODO move content to parent class
-        foreach($this->items as $item) {
-            if ($item->returnedItems <= 0) {
-                continue;
-            }
+        foreach ($this->items as $productNumber => $quantity) {
+            $position = $this->getOrderPosition($productNumber);
+            $position->setReturned($position->getReturned() + $quantity);
+            $this->modelManager->flush($position);
 
-            $this->updatePosition($this->_order->getId(), $item->articlenumber, [
-                'returned' => $item->returned + $item->returnedItems
-            ]);
-
-            $this->historyLogger->logHistory($this->_order, 'Artikel wurde retourniert.', $item->name, $item->articlenumber, $item->returnedItems);
+            $this->historyLogger->logHistory($position, $quantity, 'Artikel wurde retourniert.');
             if ($this->updateStock) {
-                $this->updateArticleStock($item->articlenumber, $item->returnedItems);
+                $this->updateArticleStock($productNumber, $quantity);
             }
         }
     }

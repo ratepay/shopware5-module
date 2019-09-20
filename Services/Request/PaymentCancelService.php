@@ -12,25 +12,20 @@ class PaymentCancelService extends AbstractModifyRequest
 
     protected function getCallName()
     {
-        return "paymentChange";
+        return self::CALL_CHANGE;
     }
 
     protected function processSuccess()
     {
-        foreach ($this->items as $item) {
-            $bind = [
-                'cancelled' => $item->cancelled + $item->cancelledItems
-            ];
-            $this->updatePosition($this->_order->getId(), $item->articlenumber, $bind);
-            if ($item->cancelledItems <= 0) {
-                continue;
-            }
+        foreach ($this->items as $productNumber => $quantity) {
+            $position = $this->getOrderPosition($productNumber);
+            $position->setCancelled($position->getCancelled() + $quantity);
+            $this->modelManager->flush($position);
 
             if ($this->updateStock) {
-                $this->updateArticleStock($item->articlenumber, $item->cancelledItems);
+                $this->updateArticleStock($productNumber, $quantity);
             }
-
-            $this->historyLogger->logHistory($this->_order, 'Artikel wurde storniert.', $item->name, $item->articlenumber, $item->cancelledItems);
+            $this->historyLogger->logHistory($position, $quantity, 'Artikel wurde storniert.');
         }
     }
 

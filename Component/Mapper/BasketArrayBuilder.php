@@ -1,26 +1,28 @@
 <?php
 namespace RpayRatePay\Component\Mapper;
 use RatePAY\Service\Math;
+use RpayRatePay\Helper\PositionHelper;
+use RpayRatePay\Helper\TaxHelper;
+use RpayRatePay\Models\Position\AbstractPosition;
+use RpayRatePay\Models\Position\Product as ProductPosition;
 use RpayRatePay\Services\Config\ConfigService;
+use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Shop\Currency;
+use SwagBackendOrder\Components\Order\Struct\PositionStruct;
 
 class BasketArrayBuilder
 {
     /**
+     * @var ModelManager
+     */
+    protected $modelManager;
+
+    /**
      * @var array
      */
     protected $basket;
-
-    /**
-     * @var null
-     */
-    protected $requestType;
-
-    /**
-     * @var bool
-     */
-    protected $pricesAreInNet;
 
     /**
      * @var bool
@@ -31,32 +33,46 @@ class BasketArrayBuilder
     protected $useFallbackDiscount;
 
     /**
+     * @var Order
+     */
+    private $order;
+    /**
+     * @var PaymentRequestData|Order
+     */
+    protected $paymentRequestData;
+
+    /**
+     * contains a simple list of items
+     * key: product number
+     * value: quantity
+     * @var
+     */
+    protected $simpleItems = [];
+
+
+    /**
      * BasketArrayBuilder constructor.
      * @param Order|PaymentRequestData $data
-     * @param array $items
+     * @param iterable $items
      * @param null $requestType
      */
-    public function __construct($data, array $items = null, $requestType = null)
+    public function __construct($data, $items = null)
     {
         $configService = Shopware()->Container()->get(ConfigService::class); //TODO
-        $modelManager = Shopware()->Container()->get('models'); //TODO
-
+        $this->modelManager = Shopware()->Container()->get('models'); //TODO
 
         $this->basket = [];
-        $this->requestType = $requestType;
 
         if($data instanceof Order) {
-            $this->basket['Currency'] = $data->getCurrency();
-            $this->pricesAreInNet = $data->getNet() === 1;
-            $this->useFallbackShipping = $data->getAttribute()->getRatepayFallbackShipping() == 1;
-            $this->useFallbackDiscount = $data->getAttribute()->getRatepayFallbackDiscount() == 1;
+            $this->order = $data;
+            $this->basket['Currency'] = $this->order->getCurrency();
+            $this->useFallbackShipping = $this->order->getAttribute()->getRatepayFallbackShipping() == 1;
+            $this->useFallbackDiscount = $this->order->getAttribute()->getRatepayFallbackDiscount() == 1;
         } else if($data instanceof PaymentRequestData) {
-            /** @var PaymentRequestData $paymentRequestData */
-            $paymentRequestData = $data;
-            $this->basket['Currency'] = $modelManager->find(Currency::class, $paymentRequestData->getCurrencyId())->getCurrency();
-            $this->pricesAreInNet = $paymentRequestData->isItemsAreInNet();
-            $this->useFallbackShipping = $configService->isCommitShippingAsCartItem($paymentRequestData->getShop()->getId());
-            $this->useFallbackDiscount = $configService->isCommitDiscountAsCartItem($paymentRequestData->getShop()->getId());
+            $this->paymentRequestData = $data;
+            $this->basket['Currency'] = $this->modelManager->find(Currency::class,  $this->paymentRequestData->getCurrencyId())->getCurrency();
+            $this->useFallbackShipping = $configService->isCommitShippingAsCartItem( $this->paymentRequestData->getShop()->getId());
+            $this->useFallbackDiscount = $configService->isCommitDiscountAsCartItem( $this->paymentRequestData->getShop()->getId());
             if($items == null) {
                 $items = $data->getItems();
             }
@@ -75,27 +91,140 @@ class BasketArrayBuilder
     }
 
     /**
-     * @param $item
-     * @deprecated this is an anti-pattern
+     * if no quantity is given, the quantity will taken from the detail object - if it is a Detail object.
+     * if you provide `shipping` as $item, it will automatically add a shipping position
+     *
+     * @param string|Detail|PositionStruct $item
+     * @param int|null $quantity
      */
-    public function addItem($item)
+    public function addItem($item, $quantity = null)
     {
-        if (is_array($item)) {
-            $this->addItemFromArray($item);
-        } elseif ($this->isShippingItem($item) && $this->isBoughtItem($item)) {
-            $this->addShippingItem($item);
-        } elseif ($this->isDiscountItem($item) && $this->isBoughtItem($item)) {
-            $this->addDiscountItem($item);
-        } elseif ($this->isDebitItem($item) || $this->isCreditItem($item)) {
-            $this->addItemForCreditItem($item);
-        } elseif (is_object($item)) {
-            $this->addItemFromObject($item);
+        if($item === 'shipping') {
+            $this->addShippingItem();
+            return;
+        } else if($item instanceof Detail) {
+            if(PositionHelper::isDiscount($item) && $this->useFallbackDiscount == false) {
+                $this->addDiscountItem($item);
+                return;
+            }
+            $name = $item->getArticleName();
+            $productNumber = $item->getArticleNumber();
+            $itemQuantity = $quantity ? : $item->getQuantity();
+            $price = TaxHelper::getItemGrossPrice($item->getOrder(), $item);
+            $taxRate = TaxHelper::getItemTaxRate($item->getOrder(), $item);
+
+        } else if($item instanceof PositionStruct) {
+            if(PositionHelper::isDiscount($item) && $this->useFallbackDiscount == false) {
+                $this->addDiscountItem($item);
+                return;
+            }
+            $name = $item->getName();
+            $productNumber = $item->getNumber();
+            $itemQuantity = $quantity ? : $item->getQuantity();
+            $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $item);
+            $taxRate = TaxHelper::getItemTaxRate($this->paymentRequestData, $item);
+        } else {
+            throw new \RuntimeException('type '.get_class($item).' is no longer supported');
+        }
+
+        $this->basket['Items'][] = [
+            'Item' => [
+                'Description' => $name,
+                'ArticleNumber' => $productNumber,
+                'Quantity' => $itemQuantity,
+                'UnitPriceGross' => $price,
+                'TaxRate' => $taxRate,
+            ]
+        ];
+        $this->simpleItems[$productNumber] = $itemQuantity;
+    }
+
+    public function addShippingItem()
+    {
+        if($this->order) {
+            $shippingCost = TaxHelper::getShippingGrossPrice($this->order);
+            $shippingTax = TaxHelper::getShippingTaxRate($this->order);
+        } else if($this->paymentRequestData) {
+            $shippingCost = TaxHelper::getShippingGrossPrice($this->paymentRequestData);
+            $shippingTax = TaxHelper::getShippingTaxRate($this->paymentRequestData);
+        } else {
+            throw new \RuntimeException('no payment request data or order is available');
+        }
+
+        if ($this->useFallbackShipping) {
+            //TODO verify if it is necessary to calculate the tax info
+            $detail = new Detail();
+            $detail->setNumber('shipping');
+            $detail->setQuantity(1);
+            $detail->setArticleName('shipping');
+            $detail->setPrice($shippingCost);
+            $detail->setTaxRate($shippingTax);
+            $detail->setMode(PositionHelper::MODE_RP_SHIPPING);
+            $this->addItem($detail);
+        } else {
+            $this->basket['Shipping'] = [
+                'Description' => 'Shipping costs',
+                'UnitPriceGross' => $shippingCost,
+                'TaxRate' => $shippingTax,
+            ];
+            $this->simpleItems['shipping'] = 1;
         }
     }
 
     /**
-     * @param $item
+     * @param PositionStruct|Detail $item
      */
+    public function addDiscountItem($item) {
+        if(PositionHelper::isDiscount($item) === false) {
+            throw new \RuntimeException('given object is not a discount (number: '.$item->getNumber().')');
+        }
+        if ($this->useFallbackDiscount) {
+            $this->addItem($item);
+        } else {
+            if($item instanceof Detail) {
+                $name = $item->getArticleName();
+                $productNumber = $item->getArticleNumber();
+                $price = TaxHelper::getItemGrossPrice($item->getOrder(), $item);
+                $taxRate = TaxHelper::getItemTaxRate($item->getOrder(), $item);
+            } else if($item instanceof PositionStruct) {
+                $name = $item->getName();
+                $productNumber = $item->getNumber();
+                $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $item, $item->getTotal());
+                $taxRate = TaxHelper::getItemTaxRate($this->paymentRequestData, $item, $item->getTotal());
+            } else {
+                // should never occurs cause the function call `PositionHelper::isDiscount`
+                // already throw an exception if it is the wrong type
+                throw new \RuntimeException('the object must be a type of '.Detail::class.' or '.PositionStruct::class);
+            }
+
+            if(isset($this->basket['Discount'])) {
+                throw new \RuntimeException('ratepay does not support more than one discount element');
+            } else {
+                $this->basket['Discount'] = [
+                    'Description' => $name,
+                    'UnitPriceGross' => $price,
+                    'TaxRate' => $taxRate,
+                ];
+            }
+            $this->simpleItems[$productNumber] = 1;
+        }
+    }
+
+    /**
+     * does return all items in the basket as a simple array
+     * key: product number
+     * value: quantity
+     * @return mixed
+     */
+    public function getSimpleItems()
+    {
+        return $this->simpleItems;
+    }
+
+    /**
+     * @param $item
+     * @deprecated
+     *\/
     public function addItemFromArray($item)
     {
         if (!$this->requestType && $item['quantity'] == 0) {
@@ -128,7 +257,7 @@ class BasketArrayBuilder
 
     /**
      * @param $item
-     */
+     *\/
     private function addShippingItemFromArray($item)
     {
         if ($this->useFallbackShipping) {
@@ -149,6 +278,10 @@ class BasketArrayBuilder
         }
     }
 
+    /**
+     * @param $item
+     * @deprecated
+     *\/
     private function addDiscountItemFromArray($item){
         if ($this->useFallbackDiscount) {
             $itemData = [
@@ -175,8 +308,9 @@ class BasketArrayBuilder
 
     /**
      * @param $item
-     */
-    private function addShippingItem($item)
+     * @deprecated
+     *\/
+    private function deprecated___addShippingItem($item)
     {
         //handle partial sending
         if ($this->requestType === 'shipping' || $this->requestType === 'shippingRate') {
@@ -211,7 +345,11 @@ class BasketArrayBuilder
         }
     }
 
-    private function addDiscountItem($item) {
+    /**
+     * @param $item
+     * @deprecated
+     *\/
+    private function deprecated___addDiscountItem($item) {
         //handle partial sending
         if ($this->requestType === 'shipping' || $this->requestType === 'shippingRate') {
             if ((int)($item->quantity) === 0) {
@@ -252,7 +390,8 @@ class BasketArrayBuilder
 
     /**
      * @param $item
-     */
+     * @deprecated
+     *\/
     private function addItemForCreditItem($item)
     {
         if ($item->price > 0) {
@@ -282,7 +421,8 @@ class BasketArrayBuilder
 
     /**
      * @param $item
-     */
+     * @deprecated
+     *\/
     private function addItemFromObject($item)
     {
         if ($this->hasNoQuantity($item) && empty($this->requestType)) {
@@ -317,7 +457,8 @@ class BasketArrayBuilder
     /**
      * @param $item
      * @return array
-     */
+     * @deprecated
+     *\/
     private function getUnnamedItem($item)
     {
         $swPrice = $item->getPrice();
@@ -343,7 +484,8 @@ class BasketArrayBuilder
     /**
      * @param $item
      * @return bool
-     */
+     * @deprecated
+     *\/
     public function isShippingItem($item)
     {
         return 'shipping' === $item->articlenumber;
@@ -352,7 +494,8 @@ class BasketArrayBuilder
     /**
      * @param $item
      * @return bool
-     */
+     * @deprecated
+     *\/
     public function isDiscountItem($item)
     {
         if(is_array($item)) {
@@ -374,7 +517,8 @@ class BasketArrayBuilder
     /**
      * @param $item
      * @return bool
-     */
+     * @deprecated
+     *\/
     public function isDebitItem($item)
     {
         return 'Debit' === substr($item->articlenumber, 0, 5);
@@ -383,7 +527,8 @@ class BasketArrayBuilder
     /**
      * @param $item
      * @return bool
-     */
+     * @deprecated
+     *\/
     public function isCreditItem($item)
     {
         return 'Credit' === substr($item->articlenumber, 0, 6);
@@ -392,7 +537,8 @@ class BasketArrayBuilder
     /**
      * @param $item
      * @return bool
-     */
+     * @deprecated
+     *\/
     public function isBoughtItem($item)
     {
         return (0 == $item->delivered || 0 == $item->cancelled || 0 == $item->returned);
@@ -401,7 +547,8 @@ class BasketArrayBuilder
     /**
      * @param $item
      * @return bool
-     */
+     * @deprecated
+     *\/
     private function itemObjectHasName($item)
     {
         return isset($item->name);
@@ -410,7 +557,8 @@ class BasketArrayBuilder
     /**
      * @param $item
      * @return bool
-     */
+     * @deprecated
+     *\/
     private function hasNoQuantity($item)
     {
         if (method_exists($item, 'getQuantity') &&
@@ -428,7 +576,8 @@ class BasketArrayBuilder
     /**
      * @param $item
      * @return int|null
-     */
+     * @deprecated
+     *\/
     private function getQuantityForRequest($item)
     {
         $quantity = null;
@@ -446,4 +595,6 @@ class BasketArrayBuilder
 
         return $quantity;
     }
+
+     */
 }

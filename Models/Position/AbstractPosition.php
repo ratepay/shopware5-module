@@ -1,63 +1,42 @@
 <?php
 
-namespace RpayRatePay\Models;
+
+namespace RpayRatePay\Models\Position;
+
 
 use Doctrine\ORM\Mapping as ORM;
-use Shopware\Components\Model\ModelEntity;
 
 /**
- * @ORM\Entity()
- * @ORM\Table(name="rpay_ratepay_order_shipping")
+ * @ORM\MappedSuperclass()
  */
-class OrderShipping extends ModelEntity
+abstract class AbstractPosition
 {
+
     /**
-     * TODO replace by order model
-     * @var integer
-     * @ORM\Id()
-     * @ORM\Column(name="s_order_id", type="integer", length=11, nullable=false)
+     * @return int
      */
-    protected $sOrderId;
+    abstract function getOrderedQuantity();
 
     /**
      * @var integer
      * @ORM\Column(name="delivered", type="integer", length=11, nullable=false, options={"default":0})
      */
     protected $delivered = 0;
-
     /**
      * @var integer
      * @ORM\Column(name="cancelled", type="integer", length=11, nullable=false, options={"default":0})
      */
     protected $cancelled = 0;
-
     /**
      * @var integer
      * @ORM\Column(name="returned", type="integer", length=11, nullable=false, options={"default":0})
      */
     protected $returned = 0;
-
     /**
      * @var integer
-     * @ORM\Column(name="tax_rate", type="integer", length=2, nullable=false, options={"default":0})
+     * @ORM\Column(name="tax_rate", type="integer", length=11, nullable=false, options={"default":0})
      */
     protected $taxRate;
-
-    /**
-     * @return int
-     */
-    public function getSOrderId()
-    {
-        return $this->sOrderId;
-    }
-
-    /**
-     * @param int $sOrderId
-     */
-    public function setSOrderId($sOrderId)
-    {
-        $this->sOrderId = $sOrderId;
-    }
 
     /**
      * @return int
@@ -121,5 +100,9 @@ class OrderShipping extends ModelEntity
     public function setTaxRate($taxRate)
     {
         $this->taxRate = $taxRate;
+    }
+
+    public function getOpenQuantity() {
+        return $this->getOrderedQuantity() - $this->getDelivered() - $this->getCancelled();
     }
 }

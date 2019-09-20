@@ -56,7 +56,7 @@ class OrderControllerSubscriber implements SubscriberInterface
     /**
      * @var PaymentConfirmService
      */
-    protected $confirmService;
+    protected $paymentConfirmService;
     /**
      * @var PaymentRequestService
      */
@@ -70,7 +70,7 @@ class OrderControllerSubscriber implements SubscriberInterface
         DfpService $dfpService,
         PaymentRequestDataFactory $paymentRequestDataFactory,
         PaymentRequestService $paymentRequestService,
-        PaymentConfirmService $confirmService,
+        PaymentConfirmService $paymentConfirmService,
         Logger $logger
     )
     {
@@ -82,7 +82,7 @@ class OrderControllerSubscriber implements SubscriberInterface
         $this->dfpService = $dfpService;
         $this->logger = $logger;
         $this->paymentRequestService = $paymentRequestService;
-        $this->confirmService = $confirmService;
+        $this->paymentConfirmService = $paymentConfirmService;
     }
 
     public static function getSubscribedEvents()
@@ -102,7 +102,6 @@ class OrderControllerSubscriber implements SubscriberInterface
         try {
             $orderStruct = $this->orderHydrator->hydrateFromRequest($request);
 
-            //first find out if it's a ratepay order
             $paymentMethod = $this->modelManager->find(Payment::class, $orderStruct->getPaymentId());
             $customer = $this->modelManager->find(Customer::class, $orderStruct->getCustomerId());
 
@@ -126,9 +125,6 @@ class OrderControllerSubscriber implements SubscriberInterface
                 ]
             );
 
-            //$netItemPrices = \RpayRatePay\Component\Service\ShopwareUtil::customerCreatesNetOrders($customer); //TODO
-            //$paymentRequester = new ModelFactory(null, true, $netItemPrices);
-
             /** @var PaymentResponse $paymentResponse */
             $this->paymentRequestService->setPaymentRequestData($paymentRequestData);
             $this->paymentRequestService->setIsBackend(true);
@@ -140,7 +136,18 @@ class OrderControllerSubscriber implements SubscriberInterface
 
                 /** @var Order $order */
                 $order = $this->modelManager->find(Order::class, $view->getAssign('orderId'));
-                $this->confirmService->sendPaymentConfirm($order, $paymentResponse, true);
+
+                //write order & payment information to the database
+                $this->paymentRequestService->completeOrder($order, $paymentResponse);
+
+                //confirm the payment
+                $this->paymentConfirmService->setOrder($order);
+                $paymentResponse = $this->paymentConfirmService->doRequest();
+
+                if($paymentResponse->isSuccessful() === false) {
+                    $customerMessage = $paymentResponse->getCustomerMessage();
+                    $this->fail($view, [$customerMessage]);
+                }
             } else {
                 $customerMessage = $paymentResponse->getCustomerMessage();
                 $this->fail($view, [$customerMessage]);

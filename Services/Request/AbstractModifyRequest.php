@@ -4,9 +4,15 @@
 namespace RpayRatePay\Services\Request;
 
 
+use Doctrine\ORM\Query\Expr\Join;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Helper\PositionHelper;
+use RpayRatePay\Models\Position\AbstractPosition;
+use RpayRatePay\Models\Position\Discount as DiscountShipping;
+use RpayRatePay\Models\Position\Product as ProductPosition;
+use RpayRatePay\Models\Position\Shipping as ShippingPosition;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
@@ -15,6 +21,7 @@ use RpayRatePay\Services\Logger\RequestLogger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Article\Detail;
 use Shopware\Models\Attribute\Order as OrderAttribute;
+use Shopware\Models\Order\Detail as OrderDetail;
 use Shopware\Models\Order\Order;
 
 abstract class AbstractModifyRequest extends AbstractRequest
@@ -24,7 +31,16 @@ abstract class AbstractModifyRequest extends AbstractRequest
      */
     protected $_order;
 
+    /**
+     * @var array
+     */
     protected $items = null;
+
+    /**
+     * @var BasketArrayBuilder
+     */
+    protected $basketArrayBuilder;
+
     /**
      * @var ModelManager
      */
@@ -33,6 +49,10 @@ abstract class AbstractModifyRequest extends AbstractRequest
      * @var HistoryLogger
      */
     protected $historyLogger;
+    /**
+     * @var PositionHelper
+     */
+    protected $positionHelper;
 
     public function __construct(
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
@@ -40,12 +60,14 @@ abstract class AbstractModifyRequest extends AbstractRequest
         ProfileConfigService $profileConfigService,
         RequestLogger $requestLogger,
         HistoryLogger $historyLogger,
-        ModelManager $modelManager
+        ModelManager $modelManager,
+        PositionHelper $positionHelper
     )
     {
         parent::__construct($db, $configService, $profileConfigService, $requestLogger);
         $this->historyLogger = $historyLogger;
         $this->modelManager = $modelManager;
+        $this->positionHelper = $positionHelper;
     }
 
     protected function getProfileConfig()
@@ -73,28 +95,26 @@ abstract class AbstractModifyRequest extends AbstractRequest
 
     protected function getRequestContent()
     {
-        if($this->_order == null) {
-            throw new \RuntimeException('please set order with function `setOrder()`');
+        if($this->items == null) {
+            throw new \RuntimeException('please set $items with function `setItems()`');
         }
-        $basketFactory = new BasketArrayBuilder($this->_order, $this->items, $this->_subType);
+        if($this->_order == null) {
+            throw new \RuntimeException('please set $order with function `setOrder()`');
+        }
+
+        if($this->basketArrayBuilder !== null) {
+            $basketFactory = $this->basketArrayBuilder;
+        } else {
+            $basketFactory = new BasketArrayBuilder($this->_order);
+            foreach($this->items as $productNumber => $quantity) {
+                $detail = $this->getOrderDetailByNumber($productNumber);
+                $basketFactory->addItem($detail ? $detail : $productNumber, $quantity);
+            }
+        }
         $requestContent = [];
         $requestContent['ShoppingBasket'] = $basketFactory->toArray();
         return $requestContent;
     }
-
-    protected function updatePosition($orderID, $articleordernumber, $bind)
-    {
-        //TODO refactor
-        if ($articleordernumber === 'shipping') {
-            Shopware()->Db()->update('rpay_ratepay_order_shipping', $bind, '`s_order_id`=' . $orderID);
-        } else if ($articleordernumber === 'discount') {
-            Shopware()->Db()->update('rpay_ratepay_order_discount', $bind, '`s_order_id`=' . $orderID); //update all discounts
-        } else {
-            $positionId = Shopware()->Db()->fetchOne('SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?', [$orderID, $articleordernumber]);
-            Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
-        }
-    }
-
 
     protected function updateArticleStock($productNumber, $count)
     {
@@ -121,7 +141,47 @@ abstract class AbstractModifyRequest extends AbstractRequest
         $this->_order = $order;
     }
 
+    /**
+     * key: product number
+     * value: quantity
+     * @param BasketArrayBuilder|array $items
+     */
     public final function setItems($items = null) {
-        $this->items = $items;
+        if($items instanceof BasketArrayBuilder) {
+            $this->basketArrayBuilder = $items;
+            $this->items = $this->basketArrayBuilder->getSimpleItems();
+        } else if(is_array($items)) {
+            $this->items = $items;
+        } else {
+            throw new \RuntimeException('invalid argument');
+        }
+    }
+
+    /**
+     * @param $productNumber
+     * @return AbstractPosition
+     */
+    protected function getOrderPosition($productNumber) {
+        if($productNumber === 'shipping') {
+            return $this->positionHelper->getShippingPositionForOrder($this->_order);
+        } else {
+            $detail = $this->getOrderDetailByNumber($productNumber);
+            return $this->positionHelper->getPositionForDetail($detail);
+        }
+    }
+
+    /**
+     * @param Order $order
+     * @param $productNumber
+     * @return OrderDetail
+     */
+    protected function getOrderDetailByNumber($productNumber) {
+        /** @var OrderDetail $detail */
+        foreach($this->_order->getDetails() as $detail) {
+            if($detail->getArticleNumber() === $productNumber) {
+                return $detail;
+            }
+        }
+        return null;
     }
 }

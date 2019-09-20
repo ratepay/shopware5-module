@@ -2,6 +2,10 @@
 namespace RpayRatePay\Services\Logger;
 
 use RpayRatePay\Models\OrderHistory;
+use RpayRatePay\Models\Position\AbstractPosition;
+use RpayRatePay\Models\Position\Discount as DiscountPosition;
+use RpayRatePay\Models\Position\Product as ProductPosition;
+use RpayRatePay\Models\Position\Shipping as ShippingPosition;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Order;
 
@@ -36,19 +40,23 @@ class HistoryLogger
     }
 
     /**
-     * @param Order $order
-     * @param $message
-     * @param string $name
-     * @param string $productNumber
+     * @param AbstractPosition $position
      * @param string $quantity
+     * @param $message
      */
-    public function logHistory(Order $order, $message, $name = '', $productNumber = '', $quantity = '')
+    public function logHistory(AbstractPosition $position, $quantity, $message)
     {
         $entry = new OrderHistory();
         $entry->setEvent($message);
-        $entry->setOrderId($order->getId());
-        $entry->setProductName($name);
-        $entry->setProductNumber($productNumber);
+        if($position instanceof ProductPosition || $position instanceof DiscountPosition) {
+            $entry->setOrderId($position->getOrderDetail()->getOrder()->getId());
+            $entry->setProductName($position->getOrderDetail()->getArticleName());
+            $entry->setProductNumber($position->getOrderDetail()->getArticleNumber());
+        } else if($position instanceof ShippingPosition) {
+            $entry->setOrderId($position->getSOrderId());
+            $entry->setProductName('Shipping');                                                             //TODO
+            $entry->setProductNumber('Shipping');                                                         //TODO
+        }
         $entry->setQuantity($quantity);
         $this->modelManager->persist($entry);
         $this->modelManager->flush($entry);

@@ -46,8 +46,11 @@
             <argument id="RpayRatePay\Services\HelperService" type="service"/>
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="rpay_rate_pay.logger" type="service" />
+            <argument id="RpayRatePay\Services\OrderStatusChangeService" type="service"/>
+            <argument id="RpayRatePay\Services\Request\PaymentCancelService" type="service"/>
             <tag name="shopware.event_subscriber"/>
         </service>
+
         <service id="RpayRatePay\Subscriber\Backend\OrderViewExtensionSubscriber">
             <tag name="shopware.event_subscriber"/>
         </service>
@@ -98,12 +101,6 @@
             <argument>%rpay_rate_pay.plugin_name%</argument>
         </service>
         <service id="RpayRatePay\Services\DfpService" />
-        <service id="RpayRatePay\Services\Request\PaymentConfirmService">
-            <argument id="models" type="service"/>
-            <argument id="modules" type="service"/>
-            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
-            <argument id="corelogger" type="service"/>
-        </service>
         <service id="RpayRatePay\Services\Config\ProfileConfigService">
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="models" type="service"/>
@@ -117,10 +114,27 @@
             <argument id="RpayRatePay\Services\PaymentMethodsService" type="service"/>
             <argument id="rpay_rate_pay.logger" type="service" />
         </service>
+        <service id="RpayRatePay\Services\OrderStatusChangeService">
+            <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
+            <argument id="RpayRatePay\Helper\PositionHelper" type="service" />
+            <argument id="RpayRatePay\Services\Request\PaymentDeliverService" type="service"/>
+            <argument id="RpayRatePay\Services\Request\PaymentCancelService" type="service"/>
+            <argument id="RpayRatePay\Services\Request\PaymentReturnService" type="service"/>
+            <argument id="corelogger" type="service"/>
+        </service>
+        <service id="RpayRatePay\Helper\PositionHelper">
+            <argument id="models" type="service"/>
+        </service>
+
+
 
         <!-- Services: Array Factories -->
         <service id="RpayRatePay\Services\Factory\CustomerArrayFactory"/>
         <service id="RpayRatePay\Services\Factory\PaymentArrayFactory"/>
+        <service id="RpayRatePay\Services\Factory\InvoiceArrayFactory">
+            <argument id="models" type="service"/>
+        </service>
         <service id="RpayRatePay\Services\Factory\BasketArrayFactory"/> <!-- TODO does not have any functionality -->
         <service id="RpayRatePay\Services\Factory\PaymentRequestDataFactory"> <!-- TODO wrong place -->
             <argument id="models" type="service"/>
@@ -153,6 +167,15 @@
             <argument id="RpayRatePay\Services\Logger\RequestLogger" type="service"/>
             <argument id="RpayRatePay\Services\Factory\CustomerArrayFactory" type="service"/>
             <argument id="RpayRatePay\Services\Factory\PaymentArrayFactory" type="service"/>
+            <argument id="models" type="service"/>
+            <argument id="modules" type="service"/>
+            <argument id="rpay_rate_pay.logger" type="service"/>
+        </service>
+        <service id="RpayRatePay\Services\Request\PaymentConfirmService">
+            <argument id="db" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Logger\RequestLogger" type="service"/>
         </service>
         <service id="RpayRatePay\Services\Request\PaymentDeliverService">
             <argument id="db" type="service"/>
@@ -161,6 +184,8 @@
             <argument id="RpayRatePay\Services\Logger\RequestLogger" type="service"/>
             <argument id="RpayRatePay\Services\Logger\HistoryLogger" type="service"/>
             <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Helper\PositionHelper" type="service" />
+            <argument id="RpayRatePay\Services\Factory\InvoiceArrayFactory" type="service" />
         </service>
         <service id="RpayRatePay\Services\Request\PaymentCancelService">
             <argument id="db" type="service"/>
@@ -169,6 +194,7 @@
             <argument id="RpayRatePay\Services\Logger\RequestLogger" type="service"/>
             <argument id="RpayRatePay\Services\Logger\HistoryLogger" type="service"/>
             <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Helper\PositionHelper" type="service" />
         </service>
         <service id="RpayRatePay\Services\Request\PaymentReturnService">
             <argument id="db" type="service"/>
@@ -177,10 +203,26 @@
             <argument id="RpayRatePay\Services\Logger\RequestLogger" type="service"/>
             <argument id="RpayRatePay\Services\Logger\HistoryLogger" type="service"/>
             <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Helper\PositionHelper" type="service" />
         </service>
-
-
-
+        <service id="RpayRatePay\Services\Request\PaymentCreditService">
+            <argument id="db" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Logger\RequestLogger" type="service"/>
+            <argument id="RpayRatePay\Services\Logger\HistoryLogger" type="service"/>
+            <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Helper\PositionHelper" type="service"/>
+        </service>
+        <service id="RpayRatePay\Services\Request\PaymentDebitService">
+            <argument id="db" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Logger\RequestLogger" type="service"/>
+            <argument id="RpayRatePay\Services\Logger\HistoryLogger" type="service"/>
+            <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Helper\PositionHelper" type="service"/>
+        </service>
 
 
     </services>

@@ -16,6 +16,11 @@ use RpayRatePay\Services\Logger\RequestLogger;
 abstract class AbstractRequest
 {
 
+    const CALL_PAYMENT_REQUEST = "paymentRequest";
+    const CALL_PAYMENT_CONFIRM = "paymentConfirm";
+    const CALL_DELIVER = "confirmationDeliver";
+    const CALL_CHANGE = "paymentChange";
+
     /**
      * @return string
      */
@@ -31,6 +36,10 @@ abstract class AbstractRequest
      */
     abstract protected function getProfileConfig();
     abstract protected function processSuccess();
+
+    protected function isSkipRequest() {
+        return false;
+    }
 
 
     /**
@@ -55,6 +64,9 @@ abstract class AbstractRequest
 
     protected $_subType = null;
 
+    /** @var bool  */
+    protected $isRequestSkipped = false;
+
     public function __construct(
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         ConfigService $configService,
@@ -68,6 +80,9 @@ abstract class AbstractRequest
         $this->requestLogger = $requestLogger;
     }
 
+    /**
+     * @return AbstractResponse
+     */
     public final function doRequest() {
         /** @var AbstractResponse $response */
         $response = $this->call($this->getRequestContent(), false);
@@ -77,17 +92,24 @@ abstract class AbstractRequest
         return $response;
     }
 
-    final protected function call(array $content, $isRetry = false) {
+    protected final function call(array $content = null, $isRetry = false) {
+        if($this->isSkipRequest()) {
+            $this->isRequestSkipped = true;
+            return true;
+        }
         $profileConfig = $this->getProfileConfig();
 
         $mbHead = new ModelBuilder('head');
         $mbHead->setArray($this->getRequestHead($profileConfig));
 
-        $mbContent = new ModelBuilder('Content');
-        $mbContent->setArray($content);
+        $mbContent = null;
+        if($content) {
+            $mbContent = new ModelBuilder('Content');
+            $mbContent->setArray($content);
+        }
 
         $rb = new RequestBuilder($profileConfig->isSandbox());
-        $rb = $rb->__call('call'.ucfirst($this->getCallName()), [$mbHead, $mbContent]);
+        $rb = $rb->__call('call'.ucfirst($this->getCallName()), $mbContent ? [$mbHead, $mbContent] : [$mbHead]);
         if($this->_subType) {
             $rb = $rb->subtype($this->_subType);
         }

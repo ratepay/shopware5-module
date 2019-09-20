@@ -2,28 +2,36 @@
 
 namespace RpayRatePay\Subscriber\Backend;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\TransactionRequiredException;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use Enlight_Hook_HookArgs;
+use Exception;
 use Monolog\Logger;
 use RatePAY\Service\Math;
+use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Component\Mapper\ModelFactory;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\HelperService;
+use RpayRatePay\Services\OrderStatusChangeService;
+use RpayRatePay\Services\Request\PaymentCancelService;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Detail;
 
 use \Enlight\Event\SubscriberInterface;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Payment\Payment;
+use Shopware_Controllers_Backend_Order;
 
 class OrderOperationsSubscriber implements SubscriberInterface
 {
     /**
-     * @var \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler
+     * @var OrderStatusChangeService
      */
-    private $orderStatusChangeHandler;
+    private $orderStatusChangeService;
     /**
      * @var ModelManager
      */
@@ -44,20 +52,28 @@ class OrderOperationsSubscriber implements SubscriberInterface
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var PaymentCancelService
+     */
+    protected $paymentCancelService;
 
     public function __construct(
         ModelManager $modelManager,
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         HelperService $helperService,
         ConfigService $config,
-        Logger $logger
+        Logger $logger,
+        OrderStatusChangeService $orderStatusChangeService,
+        PaymentCancelService $paymentCancelService
     )
     {
         $this->modelManager = $modelManager;
         $this->db = $db;
         $this->helperService = $helperService;
         $this->config = $config;
-        $this->orderStatusChangeHandler = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
+        $this->orderStatusChangeService = $orderStatusChangeService;
+        $this->paymentCancelService = $paymentCancelService;
+
         $this->logger = $logger;
     }
 
@@ -72,31 +88,32 @@ class OrderOperationsSubscriber implements SubscriberInterface
         ];
     }
 
+
     /**
      * Checks if the payment method is a ratepay method. If it is a ratepay method, throw an exception
      * and forbid to change the payment method
      *
-     * @param Enlight_Hook_HookArgs $arguments
+     * @param Enlight_Hook_HookArgs $args
      * @return bool
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
-     * @throws \Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
-    public function beforeSaveOrderInBackend(Enlight_Hook_HookArgs $arguments)
+    public function beforeSaveOrderInBackend(Enlight_Hook_HookArgs $args)
     {
-        $request = $arguments->getSubject()->Request();
-        $order = $this->modelManager->find(Order::class, $request->getParam('id'));
+        /** @var Shopware_Controllers_Backend_Order $controller */
+        $controller = $args->getSubject();
+        $request = $controller->Request();
+        $orderId = $request->getParam('id');
+
+        $order = $this->modelManager->find(Order::class, $orderId);
         $newPaymentMethod = $this->modelManager->find(Payment::class, $request->getParam('paymentId'));
 
-        $paymentMethods = PaymentMethods::getNames();
-
-        if ((!in_array($order->getPayment()->getName(), $paymentMethods) && in_array($newPaymentMethod->getName(), $paymentMethods))
-            || (in_array($order->getPayment()->getName(), $paymentMethods) && $newPaymentMethod->getName() != $order->getPayment()->getName())
-        ) {
+        //prevent change payment method
+        if (PaymentMethods::exists($order->getPayment()) && $order->getPayment()->getId() != $newPaymentMethod->getId()) {
             $this->logger->addNotice('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
-            $arguments->stop();
-            throw new \Exception('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
+            $args->stop();
+            throw new Exception('Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf RatePay Zahlungsmethoden ge&auml;ndert werden und RatePay Bestellungen k&ouml;nnen nicht nachtr&auml;glich auf andere Zahlungsarten ge&auml;ndert werden.');
         }
 
         return false;
@@ -104,64 +121,69 @@ class OrderOperationsSubscriber implements SubscriberInterface
 
     /**
      * Event fired when user saves order.
-     *
-     * @param Enlight_Hook_HookArgs $arguments
+     * @param Enlight_Hook_HookArgs $args
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
-    public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $arguments)
+    public function onBidirectionalSendOrderOperation(\Enlight_Hook_HookArgs $args)
     {
-        $request = $arguments->getSubject()->Request();
-        $parameter = $request->getParams();
-
-        /* @var \Shopware\Models\Order\Order $order */
-        $order = $this->modelManager->find(Order::class, $parameter['id']);
-        if ($this->helperService->isRatePayPayment($order) && $this->config->isBidirectionalEnabled()) {
-            $this->orderStatusChangeHandler->informRatepayOfOrderStatusChange($order);
+        if (!$this->config->isBidirectionalEnabled()) {
+            return;
         }
+        /** @var Shopware_Controllers_Backend_Order $controller */
+        $controller = $args->getSubject();
+        $orderId = $controller->Request()->getParam('id');
+
+        /* @var Order $order */
+        $order = $this->modelManager->find(Order::class, $orderId);
+
+        $this->orderStatusChangeService->informRatepayOfOrderStatusChange($order);
     }
 
     /**
      * Handler for saving in the batch processing dialog box for orders.
      *
-     * @param Enlight_Hook_HookArgs $arguments
+     * @param Enlight_Hook_HookArgs $args
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
-    public function afterOrderBatchProcess(Enlight_Hook_HookArgs $arguments)
+    public function afterOrderBatchProcess(\Enlight_Hook_HookArgs $args)
     {
-        if (!$this->config->isBidirectionalEnabled()) {
+        /** @var Shopware_Controllers_Backend_Order $controller */
+        $controller = $args->getSubject();
+        $orders = $controller->Request()->getParam('orders');
+        if (count($orders) < 1) {
             return;
         }
 
-        $request = $arguments->getSubject()->Request();
-        $orders = $request->getParam('orders');
-
-        if (count($orders) < 1) {
-            throw new \Exception('No order selected');
-        }
-
         foreach ($orders as $order) {
-            /* @var \Shopware\Models\Order\Order $order */
+            /* @var Order $order */
             $order = $this->modelManager->find(Order::class, $order['id']);
-            if (!$this->helperService->isRatePayPayment($order)) {
-                continue;
-            }
-
-            $this->orderStatusChangeHandler->informRatepayOfOrderStatusChange($order);
+            $this->orderStatusChangeService->informRatepayOfOrderStatusChange($order);
         }
     }
 
     /**
      * Stops Order deletion, when its not permitted
      *
-     * @param Enlight_Hook_HookArgs $arguments
+     * @param Enlight_Hook_HookArgs $args
      * @return bool
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
-    public function beforeDeleteOrderPosition(Enlight_Hook_HookArgs $arguments)
+    public function beforeDeleteOrderPosition(Enlight_Hook_HookArgs $args)
     {
-        $request = $arguments->getSubject()->Request();
-        $parameter = $request->getParams();
-        $order = $this->modelManager->find(Order::class, $parameter['orderID']);
-        if ($parameter['valid'] != true && $this->helperService->isRatePayPayment($order)) {
+        /** @var Shopware_Controllers_Backend_Order $controller */
+        $controller = $args->getSubject();
+        $orderId = $controller->Request()->getParam('orderID');
+
+        $order = $this->modelManager->find(Order::class, $orderId);
+        if ($controller->Request()->get('valid') != true && $this->helperService->isRatePayPayment($order)) {
             $this->logger->warning('Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
-            $arguments->stop();
+            $args->stop();
         }
 
         return true;
@@ -170,14 +192,22 @@ class OrderOperationsSubscriber implements SubscriberInterface
     /**
      * Stops Order deletion, when any article has been send
      *
-     * @param Enlight_Hook_HookArgs $arguments
+     * @param Enlight_Hook_HookArgs $args
      * @return bool
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
-    public function beforeDeleteOrder(Enlight_Hook_HookArgs $arguments)
+    public function beforeDeleteOrder(Enlight_Hook_HookArgs $args)
     {
-        $request = $arguments->getSubject()->Request();
-        $parameter = $request->getParams();
-        if (PaymentMethods::exists($parameter['payment'][0]['name']) === false) {
+        /** @var Shopware_Controllers_Backend_Order $controller */
+        $controller = $args->getSubject();
+        $request = $controller->Request();
+
+        $order = $this->modelManager->find(Order::class, $request->getParam('id'));
+
+        if (PaymentMethods::exists($order->getPayment()) === false) {
+            //payment is not a ratepay order
             return false;
         }
         $sql = 'SELECT COUNT(*) FROM `s_order_details` AS `detail` '
@@ -185,66 +215,22 @@ class OrderOperationsSubscriber implements SubscriberInterface
             . 'ON `position`.`s_order_details_id` = `detail`.`id` '
             . 'WHERE `detail`.`orderID`=? AND '
             . '(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)';
-        $count = $this->db->fetchOne($sql, [$parameter['id']]);
+        $count = $this->db->fetchOne($sql, [$order->getId()]);
         if ($count > 0) {
             $this->logger->warning('RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.');
-            $arguments->stop();
+            $args->stop();
         } else {
-            $order = $this->modelManager->find('Shopware\Models\Order\Order', $parameter['id']);
 
-            $sqlShipping = 'SELECT invoice_shipping, invoice_shipping_net, invoice_shipping_tax_rate FROM s_order WHERE id = ?';
-            $shippingCosts = $this->db->fetchRow($sqlShipping, [$parameter['id']]);
+            $basketBuilder = new BasketArrayBuilder($order, $order->getDetails());
+            $basketBuilder->addShippingItem();
 
-            $items = [];
-            $i = 0;
-            /** @var Detail $item */
-            foreach ($order->getDetails() as $item) {
-                $items[$i]['articlename'] = $item->getArticlename();
-                $items[$i]['ordernumber'] = $item->getArticlenumber();
-                $items[$i]['quantity'] = $item->getQuantity();
-                $items[$i]['priceNumeric'] = $item->getPrice();
-                $items[$i]['tax_rate'] = $item->getTaxRate();
-                $taxRate = $item->getTaxRate();
+            $this->paymentCancelService->setItems($basketBuilder);
+            $this->paymentCancelService->setOrder($order);
+            $response = $this->paymentCancelService->doRequest();
 
-                // Shopware does have a bug - so the tax_rate might be the wrong value.
-                // Issue: https://issues.shopware.com/issues/SW-24119
-                $taxRate = $item->getTax() == null ? 0 : $taxRate; // this is a little fix
-                $items[$i]['tax_rate'] = $taxRate;
-
-                $i++;
-            }
-            if (!empty($shippingCosts)) {
-                $items['Shipping']['articlename'] = 'Shipping';
-                $items['Shipping']['ordernumber'] = 'shipping';
-                $items['Shipping']['quantity'] = 1;
-                $items['Shipping']['priceNumeric'] = $shippingCosts['invoice_shipping'];
-
-                // Shopware does have a bug - so the tax_rate might be the wrong value.
-                // Issue: https://issues.shopware.com/issues/SW-24119
-                // we can not simple calculate the shipping tax cause the values in the database are not properly rounded.
-                // So we do not get the correct shipping tax rate if we calculate it.
-                $calculatedTaxRate = TaxHelper::taxFromPrices(floatval($shippingCosts['invoice_shipping_net']), floatval($shippingCosts['invoice_shipping']));
-                $shippingTaxRate = $calculatedTaxRate > 0 ? $shippingCosts['invoice_shipping_tax_rate'] : 0;
-
-                $items['Shipping']['tax_rate'] = $shippingTaxRate;
-            }
-
-            $attributes = $order->getAttribute();
-            $backend = (bool)($attributes->getRatepayBackend());
-
-            $netPrices = $order->getNet() === 1;
-
-            $modelFactory = new ModelFactory(null, $backend, $netPrices); // TODO service
-            $modelFactory->setTransactionId($parameter['transactionId']);
-            $modelFactory->setTransactionId($order->getTransactionID());
-            $operationData['orderId'] = $order->getId();
-            $operationData['items'] = $items;
-            $operationData['subtype'] = 'cancellation';
-            $result = $modelFactory->callPaymentChange($operationData);
-
-            if ($result !== true) {
+            if ($response->isSuccessful() !== true) {
                 $this->logger->warning('Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');
-                $arguments->stop();
+                $args->stop();
             }
         }
     }

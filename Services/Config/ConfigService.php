@@ -37,11 +37,13 @@ class ConfigService
         $this->pluginName = $pluginName;
     }
 
-    public function getPluginVersion() {
+    public function getPluginVersion()
+    {
         return $this->container->getParameter('active_plugins')[$this->pluginName];
     }
 
-    public function getDfpSnippetId() {
+    public function getDfpSnippetId()
+    {
         $defaultValue = 'ratepay';
         $value = $this->_config->get('ratepay/dfp/snippet_id', $defaultValue);
         return strlen($value) ? $value : $defaultValue;
@@ -52,25 +54,30 @@ class ConfigService
         $profileIdBase = $this->_config->get($this->getProfileIdKey($countryISO, $isBackend), $shopId);
         return $zeroPercent ? $profileIdBase . '_0RT' : $profileIdBase;
     }
-    public function getProfileIdKey($countryISO, $isBackend) {
+
+    public function getProfileIdKey($countryISO, $isBackend)
+    {
         //ratepay/profile/de/frontend/id - this comment is just for finding this line ;-)
-        return "ratepay/profile/".strtolower($countryISO)."/".($isBackend ? 'backend' : 'frontend')."/id";
+        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/id";
     }
 
     public function getSecurityCode($countryISO, $shopId, $isBackend = false)
     {
         return $this->_config->get($this->getSecurityCodeKey($countryISO, $isBackend), $shopId);
     }
-    public function getSecurityCodeKey($countryISO, $isBackend) {
+
+    public function getSecurityCodeKey($countryISO, $isBackend)
+    {
         //ratepay/profile/de/frontend/security_code - this comment is just for finding this line ;-)
-        return "ratepay/profile/".strtolower($countryISO)."/".($isBackend ? 'backend' : 'frontend')."/security_code";
+        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/security_code";
     }
 
     /**
      * @param null $shopId
      * @return bool
      */
-    public function isCommitDiscountAsCartItem($shopId = null) {
+    public function isCommitDiscountAsCartItem($shopId = null)
+    {
         return $this->_config->get('ratepay/advanced/use_fallback_discount_item', $shopId) == 1;
     }
 
@@ -78,7 +85,8 @@ class ConfigService
      * @param null $shopId
      * @return bool
      */
-    public function isCommitShippingAsCartItem($shopId = null) {
+    public function isCommitShippingAsCartItem($shopId = null)
+    {
         return $this->_config->get('ratepay/advanced/use_fallback_shipping_item', $shopId) == 1;
     }
 
@@ -100,6 +108,15 @@ class ConfigService
     public function getPaymentStatusAfterPayment($paymentMethod, $shopId = null)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
-        return $this->_config->get('ratepay/status/'.$paymentMethod, $shopId) == 1;
+        return $this->_config->get('ratepay/status/' . $paymentMethod, $shopId);
+    }
+
+    public function getBidirectionalOrderStatus($action, $shopId = null)
+    {
+        $allowedActions = ['full_delivery', 'full_cancellation', 'full_return'];
+        if(!in_array($action, $allowedActions)) {
+            throw new \RuntimeException('Just these actions are allowed: '.implode(',',$allowedActions));
+        }
+        return intval($this->_config->get('ratepay/bidirectional/status/' . $action, $shopId));
     }
 }
