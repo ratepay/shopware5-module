@@ -8,14 +8,10 @@ use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use Monolog\Logger;
 use RatePAY\Model\Response\PaymentRequest as PaymentResponse;
 use RatePAY\RequestBuilder;
-use RatePAY\Service\Util;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
-use RpayRatePay\Component\Service\SessionLoader;
-use RpayRatePay\Component\Service\ShopwareUtil;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
-use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Models\Position\Discount;
 use RpayRatePay\Models\Position\Product;
 use RpayRatePay\Models\Position\Shipping;
@@ -67,11 +63,6 @@ class PaymentRequestService extends AbstractRequest
      * @var boolean
      */
     protected $isBackend;
-
-    /**
-     * @var PositionHelper
-     */
-    protected $positionHelper;
 
 
     public function __construct(
@@ -167,7 +158,6 @@ class PaymentRequestService extends AbstractRequest
     public function completeOrder(Order $order, RequestBuilder $paymentResponse)
     {
         $this->setOrderTransactionId($order, $paymentResponse);
-        $this->initDiscountPosition($order, $paymentResponse);
         $this->initShippingPosition($order, $paymentResponse);
         $this->insertProductPositions($order, $paymentResponse);
         $this->insertOrderAttributes($order, $paymentResponse);
@@ -180,43 +170,13 @@ class PaymentRequestService extends AbstractRequest
     protected function initShippingPosition(Order $order, RequestBuilder $paymentResponse)
     {
         if ($order->getInvoiceShipping() > 0) {
-            // Shopware does have a bug - so this will not work properly
-            // Issue: https://issues.shopware.com/issues/SW-24119
-            $calculatedShippingTaxRate = TaxHelper::taxFromPrices($order->getInvoiceShippingNet(), $order->getInvoiceShipping());
-            $shippingTaxRate = $calculatedShippingTaxRate > 0 ? $order->getInvoiceShippingTaxRate() : 0;
-
             $shippingPosition = new Shipping();
             $shippingPosition->setSOrderId($order->getId());
-            $shippingPosition->setTaxRate($shippingTaxRate);
             $this->modelManager->persist($shippingPosition);
-
             $this->modelManager->flush($shippingPosition);
         }
     }
-    /**
-     * @param Order $order
-     * @param RequestBuilder $paymentResponse
-     */
-    protected function initDiscountPosition(Order $order, RequestBuilder $paymentResponse)
-    {
-        if ($this->configService->isCommitDiscountAsCartItem() == false) {
-            /** @var Detail $detail */
-            foreach ($order->getDetails() as $detail) {
-                if (
-                    $detail->getMode() != 0 && // no products
-                    ($detail->getMode() != 4 || $detail->getPrice() < 0) // no positive surcharges
-                ) {
-                    $taxRate = $order->getNet() == 1 && $order->getTaxFree() == 1 ? 0 : $detail->getTaxRate();
-                    $discountPosition = new Discount();
-                    $discountPosition->setOrderDetail($detail);
-                    $discountPosition->setTaxRate($taxRate); //TODO remove!
 
-                    $this->modelManager->persist($discountPosition);
-                    $this->modelManager->flush($discountPosition);
-                }
-            }
-        }
-    }
     /**
      * @param Order $order
      * @param RequestBuilder $paymentResponse
@@ -225,28 +185,20 @@ class PaymentRequestService extends AbstractRequest
     {
         $isCommitDiscountAsCartItem = $this->configService->isCommitDiscountAsCartItem();
 
-        $detailPositions = [];
+        $entitiesToFlush = [];
         /** @var Detail $detail */
         foreach ($order->getDetails() as $detail) {
-
-            if ($detail->getMode() != 0 && // not a product
-                ($detail->getMode() != 4 || $detail->getPrice() < 0) && // not a positive surcharge
-                $isCommitDiscountAsCartItem == false
-            ) {
-                continue; //this position will be written into the `rpay_ratepay_order_discount` table
+            if (PositionHelper::isDiscount($detail) && $isCommitDiscountAsCartItem == false) {
+                $position = new Discount();
+                $position->setOrderDetail($detail);
+            } else {
+                $position = new Product();
+                $position->setOrderDetail($detail);
             }
-
-            // Shopware does have a bug - so the tax_rate might be the wrong value.
-            // Issue: https://issues.shopware.com/issues/SW-24119
-            $taxRate = $order->getNet() == 1 && $order->getTaxFree() == 1 ? 0 : $detail->getTaxRate();
-            $detailPosition = new Product();
-            $detailPosition->setOrderDetail($detail);
-            $detailPosition->setTaxRate($taxRate);
-
-            $this->modelManager->persist($detailPosition);
-            $detailPositions[] = $detailPosition;
+            $this->modelManager->persist($position);
+            $entitiesToFlush[] = $position;
         }
-        $this->modelManager->flush($detailPositions);
+        $this->modelManager->flush($entitiesToFlush);
 
     }
 
@@ -257,9 +209,13 @@ class PaymentRequestService extends AbstractRequest
     protected function insertOrderAttributes(Order $order, RequestBuilder $paymentResponse)
     {
         /** @var $paymentResponse PaymentResponse */ // RequestBuilder is a proxy
-
-        $repo = $this->modelManager->getRepository(OrderAttribute::class);
-        $orderAttribute = $repo->findOneBy(['orderId' => $order->getId()]);
+        $orderAttribute = $order->getAttribute();
+        if($orderAttribute == null) {
+            $orderAttribute = new OrderAttribute();
+            $orderAttribute->setOrder($order);
+            $this->modelManager->persist($orderAttribute);
+            $order->setAttribute($orderAttribute);
+        }
 
         $orderAttribute->setAttribute5($paymentResponse->getDescriptor()); // TODO attribute name
         $orderAttribute->setAttribute6($paymentResponse->getTransactionId()); // TODO attribute name
