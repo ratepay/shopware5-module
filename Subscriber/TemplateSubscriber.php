@@ -1,7 +1,10 @@
 <?php
 
 namespace RpayRatePay\Subscriber;
-use \Enlight\Event\SubscriberInterface;
+
+use Enlight\Event\SubscriberInterface;
+use Enlight_Event_EventArgs;
+use Enlight_Template_Manager;
 
 class TemplateSubscriber implements SubscriberInterface
 {
@@ -10,11 +13,11 @@ class TemplateSubscriber implements SubscriberInterface
      */
     private $pluginDir;
     /**
-     * @var \Enlight_Template_Manager
+     * @var Enlight_Template_Manager
      */
     protected $template;
 
-    public function __construct(\Enlight_Template_Manager $template, $pluginDir)
+    public function __construct(Enlight_Template_Manager $template, $pluginDir)
     {
         $this->template = $template;
         $this->pluginDir = $pluginDir;
@@ -27,7 +30,7 @@ class TemplateSubscriber implements SubscriberInterface
         ];
     }
 
-    public function onPreDispatch(\Enlight_Event_EventArgs $args)
+    public function onPreDispatch(Enlight_Event_EventArgs $args)
     {
         $this->template->addTemplateDir($this->pluginDir . '/Resources/views/');
     }

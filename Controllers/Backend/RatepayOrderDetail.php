@@ -13,7 +13,6 @@ use RpayRatePay\Services\Request\PaymentDeliverService;
 use RpayRatePay\Services\Request\PaymentReturnService;
 use Shopware\Components\DependencyInjection\Container;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Attribute\Order as OrderAttribute;
 use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 
@@ -89,7 +88,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
      * index action is called if no other action is triggered
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function init()
     {
@@ -110,7 +109,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             $netPrices = $order->getNet() === 1;
             $this->_modelFactory = new ModelFactory($this->_config, $backend, $netPrices);
         } else {
-            throw new \Exception('RatepayOrderDetail controller requires parameter orderId');
+            throw new Exception('RatepayOrderDetail controller requires parameter orderId');
             //$this->_modelFactory = new ModelFactory();
         }
         $this->_history = new History();
@@ -144,7 +143,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
                 } else {
                     $articleNumberToInsert[] = $articleNumber;
                 }
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $this->logger->warn('Unable to initialize order position ' . $articleNumber . '. ' . $exception->getMessage());
                 $success = false;
             }
@@ -216,7 +215,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
 
         $items = [];
         foreach ($itemsParam as $item) {
-            if($item->deliveredItems > 0) {
+            if ($item->deliveredItems > 0) {
                 $items[$item->articlenumber] = $item->deliveredItems;
             }
         }
@@ -228,7 +227,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             /** @var AbstractResponse $response */
             $response = $this->paymentDeliverService->doRequest();
             $isSuccess = $response === true || $response->isSuccessful();
-            if($isSuccess) {
+            if ($isSuccess) {
                 $this->setNewOrderState($orderId, 'delivery');
             } else {
                 $this->View()->assign('message', $response->getReasonMessage());
@@ -250,7 +249,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
 
         $items = [];
         foreach ($itemsParam as $item) {
-            if($item->cancelledItems > 0) {
+            if ($item->cancelledItems > 0) {
                 $items[$item->articlenumber] = $item->cancelledItems;
             }
         }
@@ -263,7 +262,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             /** @var AbstractResponse $response */
             $response = $this->paymentCancelService->doRequest();
             $isSuccess = $response === true || $response->isSuccessful();
-            if($isSuccess) {
+            if ($isSuccess) {
                 $this->setNewOrderState($orderId, 'cancellation');
             } else {
                 $this->View()->assign('message', $response->getReasonMessage());
@@ -285,20 +284,20 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
 
         $items = [];
         foreach ($itemsParam as $item) {
-            if($item->returnedItems > 0) {
+            if ($item->returnedItems > 0) {
                 $items[$item->articlenumber] = $item->returnedItems;
             }
         }
 
         $isSuccess = true;
-        if(count($items) > 0) {
+        if (count($items) > 0) {
             $this->paymentReturnService->setOrder($orderId);
             $this->paymentReturnService->setItems($items);
             $this->paymentReturnService->setUpdateStock($this->Request()->getParam('articleStock') == 1);
             /** @var AbstractResponse $response */
             $response = $this->paymentReturnService->doRequest();
             $isSuccess = $response === true || $response->isSuccessful();
-            if($isSuccess) {
+            if ($isSuccess) {
                 $this->setNewOrderState($orderId, 'return');
             } else {
                 $this->View()->assign('message', $response->getReasonMessage());
@@ -321,7 +320,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
 
         $order = $this->modelManager->find(Order::class, $orderId);
 
-        if(PaymentMethods::isInstallment($order->getPayment())) {
+        if (PaymentMethods::isInstallment($order->getPayment())) {
             $this->View()->assign([
                 'message' => 'Einer Bestellung mit der Zahlart Ratenzahlung/Finanzierung kann kein Artikel automatisch hinzugefügt werden.',
                 'result' => false,
@@ -335,7 +334,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $addedDetails = $qb->getQuery()->getResult();
 
         $isSuccess = true;
-        if(count($addedDetails)) {
+        if (count($addedDetails)) {
             $basketArrayBuilder = new BasketArrayBuilder($order);
             foreach ($addedDetails as $detail) {
                 $basketArrayBuilder->addItem($detail);
@@ -387,15 +386,15 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
      * Returns the Price for the given id
      *
      * @param string $id
-     * @param float  $tax
+     * @param float $tax
      *
      * @return float
      */
     protected function getPrices($id, $tax)
     {
         $prices = $this->modelManager->getRepository('Shopware\Models\Article\Article')
-                            ->getPricesQuery($id)
-                            ->getArrayResult();
+            ->getPricesQuery($id)
+            ->getArrayResult();
 
         return $this->formatPricesFromNetToGross($prices, $tax);
     }
@@ -487,13 +486,13 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             //'articleordernumber' => 'discount',
             'price' => 0
         ];
-        if(count($rows) == 0) {
+        if (count($rows) == 0) {
             return null;
         }
 
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             $item['price'] += floatval($row['price']);
-            $item['name'] .= (isset($item['name']) ? ' & ' : null ) . $row['name'];
+            $item['name'] .= (isset($item['name']) ? ' & ' : null) . $row['name'];
         }
         return array_merge($rows[0], $item); // cause any position does have the same delivery, canceled and returned values, we can pick the first row
     }
@@ -509,21 +508,21 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
     {
         //TODO DQL/Models
         $sql = 'SELECT '
-               . '`articleID`, '
-               . '`name`, '
-               . '`articleordernumber`, '
-               . '`price`, '
-               . '`quantity`, '
-               . '(`quantity` - `delivered` - `cancelled`) AS `quantityDeliver`, '
-               . '(`delivered` - `returned`) AS `quantityReturn`, '
-               . '`delivered`, '
-               . '`cancelled`, '
-               . '`returned`, '
-               . 'ratepay.`tax_rate` '
-               . 'FROM `s_order_details` AS detail '
-               . 'INNER JOIN `rpay_ratepay_order_positions` AS ratepay ON detail.`id`=ratepay.`s_order_details_id` '
-               . 'WHERE detail.`orderId`=? '
-               . 'ORDER BY detail.`id`;';
+            . '`articleID`, '
+            . '`name`, '
+            . '`articleordernumber`, '
+            . '`price`, '
+            . '`quantity`, '
+            . '(`quantity` - `delivered` - `cancelled`) AS `quantityDeliver`, '
+            . '(`delivered` - `returned`) AS `quantityReturn`, '
+            . '`delivered`, '
+            . '`cancelled`, '
+            . '`returned`, '
+            . 'ratepay.`tax_rate` '
+            . 'FROM `s_order_details` AS detail '
+            . 'INNER JOIN `rpay_ratepay_order_positions` AS ratepay ON detail.`id`=ratepay.`s_order_details_id` '
+            . 'WHERE detail.`orderId`=? '
+            . 'ORDER BY detail.`id`;';
 
         $data = Shopware()->Db()->fetchAll($sql, [$orderId]);
         $shipping = $this->getShippingFromDBAsItem($orderId);
@@ -546,9 +545,9 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
     private function setNewOrderState($orderId, $operation = null)
     {
         $sql = "SELECT COUNT((`quantity` - `delivered` - `cancelled`)) AS 'itemsLeft' "
-               . 'FROM `s_order_details` '
-               . 'JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` '
-               . 'WHERE `orderID`=? AND (`quantity` - `delivered` - `cancelled`) > 0';
+            . 'FROM `s_order_details` '
+            . 'JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` '
+            . 'WHERE `orderID`=? AND (`quantity` - `delivered` - `cancelled`) > 0';
         try {
             $orderComplete = Shopware()->Db()->fetchOne($sql, [$orderId]);
 
@@ -571,7 +570,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             Shopware()->Db()->update('s_order', [
                 'status' => $newState
             ], '`id`=' . $orderId);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logger->error($exception->getMessage());
         }
     }
@@ -600,7 +599,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             $newValues = '(' . implode('), (', $orderDetailIds) . ')';
             $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES ' . $newValues;
             Shopware()->Db()->query($sqlInsert);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logger->error($exception->getMessage() . '. SQL:' . $sqlInsert);
             return false;
         }

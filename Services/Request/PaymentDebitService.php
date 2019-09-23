@@ -8,6 +8,7 @@ class PaymentDebitService extends AbstractModifyRequest
 {
 
     protected $_subType = 'credit';
+
     /**
      * @return string
      */

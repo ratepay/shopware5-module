@@ -14,7 +14,8 @@ class ProfileConfigRepository extends ModelRepository
      * @param bool $backend
      * @return ProfileConfig|null
      */
-    public function findOneByShop($shopId, $backend = false) {
+    public function findOneByShop($shopId, $backend = false)
+    {
         return $this->findOneBy(['shopId' => $shopId, 'backend' => $backend]);
     }
 

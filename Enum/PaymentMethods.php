@@ -2,6 +2,7 @@
 
 namespace RpayRatePay\Enum;
 
+use RuntimeException;
 use Shopware\Models\Payment\Payment;
 
 final class PaymentMethods extends Enum
@@ -76,7 +77,8 @@ final class PaymentMethods extends Enum
         ],
     ];
 
-    public static function getNames() {
+    public static function getNames()
+    {
         return array_keys(self::PAYMENTS);
     }
 
@@ -94,15 +96,17 @@ final class PaymentMethods extends Enum
      * @param string|Payment $paymentMethod
      * @return string
      */
-    public static function getRatepayPaymentMethod($paymentMethod) {
+    public static function getRatepayPaymentMethod($paymentMethod)
+    {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
-        if(!self::exists($paymentMethod)) {
-            throw new \RuntimeException('the method '.$paymentMethod.' is not a ratepay payment method');
+        if (!self::exists($paymentMethod)) {
+            throw new RuntimeException('the method ' . $paymentMethod . ' is not a ratepay payment method');
         }
         return self::PAYMENTS[$paymentMethod]['ratepay']['methodName'];
     }
 
-    public static function isInstallment($paymentMethod) {
+    public static function isInstallment($paymentMethod)
+    {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
         return in_array($paymentMethod, [self::PAYMENT_INSTALLMENT0, self::PAYMENT_RATE]);
     }

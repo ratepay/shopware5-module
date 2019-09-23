@@ -58,6 +58,7 @@ class ConfigInstallment extends ModelEntity
     {
         $this->paymentConfig = $paymentConfig;
     }
+
     /**
      * @return string
      */

@@ -2,12 +2,18 @@
 
 namespace RpayRatePay\Subscriber\Cron;
 
-use \Enlight\Event\SubscriberInterface;
+use DateInterval;
+use DateTime;
+use Enlight\Event\SubscriberInterface;
+use Enlight_Components_Db_Adapter_Pdo_Mysql;
+use Exception;
 use Monolog\Logger;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Services\Config\ConfigService;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Order;
+use Shopware_Components_Cron_CronJob;
+use Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler;
 
 class UpdateTransactionsSubscriber implements SubscriberInterface
 {
@@ -28,7 +34,7 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
      */
     protected $modelManager;
     /**
-     * @var \Enlight_Components_Db_Adapter_Pdo_Mysql
+     * @var Enlight_Components_Db_Adapter_Pdo_Mysql
      */
     protected $db;
     /**
@@ -39,7 +45,7 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
 
     public function __construct(
         ModelManager $modelManager,
-        \Enlight_Components_Db_Adapter_Pdo_Mysql $db,
+        Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         ConfigService $configService,
         Logger $logger
     )
@@ -63,12 +69,12 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
     /**
      * EventListener for frontend controller
      *
-     * @param \Shopware_Components_Cron_CronJob $job
+     * @param Shopware_Components_Cron_CronJob $job
      *
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
-    public function updateRatepayTransactions(\Shopware_Components_Cron_CronJob $job)
+    public function updateRatepayTransactions(Shopware_Components_Cron_CronJob $job)
     {
         if ($this->configService->isBidirectionalEnabled() === false) {
             $this->logger->info('RatePAY bidirectionality is turned off.');
@@ -79,7 +85,7 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
             $orderIds = $this->findCandidateOrdersForUpdate();
             $totalOrders = count($orderIds);
             //TODO service
-            $orderProcessor = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
+            $orderProcessor = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
             foreach ($orderIds as $key => $orderId) {
                 $order = $this->modelManager->find(Order::class, $orderId);
                 $this->logger->info(
@@ -87,7 +93,7 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
                 );
                 $orderProcessor->informRatepayOfOrderStatusChange($order);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error(
                 sprintf('Fehler UpdateTransactionsSubscriber: %s %s', $e->getMessage(), $e->getTraceAsString())
             );
@@ -98,11 +104,10 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
     }
 
 
-
     /**
      * @param $config
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function findCandidateOrdersForUpdate()
     {
@@ -139,16 +144,16 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
      * an unknown amount of orders could take a long of time.
      *
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     private function getChangeDateLimit()
     {
         $date = $this->getLastUpdateDate();
         if (empty($date)) {
-            $date = new \DateTime();
+            $date = new DateTime();
         }
 
-        $date->sub(new \DateInterval('PT1H'));
+        $date->sub(new DateInterval('PT1H'));
         $changeDate = $date->format('Y-m-d H:i:s');
 
         return $changeDate;
@@ -156,7 +161,7 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
 
     /**
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     private function getLastUpdateDate()
     {
@@ -164,8 +169,8 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
             $query = 'SELECT `next`, `interval` FROM s_crontab WHERE `action` = ?';
             $row = $this->db->fetchRow($query, [self::JOB_NAME]);
 
-            $date = new \DateTime($row['next']);
-            $date->sub(new \DateInterval('PT' . $row['interval'] . 'S'));
+            $date = new DateTime($row['next']);
+            $date->sub(new DateInterval('PT' . $row['interval'] . 'S'));
 
             $this->_cronjobLastExecutionDate = $date;
         }

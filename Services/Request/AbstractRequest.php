@@ -25,6 +25,7 @@ abstract class AbstractRequest
      * @return string
      */
     abstract protected function getCallName();
+
     /**
      * @return array
      */
@@ -35,9 +36,11 @@ abstract class AbstractRequest
      * @return ProfileConfig
      */
     abstract protected function getProfileConfig();
+
     abstract protected function processSuccess();
 
-    protected function isSkipRequest() {
+    protected function isSkipRequest()
+    {
         return false;
     }
 
@@ -64,7 +67,7 @@ abstract class AbstractRequest
 
     protected $_subType = null;
 
-    /** @var bool  */
+    /** @var bool */
     protected $isRequestSkipped = false;
 
     public function __construct(
@@ -83,17 +86,19 @@ abstract class AbstractRequest
     /**
      * @return AbstractResponse
      */
-    public final function doRequest() {
+    public final function doRequest()
+    {
         /** @var AbstractResponse $response */
         $response = $this->call($this->getRequestContent(), false);
-        if($response->isSuccessful()) {
+        if ($response->isSuccessful()) {
             $this->processSuccess();
         }
         return $response;
     }
 
-    protected final function call(array $content = null, $isRetry = false) {
-        if($this->isSkipRequest()) {
+    protected final function call(array $content = null, $isRetry = false)
+    {
+        if ($this->isSkipRequest()) {
             $this->isRequestSkipped = true;
             return true;
         }
@@ -103,14 +108,14 @@ abstract class AbstractRequest
         $mbHead->setArray($this->getRequestHead($profileConfig));
 
         $mbContent = null;
-        if($content) {
+        if ($content) {
             $mbContent = new ModelBuilder('Content');
             $mbContent->setArray($content);
         }
 
         $rb = new RequestBuilder($profileConfig->isSandbox());
-        $rb = $rb->__call('call'.ucfirst($this->getCallName()), $mbContent ? [$mbHead, $mbContent] : [$mbHead]);
-        if($this->_subType) {
+        $rb = $rb->__call('call' . ucfirst($this->getCallName()), $mbContent ? [$mbHead, $mbContent] : [$mbHead]);
+        if ($this->_subType) {
             $rb = $rb->subtype($this->_subType);
         }
 
@@ -129,7 +134,8 @@ abstract class AbstractRequest
         }
     }
 
-    protected function getRequestHead(ProfileConfig $profileConfig) {
+    protected function getRequestHead(ProfileConfig $profileConfig)
+    {
         $head = [
             'SystemId' => $this->getSystemId(),
             'Credential' => [
@@ -150,7 +156,7 @@ abstract class AbstractRequest
 
     private function getSystemId()
     {
-        return $this->db->fetchOne('SELECT `host` FROM `s_core_shops` WHERE `default`=1') ? : $_SERVER['SERVER_ADDR'];
+        return $this->db->fetchOne('SELECT `host` FROM `s_core_shops` WHERE `default`=1') ?: $_SERVER['SERVER_ADDR'];
     }
 
 }

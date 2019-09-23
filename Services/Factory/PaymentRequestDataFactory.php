@@ -4,7 +4,6 @@
 namespace RpayRatePay\Services\Factory;
 
 
-use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\DfpService;
@@ -36,7 +35,8 @@ class PaymentRequestDataFactory
         $this->dfpService = $dfpService;
     }
 
-    public function createFromOrderStruct(OrderStruct $orderStruct, array $loadedEntities = []) {
+    public function createFromOrderStruct(OrderStruct $orderStruct, array $loadedEntities = [])
+    {
 
         //find entities related to the order
         $shop = isset($loadedEntities['shop']) ? $loadedEntities['paymentMethod'] : $this->modelManager->find(Shop::class, $orderStruct->getLanguageShopId());

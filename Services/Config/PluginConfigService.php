@@ -2,13 +2,16 @@
 
 namespace RpayRatePay\Services;
 //TODO remove this class
+use Enlight_Components_Db_Adapter_Pdo_Mysql;
+use Shopware_Components_Config;
+
 class XXXConfigService
 {
     private $db;
 
     private $config;
 
-    public function __construct(\Shopware_Components_Config $config, \Enlight_Components_Db_Adapter_Pdo_Mysql $db)
+    public function __construct(Shopware_Components_Config $config, Enlight_Components_Db_Adapter_Pdo_Mysql $db)
     {
         $this->db = $db;
         $this->config = $config;

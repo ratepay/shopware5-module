@@ -16,7 +16,8 @@ class HelperService
     }
 
     //TODO maybe param support for int?
-    public function isRatePayPayment(Order $order) {
+    public function isRatePayPayment(Order $order)
+    {
         return PaymentMethods::exists($order->getPayment()->getName());
     }
 }

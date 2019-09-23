@@ -2,18 +2,19 @@
 
 namespace RpayRatePay\Subscriber\Frontend;
 
+use Enlight\Event\SubscriberInterface;
+use Enlight_Components_Session_Namespace;
+use Enlight_Event_EventArgs;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\DfpService;
-
-use \Enlight\Event\SubscriberInterface;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
-use Shopware\Models\Shop\DetachedShop;
+use Shopware_Controllers_Frontend_Checkout;
 
 class CheckoutSubscriber implements SubscriberInterface
 {
@@ -23,7 +24,7 @@ class CheckoutSubscriber implements SubscriberInterface
      */
     protected $modelManager;
     /**
-     * @var \Enlight_Components_Session_Namespace
+     * @var Enlight_Components_Session_Namespace
      */
     protected $session;
 
@@ -43,7 +44,7 @@ class CheckoutSubscriber implements SubscriberInterface
 
     public function __construct(
         ModelManager $modelManager,
-        \Enlight_Components_Session_Namespace $session,
+        Enlight_Components_Session_Namespace $session,
         ShopContextInterface $shopContextService,
         ConfigService $configService,
         DfpService $dfpService
@@ -63,9 +64,9 @@ class CheckoutSubscriber implements SubscriberInterface
         ];
     }
 
-    public function extendTemplates(\Enlight_Event_EventArgs $args)
+    public function extendTemplates(Enlight_Event_EventArgs $args)
     {
-        /** @var \Shopware_Controllers_Frontend_Checkout $controller */
+        /** @var Shopware_Controllers_Frontend_Checkout $controller */
         $controller = $args->getSubject();
         $request = $controller->Request();
         $response = $controller->Response();
@@ -89,7 +90,7 @@ class CheckoutSubscriber implements SubscriberInterface
         } elseif (!is_null($this->session->get('sPaymentID'))) { // PaymentId is set in case of new/guest customers
             $paymentId = $this->session->get('sPaymentID');
         }
-        if($paymentId == null || is_nan($paymentId)) {
+        if ($paymentId == null || is_nan($paymentId)) {
             return $paymentId;
         }
         $paymentMethod = $this->modelManager->find(Payment::class, $paymentId);

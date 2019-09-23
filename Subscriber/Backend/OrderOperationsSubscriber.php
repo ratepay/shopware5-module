@@ -5,23 +5,18 @@ namespace RpayRatePay\Subscriber\Backend;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\TransactionRequiredException;
+use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use Enlight_Hook_HookArgs;
 use Exception;
 use Monolog\Logger;
-use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
-use RpayRatePay\Component\Mapper\ModelFactory;
 use RpayRatePay\Enum\PaymentMethods;
-use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\HelperService;
 use RpayRatePay\Services\OrderStatusChangeService;
 use RpayRatePay\Services\Request\PaymentCancelService;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Order\Detail;
-
-use \Enlight\Event\SubscriberInterface;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Payment\Payment;
 use Shopware_Controllers_Backend_Order;
@@ -126,7 +121,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
      * @throws OptimisticLockException
      * @throws TransactionRequiredException
      */
-    public function onBidirectionalSendOrderOperation(\Enlight_Hook_HookArgs $args)
+    public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $args)
     {
         if (!$this->config->isBidirectionalEnabled()) {
             return;
@@ -149,7 +144,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
      * @throws OptimisticLockException
      * @throws TransactionRequiredException
      */
-    public function afterOrderBatchProcess(\Enlight_Hook_HookArgs $args)
+    public function afterOrderBatchProcess(Enlight_Hook_HookArgs $args)
     {
         /** @var Shopware_Controllers_Backend_Order $controller */
         $controller = $args->getSubject();

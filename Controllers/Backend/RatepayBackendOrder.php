@@ -164,7 +164,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
 
         $installmentConfig = $this->profileConfigService->getInstallmentPaymentConfig($paymentMeansName, $shopId, $addressObj->getCountry()->getIso(), true);
 
-        if($calcParamSet) {
+        if ($calcParamSet) {
             $val = $params['value'];
         } else {
             $val = explode(',', $installmentConfig->getMonthAllowed())[0];
@@ -174,7 +174,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
 
         try {
             $result = $installmentBuilder->getInstallmentPlanAsJson($totalAmount, $type, $val);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->view->assign([
                 'success' => false,
                 'messages' => [$e->getMessage()]

@@ -14,13 +14,15 @@ final class Country
         'BE'
     ];
 
-    public static function getLowerCountries() {
-        return array_map(function($value) {
+    public static function getLowerCountries()
+    {
+        return array_map(function ($value) {
             return strtolower($value);
         }, self::AVAILABLE_COUNTRIES);
     }
 
-    public static function getCountries() {
+    public static function getCountries()
+    {
         return self::AVAILABLE_COUNTRIES;
     }
 

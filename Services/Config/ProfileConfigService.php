@@ -31,7 +31,8 @@ class ProfileConfigService
         $this->modelManager = $modelManager;
     }
 
-    public function getProfileConfig($countryIso, $shopId, $backend = false, $zeroPercentInstallment = false) {
+    public function getProfileConfig($countryIso, $shopId, $backend = false, $zeroPercentInstallment = false)
+    {
 
         $profileId = $this->configService->getProfileId($countryIso, $shopId, $zeroPercentInstallment, $backend);
 
@@ -40,7 +41,8 @@ class ProfileConfigService
         return $repo->findOneByShopAndProfileId($profileId, $shopId);
     }
 
-    public function getInstallmentPaymentConfig($paymentMethodName, $shopId, $countryIso, $backend = false) {
+    public function getInstallmentPaymentConfig($paymentMethodName, $shopId, $countryIso, $backend = false)
+    {
         $profileConfig = $this->getProfileConfig($countryIso, $shopId, $backend, false); //TODO last parameter
 
         /** @var ConfigInstallmentRepository $repo */

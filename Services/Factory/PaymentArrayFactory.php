@@ -4,6 +4,7 @@
 namespace RpayRatePay\Services\Factory;
 
 
+use Exception;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\ShopwareUtil;
 use RpayRatePay\Enum\PaymentMethods;
@@ -13,7 +14,8 @@ class PaymentArrayFactory
 
     const ARRAY_KEY = 'Payment';
 
-    public function getData(PaymentRequestData $paymentRequestData) {
+    public function getData(PaymentRequestData $paymentRequestData)
+    {
         $data = [
             'Method' => strtolower(PaymentMethods::getRatepayPaymentMethod($paymentRequestData->getMethod())),
             'Amount' => $paymentRequestData->getAmount()
@@ -34,7 +36,7 @@ class PaymentArrayFactory
             $calculatorAmountWithoutInterest = $this->getSession()->RatePAY['ratenrechner']['amount'];
 
             if ((string)$calculatorAmountWithoutInterest !== (string)$paymentRequestData->getAmount()) {
-                throw new \Exception(
+                throw new Exception(
                     'Attempt to create order with wrong amount in installment calculator.' .
                     'Expected ' . $paymentRequestData->getAmount() . ' Got ' . $calculatorAmountWithoutInterest
                 );

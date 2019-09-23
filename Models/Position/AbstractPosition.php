@@ -102,7 +102,8 @@ abstract class AbstractPosition
         $this->taxRate = $taxRate;
     }
 
-    public function getOpenQuantity() {
+    public function getOpenQuantity()
+    {
         return $this->getOrderedQuantity() - $this->getDelivered() - $this->getCancelled();
     }
 }

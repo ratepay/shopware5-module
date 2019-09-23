@@ -2,36 +2,31 @@
 
 namespace RpayRatePay\Subscriber\Backend;
 
+use Enlight\Event\SubscriberInterface;
+use Enlight_Hook_HookArgs;
+use Exception;
 use Monolog\Logger;
-use RatePAY\Model\Request\PaymentRequest as PaymentRequest;
 use RatePAY\Model\Response\PaymentRequest as PaymentResponse;
-use RatePAY\Service\Math;
-use RpayRatePay\Component\Mapper\ModelFactory;
-use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Enum\PaymentMethods;
-use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
-use RpayRatePay\Services\PaymentProcessorService;
 use RpayRatePay\Services\Config\ConfigService;
+use RpayRatePay\Services\DfpService;
+use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
 use RpayRatePay\Services\Request\PaymentConfirmService;
 use RpayRatePay\Services\Request\PaymentRequestService;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Payment\Payment;
-use Shopware\Models\Shop\Shop;
-use RpayRatePay\Services\DfpService;
-use \Enlight\Event\SubscriberInterface;
+use Shopware_Controllers_Backend_SwagBackendOrder;
 use SwagBackendOrder\Components\Order\Hydrator\OrderHydrator;
-use SwagBackendOrder\Components\Order\Struct\OrderStruct;
 use SwagBackendOrder\Components\Order\Validator\OrderValidator;
 
 class OrderControllerSubscriber implements SubscriberInterface
 {
-    /** @var ConfigService  */
+    /** @var ConfigService */
     protected $config;
 
-    /** @var DfpService  */
+    /** @var DfpService */
     protected $dfpService;
     /**
      * @var ModelManager
@@ -92,9 +87,9 @@ class OrderControllerSubscriber implements SubscriberInterface
         ];
     }
 
-    public function replaceCreateOrderAction(\Enlight_Hook_HookArgs $args)
+    public function replaceCreateOrderAction(Enlight_Hook_HookArgs $args)
     {
-        /** @var \Shopware_Controllers_Backend_SwagBackendOrder $subject */
+        /** @var Shopware_Controllers_Backend_SwagBackendOrder $subject */
         $subject = $args->getSubject();
         $request = $subject->Request();
         $view = $subject->View();
@@ -144,7 +139,7 @@ class OrderControllerSubscriber implements SubscriberInterface
                 $this->paymentConfirmService->setOrder($order);
                 $paymentResponse = $this->paymentConfirmService->doRequest();
 
-                if($paymentResponse->isSuccessful() === false) {
+                if ($paymentResponse->isSuccessful() === false) {
                     $customerMessage = $paymentResponse->getCustomerMessage();
                     $this->fail($view, [$customerMessage]);
                 }
@@ -152,7 +147,7 @@ class OrderControllerSubscriber implements SubscriberInterface
                 $customerMessage = $paymentResponse->getCustomerMessage();
                 $this->fail($view, [$customerMessage]);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error($e->getMessage());
             $this->logger->error($e->getTraceAsString());
 
@@ -160,7 +155,7 @@ class OrderControllerSubscriber implements SubscriberInterface
         }
     }
 
-    private function forwardToSWAGBackendOrders(\Enlight_Hook_HookArgs $hookArgs)
+    private function forwardToSWAGBackendOrders(Enlight_Hook_HookArgs $hookArgs)
     {
         $subject = $hookArgs->getSubject();
         $parentReturn = $subject->executeParent(

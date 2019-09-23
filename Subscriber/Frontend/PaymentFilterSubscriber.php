@@ -2,11 +2,14 @@
 
 namespace RpayRatePay\Subscriber\Frontend;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\TransactionRequiredException;
+use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace;
+use Enlight_Event_EventArgs;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
-
-use \Enlight\Event\SubscriberInterface;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
@@ -17,6 +20,7 @@ use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
 use Shopware_Components_Config;
 use Shopware_Components_Modules;
+use Shopware_Plugins_Frontend_RpayRatePay_Component_Validation;
 
 class PaymentFilterSubscriber implements SubscriberInterface
 {
@@ -83,13 +87,13 @@ class PaymentFilterSubscriber implements SubscriberInterface
      *  - The Country must be germany or austria
      *  - The Currency must be EUR
      *
-     * @param \Enlight_Event_EventArgs $arguments
+     * @param Enlight_Event_EventArgs $arguments
      * @return array|void
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
-    public function filterPayments(\Enlight_Event_EventArgs $arguments)
+    public function filterPayments(Enlight_Event_EventArgs $arguments)
     {
         $return = $arguments->getReturn();
         $currency = $this->config->get('currency');
@@ -203,7 +207,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
     private function getValidator($user)
     {
-        return new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user); //TODO service
+        return new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user); //TODO service
     }
 
     /**

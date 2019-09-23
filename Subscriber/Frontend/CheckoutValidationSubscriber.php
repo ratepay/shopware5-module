@@ -5,13 +5,15 @@ namespace RpayRatePay\Subscriber\Frontend;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\TransactionRequiredException;
+use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace;
 use Enlight_Event_EventArgs;
-use \Enlight\Event\SubscriberInterface;
 use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
+use Shopware_Controllers_Frontend_Checkout;
+use Shopware_Plugins_Frontend_RpayRatePay_Component_Validation;
 
 class CheckoutValidationSubscriber implements SubscriberInterface
 {
@@ -56,7 +58,7 @@ class CheckoutValidationSubscriber implements SubscriberInterface
      */
     public function preValidation(Enlight_Event_EventArgs $args)
     {
-        /** @var \Shopware_Controllers_Frontend_Checkout $controller */
+        /** @var Shopware_Controllers_Frontend_Checkout $controller */
         $controller = $args->getSubject();
 
         $request = $controller->Request();
@@ -86,7 +88,7 @@ class CheckoutValidationSubscriber implements SubscriberInterface
         /** @var Payment $paymentType */
         $paymentType = $this->modelManager->find(Payment::class, $user->getPaymentId());
 
-        $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user, $paymentType); //TODO service
+        $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user, $paymentType); //TODO service
 
         if ($validation->isRatePAYPayment()) {
             $ratePaySession = $this->session->RatePAY;

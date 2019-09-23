@@ -4,6 +4,7 @@
 namespace RpayRatePay\Models;
 
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Shopware\Components\Model\ModelEntity;
 
@@ -23,7 +24,7 @@ class Log extends ModelEntity
     protected $id;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      * @ORM\Column(name="date", type="datetime", nullable=false)
      */
     protected $date;
@@ -78,7 +79,7 @@ class Log extends ModelEntity
 
     public function __construct()
     {
-        $this->date = new \DateTime();
+        $this->date = new DateTime();
     }
 
     /**
@@ -98,7 +99,7 @@ class Log extends ModelEntity
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
     public function getDate()
     {
@@ -106,7 +107,7 @@ class Log extends ModelEntity
     }
 
     /**
-     * @param \DateTime $date
+     * @param DateTime $date
      */
     public function setDate($date)
     {

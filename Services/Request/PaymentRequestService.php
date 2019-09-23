@@ -4,6 +4,7 @@
 namespace RpayRatePay\Services\Request;
 
 
+use DateTime;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use Monolog\Logger;
 use RatePAY\Model\Response\PaymentRequest as PaymentResponse;
@@ -22,6 +23,7 @@ use RpayRatePay\Services\Factory\BasketArrayFactory;
 use RpayRatePay\Services\Factory\CustomerArrayFactory;
 use RpayRatePay\Services\Factory\PaymentArrayFactory;
 use RpayRatePay\Services\Logger\RequestLogger;
+use RuntimeException;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Attribute\Order as OrderAttribute;
 use Shopware\Models\Order\Detail;
@@ -97,7 +99,7 @@ class PaymentRequestService extends AbstractRequest
             'OrderId' => null, //TODO currently not transmitted
             'MerchantConsumerId' => $this->paymentRequestData->getCustomer()->getNumber()
         ];
-        if($this->paymentRequestData->getDfpToken()) {
+        if ($this->paymentRequestData->getDfpToken()) {
             $data['CustomerDevice']['DeviceToken'] = $this->paymentRequestData->getDfpToken();
         }
         return $data;
@@ -105,11 +107,11 @@ class PaymentRequestService extends AbstractRequest
 
     protected function getRequestContent()
     {
-        if($this->paymentRequestData == null) {
-            throw new \RuntimeException('please set paymentRequestData with function `setPaymentRequestData()`');
+        if ($this->paymentRequestData == null) {
+            throw new RuntimeException('please set paymentRequestData with function `setPaymentRequestData()`');
         }
-        if($this->isBackend == null) {
-            throw new \RuntimeException('please set the backend variable to `true` if it is a backend call with function `setIsBackend()`');
+        if ($this->isBackend == null) {
+            throw new RuntimeException('please set the backend variable to `true` if it is a backend call with function `setIsBackend()`');
         }
 
         $basketFactory = new BasketArrayBuilder($this->paymentRequestData);
@@ -163,6 +165,7 @@ class PaymentRequestService extends AbstractRequest
         $this->insertOrderAttributes($order, $paymentResponse);
         $this->setPaymentStatus($order, $paymentResponse);
     }
+
     /**
      * @param Order $order
      * @param RequestBuilder $paymentResponse
@@ -210,7 +213,7 @@ class PaymentRequestService extends AbstractRequest
     {
         /** @var $paymentResponse PaymentResponse */ // RequestBuilder is a proxy
         $orderAttribute = $order->getAttribute();
-        if($orderAttribute == null) {
+        if ($orderAttribute == null) {
             $orderAttribute = new OrderAttribute();
             $orderAttribute->setOrder($order);
             $this->modelManager->persist($orderAttribute);
@@ -225,6 +228,7 @@ class PaymentRequestService extends AbstractRequest
 
         $this->modelManager->flush($orderAttribute);
     }
+
     /**
      * @param Order $order
      * @param RequestBuilder $paymentResponse
@@ -235,6 +239,7 @@ class PaymentRequestService extends AbstractRequest
         $order->setTransactionId($paymentResponse->getTransactionId());
         $this->modelManager->flush($order);
     }
+
     /**
      * @param Order $order
      * @param RequestBuilder $paymentResponse
@@ -242,7 +247,7 @@ class PaymentRequestService extends AbstractRequest
     protected function setPaymentStatus(Order $order, RequestBuilder $paymentResponse)
     {
         //set cleared date
-        $order->setClearedDate(new \DateTime());
+        $order->setClearedDate(new DateTime());
         $this->modelManager->flush($order);
 
         $paymentStatusId = $this->configService->getPaymentStatusAfterPayment($order->getPayment());

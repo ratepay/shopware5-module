@@ -1,8 +1,10 @@
 <?php
+
 namespace RpayRatePay\Services;
 
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Join;
+use Exception;
 use Monolog\Logger;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Enum\PaymentMethods;
@@ -84,7 +86,7 @@ class OrderStatusChangeService
      */
     public function informRatepayOfOrderStatusChange(Order $order)
     {
-        if(PaymentMethods::exists($order->getPayment()) === false) {
+        if (PaymentMethods::exists($order->getPayment()) === false) {
             //payment is not a ratepay order
             return;
         }
@@ -108,14 +110,14 @@ class OrderStatusChangeService
         $this->logger->debug('--> canSendFullReturn');
         try {
             $basketArrayBuilder = new BasketArrayBuilder($order);
-            foreach($order->getDetails() as $detail) {
+            foreach ($order->getDetails() as $detail) {
                 $position = $this->positionHelper->getPositionForDetail($detail);
                 //to prevent unexpected errors, we will only return the delivered items
                 $basketArrayBuilder->addItem($detail, $position->getDelivered());
             }
             $shippingPosition = $this->positionHelper->getShippingPositionForOrder($order);
-            if($shippingPosition) {
-                if($shippingPosition->getOpenQuantity() === 0) { // shipping has been delivered so we can return it
+            if ($shippingPosition) {
+                if ($shippingPosition->getOpenQuantity() === 0) { // shipping has been delivered so we can return it
                     $basketArrayBuilder->addShippingItem();
                 }
             }
@@ -127,7 +129,7 @@ class OrderStatusChangeService
                 $this->logger->warning(sprintf(self::MSG_FULL_RETURN_REJECTED, $order->getId()));
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error(
                 sprintf(self::MSG_FAILED_SENDING_FULL_RETURN, $order->getId(), $e->getMessage())
             );
@@ -140,17 +142,17 @@ class OrderStatusChangeService
 
         try {
             $basketArrayBuilder = new BasketArrayBuilder($order);
-            foreach($order->getDetails() as $detail) {
+            foreach ($order->getDetails() as $detail) {
                 $position = $this->positionHelper->getPositionForDetail($detail);
                 // openQuantity should be the orderedQuantity.
                 // To prevent unexpected errors we will only submit the openQuantity
                 $basketArrayBuilder->addItem($detail, $position->getOpenQuantity());
             }
             $shippingPosition = $this->positionHelper->getShippingPositionForOrder($order);
-            if($shippingPosition) {
+            if ($shippingPosition) {
                 // openQuantity should be the orderedQuantity.
                 // To prevent unexpected errors we will only submit the openQuantity
-                if($shippingPosition->getOpenQuantity() === 1) {
+                if ($shippingPosition->getOpenQuantity() === 1) {
                     $basketArrayBuilder->addShippingItem();
                 }
             }
@@ -162,7 +164,7 @@ class OrderStatusChangeService
             if ($result->isSuccessful() === false) {
                 $this->logger->warning(sprintf(self::MSG_FULL_CANCELLATION_REJECTED, $order->getId()));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error(
                 sprintf(self::MSG_FAILED_SENDING_FULL_CANCELLATION, $order->getId(), $e->getMessage())
             );
@@ -175,17 +177,17 @@ class OrderStatusChangeService
 
         try {
             $basketArrayBuilder = new BasketArrayBuilder($order);
-            foreach($order->getDetails() as $detail) {
+            foreach ($order->getDetails() as $detail) {
                 $position = $this->positionHelper->getPositionForDetail($detail);
-                if($position->getOpenQuantity() > 0) {
+                if ($position->getOpenQuantity() > 0) {
                     //just deliver not delivered or canceled items
                     $basketArrayBuilder->addItem($detail, $position->getOpenQuantity());
                 }
             }
             $shippingPosition = $this->positionHelper->getShippingPositionForOrder($order);
-            if($shippingPosition) {
+            if ($shippingPosition) {
                 //just deliver not delivered or canceled items
-                if($shippingPosition->getOpenQuantity() === 1) {
+                if ($shippingPosition->getOpenQuantity() === 1) {
                     $basketArrayBuilder->addShippingItem();
                 }
             }
@@ -198,7 +200,7 @@ class OrderStatusChangeService
                 $this->logger->warning(sprintf(self::MSG_FULL_DELIVERY_REJECTED, $order->getId()));
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error(
                 sprintf(self::MSG_FAILED_SENDING_FULL_DELIVERY, $order->getId(), $e->getMessage())
             );
@@ -268,10 +270,11 @@ class OrderStatusChangeService
         }
     }
 
-    protected function getCountQueryBuilder(Order $order) {
+    protected function getCountQueryBuilder(Order $order)
+    {
         $qb = $this->modelManager->createQueryBuilder();
         return $qb->select('count(detail.id)')                                          //TODO add discount & shipping
-            ->from(ProductPosition::class, 'position')
+        ->from(ProductPosition::class, 'position')
             ->innerJoin(OrderDetail::class, 'detail', Join::WITH, 'position.orderDetail = detail.id')
             ->andWhere($qb->expr()->eq('detail.order', ':order_id'))
             ->andWhere($qb->expr()->in('detail.mode', PositionHelper::MODE_SW_PRODUCT)) //TODO add discount & shipping

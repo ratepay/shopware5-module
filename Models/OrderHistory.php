@@ -2,6 +2,7 @@
 
 namespace RpayRatePay\Models;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Shopware\Components\Model\ModelEntity;
 
@@ -28,7 +29,7 @@ class OrderHistory extends ModelEntity
     protected $orderId;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      * @ORM\Column(name="date", type="datetime", nullable=false)
      */
     protected $date;
@@ -60,7 +61,7 @@ class OrderHistory extends ModelEntity
 
     public function __construct()
     {
-        $this->date = new \DateTime();
+        $this->date = new DateTime();
     }
 
     /**

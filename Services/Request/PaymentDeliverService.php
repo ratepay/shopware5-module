@@ -4,22 +4,15 @@
 namespace RpayRatePay\Services\Request;
 
 
-use Doctrine\ORM\Query\Expr\Join;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
-use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
-use RpayRatePay\Models\Position\AbstractPosition;
-use RpayRatePay\Models\Position\Product as ProductPosition;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
-use RpayRatePay\Services\Factory\BasketArrayFactory;
 use RpayRatePay\Services\Factory\InvoiceArrayFactory;
 use RpayRatePay\Services\Logger\HistoryLogger;
 use RpayRatePay\Services\Logger\RequestLogger;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Order\Detail;
-use Shopware\Models\Order\Order;
 
 class PaymentDeliverService extends AbstractModifyRequest
 {
@@ -49,7 +42,8 @@ class PaymentDeliverService extends AbstractModifyRequest
         return self::CALL_DELIVER;
     }
 
-    protected function isSkipRequest() {
+    protected function isSkipRequest()
+    {
         if (PaymentMethods::isInstallment($this->_order->getPayment())) {
             foreach ($this->items as $productNumber => $quantity) {
                 $position = $this->getOrderPosition($productNumber);
@@ -67,7 +61,7 @@ class PaymentDeliverService extends AbstractModifyRequest
         $requestContent = parent::getRequestContent();
 
         $invoiceData = $this->invoiceArrayFactory->getData($this->_order);
-        if($invoiceData) {
+        if ($invoiceData) {
             $requestContent[InvoiceArrayFactory::ARRAY_KEY] = $invoiceData;
         }
         return $requestContent;

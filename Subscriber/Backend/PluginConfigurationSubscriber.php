@@ -2,7 +2,9 @@
 
 namespace RpayRatePay\Subscriber\Backend;
 
-use \Enlight\Event\SubscriberInterface;
+use Enlight\Event\SubscriberInterface;
+use Enlight_Hook_HookArgs;
+use Exception;
 use Monolog\Logger;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\WriterService;
@@ -49,10 +51,10 @@ class PluginConfigurationSubscriber implements SubscriberInterface
     }
 
     /**
-     * @param \Enlight_Hook_HookArgs $arguments
-     * @throws \Exception
+     * @param Enlight_Hook_HookArgs $arguments
+     * @throws Exception
      */
-    public function beforeSavePluginConfig(\Enlight_Hook_HookArgs $arguments)
+    public function beforeSavePluginConfig(Enlight_Hook_HookArgs $arguments)
     {
         $request = $arguments->getSubject()->Request();
         $parameter = $request->getParams();
@@ -125,8 +127,8 @@ class PluginConfigurationSubscriber implements SubscriberInterface
             }
         }
 
-        if(count($errors) > 0) {
-            throw new \Exception('Form could not be saved. The following settings have errors ' .
+        if (count($errors) > 0) {
+            throw new Exception('Form could not be saved. The following settings have errors ' .
                 implode(', ', $errors) . '.');
         }
     }

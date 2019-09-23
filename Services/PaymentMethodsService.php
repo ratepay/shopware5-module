@@ -5,8 +5,6 @@ namespace RpayRatePay\Services;
 
 
 use Shopware\Components\Model\ModelManager;
-use Shopware\Components\Plugin as PluginBootstrap;
-use Shopware\Kernel;
 use Shopware\Models\Payment\Payment;
 use Shopware\Models\Plugin\Plugin;
 
@@ -35,28 +33,33 @@ class PaymentMethodsService
         $this->pluginName = $pluginName;
     }
 
-    public function enableMethods() {
+    public function enableMethods()
+    {
         $payments = $this->getPlugin()->getPayments()->toArray();
         /** @var Payment $payment */
-        foreach($payments as $payment) {
+        foreach ($payments as $payment) {
             $payment->setActive(true);
         }
         $this->modelManager->flush($payments);
     }
 
-    public function disableMethods() {
+    public function disableMethods()
+    {
         $payments = $this->getPlugin()->getPayments()->toArray();
         /** @var Payment $payment */
-        foreach($payments as $payment) {
+        foreach ($payments as $payment) {
             $payment->setActive(true);
         }
         $this->modelManager->flush($payments);
     }
 
-    protected function getPlugin() {
-        return $this->plugin ? : $this->plugin = $this->modelManager->getRepository(Plugin::class)->findOneBy(['name' => $this->pluginName]);
+    protected function getPlugin()
+    {
+        return $this->plugin ?: $this->plugin = $this->modelManager->getRepository(Plugin::class)->findOneBy(['name' => $this->pluginName]);
     }
-    protected function setPlugin(Plugin $plugin) {
+
+    protected function setPlugin(Plugin $plugin)
+    {
         $this->plugin = $plugin;
     }
 

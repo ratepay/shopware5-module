@@ -18,16 +18,20 @@
  * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
  */
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\TransactionRequiredException;
 use Monolog\Logger;
 use RpayRatePay\Component\Mapper\ModelFactory;
-use RpayRatePay\Services\PaymentProcessorService;
+use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ShopwareUtil;
+use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\Logger\RequestLogger;
+use RpayRatePay\Services\PaymentProcessorService;
 use Shopware\Components\CSRFWhitelistAware;
-use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
-use \RpayRatePay\Component\Service\ConfigLoader;
-use \RpayRatePay\Services\DfpService;
+use Shopware\Components\DependencyInjection\Container;
 
 class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
 {
@@ -57,7 +61,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
     protected $logger;
 
 
-    public function setContainer(\Shopware\Components\DependencyInjection\Container $container = null)
+    public function setContainer(Container $container = null)
     {
         parent::setContainer($container);
         $this->paymentProcessor = $container->get(PaymentProcessorService::class);
@@ -66,9 +70,9 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
     /**
      * @return string
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
     public function init()
     {
@@ -163,7 +167,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $year = $parameters['ratepay_birthyear'];
 
             if (checkdate($month, $day, $year)) {
-                $date = DateTime::createFromFormat('Y-m-d' , "$year-$month-$day");
+                $date = DateTime::createFromFormat('Y-m-d', "$year-$month-$day");
                 $qualifiedParameters['ratepay_dob'] = $date->format('Y-m-d');
             }
         }
@@ -236,7 +240,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 try {
                     Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // TODO: Parameterize or make otherwise safe
                     $this->logger->info('Customer data was updated');
-                } catch (\Exception $exception) {
+                } catch (Exception $exception) {
                     $this->logger->error('RatePAY was unable to update customer data: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
@@ -256,7 +260,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                         Shopware()->Db()->update('s_user_addresses', $updateAddressData, 'id=' . $Parameter['checkoutBillingAddressId']);
                     }
                     $this->logger->info('Customer data was updated');
-                } catch (\Exception $exception) {
+                } catch (Exception $exception) {
                     $this->logger->error('RatePAY was unable to update customer data: ' . $exception->getMessage());
                     $return = 'NOK';
                 }
@@ -269,7 +273,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         if ($Parameter['ratepay_debit_updatedebitdata']) {
             $sessionLoader->setBankData(
                 $userModel->getId(),
-    //            $customerAddressBilling->getFirstname() . " " . $customerAddressBilling->getLastname(),
+                //            $customerAddressBilling->getFirstname() . " " . $customerAddressBilling->getLastname(),
                 $Parameter['ratepay_debit_accountnumber'],
                 $Parameter['ratepay_debit_bankcode']
             );
@@ -298,7 +302,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                     $this->paymentProcessor->initShippingPosition($order);
                 }
                 $this->paymentProcessor->initDiscountPosition($order);
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $this->logger->error($exception->getMessage());
             }
 
@@ -310,7 +314,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                     $this->_configLoader->isCommitDiscountAsCartItem(),
                     false
                 );
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $this->logger->error($exception->getMessage());
             }
 

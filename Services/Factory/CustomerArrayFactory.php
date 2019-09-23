@@ -12,7 +12,8 @@ class CustomerArrayFactory
 
     const ARRAY_KEY = 'Customer';
 
-    public function getData(PaymentRequestData $paymentRequestData) {
+    public function getData(PaymentRequestData $paymentRequestData)
+    {
 
         $customer = $paymentRequestData->getCustomer();
         $billingAddress = $paymentRequestData->getBillingAddress();
@@ -20,10 +21,10 @@ class CustomerArrayFactory
 
         $gender = 'u';
         $salutation = $billingAddress->getSalutation();
-        if($salutation === 'ms') {
+        if ($salutation === 'ms') {
             $salutation = 'Frau';
             $gender = 'f';
-        } elseif($salutation === 'mr') {
+        } elseif ($salutation === 'mr') {
             $salutation = 'Herr';
             $gender = 'm';
         }
@@ -51,12 +52,12 @@ class CustomerArrayFactory
             ],
         ];
 
-        if($billingAddress->getCompany()) {
+        if ($billingAddress->getCompany()) {
             $data['CompanyName'] = $billingAddress->getCompany();
             $data['VatId'] = $billingAddress->getVatId();
         }
 
-        if(count($paymentRequestData->getBankData())) {
+        if (count($paymentRequestData->getBankData())) {
             $data['BankAccount'] = $paymentRequestData->getBankData(); //TODO verify if data is correct?
         }
 

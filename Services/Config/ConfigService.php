@@ -4,6 +4,7 @@
 namespace RpayRatePay\Services\Config;
 
 
+use RuntimeException;
 use Shopware\Models\Payment\Payment;
 use Shopware_Components_Config;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -114,8 +115,8 @@ class ConfigService
     public function getBidirectionalOrderStatus($action, $shopId = null)
     {
         $allowedActions = ['full_delivery', 'full_cancellation', 'full_return'];
-        if(!in_array($action, $allowedActions)) {
-            throw new \RuntimeException('Just these actions are allowed: '.implode(',',$allowedActions));
+        if (!in_array($action, $allowedActions)) {
+            throw new RuntimeException('Just these actions are allowed: ' . implode(',', $allowedActions));
         }
         return intval($this->_config->get('ratepay/bidirectional/status/' . $action, $shopId));
     }

@@ -2,8 +2,10 @@
 
 namespace RpayRatePay\Subscriber\Backend;
 
-use \Enlight\Event\SubscriberInterface;
+use Enlight\Event\SubscriberInterface;
 use Enlight_Event_EventArgs;
+use Shopware_Controllers_Backend_Order;
+use Shopware_Controllers_Backend_SwagBackendOrder;
 
 class OrderViewExtensionSubscriber implements SubscriberInterface
 {
@@ -16,9 +18,9 @@ class OrderViewExtensionSubscriber implements SubscriberInterface
         ];
     }
 
-    public function extendSwagBackendOrderView(\Enlight_Event_EventArgs $args)
+    public function extendSwagBackendOrderView(Enlight_Event_EventArgs $args)
     {
-        /** @var \Shopware_Controllers_Backend_SwagBackendOrder $controller */
+        /** @var Shopware_Controllers_Backend_SwagBackendOrder $controller */
         $controller = $args->getSubject();
 
         if ($controller->Request()->getActionName() === 'index') {
@@ -31,9 +33,9 @@ class OrderViewExtensionSubscriber implements SubscriberInterface
      *
      * @param Enlight_Event_EventArgs $args
      */
-    public function extendOrderDetailView(\Enlight_Event_EventArgs $args)
+    public function extendOrderDetailView(Enlight_Event_EventArgs $args)
     {
-        /** @var \Shopware_Controllers_Backend_Order $controller */
+        /** @var Shopware_Controllers_Backend_Order $controller */
         $controller = $args->getSubject();
         if ($controller->Request()->getActionName() === 'load') {
             $controller->View()->extendsTemplate('backend/ratepay_order/view/detail/window.js');

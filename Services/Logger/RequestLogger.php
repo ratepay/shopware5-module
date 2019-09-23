@@ -1,6 +1,8 @@
 <?php
+
 namespace RpayRatePay\Services\Logger;
 
+use Exception;
 use Monolog\Logger;
 use RpayRatePay\Models\Log;
 use RpayRatePay\Services\Config\ConfigService;
@@ -86,7 +88,7 @@ class RequestLogger
 
             $this->modelManager->persist($log);
             $this->modelManager->flush($log);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logger->error('RatePAY was unable to log order history: ' . $exception->getMessage());
         }
     }

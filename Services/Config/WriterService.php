@@ -3,18 +3,20 @@
 namespace RpayRatePay\Services\Config;
 
 use Doctrine\ORM\OptimisticLockException;
+use Exception;
 use Monolog\Logger;
 use RpayRatePay\Component\Mapper\ModelFactory;
-use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Models\ConfigInstallment;
 use RpayRatePay\Models\ConfigPayment;
+use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\PaymentMethodsService;
 use Shopware\Components\Model\ModelManager;
+
 class WriterService
 {
     private $db;
 
-    /** @var ModelManager  */
+    /** @var ModelManager */
     protected $modelManager;
     /**
      * @var PaymentMethodsService
@@ -42,16 +44,16 @@ class WriterService
      */
     public function truncateConfigTables()
     {
-        $configInstallmentSql = 'TRUNCATE TABLE `'.$this->modelManager->getClassMetadata(ConfigInstallment::class)->getTableName().'`;';
-        $configSql = 'TRUNCATE TABLE `'.$this->modelManager->getClassMetadata(ProfileConfig::class)->getTableName().'`;';
-        $configPaymentSql = 'TRUNCATE TABLE `'.$this->modelManager->getClassMetadata(ConfigPayment::class)->getTableName().'`;';
+        $configInstallmentSql = 'TRUNCATE TABLE `' . $this->modelManager->getClassMetadata(ConfigInstallment::class)->getTableName() . '`;';
+        $configSql = 'TRUNCATE TABLE `' . $this->modelManager->getClassMetadata(ProfileConfig::class)->getTableName() . '`;';
+        $configPaymentSql = 'TRUNCATE TABLE `' . $this->modelManager->getClassMetadata(ConfigPayment::class)->getTableName() . '`;';
         try {
             $this->db->query("SET FOREIGN_KEY_CHECKS=0");
             $this->db->query($configSql);
             $this->db->query($configPaymentSql);
             $this->db->query($configInstallmentSql);
             $this->db->query("SET FOREIGN_KEY_CHECKS=1");
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logger->info($exception->getMessage());
             return false;
         }
@@ -79,7 +81,7 @@ class WriterService
 
         try {
             $response = $factory->callProfileRequest($data);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error(
                 'RatePAY: Profile_Request failed for profileId ' . $profileId
             );
@@ -170,7 +172,7 @@ class WriterService
                 $this->paymentMethodsService->enableMethods();
 
                 return true;
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $this->logger->error($exception->getMessage());
                 return false;
             }

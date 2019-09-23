@@ -4,20 +4,17 @@
 namespace RpayRatePay\Services\Request;
 
 
-use Doctrine\ORM\Query\Expr\Join;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Models\Position\AbstractPosition;
-use RpayRatePay\Models\Position\Discount as DiscountShipping;
-use RpayRatePay\Models\Position\Product as ProductPosition;
-use RpayRatePay\Models\Position\Shipping as ShippingPosition;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\Logger\HistoryLogger;
 use RpayRatePay\Services\Logger\RequestLogger;
+use RuntimeException;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Article\Detail;
 use Shopware\Models\Attribute\Order as OrderAttribute;
@@ -95,18 +92,18 @@ abstract class AbstractModifyRequest extends AbstractRequest
 
     protected function getRequestContent()
     {
-        if($this->items == null) {
-            throw new \RuntimeException('please set $items with function `setItems()`');
+        if ($this->items == null) {
+            throw new RuntimeException('please set $items with function `setItems()`');
         }
-        if($this->_order == null) {
-            throw new \RuntimeException('please set $order with function `setOrder()`');
+        if ($this->_order == null) {
+            throw new RuntimeException('please set $order with function `setOrder()`');
         }
 
-        if($this->basketArrayBuilder !== null) {
+        if ($this->basketArrayBuilder !== null) {
             $basketFactory = $this->basketArrayBuilder;
         } else {
             $basketFactory = new BasketArrayBuilder($this->_order);
-            foreach($this->items as $productNumber => $quantity) {
+            foreach ($this->items as $productNumber => $quantity) {
                 $detail = $this->getOrderDetailByNumber($productNumber);
                 $basketFactory->addItem($detail ? $detail : $productNumber, $quantity);
             }
@@ -120,7 +117,7 @@ abstract class AbstractModifyRequest extends AbstractRequest
     {
         $repository = $this->modelManager->getRepository(Detail::class);
         $article = $repository->findOneBy(['number' => $productNumber]);
-        if($article) {
+        if ($article) {
             // article still exist
             $article->setInStock($article->getInStock() + $count);
             $this->modelManager->persist($article);
@@ -131,12 +128,13 @@ abstract class AbstractModifyRequest extends AbstractRequest
     /**
      * @param Order|int $order
      */
-    public final function setOrder($order = null) {
-        if(is_numeric($order)) {
+    public final function setOrder($order = null)
+    {
+        if (is_numeric($order)) {
             $order = $this->modelManager->find(Order::class, $order);
         }
-        if($order == null) {
-            throw new \RuntimeException('The order should not be null or the order could not found!');
+        if ($order == null) {
+            throw new RuntimeException('The order should not be null or the order could not found!');
         }
         $this->_order = $order;
     }
@@ -146,14 +144,15 @@ abstract class AbstractModifyRequest extends AbstractRequest
      * value: quantity
      * @param BasketArrayBuilder|array $items
      */
-    public final function setItems($items = null) {
-        if($items instanceof BasketArrayBuilder) {
+    public final function setItems($items = null)
+    {
+        if ($items instanceof BasketArrayBuilder) {
             $this->basketArrayBuilder = $items;
             $this->items = $this->basketArrayBuilder->getSimpleItems();
-        } else if(is_array($items)) {
+        } else if (is_array($items)) {
             $this->items = $items;
         } else {
-            throw new \RuntimeException('invalid argument');
+            throw new RuntimeException('invalid argument');
         }
     }
 
@@ -161,8 +160,9 @@ abstract class AbstractModifyRequest extends AbstractRequest
      * @param $productNumber
      * @return AbstractPosition
      */
-    protected function getOrderPosition($productNumber) {
-        if($productNumber === 'shipping') {
+    protected function getOrderPosition($productNumber)
+    {
+        if ($productNumber === 'shipping') {
             return $this->positionHelper->getShippingPositionForOrder($this->_order);
         } else {
             $detail = $this->getOrderDetailByNumber($productNumber);
@@ -175,10 +175,11 @@ abstract class AbstractModifyRequest extends AbstractRequest
      * @param $productNumber
      * @return OrderDetail
      */
-    protected function getOrderDetailByNumber($productNumber) {
+    protected function getOrderDetailByNumber($productNumber)
+    {
         /** @var OrderDetail $detail */
-        foreach($this->_order->getDetails() as $detail) {
-            if($detail->getArticleNumber() === $productNumber) {
+        foreach ($this->_order->getDetails() as $detail) {
+            if ($detail->getArticleNumber() === $productNumber) {
                 return $detail;
             }
         }

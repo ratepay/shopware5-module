@@ -2,7 +2,8 @@
 
 namespace RpayRatePay\Subscriber;
 
-use \Enlight\Event\SubscriberInterface;
+use Enlight\Event\SubscriberInterface;
+use Enlight_Event_EventArgs;
 use RpayRatePay\Service\PaymentProcessorService;
 use RpayRatePay\Services\HelperService;
 use Shopware\Components\Model\ModelManager;
@@ -43,7 +44,7 @@ class OrderDetailsProcessSubscriber implements SubscriberInterface
         ];
     }
 
-    public function insertRatepayPositions(\Enlight_Event_EventArgs $args)
+    public function insertRatepayPositions(Enlight_Event_EventArgs $args)
     {
         $orderId = $args->get('orderId');
         /** @var Order $order */

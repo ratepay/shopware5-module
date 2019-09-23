@@ -1,4 +1,5 @@
 <?php
+
 namespace RpayRatePay\Services\Logger;
 
 use RpayRatePay\Models\OrderHistory;
@@ -7,7 +8,6 @@ use RpayRatePay\Models\Position\Discount as DiscountPosition;
 use RpayRatePay\Models\Position\Product as ProductPosition;
 use RpayRatePay\Models\Position\Shipping as ShippingPosition;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Order\Order;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -48,11 +48,11 @@ class HistoryLogger
     {
         $entry = new OrderHistory();
         $entry->setEvent($message);
-        if($position instanceof ProductPosition || $position instanceof DiscountPosition) {
+        if ($position instanceof ProductPosition || $position instanceof DiscountPosition) {
             $entry->setOrderId($position->getOrderDetail()->getOrder()->getId());
             $entry->setProductName($position->getOrderDetail()->getArticleName());
             $entry->setProductNumber($position->getOrderDetail()->getArticleNumber());
-        } else if($position instanceof ShippingPosition) {
+        } else if ($position instanceof ShippingPosition) {
             $entry->setOrderId($position->getSOrderId());
             $entry->setProductName('Shipping');                                                             //TODO
             $entry->setProductNumber('Shipping');                                                         //TODO

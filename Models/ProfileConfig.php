@@ -4,8 +4,8 @@ namespace RpayRatePay\Models;
 
 use Doctrine\ORM\Mapping as ORM;
 use RpayRatePay\Enum\PaymentMethods;
+use RuntimeException;
 use Shopware\Components\Model\ModelEntity;
-use Shopware\Models\Payment\Payment;
 
 /**
  * @ORM\Entity(repositoryClass="ProfileConfigRepository")
@@ -368,8 +368,9 @@ class ProfileConfig extends ModelEntity
      * @param $paymentMethodName
      * @return ConfigPayment
      */
-    public function getPaymentConfig($paymentMethodName) {
-        switch($paymentMethodName) {
+    public function getPaymentConfig($paymentMethodName)
+    {
+        switch ($paymentMethodName) {
             case PaymentMethods::PAYMENT_PREPAYMENT:
                 return $this->prepaymentConfig;
             case PaymentMethods::PAYMENT_INSTALLMENT0:
@@ -381,7 +382,7 @@ class ProfileConfig extends ModelEntity
             case PaymentMethods::PAYMENT_INVOICE:
                 return $this->invoiceConfig;
             default:
-                throw new \RuntimeException('the given payment method name does not exist: '.$paymentMethodName);
+                throw new RuntimeException('the given payment method name does not exist: ' . $paymentMethodName);
         }
     }
 }
