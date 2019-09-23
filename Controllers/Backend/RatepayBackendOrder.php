@@ -20,6 +20,8 @@
 
 use Monolog\Logger;
 use RpayRatePay\Component\Service\SessionLoader;
+use RpayRatePay\DTO\BankData;
+use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\Methods\InstallmentService;
@@ -49,6 +51,10 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
      * @var InstallmentService
      */
     protected $installmentService;
+    /**
+     * @var SessionHelper
+     */
+    protected $sessionHelper;
 
     /**
      * @param string $namespace
@@ -70,29 +76,21 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $this->modelManager = $this->container->get('models');
         $this->profileConfigService = $this->container->get(ProfileConfigService::class);
         $this->installmentService = $this->container->get(InstallmentService::class);
+        $this->sessionHelper = $this->container->get(SessionHelper::class);
     }
 
     /**
      * Write to session. We must because there is no way to send extra data with order create request.
      */
-    public function setExtendedDataAction()
+    public function setBankDataAction()
     {
-        $this->logger->info('Now calling setExtendedData');
         $params = $this->Request()->getParams();
 
-        $iban = trim($params['iban']);
-        $accountNumber = trim($params['accountNumber']);
+        $accountNumber = trim($params['accountNumber']) ? : trim($params['iban']);
         $bankCode = trim($params['bankCode']);
-        $customerId = $params['customerId'];
+        $customerId = intval($params['customerId']);
 
-        $sessionLoader = new SessionLoader(Shopware()->BackendSession());
-
-        $sessionLoader->setBankData(
-            $customerId,
-            $accountNumber ? $accountNumber : $iban,
-            $bankCode,
-            Shopware()->BackendSession()
-        );
+        $this->sessionHelper->setBankData($customerId, $accountNumber, $bankCode);
 
         $this->view->assign([
             'success' => true,

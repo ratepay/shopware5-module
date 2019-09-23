@@ -5,6 +5,7 @@ namespace RpayRatePay\Services\Factory;
 
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\DfpService;
 use Shopware\Components\Model\ModelManager;
@@ -25,14 +26,20 @@ class PaymentRequestDataFactory
      * @var DfpService
      */
     protected $dfpService;
+    /**
+     * @var SessionHelper
+     */
+    private $sessionHelper;
 
     public function __construct(
         ModelManager $modelManager,
-        DfpService $dfpService
+        DfpService $dfpService,
+        SessionHelper $sessionHelper
     )
     {
         $this->modelManager = $modelManager;
         $this->dfpService = $dfpService;
+        $this->sessionHelper = $sessionHelper;
     }
 
     public function createFromOrderStruct(OrderStruct $orderStruct, array $loadedEntities = [])
@@ -65,7 +72,9 @@ class PaymentRequestDataFactory
             $shop,
             $orderStruct->getTotal(),
             $orderStruct->getCurrencyId(),
-            $orderStruct->getNetOrder()
+            $orderStruct->getNetOrder(),
+            $this->sessionHelper->getBankData($billing, $customer),
+            $this->sessionHelper->getInstallmentDetails()
         );
     }
 }

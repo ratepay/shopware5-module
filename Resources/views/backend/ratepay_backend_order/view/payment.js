@@ -214,7 +214,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         //very minimalistic validation
         if(me.iban || (me.bankCode && me.iban)) {
             Ext.Ajax.request({
-                url: '{url controller="RatepayBackendOrder" action="setExtendedData"}',
+                url: '{url controller="RatepayBackendOrder" action="setBankData"}',
                 params: {
                     customerId: customerId,
                     iban: me.iban,

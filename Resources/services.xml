@@ -126,12 +126,18 @@
         <service id="RpayRatePay\Helper\PositionHelper">
             <argument id="models" type="service"/>
         </service>
+        <service id="RpayRatePay\Helper\SessionHelper">
+            <argument id="service_container" type="service"/>
+        </service>
+
 
 
 
         <!-- Services: Array Factories -->
-        <service id="RpayRatePay\Services\Factory\CustomerArrayFactory"/>
-        <service id="RpayRatePay\Services\Factory\PaymentArrayFactory"/>
+        <service id="RpayRatePay\Services\Factory\CustomerArrayFactory" />
+        <service id="RpayRatePay\Services\Factory\PaymentArrayFactory">
+            <argument id="RpayRatePay\Helper\SessionHelper" type="service" />
+        </service>
         <service id="RpayRatePay\Services\Factory\InvoiceArrayFactory">
             <argument id="models" type="service"/>
         </service>
@@ -139,6 +145,7 @@
         <service id="RpayRatePay\Services\Factory\PaymentRequestDataFactory"> <!-- TODO wrong place -->
             <argument id="models" type="service"/>
             <argument id="RpayRatePay\Services\DfpService" type="service"/>
+            <argument id="RpayRatePay\Helper\SessionHelper" type="service" />
         </service>
 
 

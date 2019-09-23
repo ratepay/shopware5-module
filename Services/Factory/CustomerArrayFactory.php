@@ -57,8 +57,19 @@ class CustomerArrayFactory
             $data['VatId'] = $billingAddress->getVatId();
         }
 
-        if (count($paymentRequestData->getBankData())) {
-            $data['BankAccount'] = $paymentRequestData->getBankData(); //TODO verify if data is correct?
+        if ($paymentRequestData->getBankData()) {
+            $bankDataDTO = $paymentRequestData->getBankData();
+            $bankData = [
+                'Owner' => $bankDataDTO->getAccountHolder()
+            ];
+            if ($bankDataDTO->getBankCode() !== null) {
+                $bankData['BankAccountNumber'] = $bankDataDTO->getAccountNumber();
+                $bankData['BankCode'] = $bankDataDTO->getBankCode();
+            } else {
+                $bankData['Iban'] = $bankDataDTO->getIban();
+            }
+
+            $data['BankAccount'] = $bankData;
         }
 
         return $data;

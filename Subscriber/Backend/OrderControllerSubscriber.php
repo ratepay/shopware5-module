@@ -140,11 +140,11 @@ class OrderControllerSubscriber implements SubscriberInterface
                 $paymentResponse = $this->paymentConfirmService->doRequest();
 
                 if ($paymentResponse->isSuccessful() === false) {
-                    $customerMessage = $paymentResponse->getCustomerMessage();
+                    $customerMessage = $paymentResponse->getReasonMessage();
                     $this->fail($view, [$customerMessage]);
                 }
             } else {
-                $customerMessage = $paymentResponse->getCustomerMessage();
+                $customerMessage = $paymentResponse->getReasonMessage();
                 $this->fail($view, [$customerMessage]);
             }
         } catch (Exception $e) {

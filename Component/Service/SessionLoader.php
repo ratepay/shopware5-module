@@ -49,25 +49,7 @@ class SessionLoader
      */
     public function getBankData($customerAddressBilling, $customerId)
     {
-        $sessionArray = $this->session->RatePAY['bankdata'];
 
-        $customerIdSession = $sessionArray['customerId'];
-
-        //todo, get rid of cast if possible
-        if ((int)$customerIdSession !== (int)$customerId) {
-            throw new \Exception('Attempt to load bank data for wrong customer! Session Value ' .
-                $customerIdSession . ' checked value ' . $customerId . '.');
-        }
-
-        $bankCode = $sessionArray['bankcode'];
-        $account = $sessionArray['account'];
-
-        $accountHolder = $customerAddressBilling->getFirstname() . ' ' . $customerAddressBilling->getLastname();
-        if (!empty($bankCode)) {
-            return new BankData($accountHolder, null, $bankCode, $account);
-        } else {
-            return new BankData($accountHolder, $account);
-        }
     }
 
     /**

@@ -32,11 +32,6 @@ abstract class AbstractPosition
      * @ORM\Column(name="returned", type="integer", length=11, nullable=false, options={"default":0})
      */
     protected $returned = 0;
-    /**
-     * @var integer
-     * @ORM\Column(name="tax_rate", type="integer", length=11, nullable=false, options={"default":0})
-     */
-    protected $taxRate;
 
     /**
      * @return int
@@ -84,22 +79,6 @@ abstract class AbstractPosition
     public function setReturned($returned)
     {
         $this->returned = $returned;
-    }
-
-    /**
-     * @return int
-     */
-    public function getTaxRate()
-    {
-        return $this->taxRate;
-    }
-
-    /**
-     * @param int $taxRate
-     */
-    public function setTaxRate($taxRate)
-    {
-        $this->taxRate = $taxRate;
     }
 
     public function getOpenQuantity()
