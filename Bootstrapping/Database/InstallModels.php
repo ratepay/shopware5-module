@@ -39,6 +39,7 @@ class InstallModels
 
     public function install() {
         $this->renameOldColumns();
+        $this->deleteOldColumns();
 
         $install = [];
         $update = [];
@@ -137,6 +138,32 @@ class InstallModels
                 }
                 if(count($toRename)) {
                     $sql = 'ALTER TABLE '.$classMeta->getTableName().' '.implode(',', $toRename);
+                    $this->entityManager->getConnection()->executeQuery($sql);
+                }
+            }
+        }
+    }
+
+    private function deleteOldColumns()
+    {
+        $deletes = [
+            Config::class => [
+                'device-fingerprint-status',
+                'device-fingerprint-snippet-id',
+            ],
+        ];
+        foreach($deletes as $class => $columns) {
+            $classMeta = $this->entityManager->getClassMetadata($class);
+            if($this->schemaManager->tablesExist([$classMeta->getTableName()])) {
+                $columnList = $this->schemaManager->listTableColumns($classMeta->getTableName());
+                $toDelete = [];
+                foreach($columns as $column) {
+                    if (array_key_exists($column, $columnList)) {
+                        $toDelete[] = ' DROP COLUMN `' . $column . '` ';
+                    }
+                }
+                if(count($toDelete)) {
+                    $sql = 'ALTER TABLE '.$classMeta->getTableName().' '.implode(',', $toDelete);
                     $this->entityManager->getConnection()->executeQuery($sql);
                 }
             }

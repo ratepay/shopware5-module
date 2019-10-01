@@ -29,7 +29,7 @@
 
 ### Version 5.3.11 - Released 2019-08-22
 * RATEPLUG-3: backend orders: fix discount item
-* RATEPLUG-7: move device fingerprinting config from PROFILE_REQUEST to plugin config & improve processing of device fingerprinting
+* RATEPLUG-9: move device fingerprinting config from PROFILE_REQUEST to plugin config & improve processing of device fingerprinting
 * Update README version information
 
 ### Version 5.3.10 - Released 2019-08-01
