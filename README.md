@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version 5.3.13 - Released 2019-10-01
+* RATEPLUG-16: logging: add pagination
+
 ### Version 5.3.12 - Released 2019-09-13
 * RATEPLUG-7: fix installer/updater
 

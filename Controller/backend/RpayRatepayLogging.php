@@ -37,8 +37,8 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
          */
         public function loadStoreAction()
         {
-            $start = intval($this->Request()->getParam('start'));
-            $limit = intval($this->Request()->getParam('limit'));
+            $offset = intval($this->Request()->getParam('start') ? : 0);
+            $limit = intval($this->Request()->getParam('limit') ? : 10);
             $orderId = $this->Request()->getParam('orderId');
 
             if (!is_null($orderId)) {
@@ -49,7 +49,9 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
                     . 'LEFT JOIN `s_order` ON `log`.`transactionId`=`s_order`.`transactionID` '
                     . 'LEFT JOIN s_user ON s_order.userID=s_user.id '
                     . 'WHERE log.transactionId=?'
-                    . 'ORDER BY `id` DESC';
+                    . 'ORDER BY `id` DESC'
+                    //. 'LIMIT '.$offset.','.$limit //TODO add pagination to ExtJs
+                ;
 
                 $data = Shopware()->Db()->fetchAll($sql, [$transactionId]);
                 $total = Shopware()->Db()->fetchOne($sqlTotal, [$transactionId]);
@@ -59,7 +61,9 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
                 $sql = 'SELECT log.*, s_user.id as user_id FROM `rpay_ratepay_logging` AS `log` '
                     . 'LEFT JOIN `s_order` ON `log`.`transactionId`=`s_order`.`transactionID` '
                     . 'LEFT JOIN s_user ON s_order.userID=s_user.id '
-                    . 'ORDER BY `id` DESC';
+                    . 'ORDER BY `id` DESC '
+                    . 'LIMIT '.$offset.','.$limit
+                ;
 
                 $data = Shopware()->Db()->fetchAll($sql);
                 $total = Shopware()->Db()->fetchOne($sqlTotal);
