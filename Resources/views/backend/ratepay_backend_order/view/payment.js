@@ -1,12 +1,34 @@
-//
+//{namespace name="backend/RatePay"}
 //{block name="backend/ratepay_backend_order/view/payment"}
 //
 Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
     override: 'Shopware.apps.SwagBackendOrder.view.main.CustomerInformation.Payment',
     snippetsLocal: {
-        loadCustomerFirst: '{s namespace="RatePAY/backend/backend_orders" name="load_customer_first"}Laden Sie bitte den Kunden zuerst.{/s}',
-        directDebit: '{s namespace="RatePAY/backend/backend_orders" name="direct_debit"}Lastschrift{/s}'
+        directDebit: '{s name="DirectDebit"}{/s}',
+        messages: {
+            chooseCustomerFirst: '{s name="ErrorLoadCustomerFirst"}{/s}',
+            setupCartFirst: '{s name="ErrorSetupCartFirst"}{/s}',
+            chooseBillingAddress: '{s name="ErrorChooseBillingAddress"}{/s}',
+            bankDataRefreshed: '{s name="BankDataHasBeenRefreshed"}{/s}',
+            installmentPlanLoaded: '{s name="InstallmentPlanLoaded"}{/s}',
+        },
+        labels: {
+            installmentAmount: '{s name="LabelInstallmentAmount"}{/s}',
+            term: '{s name="LabelTerm"}{/s}',
+            iban: '{s name="LabelIban"}{/s}',
+            bankAccountNumber: '{s name="LabelBankAccountNumber"}{/s}',
+            bankAccountSwift: '{s name="LabelBankAccountSwift"}{/s}',
+
+            //calculator labels
+            basePrice: '{s name="LabelBasePrice"}{/s}',
+            interest: '{s name="LabelInterest"}{/s}',
+            total: '{s name="LabelTotal"}{/s}',
+            numberOfInstallments: '{s name="LabelNumberOfInstallments"}{/s}',
+            standardPayment: '{s name="LabelStandardPayment"}{/s}',
+            lastPayment: '{s name="LabelLastPayment"}{/s}'
+        }
     },
+
     //override init
     initComponent : function() {
         var me = this;
@@ -45,7 +67,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         });
 
         me.subApplication.app.on('selectBillingAddress', function() {
-            alert('select billing address');
+            alert(me.snippetsLocal.chooseBillingAddress);
         });
 
         var changePaymentTypeHandler = function(combobox, newValue, oldValue) {
@@ -84,7 +106,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         } else {
 
             if (me.customerId === -1) {
-                me.fail(combobox, me.snippetsLocal.loadCustomerFirst);
+                me.fail(combobox, me.snippetsLocal.messages.loadCustomerFirst);
                 return;
             }
 
@@ -108,7 +130,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         var backendOrder = me.getBackendOrder();
 
         if (backendOrder === null) {
-            me.fail(combobox, 'Please set shipping costs and items first.');
+            me.fail(combobox, me.snippetsLocal.messages.setupCartFirst);
             return;
         }
 
@@ -117,14 +139,14 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         var shippingCosts = me.getShippingCosts();
 
         if (totalAmount < 0.01  || (totalAmount - shippingCosts) < 0.01) {
-            me.fail(combobox, 'Please put something in the shopping cart.');
+            me.fail(combobox, me.snippetsLocal.messages.setupCartFirst);
             return;
         }
 
         var billingId = me.getBillingAddressId();
 
         if (billingId === null) {
-            me.fail(combobox, 'Please select a billing address first.');
+            me.fail(combobox, me.snippetsLocal.messages.chooseBillingAddress);
             return;
         }
 
@@ -229,7 +251,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                             Shopware.Notification.createGrowlMessage('', message);
                         });
                     } else {
-                        Shopware.Notification.createGrowlMessage('', 'Ratepay Bankdaten aktualisiert.');
+                        Shopware.Notification.createGrowlMessage('', me.message.bankDataRefreshed);
                     }
                 }
             });
@@ -258,7 +280,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                         Shopware.Notification.createGrowlMessage('', message);
                     });
                 } else {
-                    Shopware.Notification.createGrowlMessage('', 'Plan Successfully loaded.');
+                    Shopware.Notification.createGrowlMessage('', me.snippetsLocal.messages.installmentPlanLoaded);
 
                     me.calculationResultView = Ext.create('Ext.view.View', {
                         id: 'calculationResultView',
@@ -308,104 +330,103 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         });
     },
     createCalculatorResultTemplate: function(data) {
+        var me = this;
         return new Ext.XTemplate(
             '<table><tbody>' +
-            '<tr><td>Base Price: </td><td style="text-align: right;" >' + data.amount.toFixed(2) + '</td></tr>' +
-            '<tr><td>Interest: </td><td style="text-align: right;" >' + data.interestAmount.toFixed(2) +  '<trspan></tr>' +
-            '<tr><td>Total: </td><td style="text-align: right;" >' + data.totalAmount.toFixed(2) + '</td></tr>' +
-            '<tr><td>Number of installments:</td><td style="text-align: right;" >' + data.numberOfRatesFull + '</td></tr>' +
-            '<tr><td>Standard Payment: </td><td style="text-align: right;" >'+ data.rate.toFixed(2) + '</td></tr>' +
-            '<tr><td>Last Payment: </td><td style="text-align: right;" >' + data.lastRate.toFixed(2) + '</td></tr>' +
+            '<tr><td>'+me.snippetsLocal.labels.basePrice+':</td><td style="text-align: right;" >' + data.amount.toFixed(2) + '</td></tr>' +
+            '<tr><td>'+me.snippetsLocal.labels.interest+':</td><td style="text-align: right;" >' + data.interestAmount.toFixed(2) +  '<trspan></tr>' +
+            '<tr><td>'+me.snippetsLocal.labels.total+':</td><td style="text-align: right;" >' + data.totalAmount.toFixed(2) + '</td></tr>' +
+            '<tr><td>'+me.snippetsLocal.labels.numberOfInstallments+':</td><td style="text-align: right;" >' + data.numberOfRatesFull + '</td></tr>' +
+            '<tr><td>'+me.snippetsLocal.labels.standardPayment+':</td><td style="text-align: right;" >'+ data.rate.toFixed(2) + '</td></tr>' +
+            '<tr><td>'+me.snippetsLocal.labels.lastPayment+':</td><td style="text-align: right;" >' + data.lastRate.toFixed(2) + '</td></tr>' +
             '</tbody></table>'
         );
     },
     createCalculatorContainer: function() {
-        var me = this;
-
-        var combobox = Ext.create('Ext.form.ComboBox', {
-            fieldLabel: 'Term',
-            name: 'calculatorSelect',
-            store: me.calculatorStore,
-            queryMode: 'local',
-            displayField: 'display',
-            valueField: 'value',
-            listeners: {
-                change: function(combo, newValue, oldValue) {
-                    me.handleCalculatorInput.call(me, newValue, "time");
-                }
-            }
-        });
-
-        var moneyTxtBox = Ext.create('Ext.form.TextField', {
-            name: 'moneyTxtBox',
-            width: 230,
-            fieldLabel: 'Geld',
-            maxLengthText: 255,
-            listeners: {
-                blur: function (field) {
-                    var newValue = field.getValue();
-                    me.handleCalculatorInput.call(me, newValue, "rate");
-                }
-            }
-        });
+        var me = this,
+        fieldTerm, fieldInstallmentAmount;
 
         return Ext.create('Ext.Container', {
             name: 'bankDataContainer',
             width: 255,
             height: 'auto',
             items: [
-                combobox, moneyTxtBox
+                fieldTerm = Ext.create('Ext.form.ComboBox', {
+                    fieldLabel: me.snippetsLocal.labels.term,
+                    name: 'calculatorSelect',
+                    store: me.calculatorStore,
+                    queryMode: 'local',
+                    displayField: 'display',
+                    valueField: 'value',
+                    listeners: {
+                        change: function(combo, newValue, oldValue) {
+                            if(newValue !== null) {
+                                fieldInstallmentAmount.setValue(null);
+                                me.handleCalculatorInput.call(me, newValue, "time");
+                            }
+                        }
+                    }
+                }),
+                fieldInstallmentAmount = Ext.create('Ext.form.TextField', {
+                    name: 'moneyTxtBox',
+                    width: 230,
+                    fieldLabel: me.snippetsLocal.labels.installmentAmount,
+                    maxLengthText: 255,
+                    listeners: {
+                        blur: function (field) {
+                            fieldTerm.setValue(null);
+                            me.handleCalculatorInput.call(me, field.getValue(), "rate");
+                        }
+                    }
+                })
             ]
         });
 
     },
     createBankDataContainer: function() {
         var me = this;
-        var iban = Ext.create('Ext.form.TextField', {
-            name: 'ibanTxtBox',
-            width: 230,
-            fieldLabel: 'IBAN',
-            maxLengthText: 255,
-            listeners: {
-                blur: function (field) {
-                    me.iban = field.getValue();
-                    me.handleBankDataBlur();
-                }
-            }
-        });
-
-        var kontoNr = Ext.create('Ext.form.TextField', {
-            name: 'ktoNrTxtBox',
-            width: 230,
-            fieldLabel: 'Kto Nr.',
-            maxLengthText: 255,
-            listeners: {
-                blur: function (field) {
-                    me.accountNumber = field.getValue();
-                    me.handleBankDataBlur();
-                }
-            }
-        });
-
-        var blz = Ext.create('Ext.form.TextField', {
-            name: 'blzTxtBox',
-            width: 230,
-            fieldLabel: 'BLZ',
-            maxLengthText: 255,
-            listeners: {
-                blur: function (field) {
-                    me.bankCode = field.getValue();
-                    me.handleBankDataBlur();
-                }
-            }
-        });
 
         return Ext.create('Ext.Container', {
             name: 'bankDataContainer',
             width: 255,
             height: 'auto',
             items: [
-                iban, kontoNr, blz
+                Ext.create('Ext.form.TextField', {
+                    name: 'ibanTxtBox',
+                    width: 230,
+                    fieldLabel: me.snippetsLocal.labels.iban,
+                    maxLengthText: 255,
+                    listeners: {
+                        blur: function (field) {
+                            me.iban = field.getValue();
+                            me.handleBankDataBlur();
+                        }
+                    }
+                }),
+                Ext.create('Ext.form.TextField', {
+                    name: 'ktoNrTxtBox',
+                    width: 230,
+                    fieldLabel: me.snippetsLocal.labels.bankAccountNumber,
+                    maxLengthText: 255,
+                    listeners: {
+                        blur: function (field) {
+                            me.accountNumber = field.getValue();
+                            me.handleBankDataBlur();
+                        }
+                    }
+                }),
+                Ext.create('Ext.form.TextField', {
+                    name: 'blzTxtBox',
+                    width: 230,
+                    fieldLabel: me.snippetsLocal.labels.bankAccountSwift,
+                    maxLengthText: 255,
+                    listeners: {
+                        blur: function (field) {
+                            me.bankCode = field.getValue();
+                            me.handleBankDataBlur();
+                        }
+                    }
+                })
             ]
         });
     },
@@ -420,14 +441,11 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
     },
     getCustomerModel: function() {
         var me = this;
-
-        return me.subApplication.getStore('Customer')
-            .getAt(0);
+        return me.subApplication.getStore('Customer').getAt(0);
     },
     getCustomerId: function () {
         var me = this;
-        var customer = me.getCustomerModel();
-        return customer.get('id');
+        return me.getCustomerModel().get('id');
     },
     getShopId: function() {
         var me = this;
@@ -451,9 +469,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         if (totalCostsStore.getCount() === 0) {
             return null;
         }
-        var totalCostsModel = totalCostsStore.getAt(0);
-        var totalAmount =  totalCostsModel.get('total');
-        return totalAmount;
+        return totalCostsStore.getAt(0).get('total');
     },
     getShippingCosts: function() {
         var me = this;
@@ -461,9 +477,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         if (totalCostsStore.getCount() === 0) {
             return null;
         }
-        var totalCostsModel = totalCostsStore.getAt(0);
-        var shippingCosts =  totalCostsModel.get('shippingCosts');
-        return shippingCosts;
+        return  totalCostsStore.getAt(0).get('shippingCosts');
     }
 });
 //

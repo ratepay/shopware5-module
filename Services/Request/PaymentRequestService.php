@@ -226,6 +226,12 @@ class PaymentRequestService extends AbstractRequest
         $orderAttribute->setRatepayFallbackDiscount($this->configService->isCommitDiscountAsCartItem());
         $orderAttribute->setRatepayFallbackShipping($this->configService->isCommitDiscountAsCartItem());
 
+        /** @deprecated v6.2 */
+        $orderAttribute->setRatepayDirectDelivery(
+            PaymentMethods::isInstallment($order->getPayment()) === false ||
+            $this->configService->isInstallmentDirectDelivery()
+        );
+
         $this->modelManager->flush($orderAttribute);
     }
 

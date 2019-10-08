@@ -19,12 +19,10 @@
  */
 
 use Monolog\Logger;
-use RpayRatePay\Component\Service\SessionLoader;
-use RpayRatePay\DTO\BankData;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
-use RpayRatePay\Services\Methods\InstallmentService;
+use RpayRatePay\Services\InstallmentService;
 use Shopware\Components\DependencyInjection\Container;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Address;
@@ -110,13 +108,17 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
 
         $customerAddress = $this->modelManager->find(Address::class, $billingId);
 
-        $installmentBuilder = $this->installmentService->getInstallmentBuilder($customerAddress->getCountry()->getIso(), $shopId, $paymentMeansName, true);
-
-        $result = $installmentBuilder->getInstallmentCalculatorAsJson($totalAmount);
+        $result = $this->installmentService->getInstallmentCalculator(
+            $customerAddress->getCountry()->getIso(),
+            $shopId,
+            $paymentMeansName,
+            true,
+            $totalAmount
+        );
 
         $this->view->assign([
             'success' => true,
-            'termInfo' => json_decode($result, true) //to prevent double encode
+            'termInfo' => $result
         ]);
     }
 
@@ -154,60 +156,48 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
 
         $addressObj = $this->modelManager->find(Address::class, $billingId);
 
-        $paymentMeansName = $params['paymentMeansName'];
+        $paymentMethodName = $params['paymentMeansName'];
         $totalAmount = $params['totalAmount'];
-        $paymentSubtype = $params['paymentSubtype'];
+        $paymentSubtype = $params['paymentSubtype']; //todo this is the paymentFirstDay
         $calcParamSet = !empty($params['value']) && !empty($params['type']);
         $type = $calcParamSet ? $params['type'] : 'time';
 
-        $installmentConfig = $this->profileConfigService->getInstallmentPaymentConfig($paymentMeansName, $shopId, $addressObj->getCountry()->getIso(), true);
+        $installmentConfig = $this->profileConfigService->getInstallmentPaymentConfig($paymentMethodName, $shopId, $addressObj->getCountry()->getIso(), true);
 
+        //TODO refactor
         if ($calcParamSet) {
             $val = $params['value'];
         } else {
             $val = explode(',', $installmentConfig->getMonthAllowed())[0];
         }
 
-        $installmentBuilder = $this->installmentService->getInstallmentBuilder($addressObj->getCountry()->getIso(), $shopId, $paymentMeansName, true);
-
         try {
-            $result = $installmentBuilder->getInstallmentPlanAsJson($totalAmount, $type, $val);
+            $plan = $this->installmentService->initInstallmentData(
+                $addressObj->getCountry()->getIso(),
+                $shopId,
+                $paymentMethodName,
+                true,
+                $totalAmount,
+                $type,
+                $paymentSubtype, //todo this is the paymentFirstDay
+                $val
+            );
+            $this->view->assign([
+                'success' => true,
+                'plan' => $plan,
+            ]);
         } catch (Exception $e) {
             $this->view->assign([
                 'success' => false,
                 'messages' => [$e->getMessage()]
             ]);
-            return;
         }
 
-        $plan = json_decode($result, true);
-
-        $sessionLoader = new SessionLoader(Shopware()->BackendSession());
-
-        $sessionLoader->setInstallmentData(
-            $plan['totalAmount'],
-            $plan['amount'],
-            $plan['interestRate'],
-            $plan['interestAmount'],
-            $plan['serviceCharge'],
-            $plan['annualPercentageRate'],
-            $plan['monthlyDebitInterest'],
-            $plan['numberOfRatesFull'],
-            $plan['rate'],
-            $plan['lastRate'],
-            $paymentSubtype //$plan['paymentFirstday']
-        );
-
-        $this->view->assign([
-            'success' => true,
-            'plan' => $plan,
-        ]);
     }
 
     public function updatePaymentSubtypeAction()
     {
         $params = $this->Request()->getParams();
-        $sessionLoader = new SessionLoader(Shopware()->BackendSession());
-        $sessionLoader->setInstallmentPaymentSubtype($params['paymentSubtype']);
+        $this->sessionHelper->setInstallmentPaymentSubtype($params['paymentSubtype']);
     }
 }

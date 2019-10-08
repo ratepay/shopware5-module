@@ -5,6 +5,7 @@ use RatePAY\Model\Response\AbstractResponse;
 use RpayRatePay\Component\History;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Component\Mapper\ModelFactory;
+use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Services\Request\PaymentCancelService;
 use RpayRatePay\Services\Request\PaymentCreditService;
@@ -216,7 +217,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $items = [];
         foreach ($itemsParam as $item) {
             if ($item->deliveredItems > 0) {
-                $items[$item->articlenumber] = $item->deliveredItems;
+                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->deliveredItems);
             }
         }
         $isSuccess = true;
@@ -250,7 +251,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $items = [];
         foreach ($itemsParam as $item) {
             if ($item->cancelledItems > 0) {
-                $items[$item->articlenumber] = $item->cancelledItems;
+                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->cancelledItems);
             }
         }
 
@@ -285,7 +286,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $items = [];
         foreach ($itemsParam as $item) {
             if ($item->returnedItems > 0) {
-                $items[$item->articlenumber] = $item->returnedItems;
+                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->returnedItems);
             }
         }
 

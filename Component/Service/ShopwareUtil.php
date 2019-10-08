@@ -18,6 +18,9 @@ use Shopware;
  */
 class ShopwareUtil
 {
+    /**
+     * @deprecated
+     */
     protected $debitPayTypes = [
         '2' => 'DIRECT-DEBIT',
         '28' => 'BANK-TRANSFER',
@@ -31,6 +34,9 @@ class ShopwareUtil
         return Shopware()->Container()->get(ConfigService::class);
     }
 
+    /**
+     * @deprecated
+     */
     protected static function getLoggerInstance() {
 
     }

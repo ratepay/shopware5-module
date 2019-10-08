@@ -4,6 +4,7 @@
 namespace RpayRatePay\Helper;
 
 
+use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Models\Position\AbstractPosition;
 use RpayRatePay\Models\Position\Discount;
 use RpayRatePay\Models\Position\Product;
@@ -83,6 +84,35 @@ class PositionHelper
     public function getShippingPositionForOrder(Order $order)
     {
         return $this->modelManager->find(ShippingPosition::class, $order->getId());
+    }
+
+    /**
+     * if $items is provided, the item openQuantity of each position will be reduced by the given quantity
+     *
+     * @param Order $_order
+     * @param BasketPosition[] $items key:productNumber/value:quantity
+     * @return bool
+     */
+    public function doesOrderHasOpenPositions(Order $_order, $items = [])
+    {
+        /** @var Detail $detail */
+        foreach($_order->getDetails() as $detail) {
+            $position = $this->getPositionForDetail($detail);
+            $number = $detail->getArticleNumber();
+            /** @var  $basketPosition */
+            $quantity = isset($items[$number]) ? $items[$number]->getQuantity() : 0;
+            if (($position->getOpenQuantity() - $quantity) !== 0) {
+                return true;
+            }
+        }
+        $shippingPosition = $this->getShippingPositionForOrder($_order);
+        if($shippingPosition) {
+            $quantity = isset($items[BasketPosition::SHIPPING_NUMBER]) ? $items[BasketPosition::SHIPPING_NUMBER]->getQuantity() : 0;
+            if (($shippingPosition->getOpenQuantity() - $quantity) !== 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

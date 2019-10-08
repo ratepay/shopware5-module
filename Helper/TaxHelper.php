@@ -8,7 +8,9 @@ use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RuntimeException;
 use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
+use SwagBackendOrder\Components\Order\Struct\OrderStruct;
 use SwagBackendOrder\Components\Order\Struct\PositionStruct;
+use SwagBackendOrder\Components\Translation\PaymentTranslator;
 
 class TaxHelper
 {
@@ -30,7 +32,8 @@ class TaxHelper
      */
     public static function getItemGrossPrice($order, $item, $price = null)
     {
-        return $price ? $price : $item->getPrice();                                           //TODO tax calculation
+//TODO implement
+        return $price ? $price : $item->getPrice();
         /*if($item instanceof Detail) {
         }*/
     }
@@ -46,7 +49,8 @@ class TaxHelper
             // TODO verify if this is correct
             return $order->getNet() == 1 && $order->getTaxFree() == 1 ? 0 : $item->getTaxRate();
         }
-        return $item->getTaxRate();                                           //TODO tax calculation
+//TODO implement
+        return $item->getTaxRate();
         /*if($item instanceof Detail) {
         }*/
     }
@@ -59,7 +63,8 @@ class TaxHelper
     {
         if ($order instanceof Order) {
             return $order->getInvoiceShipping();
-        } else if ($order instanceof PaymentRequestData) {                   //TODO tax calculation
+        } else if ($order instanceof PaymentRequestData) {
+//TODO implement
             return $order->getShippingCost();
         } else {
             throw new RuntimeException('Invalid argument');
@@ -67,7 +72,7 @@ class TaxHelper
     }
 
     /**
-     * @param Order|PaymentRequestData $order
+     * @param Order|PaymentRequestData|OrderStruct $order
      * @return float|int
      */
     public static function getShippingTaxRate($order)
@@ -77,8 +82,12 @@ class TaxHelper
             // TODO verify if this is correct
             $calculatedShippingTaxRate = self::taxFromPrices($order->getInvoiceShippingNet(), $order->getInvoiceShipping());
             return $calculatedShippingTaxRate > 0 ? $order->getInvoiceShippingTaxRate() : 0;
-        } else if ($order instanceof PaymentRequestData) {                   //TODO tax calculation
+        } else if ($order instanceof PaymentRequestData) {
+//TODO implement
             return $order->getShippingTax();
+        } else if($order instanceof OrderStruct) {
+//TODO implement
+            return $order->getShippingCostsTaxRate();
         } else {
             throw new RuntimeException('Invalid argument');
         }

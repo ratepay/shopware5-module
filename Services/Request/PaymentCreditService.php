@@ -19,12 +19,12 @@ class PaymentCreditService extends AbstractModifyRequest
 
     protected function processSuccess()
     {
-        foreach ($this->items as $productNumber => $quantity) {
-            $position = $this->getOrderPosition($productNumber);
+        foreach ($this->items as $item) {
+            $position = $this->getOrderPosition($item->getProductNumber());
             $position->setDelivered($position->getOrderedQuantity());
             $this->modelManager->flush($position);
 
-            $this->historyLogger->logHistory($position, $quantity, 'Nachlass wurde hinzugefügt');
+            $this->historyLogger->logHistory($position, $item->getQuantity(), 'Nachlass wurde hinzugefügt');
         }
     }
 }

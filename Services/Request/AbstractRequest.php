@@ -89,19 +89,20 @@ abstract class AbstractRequest
     public final function doRequest()
     {
         /** @var AbstractResponse $response */
-        $response = $this->call($this->getRequestContent(), false);
-        if ($response->isSuccessful()) {
+        $response = $this->call(null, false);
+        if ($response === true || $response->isSuccessful()) {
             $this->processSuccess();
         }
         return $response;
     }
 
-    protected final function call(array $content = null, $isRetry = false)
+    private function call(array $content = null, $isRetry = false)
     {
         if ($this->isSkipRequest()) {
             $this->isRequestSkipped = true;
             return true;
         }
+        $content = $content ? : $this->getRequestContent();
         $profileConfig = $this->getProfileConfig();
 
         $mbHead = new ModelBuilder('head');

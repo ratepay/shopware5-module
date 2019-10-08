@@ -3,6 +3,7 @@ namespace RpayRatePay\Component\Mapper;
 
 use DateTime;
 use RpayRatePay\DTO\BankData;
+use RpayRatePay\DTO\InstallmentDetails;
 use RpayRatePay\Enum\PaymentMethods;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
@@ -50,7 +51,7 @@ class PaymentRequestData
      */
     private $bankData;
     /**
-     * @var array
+     * @var InstallmentDetails
      */
     private $installmentDetails;
     /**
@@ -76,7 +77,7 @@ class PaymentRequestData
         $currencyId,
         $itemsAreInNet,
         BankData $bankData = null,
-        $installmentDetails = []
+        InstallmentDetails $installmentDetails = null
     ) {
         $this->method = $paymentMethod;
         $this->customer = $customer;
@@ -200,7 +201,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return array
+     * @return InstallmentDetails
      */
     public function getInstallmentDetails()
     {
@@ -208,7 +209,7 @@ class PaymentRequestData
     }
 
     /**
-     * @param array $installmentDetails
+     * @param InstallmentDetails $installmentDetails
      */
     public function setInstallmentDetails($installmentDetails)
     {

@@ -5,6 +5,10 @@ namespace RpayRatePay\Services\Factory;
 
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\DTO\BankData;
+use RpayRatePay\DTO\InstallmentDetails;
+use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\DfpService;
@@ -49,22 +53,35 @@ class PaymentRequestDataFactory
         $shop = isset($loadedEntities['shop']) ? $loadedEntities['paymentMethod'] : $this->modelManager->find(Shop::class, $orderStruct->getLanguageShopId());
         $paymentMethod = isset($loadedEntities['paymentMethod']) ? $loadedEntities['paymentMethod'] : $this->modelManager->find(Payment::class, $orderStruct->getPaymentId());
         $customer = isset($loadedEntities['customer']) ? $loadedEntities['customer'] : $this->modelManager->find(Customer::class, $orderStruct->getCustomerId());
-        $billing = isset($loadedEntities['billingAddress']) ? $loadedEntities['billingAddress'] : $this->modelManager->find(Address::class, $orderStruct->getBillingAddressId());
-        $shipping = isset($loadedEntities['shippingAddress']) ? $loadedEntities['shippingAddress'] : $this->modelManager->find(Address::class, $orderStruct->getShippingAddressId());
+        $billingAddress = isset($loadedEntities['billingAddress']) ? $loadedEntities['billingAddress'] : $this->modelManager->find(Address::class, $orderStruct->getBillingAddressId());
+        $shippingAddress = isset($loadedEntities['shippingAddress']) ? $loadedEntities['shippingAddress'] : $this->modelManager->find(Address::class, $orderStruct->getShippingAddressId());
 
-        $shippingTaxRate = TaxHelper::taxFromPrices($orderStruct->getShippingCostsNet(), $orderStruct->getShippingCosts());
+        //TODO move to TaxHelper
+
+        $shippingTaxRate = TaxHelper::getShippingTaxRate($orderStruct);
         $shippingTax = $shippingTaxRate > 0 ? $orderStruct->getShippingCostsTaxRate() : 0;
 
         //looks like vat is always a whole number, so I'll round --> wrong!! // 2019-05-04 TODO verify
+        //TODO move to TaxHelper
         $shippingTax = round($shippingTax, 2);
-
         $shippingCost = $orderStruct->getNetOrder() ? $orderStruct->getShippingCostsNet() : $orderStruct->getShippingCosts();
+
+        $installmentDetails = null;
+        $bankData = null;
+        if(PaymentMethods::isInstallment($paymentMethod)) {
+            $installmentDetails = $this->sessionHelper->getInstallmentDetails();
+            if ($installmentDetails->getPaymentSubtype() == PaymentSubType::PAY_TYPE_DIRECT_DEBIT) {  //is rate payment with elv subtype
+                $bankData = $this->sessionHelper->getBankData($billingAddress);
+            }
+        } else if(PaymentMethods::PAYMENT_DEBIT === $paymentMethod->getName()) { // is elv payment
+            $bankData = $this->sessionHelper->getBankData($billingAddress);
+        }
 
         return new PaymentRequestData(
             $paymentMethod,
             $customer,
-            $billing,
-            $shipping,
+            $billingAddress,
+            $shippingAddress,
             array_merge(['shipping'], $orderStruct->getPositions()),
             $shippingCost,
             $shippingTax,
@@ -73,8 +90,8 @@ class PaymentRequestDataFactory
             $orderStruct->getTotal(),
             $orderStruct->getCurrencyId(),
             $orderStruct->getNetOrder(),
-            $this->sessionHelper->getBankData($billing, $customer),
-            $this->sessionHelper->getInstallmentDetails()
+            $bankData,
+            $installmentDetails
         );
     }
 }

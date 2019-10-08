@@ -91,6 +91,17 @@ class ConfigService
         return $this->_config->get('ratepay/advanced/use_fallback_shipping_item', $shopId) == 1;
     }
 
+    /**
+     * boolean: `false` call the delivery only if all items has been delivered (or canceled)
+     * so in the last deliver request, all items must be placed in the basket
+     *
+     * @param int|null $shopId
+     * @return bool
+     */
+    public function isInstallmentDirectDelivery($shopId = null) {
+        return $this->_config->get('ratepay/advanced/installment_direct_delivery', $shopId) == 1;
+    }
+
     public function isBidirectionalEnabled()
     {
         return $this->_config->get('ratepay/bidirectional/enable') == 1;

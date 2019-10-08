@@ -129,6 +129,12 @@
         <service id="RpayRatePay\Helper\SessionHelper">
             <argument id="service_container" type="service"/>
         </service>
+        <service id="RpayRatePay\Services\InstallmentService">
+            <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
+            <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
+        </service>
+
 
 
 
@@ -142,7 +148,7 @@
             <argument id="models" type="service"/>
         </service>
         <service id="RpayRatePay\Services\Factory\BasketArrayFactory"/> <!-- TODO does not have any functionality -->
-        <service id="RpayRatePay\Services\Factory\PaymentRequestDataFactory"> <!-- TODO wrong place -->
+        <service id="RpayRatePay\Services\Factory\PaymentRequestDataFactory"> <!-- TODO wrong namespace -->
             <argument id="models" type="service"/>
             <argument id="RpayRatePay\Services\DfpService" type="service"/>
             <argument id="RpayRatePay\Helper\SessionHelper" type="service" />
@@ -157,13 +163,6 @@
         </service>
         <service id="RpayRatePay\Services\Logger\HistoryLogger">
             <argument id="models" type="service"/>
-        </service>
-
-
-        <!-- Services: Payment methods -->
-        <service id="RpayRatePay\Services\Methods\InstallmentService">
-            <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
-            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
         </service>
 
         <!-- Services: Requests -->

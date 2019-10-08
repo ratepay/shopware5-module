@@ -20,14 +20,14 @@ class PaymentReturnService extends AbstractModifyRequest
 
     protected function processSuccess()
     {
-        foreach ($this->items as $productNumber => $quantity) {
-            $position = $this->getOrderPosition($productNumber);
-            $position->setReturned($position->getReturned() + $quantity);
+        foreach ($this->items as $item) {
+            $position = $this->getOrderPosition($item->getProductNumber());
+            $position->setReturned($position->getReturned() + $item->getQuantity());
             $this->modelManager->flush($position);
 
-            $this->historyLogger->logHistory($position, $quantity, 'Artikel wurde retourniert.');
+            $this->historyLogger->logHistory($position, $item->getQuantity(), 'Artikel wurde retourniert.');
             if ($this->updateStock) {
-                $this->updateArticleStock($productNumber, $quantity);
+                $this->updateArticleStock($item->getProductNumber(), $item->getQuantity());
             }
         }
     }

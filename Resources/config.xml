@@ -229,6 +229,15 @@
             <label lang="de">Use fallback discount item</label>
             <value>0</value>
         </element>
+        <element required="true" type="boolean">
+            <!-- @deprecated (added in version v6.0.0 - remove it latest in version v6.2)-->
+            <name>ratepay/advanced/installment_direct_delivery</name>
+            <label lang="en">Commit "Deliveries" directly to the gateway (only rate/installment payments) </label>
+            <label lang="de">Übertrage die "Lieferung" einzelner Positionen direkt an das Gateway (nur Ratenzahlungen/Finanzierungen)</label>
+            <value>1</value>
+            <description lang="en">We recommend that this value is set to `Yes` cause this function will be removed in further versions. So in further releases all items can be send directly</description>
+            <description lang="de">Wir empfehlen diesen Wert auf `Ja` zu setzen, da in kommenden Versionen diese Funktionalität entfernt wird. In Zukunft können dann alle Positionen direkt versendet werden.</description>
+        </element>
 
         <element type="button">
             <name>ratepay/buttons/button8</name>

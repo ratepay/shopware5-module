@@ -44,9 +44,6 @@ class ProfileConfigService
     public function getInstallmentPaymentConfig($paymentMethodName, $shopId, $countryIso, $backend = false)
     {
         $profileConfig = $this->getProfileConfig($countryIso, $shopId, $backend, false); //TODO last parameter
-
-        /** @var ConfigInstallmentRepository $repo */
-        $repo = $this->modelManager->getRepository(ConfigInstallment::class);
-        return $repo->findOneByPaymentConfig($profileConfig->getPaymentConfig($paymentMethodName));
+        return  $this->modelManager->find(ConfigInstallment::class, $profileConfig->getInstallmentConfig()->getRpayId());
     }
 }

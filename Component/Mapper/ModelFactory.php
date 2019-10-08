@@ -44,8 +44,6 @@ class ModelFactory
 
     private $_zPercent = false;
 
-    private $_retry = false;
-
     private $backend;
 
     private $netItemPrices;
@@ -72,11 +70,6 @@ class ModelFactory
         $this->db = Shopware()->Container()->get('db');
         $this->configService = Shopware()->Container()->get(ConfigService::class);
         $this->logger = Shopware()->Container()->get('rpay_rate_pay.logger');
-    }
-
-    public function setOrderId($orderId)
-    {
-        $this->_orderId = $orderId;
     }
 
     public function setZPercent()
@@ -149,23 +142,6 @@ class ModelFactory
     }
 
     /**
-     * call payment confirm
-     *
-     * @return bool
-     */
-    public function callPaymentConfirm($countryCode = false)
-    {
-        $mbHead = $this->getHead($countryCode);
-        $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
-
-        $paymentConfirm = $rb->callPaymentConfirm($mbHead);
-        $this->_logging->logRequest($paymentConfirm->getRequestRaw(), $paymentConfirm->getResponseRaw());
-
-        if ($paymentConfirm->isSuccessful()) {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * get request head
@@ -233,19 +209,6 @@ class ModelFactory
         $sandbox = Shopware()->Db()->fetchOne($qry);
 
         return $sandbox;
-    }
-
-    /**
-     * @param null|RpayRatePay\Component\Mapper\PaymentRequestData $paymentRequestData
-     * @param null|RpayRatePay\Component\Mapper\BankData $bankData
-     *
-     * @return \RatePAY\RequestBuilder
-     * @throws \RatePAY\Exception\ModelException
-     * @throws \Exception
-     */
-    public function callPaymentRequest($paymentRequestData = null, $bankData = null)
-    {
-        //TODO move to service
     }
 
     private function getSession()
@@ -338,207 +301,6 @@ class ModelFactory
     }
 
     /**
-     * create basket array
-     * @param $currency
-     * @param $items
-     * @param bool$type* @param null $orderId
-     * @return array
-     */
-    private function createBasketArray($currency, $items, $type = false, $orderId = null)
-    {
-        $useFallbackShipping = $this->usesShippingItemFallback($orderId);
-        $useFallbackDiscount = $this->usesDiscountItemFallback($orderId);
-        $basketFactory = new BasketArrayBuilder(
-            $this->_retry,
-            $type,
-            $this->netItemPrices,
-            $useFallbackShipping,
-            $useFallbackDiscount
-        );
-
-        foreach ($items as $shopItem) {
-            $basketFactory->addItem($shopItem);
-        }
-
-        $array = $basketFactory->toArray();
-
-        $currencyRepo = Shopware()->Models()->getRepository(\Shopware\Models\Shop\Currency::class);
-        if($currency instanceof \Shopware\Models\Shop\Currency) {
-            // nothing to do
-        } else if(is_numeric($currency)) { //currency is the id
-            /** @var \Shopware\Models\Shop\Currency $currencyEntity */
-            $currency = $currencyRepo->find($currency);
-        } else if(is_string($currency)) { //currency is NOT the iso code
-            /** @var \Shopware\Models\Shop\Currency $currencyEntity */
-            $currency = $currencyRepo->findOneBy(['currency' => $currency]);
-        } else {
-            $currency = "EUR"; //fallback
-        }
-
-        $currency = $currency instanceof \Shopware\Models\Shop\Currency ? $currency->getCurrency() : $currency;
-
-        if($currency) {
-            $array['Currency'] = $currency;
-        }
-
-        return $array;
-    }
-
-    /**
-     * call confirmation deliver
-     *
-     * @param $operationData
-     * @return bool
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
-     * @throws \RatePAY\Exception\ModelException
-     */
-    public function callConfirmationDeliver($operationData)
-    {
-        /** @var \Shopware\Models\Order\Order $order */
-        $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
-        $countryCode = $order->getBilling()->getCountry()->getIso();
-        $method = $order->getPayment()->getName();
-        $type = 'shipping';
-
-        if ($method == 'rpayratepayrate0') {
-            $this->setZPercent();
-        }
-        if ($method == 'rpayratepayrate0' || $method == 'rpayratepayrate') {
-            $type = 'shippingRate';
-        }
-
-        $mbHead = $this->getHead($countryCode);
-
-        $shoppingItems = $this->createBasketArray($order->getCurrency(), $operationData['items'], $type, $operationData['orderId']);
-        $shoppingBasket = [
-            'ShoppingBasket' => $shoppingItems,
-        ];
-
-        $mbContent = new \RatePAY\ModelBuilder('Content');
-        $mbContent->setArray($shoppingBasket);
-
-        $documentModel = Shopware()->Models()->getRepository('Shopware\Models\Order\Document\Document');
-        $document = $documentModel->findOneBy(['orderId' => $operationData['orderId'], 'type' => 1]);
-
-        if (!is_null($document)) {
-            $dateObject = new \DateTime();
-            $currentDate = $dateObject->format('Y-m-d');
-            $currentTime = $dateObject->format('H:m:s');
-            $currentDateTime = $currentDate . 'T' . $currentTime;
-
-            $invoicing = [
-                'Invoicing' => [
-                    'InvoiceId' => $document->getDocumentId(),
-                    'InvoiceDate' => $currentDateTime,
-                    'DeliveryDate' => $currentDateTime,
-                    //'DueDate' => date('Y-m-d\Th:m:s'),
-                ]
-            ];
-            $mbContent->setArray($invoicing);
-        }
-        $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
-        $confirmationDeliver = $rb->callConfirmationDeliver($mbHead, $mbContent);
-        $this->_logging->logRequest($confirmationDeliver->getRequestRaw(), $confirmationDeliver->getResponseRaw());
-
-        if ($confirmationDeliver->isSuccessful()) {
-            return true;
-        } elseif ($this->_retry == false && (int)$confirmationDeliver->getReasonCode() == 2300) {
-            $this->_retry = true;
-            return $this->callConfirmationDeliver($operationData);
-        }
-
-        return false;
-    }
-
-    /**
-     * call a payment change (return, cancellation, order change)
-     *
-     * @param $operationData
-     * @return bool
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
-     * @throws \RatePAY\Exception\ModelException
-     */
-    public function callPaymentChange($operationData)
-    {
-        /** @var \Shopware\Models\Order\Order $order */
-        $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $operationData['orderId']);
-        $countryCode = $order->getBilling()->getCountry()->getIso();
-        $method = $order->getPayment()->getName();
-
-        if ($method == 'rpayratepayrate0') {
-            $this->setZPercent();
-        }
-
-        $mbHead = $this->getHead($countryCode);
-
-        if ($operationData['subtype'] == 'credit') {
-            if ($operationData['items']['price'] > 0) {
-                $shoppingItems['Items'] = ['Item' => $item = [
-                    'ArticleNumber' => $operationData['items']['articleordernumber'],
-                    'Quantity' => 1,
-                    'Description' => $operationData['items']['name'],
-                    'UnitPriceGross' => $operationData['items']['price'],
-                    'TaxRate' => $operationData['items']['tax_rate'],
-                ]];
-            } else {
-                $shoppingItems = ['Discount' => $item = [
-                    'Description' => $operationData['items']['name'],
-                    'UnitPriceGross' => $operationData['items']['price'],
-                    'TaxRate' => $operationData['items']['tax_rate']
-                ]];
-            }
-            $shoppingItems['Currency'] = $order->getCurrency();
-        } else {
-            $shoppingItems = $this->createBasketArray($order->getCurrency(), $operationData['items'], $operationData['subtype'], $operationData['orderId']);
-        }
-
-        $shoppingBasket = [
-            'ShoppingBasket' => $shoppingItems,
-        ];
-
-        $mbContent = new \RatePAY\ModelBuilder('Content');
-        $mbContent->setArray($shoppingBasket);
-
-        $rb = new \RatePAY\RequestBuilder($this->isSandboxMode()); // Sandbox mode = true
-        $paymentChange = $rb->callPaymentChange($mbHead, $mbContent)->subtype($operationData['subtype']);
-        $this->_logging->logRequest($paymentChange->getRequestRaw(), $paymentChange->getResponseRaw());
-
-        if ($paymentChange->isSuccessful()) {
-            return true;
-        } elseif ($this->_retry == false && (int)$paymentChange->getReasonCode() == 2300) {
-            $this->_retry = true;
-            return $this->callPaymentChange($operationData);
-        }
-        return false;
-    }
-
-    /**
-     * Returns the OrderID for the TransactionId set to this Factory
-     *
-     * @return string $returnValue
-     */
-    private function _getOrderIdFromTransactionId()
-    {
-        $returnValue = null;
-        $transactionId = $this->_transactionId;
-
-        if (!empty($transactionId)) {
-            $returnValue = Shopware()->Db()->fetchOne(
-                'SELECT `ordernumber` FROM `s_order` '
-                . 'INNER JOIN `s_core_paymentmeans` ON `s_core_paymentmeans`.`id` = `s_order`.`paymentID` '
-                . 'WHERE `s_order`.`transactionID`=?;',
-                [$transactionId]
-            );
-        }
-
-        return $returnValue;
-    }
-
-    /**
      * get profile id
      *
      * @param bool $countryCode
@@ -581,64 +343,4 @@ class ModelFactory
         return $this->configService->getSecurityCode($countryCode, $shopId, $this->backend);
     }
 
-    /**
-     * @param array $shippingData
-     * @param bool $useFallbackShipping
-     * @return array
-     */
-    private function getShippingItemData(PaymentRequestData $shippingData, $useFallbackShipping = false)
-    {
-        $priceGross = $this->netItemPrices ?
-            Math::netToGross($shippingData->getShippingCost(), $shippingData->getShippingTax()) :
-            $shippingData->getShippingCost();
-
-        $priceGross = round($priceGross, 3);
-
-        $item = [
-            'Description' => 'Shipping costs',
-            'UnitPriceGross' => $priceGross,
-            'TaxRate' => $shippingData->getShippingTax(),
-        ];
-
-        if ($useFallbackShipping) {
-            $item['ArticleNumber'] = 'shipping';
-            $item['Quantity'] = 1;
-            $item['Description'] = 'shipping';
-        }
-
-        return $item;
-    }
-
-    /**
-     * @param null $orderId
-     * @return mixed
-     * @throws Zend_Db_Statement_Exception
-     */
-    private function usesShippingItemFallback($orderId = null)
-    {
-        $default = $this->configService->isCommitShippingAsCartItem();
-
-        if (!$orderId) {
-            return $default;
-        }
-
-        $query = 'SELECT ratepay_fallback_shipping FROM `s_order_attributes` WHERE orderID = ?';
-        $result = $this->db->executeQuery($query, [$orderId])->fetch()['ratepay_fallback_shipping'];
-
-        return is_null($result) ? false : (boolval($result) || $default);
-    }
-
-    protected function usesDiscountItemFallback($orderId = null)
-    {
-        $default = $this->configService->isCommitDiscountAsCartItem();
-
-        if (!$orderId) {
-            return $default;
-        }
-
-        $query = 'SELECT ratepay_fallback_discount FROM `s_order_attributes` WHERE orderID = ?';
-        $result = $this->db->executeQuery($query, [$orderId])->fetchColumn('ratepay_fallback_discount');
-
-        return is_null($result) ? false : (boolval($result) || $default);
-    }
 }

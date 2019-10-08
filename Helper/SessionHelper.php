@@ -6,8 +6,9 @@ namespace RpayRatePay\Helper;
 
 use Enlight_Components_Session_Namespace;
 use RpayRatePay\DTO\BankData;
+use RpayRatePay\DTO\InstallmentDetails;
+use RpayRatePay\Enum\PaymentSubType;
 use Shopware\Models\Customer\Address;
-use Shopware\Models\Customer\Customer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class SessionHelper
@@ -23,6 +24,7 @@ class SessionHelper
             //frontend request
             $this->session = $container->get('session');
         } else if($container->has('backendsession')) {
+            //admin request
             $this->session = $container->get('backendsession');
         }
     }
@@ -38,11 +40,10 @@ class SessionHelper
 
     /**
      * @param Address $customerAddressBilling
-     * @param Customer $customer
      * @return BankData|null
      */
-    public function getBankData(Address $customerAddressBilling, Customer $customer) {
-        $sessionData = $this->getData('bankData_c'.$customer->getId());
+    public function getBankData(Address $customerAddressBilling) {
+        $sessionData = $this->getData('bankData_c'.$customerAddressBilling->getCustomer()->getId());
         if($sessionData == null) {
             return null;
         }
@@ -58,7 +59,6 @@ class SessionHelper
         }
     }
 
-
     protected function setData($key, $value) {
         $this->session->RatePay[$key] = $value;
     }
@@ -67,9 +67,54 @@ class SessionHelper
         return $this->session->RatePay[$key];
     }
 
+    /**
+     * @return InstallmentDetails
+     */
     public function getInstallmentDetails()
     {
-        return null; //TODO implement
+        $data = $this->getData('ratenrechner');
+
+        $object = new InstallmentDetails();
+        $object->setTotalAmount($data['total_amount']);
+        $object->setAmount($data['amount']);
+        $object->setInterestRate($data['interest_rate']);
+        $object->setInterestAmount($data['interest_amount']);
+        $object->setServiceCharge($data['service_charge']);
+        $object->setAnnualPercentageRate($data['annual_percentage_rate']);
+        $object->setMonthlyDebitInterest($data['monthly_debit_interest']);
+        $object->setNumberOfRatesFull($data['number_of_rates']);
+        $object->setRate($data['rate']);
+        $object->setLastRate($data['last_rate']);
+        $object->setPaymentFirstday($data['payment_firstday']);
+        $object->setPaymentSubtype($data['payment_subtype']);
+        $object->setDueDate($data['dueDate']);
+        return $object;
+    }
+
+    public function setInstallmentData($totalAmount, $amount, $interestRate, $interestAmount, $serviceCharge, $annualPercentageRate, $monthlyDebitInterest, $numberOfRatesFull, $rate, $lastRate, $paymentSubtype)
+    {
+        $this->setData('ratenrechner', [
+            'total_amount' => $totalAmount,
+            'amount' => $amount,
+            'interest_rate' => $interestRate,
+            'interest_amount' => $interestAmount,
+            'service_charge' => $serviceCharge,
+            'annual_percentage_rate' => $annualPercentageRate,
+            'monthly_debit_interest' => $monthlyDebitInterest,
+            'number_of_rates' => $numberOfRatesFull,
+            'rate' => $rate,
+            'last_rate' => $lastRate,
+        ]);
+        $this->setInstallmentPaymentSubtype($paymentSubtype); //todo this is the paymentFirstDay
+    }
+
+    public function setInstallmentPaymentSubtype($paymentFirstDay)
+    {
+        $data = $this->getData('ratenrechner');
+        $data['payment_subtype'] = PaymentSubType::getPayTypByFirstPayDay($paymentFirstDay); //TODO documentation.
+        $data['payment_firstday'] = $paymentFirstDay;
+        $data['dueDate'] = $paymentFirstDay;
+        $this->setData('ratenrechner', $data);
     }
 
 }

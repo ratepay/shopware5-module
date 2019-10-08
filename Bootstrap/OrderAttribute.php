@@ -31,9 +31,10 @@ class OrderAttribute extends AbstractBootstrap
 
     public function install()
     {
-        $this->crudService->update('s_order_attributes', 'ratepay_fallback_shipping', 'boolean');
-        $this->crudService->update('s_order_attributes', 'ratepay_fallback_discount', 'boolean');
+        $this->crudService->update('s_order_attributes', 'ratepay_fallback_shipping', 'boolean', [], null, null, false);
+        $this->crudService->update('s_order_attributes', 'ratepay_fallback_discount', 'boolean', [], null, null, false);
         $this->crudService->update('s_order_attributes', 'ratepay_backend', 'boolean');
+        $this->crudService->update('s_order_attributes', 'ratepay_direct_delivery', 'boolean', [], null, null, false);
 
         $this->cleanUp();
     }
@@ -49,6 +50,7 @@ class OrderAttribute extends AbstractBootstrap
             $this->crudService->delete('s_order_attributes', 'ratepay_fallback_shipping');
             $this->crudService->delete('s_order_attributes', 'ratepay_fallback_discount');
             $this->crudService->delete('s_order_attributes', 'ratepay_backend');
+            $this->crudService->delete('s_order_attributes', 'ratepay_direct_delivery');
 
             $this->cleanUp();
         }

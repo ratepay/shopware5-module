@@ -8,12 +8,15 @@ use Exception;
 use Monolog\Logger;
 use RatePAY\Model\Response\PaymentRequest as PaymentResponse;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Enum\PaymentSubType;
+use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
 use RpayRatePay\Services\Request\PaymentConfirmService;
 use RpayRatePay\Services\Request\PaymentRequestService;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Payment\Payment;
@@ -140,11 +143,11 @@ class OrderControllerSubscriber implements SubscriberInterface
                 $paymentResponse = $this->paymentConfirmService->doRequest();
 
                 if ($paymentResponse->isSuccessful() === false) {
-                    $customerMessage = $paymentResponse->getReasonMessage();
+                    $customerMessage = $paymentResponse->getCustomerMessage().' ('.$paymentResponse->getReasonMessage().')';
                     $this->fail($view, [$customerMessage]);
                 }
             } else {
-                $customerMessage = $paymentResponse->getReasonMessage();
+                $customerMessage = $paymentResponse->getCustomerMessage().' ('.$paymentResponse->getReasonMessage().')';
                 $this->fail($view, [$customerMessage]);
             }
         } catch (Exception $e) {

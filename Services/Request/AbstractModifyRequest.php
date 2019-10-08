@@ -6,6 +6,7 @@ namespace RpayRatePay\Services\Request;
 
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
+use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Models\Position\AbstractPosition;
@@ -29,7 +30,7 @@ abstract class AbstractModifyRequest extends AbstractRequest
     protected $_order;
 
     /**
-     * @var array
+     * @var BasketPosition[]
      */
     protected $items = null;
 
@@ -103,9 +104,9 @@ abstract class AbstractModifyRequest extends AbstractRequest
             $basketFactory = $this->basketArrayBuilder;
         } else {
             $basketFactory = new BasketArrayBuilder($this->_order);
-            foreach ($this->items as $productNumber => $quantity) {
-                $detail = $this->getOrderDetailByNumber($productNumber);
-                $basketFactory->addItem($detail ? $detail : $productNumber, $quantity);
+            foreach ($this->items as $item) {
+                $detail = $this->getOrderDetailByNumber($item->getProductNumber());
+                $basketFactory->addItem($detail ? $detail : $item->getProductNumber(), $item->getQuantity());
             }
         }
         $requestContent = [];
@@ -142,14 +143,15 @@ abstract class AbstractModifyRequest extends AbstractRequest
     /**
      * key: product number
      * value: quantity
-     * @param BasketArrayBuilder|array $items
+     * @param BasketArrayBuilder|BasketPosition[] $items
      */
-    public final function setItems($items = null)
+    public final function setItems($items)
     {
         if ($items instanceof BasketArrayBuilder) {
             $this->basketArrayBuilder = $items;
             $this->items = $this->basketArrayBuilder->getSimpleItems();
         } else if (is_array($items)) {
+            $this->basketArrayBuilder = null;
             $this->items = $items;
         } else {
             throw new RuntimeException('invalid argument');
@@ -162,7 +164,7 @@ abstract class AbstractModifyRequest extends AbstractRequest
      */
     protected function getOrderPosition($productNumber)
     {
-        if ($productNumber === 'shipping') {
+        if ($productNumber === BasketPosition::SHIPPING_NUMBER) {
             return $this->positionHelper->getShippingPositionForOrder($this->_order);
         } else {
             $detail = $this->getOrderDetailByNumber($productNumber);
