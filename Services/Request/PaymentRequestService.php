@@ -107,10 +107,10 @@ class PaymentRequestService extends AbstractRequest
 
     protected function getRequestContent()
     {
-        if ($this->paymentRequestData == null) {
+        if ($this->paymentRequestData === null) {
             throw new RuntimeException('please set paymentRequestData with function `setPaymentRequestData()`');
         }
-        if ($this->isBackend == null) {
+        if ($this->isBackend === null) {
             throw new RuntimeException('please set the backend variable to `true` if it is a backend call with function `setIsBackend()`');
         }
 

@@ -9,11 +9,13 @@ use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace;
 use Enlight_Event_EventArgs;
 use Monolog\Logger;
+use RpayRatePay\Component\Service\ValidationLib as ValidationService;
+use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Helper\SessionHelper;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
 use Shopware_Controllers_Frontend_Checkout;
-use Shopware_Plugins_Frontend_RpayRatePay_Component_Validation;
 
 class CheckoutValidationSubscriber implements SubscriberInterface
 {
@@ -22,30 +24,40 @@ class CheckoutValidationSubscriber implements SubscriberInterface
      */
     protected $modelManager;
     /**
-     * @var Enlight_Components_Session_Namespace
-     */
-    protected $session;
-    /**
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var SessionHelper
+     */
+    private $sessionHelper;
 
     public function __construct(
         ModelManager $modelManager,
-        Enlight_Components_Session_Namespace $session,
+        SessionHelper $sessionHelper,
         Logger $logger
     )
     {
         $this->modelManager = $modelManager;
-        $this->session = $session;
         $this->logger = $logger;
+        $this->sessionHelper = $sessionHelper;
     }
 
     public static function getSubscribedEvents()
     {
         return [
             'Enlight_Controller_Action_PostDispatch_Frontend_Checkout' => 'preValidation',
+            'Shopware_Modules_Admin_InitiatePaymentClass_AddClass' => 'addPaymentMethodClasses'
         ];
+    }
+
+    public function addPaymentMethodClasses(\Enlight_Event_EventArgs $args)
+    {
+        $classes = $args->getReturn();
+        foreach(PaymentMethods::PAYMENTS as $name => $method) {
+            $classes[$name] = $method['real_class'];
+        }
+        $args->setReturn($classes);
     }
 
     /**
@@ -73,33 +85,38 @@ class CheckoutValidationSubscriber implements SubscriberInterface
         }
 
         // Check for the right action and controller
-        if ($request->getControllerName() !== 'checkout' || $request->getActionName() !== 'confirm') {
+        if ($request->getControllerName() !== 'checkout' || $request->getActionName() !== 'shippingPayment') {
             return;
         }
 
-        $userId = $this->session->get('sUserId');
-        if (empty($userId)) {
-            $this->logger->warning('RatePAY: sUserId is empty');
+        $customer = $this->sessionHelper->getCustomer();
+        if($customer == null) {
+            $this->logger->error('Customer can not be loaded');
             return;
         }
+        $billingAddress = $this->sessionHelper->getBillingAddress($customer);
+        $shippingAddress = $this->sessionHelper->getShippingAddress($customer);
+        $paymentMethod = $this->sessionHelper->getPaymentMethod($customer);
 
-        /** @var Customer $user */
-        $user = $this->modelManager->find(Customer::class, $userId);
-        /** @var Payment $paymentType */
-        $paymentType = $this->modelManager->find(Payment::class, $user->getPaymentId());
+        if (PaymentMethods::exists($paymentMethod)) {
+            //$ratePaySession = $this->session->RatePAY;
 
-        $validation = new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user, $paymentType); //TODO service
-
-        if ($validation->isRatePAYPayment()) {
-            $ratePaySession = $this->session->RatePAY;
-
-            $view->assign('sRegisterFinished', 'false');
-            $view->assign('ratepayValidateCompanyName', $validation->isCompanyNameSet() ? 'true' : 'false');
-            $view->assign('atepayValidateIsB2B', $validation->isCompanyNameSet() ? 'true' : 'false');
-            $view->assign('ratepayIsBillingAddressSameLikeShippingAddress', $validation->isBillingAddressSameLikeShippingAddress() ? 'true' : 'false');
-            $view->assign('ratepayValidateIsBirthdayValid', $validation->isCompanyNameSet() || $validation->isBirthdayValid());
-            $view->assign('ratepayValidateisAgeValid', $validation->isCompanyNameSet() || $validation->isAgeValid());
-            $view->assign('errorRatenrechner', (!$ratePaySession['errorRatenrechner']) ? 'false' : $ratePaySession['errorRatenrechner']);
+            $view->assign([
+                'sRegisterFinished' => 'false',
+                'ratepay' => [
+                    'validation' => [
+                        'isBirthdayRequired' => ValidationService::isCompanySet($billingAddress) === false,
+                        'isB2B' => ValidationService::isCompanySet($billingAddress),
+                        'isBillingAddressSameLikeShippingAddress' => ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress),
+                        'isBirthdayValid' => ValidationService::isBirthdayValid($customer, $billingAddress),
+                        'isAgeValid' => ValidationService::isBirthdayValid($customer, $billingAddress),
+                    ],
+                    'ratenrechner' => [
+                        //TODO ratenrechner
+                        //$view->assign('errorRatenrechner', (!$ratePaySession['errorRatenrechner']) ? 'false' : $ratePaySession['errorRatenrechner']);
+                    ],
+                ]
+            ]);
         }
     }
 

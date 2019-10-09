@@ -4,7 +4,6 @@ namespace RpayRatePay\Component\Mapper;
 use DateTime;
 use RpayRatePay\DTO\BankData;
 use RpayRatePay\DTO\InstallmentDetails;
-use RpayRatePay\Enum\PaymentMethods;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
@@ -13,7 +12,7 @@ use Shopware\Models\Shop\Shop;
 class PaymentRequestData
 {
     /**
-     * @var string
+     * @var Payment
      */
     private $method;
 
@@ -75,7 +74,6 @@ class PaymentRequestData
         Shop $shop,
         $amount,
         $currencyId,
-        $itemsAreInNet,
         BankData $bankData = null,
         InstallmentDetails $installmentDetails = null
     ) {
@@ -91,7 +89,6 @@ class PaymentRequestData
         $this->lang = substr($shop->getLocale()->getLocale(), 0, 2);
         $this->amount = $amount;
         $this->currencyId = $currencyId;
-        $this->itemsAreInNet = $itemsAreInNet;
         $this->bankData = $bankData;
         $this->installmentDetails = $installmentDetails;
     }
@@ -214,22 +211,6 @@ class PaymentRequestData
     public function setInstallmentDetails($installmentDetails)
     {
         $this->installmentDetails = $installmentDetails;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isItemsAreInNet()
-    {
-        return $this->itemsAreInNet;
-    }
-
-    /**
-     * @param bool $itemsAreInNet
-     */
-    public function setItemsAreInNet($itemsAreInNet)
-    {
-        $this->itemsAreInNet = $itemsAreInNet;
     }
 
     /**

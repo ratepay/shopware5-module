@@ -124,8 +124,22 @@ class BasketArrayBuilder
             $itemQuantity = $quantity ? : $item->getQuantity();
             $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $item);
             $taxRate = TaxHelper::getItemTaxRate($this->paymentRequestData, $item);
-        } else {
-            throw new \RuntimeException('type '.get_class($item).' is no longer supported');
+        } else if(is_array($item)) {
+            //frontend call
+            //TODO verify if it is necessary to calculate the tax info
+            $detail = new Detail();
+            $detail->setArticleNumber($item['ordernumber']);
+            $detail->setNumber($item['ordernumber']);
+            $detail->setQuantity((int) $item['quantity']);
+            $detail->setArticleName($item['articlename']);
+            $detail->setPrice(floatval($item['priceNumeric']));
+            $detail->setTaxRate($item['tax_rate']);
+            $detail->setMode($item['modus']);
+            $this->addItem($detail);
+            return;
+        }
+        else {
+            throw new \RuntimeException('type '.get_class($item).' is not supported');
         }
 
         $this->basket['Items'][] = [
@@ -151,11 +165,15 @@ class BasketArrayBuilder
         } else {
             throw new \RuntimeException('no payment request data or order is available');
         }
+        if($shippingCost <= 0) {
+            return;
+        }
 
         if ($this->useFallbackShipping) {
             //TODO verify if it is necessary to calculate the tax info
             $detail = new Detail();
             $detail->setNumber(BasketPosition::SHIPPING_NUMBER);
+            $detail->setArticleNumber(BasketPosition::SHIPPING_NUMBER);
             $detail->setQuantity(1);
             $detail->setArticleName('shipping');
             $detail->setPrice($shippingCost);

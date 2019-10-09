@@ -13,6 +13,7 @@ use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\DfpService;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Article\Detail;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
@@ -89,9 +90,46 @@ class PaymentRequestDataFactory
             $shop,
             $orderStruct->getTotal(),
             $orderStruct->getCurrencyId(),
-            $orderStruct->getNetOrder(),
+            //$orderStruct->getNetOrder(),
             $bankData,
             $installmentDetails
+        );
+    }
+
+    public function createFromFrontendSession() {
+
+        $session = $this->sessionHelper->getSession();
+        $customer = $this->sessionHelper->getCustomer();
+        $billingAddress = $this->sessionHelper->getBillingAddress($customer);
+        $shippingAddress = $this->sessionHelper->getShippingAddress($customer);
+        $paymentMethod = $this->sessionHelper->getPaymentMethod($customer);
+
+        $content = Shopware()->Modules()->Basket()->sGetBasketData();
+
+
+        //get total amount
+        $user = $session->sOrderVariables['sUserData'];
+        $basket = $session->sOrderVariables['sBasket'];
+        if (!empty($user['additional']['charge_vat'])) {
+            $totalAmount = empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
+        } else {
+            $totalAmount = $basket['AmountNetNumeric'];
+        }
+
+        return new PaymentRequestData(
+            $paymentMethod,
+            $customer,
+            $billingAddress,
+            $shippingAddress,
+            array_merge(['shipping'], $content['content']),
+            $session->sOrderVariables['sBasket']['sShippingcosts'],
+            $session->sOrderVariables['sBasket']['sShippingcostsTax'],
+            $this->dfpService->getDfpId(false),
+            Shopware()->Shop(),
+            $totalAmount,
+            $session->sOrderVariables['sBasket']['sCurrencyId'],
+            $this->sessionHelper->getBankData($billingAddress),
+            $this->sessionHelper->getInstallmentDetails()
         );
     }
 }

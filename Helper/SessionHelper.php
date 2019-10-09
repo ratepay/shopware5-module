@@ -4,11 +4,15 @@
 namespace RpayRatePay\Helper;
 
 
+use Doctrine\ORM\EntityManager;
 use Enlight_Components_Session_Namespace;
 use RpayRatePay\DTO\BankData;
 use RpayRatePay\DTO\InstallmentDetails;
 use RpayRatePay\Enum\PaymentSubType;
+use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Address;
+use Shopware\Models\Customer\Customer;
+use Shopware\Models\Payment\Payment;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class SessionHelper
@@ -18,15 +22,74 @@ class SessionHelper
      */
     protected $session;
 
-    public function __construct(ContainerInterface $container)
+    /**
+     * @var EntityManager
+     */
+    protected $entityManager;
+
+    protected $isFrontendSession;
+
+    public function __construct(ModelManager $entityManager, ContainerInterface $container)
     {
+        $this->entityManager = $entityManager;
         if($container->has('shop')) {
             //frontend request
             $this->session = $container->get('session');
+            $this->isFrontendSession = true;
         } else if($container->has('backendsession')) {
             //admin request
             $this->session = $container->get('backendsession');
+            $this->isFrontendSession = false;
         }
+    }
+
+    public function getBillingAddress(Customer $customer = null) {
+        if($this->isFrontendSession === false) {
+            throw new \Exception('not implemented');
+        }
+
+        $addressId = $this->session['checkoutBillingAddressId'];
+        if ($addressId > 0) {
+            return $this->entityManager->find(Address::class, $addressId);
+        } else if($customer) {
+            return $customer->getDefaultBillingAddress();
+        }
+        return null;
+    }
+    public function getShippingAddress(Customer $customer = null) {
+        if($this->isFrontendSession === false) {
+            throw new \Exception('not implemented');
+        }
+
+        $addressId = $this->session['checkoutShippingAddressId'];
+        if ($addressId > 0) {
+            return $this->entityManager->find(Address::class, $addressId);
+        } else if($customer) {
+            return $customer->getDefaultShippingAddress();
+        }
+        return null;
+    }
+
+    public function getCustomer(){
+        if($this->isFrontendSession === false) {
+            throw new \Exception('not implemented');
+        }
+
+        $customerId = $this->session->get('sUserId');
+        if (empty($customerId)) {
+            return null;
+        }
+
+        return $this->entityManager->find(Customer::class, $customerId);
+    }
+
+    public function getPaymentMethod(Customer $customer) {
+        if($this->isFrontendSession === false) {
+            throw new \Exception('not implemented');
+        }
+        $sessionVars = $this->session->get('sOrderVariables');
+        $paymentId = isset($sessionVars['sPayment']['id']) ? $sessionVars['sPayment']['id'] : $customer->getPaymentId();
+        return $this->entityManager->find(Payment::class, $paymentId);
     }
 
     public function setBankData($customerId, $accountNumber, $bankCode = null)
@@ -115,6 +178,11 @@ class SessionHelper
         $data['payment_firstday'] = $paymentFirstDay;
         $data['dueDate'] = $paymentFirstDay;
         $this->setData('ratenrechner', $data);
+    }
+
+    public function getSession()
+    {
+        return $this->session;
     }
 
 }

@@ -22,83 +22,60 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\TransactionRequiredException;
 use Monolog\Logger;
+use RatePAY\Model\Response\PaymentRequest;
 use RpayRatePay\Component\Mapper\ModelFactory;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ShopwareUtil;
+use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\DfpService;
+use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
 use RpayRatePay\Services\Logger\RequestLogger;
 use RpayRatePay\Services\PaymentProcessorService;
+use RpayRatePay\Services\Request\PaymentConfirmService;
+use RpayRatePay\Services\Request\PaymentRequestService;
 use Shopware\Components\CSRFWhitelistAware;
 use Shopware\Components\DependencyInjection\Container;
+use Shopware\Models\Order;
 
 class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
 {
-    /**
-     * Stores an Instance of the Shopware\Models\Customer\Billing model
-     *
-     * @var Shopware\Models\Customer\Billing
-     */
-    private $_config;
-    private $_modelFactory;
-    private $_logging;
-    private $_customerMessage;
-
-    /** @var ConfigLoader */
-    protected $_configLoader;
-
     /** @var DfpService */
     protected $dfpService;
 
     /**
-     * @var PaymentProcessorService
-     */
-    protected $paymentProcessor;
-    /**
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var object|PaymentRequestService
+     */
+    protected $paymentRequestService;
+    /**
+     * @var object|PaymentRequestDataFactory
+     */
+    protected $paymentRequestDataFactory;
+    /**
+     * @var object|ConfigService
+     */
+    private $configService;
+    /**
+     * @var object|PaymentConfirmService
+     */
+    private $paymentConfirmService;
 
 
     public function setContainer(Container $container = null)
     {
         parent::setContainer($container);
-        $this->paymentProcessor = $container->get(PaymentProcessorService::class);
+
+        $this->paymentRequestDataFactory = $this->container->get(PaymentRequestDataFactory::class);
+        $this->paymentRequestService = $this->container->get(PaymentRequestService::class);
+        $this->paymentConfirmService = $this->container->get(PaymentConfirmService::class);
         $this->logger = $container->get('rpay_rate_pay.logger');
-    }
-
-    /**
-     * @return string
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws TransactionRequiredException
-     */
-    public function init()
-    {
-        $Parameter = $this->Request()->getParams();
-
-        $customerId = null;
-
-        if (isset($Parameter['userid'])) {
-            $customerId = $Parameter['userid'];
-        } elseif (isset(Shopware()->Session()->sUserId)) {
-            $customerId = Shopware()->Session()->sUserId;
-        }
-
-        if ($customerId === null) {
-            return 'RatePAY frontend controller: No user set';
-        }
-
-        $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $customerId);
-
-        $netPrices = ShopwareUtil::customerCreatesNetOrders($customer);
-
-        $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-        $this->_modelFactory = new ModelFactory(null, false, $netPrices);
-        $this->_logging = Shopware()->Container()->get(RequestLogger::class);;
-        $this->_configLoader = new ConfigService(Shopware()->Container()->get('db'));
-        $this->dfpService = Shopware()->Container()->get(DfpService::class);
+        $this->dfpService = $this->container->get(DfpService::class);
+        $this->configService = $this->container->get(ConfigService::class);
     }
 
     /**
@@ -119,7 +96,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             return;
         }
 
-        if (!$this->isInstallmentPaymentWithoutCalculation()) {
+        if (true /*!$this->isInstallmentPaymentWithoutCalculation()*/) { //TODO
             $this->logger->info('Proceed with RatePAY payment');
             Shopware()->Session()->RatePAY['errorRatenrechner'] = 'false';
             $this->_proceedPayment();
@@ -287,40 +264,28 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      */
     private function _proceedPayment()
     {
-        $resultRequest = $this->_modelFactory->callPaymentRequest();
 
-        if ($resultRequest->isSuccessful()) {
+        $this->paymentRequestService->setIsBackend(false);
+        $paymentRequestData = $this->paymentRequestDataFactory->createFromFrontendSession();
+        $this->paymentRequestService->setPaymentRequestData($paymentRequestData);
+        /** @var PaymentRequest $requestResponse */
+        $requestResponse = $this->paymentRequestService->doRequest();
 
-            Shopware()->Session()->RatePAY['transactionId'] = $resultRequest->getTransactionId();
+        if ($requestResponse->isSuccessful()) {
+
+            $transactionId = $requestResponse->getTransactionId();
             $uniqueId = $this->createPaymentUniqueId();
-            $orderNumber = $this->saveOrder(Shopware()->Session()->RatePAY['transactionId'], $uniqueId, 17);
-            $order = Shopware()->Models()->getRepository('\Shopware\Models\Order\Order')
+
+            $statusId = $this->configService->getPaymentStatusAfterPayment($paymentRequestData->getMethod());
+            $orderNumber = $this->saveOrder($transactionId, $uniqueId, $statusId ? $statusId : 17);
+
+            $order = Shopware()->Models()->getRepository(Order\Order::class)
                 ->findOneBy(['number' => $orderNumber]);
 
-            try {
-                if (Shopware()->Session()->sOrderVariables['sBasket']['sShippingcosts'] > 0) {
-                    $this->paymentProcessor->initShippingPosition($order);
-                }
-                $this->paymentProcessor->initDiscountPosition($order);
-            } catch (Exception $exception) {
-                $this->logger->error($exception->getMessage());
-            }
+            $this->paymentRequestService->completeOrder($order, $requestResponse);
 
-            try {
-                $this->paymentProcessor->setOrderAttributes(
-                    $order,
-                    $resultRequest,
-                    $this->_configLoader->isCommitShippingAsCartItem(),
-                    $this->_configLoader->isCommitDiscountAsCartItem(),
-                    false
-                );
-            } catch (Exception $exception) {
-                $this->logger->error($exception->getMessage());
-            }
-
-            $this->paymentProcessor->setPaymentStatus($order);
-
-            $this->paymentProcessor->sendPaymentConfirm($resultRequest->getTransactionId(), $order);
+            $this->paymentConfirmService->setOrder($order);
+            $this->paymentConfirmService->doRequest();
 
             /**
              * unset DFI token
@@ -339,7 +304,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 ]
             );
         } else {
-            $this->_customerMessage = $resultRequest->getCustomerMessage();
+            //TODO
             $this->_error();
         }
 

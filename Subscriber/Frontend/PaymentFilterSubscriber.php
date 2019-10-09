@@ -11,6 +11,9 @@ use Enlight_Event_EventArgs;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Helper\SessionHelper;
+use RpayRatePay\Models\ConfigPayment;
+use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
@@ -21,7 +24,6 @@ use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
 use Shopware_Components_Config;
 use Shopware_Components_Modules;
-use Shopware_Plugins_Frontend_RpayRatePay_Component_Validation;
 
 class PaymentFilterSubscriber implements SubscriberInterface
 {
@@ -53,6 +55,10 @@ class PaymentFilterSubscriber implements SubscriberInterface
      * @var ShopContextInterface|null
      */
     protected $context;
+    /**
+     * @var SessionHelper
+     */
+    private $sessionHelper;
 
     public function __construct(
         ModelManager $modelManager,
@@ -61,6 +67,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         Shopware_Components_Config $config,
         Shopware_Components_Modules $modules,
         ProfileConfigService $profileConfig,
+        SessionHelper $sessionHelper,
         Logger $logger
     )
     {
@@ -71,6 +78,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         $this->modules = $modules;
         $this->profileConfig = $profileConfig;
         $this->logger = $logger;
+        $this->sessionHelper = $sessionHelper;
     }
 
     public static function getSubscribedEvents()
@@ -105,63 +113,44 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
         /** @var Customer $customer */
         $customer = $this->modelManager->find(Customer::class, $userId);
-        $wrappedUser = new ShopwareCustomerWrapper($customer, $this->modelManager); //TODO service ?
+        $billingAddress = $this->sessionHelper->getBillingAddress($customer);
+        $shippingAddress = $this->sessionHelper->getShippingAddress($customer);
 
-        $countryBilling = $wrappedUser->getBillingCountry();
-        $countryDelivery = $wrappedUser->getShippingCountry();
+        $configs = $this->getRatePayPluginConfigByCountry($this->context->getShop()->getId(), $billingAddress->getCountry());
 
-        if (is_null($countryDelivery)) {
-            $countryDelivery = $countryBilling;
-        }
+        $availableRatePayMethods = [];
+        foreach ($configs as $payment => $config) {
+            $availableRatePayMethods[$payment] = false;
 
-        $config = $this->getRatePayPluginConfigByCountry($this->context->getShop()->getId(), $countryBilling, false);
-        foreach ($config as $payment => $data) {
-            $show[$payment] = $data['status'] == 2 ? true : false;
+            /** @var ProfileConfig $profileConfig */
+            $profileConfig = $config['profileConfig'];
+            /** @var ConfigPayment $paymentConfig */
+            $paymentConfig = $config['paymentConfig'];
 
-            $validation = $this->getValidator($customer);
-
-            $validation->setAllowedCurrencies($data['currency']);
-            $validation->setAllowedCountriesBilling($data['country_code_billing']);
-            $validation->setAllowedCountriesDelivery($data['country_code_delivery']);
-
-            if ($validation->isRatepayHidden()) {
-                $show[$payment] = false;
+            if((int)$paymentConfig->getStatus() !== 2) { //TODO change type of `status` to int
                 continue;
             }
 
-            if (!$validation->isCurrencyValid($currency)) {
-                $show[$payment] = false;
+            if (Shopware()->Session()->RatePAY['hidePayment'] || // TODO whats that ?
+                !ValidationService::isCurrencyValid($profileConfig->getCurrency(), $currency) ||
+                !ValidationService::isCountryValid($profileConfig->getCountryCodeBilling(), $billingAddress->getCountry()) ||
+                !ValidationService::isCountryValid($profileConfig->getCountryCodeDelivery(), $shippingAddress ? $shippingAddress->getCountry() : $billingAddress->getCountry()) ||
+                (!ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress) && !$paymentConfig->getAddress())
+            ) {
                 continue;
-            }
-
-            if (!$validation->isBillingCountryValid($countryBilling)) {
-                $show[$payment] = false;
-                continue;
-            }
-
-            if (!$validation->isDeliveryCountryValid($countryDelivery)) {
-                $show[$payment] = false;
-                continue;
-            }
-
-            if (!$validation->isBillingAddressSameLikeShippingAddress()) {
-                if (!$data['address']) {
-                    $shop[$payment] = false;
-                    continue;
-                }
             }
 
             if ($this->modules->Basket()) {
                 $basket = $this->modules->Basket()->sGetAmount();
-                $basket = $basket['totalAmount']; //is this always brutto?
+                $basket = floatval($basket['totalAmount']); // TODO is this always brutto?
 
                 $this->logger->info('BasketAmount: ' . $basket);
-                $isB2b = $validation->isCompanyNameSet();
+                $isB2b = ValidationService::isCompanySet($billingAddress);
 
-                if (!ValidationService::areAmountsValid($isB2b, $data, $basket)) {
-                    $show[$payment] = false;
+                if (!ValidationService::areAmountsValid($isB2b, $paymentConfig, $basket)) {
                     continue;
                 }
+                $availableRatePayMethods[$payment] = true;
             }
         }
 
@@ -170,27 +159,27 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
         $payments = [];
         foreach ($return as $payment) {
-            if ($payment['name'] === PaymentMethods::PAYMENT_INVOICE && !$show['invoice']) {
+            if ($payment['name'] === PaymentMethods::PAYMENT_INVOICE && !$availableRatePayMethods[PaymentMethods::PAYMENT_INVOICE]) {
                 $this->logger->info('RatePAY: Filter RatePAY-Invoice');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
             }
-            if ($payment['name'] === PaymentMethods::PAYMENT_DEBIT && !$show['debit']) {
+            if ($payment['name'] === PaymentMethods::PAYMENT_DEBIT && !$availableRatePayMethods[PaymentMethods::PAYMENT_DEBIT]) {
                 $this->logger->info('RatePAY: Filter RatePAY-Debit');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
             }
-            if ($payment['name'] === PaymentMethods::PAYMENT_RATE && !$show['installment']) {
+            if ($payment['name'] === PaymentMethods::PAYMENT_RATE && !$availableRatePayMethods[PaymentMethods::PAYMENT_RATE]) {
                 $this->logger->info('RatePAY: Filter RatePAY-Rate');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
             }
-            if ($payment['name'] === PaymentMethods::PAYMENT_INSTALLMENT0 && !$show['installment0']) {
+            if ($payment['name'] === PaymentMethods::PAYMENT_INSTALLMENT0 && !$availableRatePayMethods[PaymentMethods::PAYMENT_INSTALLMENT0]) {
                 $this->logger->info('RatePAY: Filter RatePAY-Rate0');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
             }
-            if ($payment['name'] === PaymentMethods::PAYMENT_PREPAYMENT && !$show['prepayment']) {
+            if ($payment['name'] === PaymentMethods::PAYMENT_PREPAYMENT && !$availableRatePayMethods[PaymentMethods::PAYMENT_PREPAYMENT]) {
                 $this->logger->info('RatePAY: Filter RatePAY-Prepayment');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
@@ -206,30 +195,35 @@ class PaymentFilterSubscriber implements SubscriberInterface
         return $payments;
     }
 
-    private function getValidator($user)
-    {
-        return new Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($user); //TODO service
-    }
-
     /**
      * Get ratepay plugin config from rpay_ratepay_config table
      *
      * @param $shopId
      * @param $country
-     * @param bool $backend
      * @return array
      */
-    private function getRatePayPluginConfigByCountry($shopId, Country $country, $backend = false)
+    private function getRatePayPluginConfigByCountry($shopId, Country $country)
     {
-        $paymentConfig = [];
+        $return = [];
         foreach (PaymentMethods::getNames() as $payment) {
-            $result = $this->profileConfig->getConfigForPayment($shopId, $country->getIso(), $payment, $backend);
+            $profileConfig = $this->profileConfig->getProfileConfig(
+                $country->getIso(),
+                $shopId,
+                false,
+                $payment == PaymentMethods::PAYMENT_INSTALLMENT0
+            );
+            if($profileConfig == null) {
+                continue;
+            }
+            $paymentConfig = $this->profileConfig->getPaymentConfigForProfileAndMethod($profileConfig, $payment);
 
-            if (!empty($result)) {
-                $paymentConfig[$payment] = $result;
+            if ($paymentConfig) {
+                $return[$payment] = [
+                    'profileConfig' => $profileConfig,
+                    'paymentConfig' => $paymentConfig
+                ];
             }
         }
-
-        return $paymentConfig;
+        return $return;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace RpayRatePay\Tests\Functional\Component;
 
+use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 use Shopware\Components\Test\Plugin\TestCase;
 
 class ValidationTest extends TestCase
@@ -21,7 +22,7 @@ class ValidationTest extends TestCase
         $customer->setBirthday($aDayTooYoung);
         $this->saveModel($customer);
 
-        $this->assertFalse($validator->isBirthdayValid(), 'Date tested ' . $aDayTooYoung->format('Y-m-d') .
+        $this->assertFalse(ValidationService::isBirthdayValid($customer), 'Date tested ' . $aDayTooYoung->format('Y-m-d') .
             ' today: ' . (new \DateTime())->format('Y-m-d'));
 
         $customer->setBirthday($oldBirthday);
@@ -41,7 +42,7 @@ class ValidationTest extends TestCase
         $customer->setBirthday($oldEnough);
         $this->saveModel($customer);
 
-        $this->assertTrue($validator->isBirthdayValid(), 'Date tested ' . $oldEnough->format('Y-m-d') .
+        $this->assertTrue( ValidationService::isBirthdayValid($customer), 'Date tested ' . $oldEnough->format('Y-m-d') .
             ' today: ' . (new \DateTime())->format('Y-m-d'));
 
         $customer->setBirthday($oldBirthday);

@@ -13,10 +13,6 @@ class OrderDetailsProcessSubscriber implements SubscriberInterface
 {
 
     /**
-     * @var PaymentProcessorService
-     */
-    protected $paymentProcessor;
-    /**
      * @var HelperService
      */
     protected $helperService;
@@ -28,12 +24,11 @@ class OrderDetailsProcessSubscriber implements SubscriberInterface
     public function __construct(
         ModelManager $modelManager,
         HelperService $helperService,
-        PaymentProcessorService $paymentProcessor
+    $arg4
     )
     {
         $this->modelManager = $modelManager;
         $this->helperService = $helperService;
-        $this->paymentProcessor = $paymentProcessor;
     }
 
     public static function getSubscribedEvents()
@@ -52,7 +47,7 @@ class OrderDetailsProcessSubscriber implements SubscriberInterface
 
         if ($this->helperService->isRatePayPayment($order)) {
             //TODO
-            $this->paymentProcessor->insertProductPositions($order);
+            //$this->paymentProcessor->insertProductPositions($order);
         }
     }
 }

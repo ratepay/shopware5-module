@@ -2,42 +2,50 @@
 
 namespace RpayRatePay\Component\Service;
 
+use DateTime;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
-use Shopware\Models\Customer\Billing;
+use RpayRatePay\Models\ConfigPayment;
+use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
+use Shopware\Models\Order\Billing as BillingAddress;
+use Shopware\Models\Order\Shipping as ShippingAddress;
 
 class ValidationLib
 {
     /**
      * @param Customer $customer
+     * @param Address $billingAddress
      * @return bool
      */
-    public static function isBirthdayValid(Customer $customer, $b2b = false)
+    public static function isBirthdayValid(Customer $customer, Address $billingAddress)
     {
-        if ($b2b) {
+        if (self::isCompanySet($billingAddress) === true) {
             return true;
         }
 
+        /** @var DateTime $birthday */
         $birthday = $customer->getBirthday();
 
-        if (empty($birthday) || is_null($birthday)) {
-            $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
-            $birthday = $customerWrapped->getBilling('birthday');
-        }
-
-        $return = false;
         if (!is_null($birthday)) {
-            if (!$birthday instanceof \DateTime) {
-                $birthday = new \DateTime($birthday);
-            }
-
-            if (preg_match("/^\d{4}-\d{2}-\d{2}$/", $birthday->format('Y-m-d')) !== 0) {
-                $return = true;
+            if (!is_null($birthday)) {
+                return self::isOldEnough($birthday);
             }
         }
-
-        return $return;
+        return false;
     }
+
+    public static function isOldEnough($date)
+    {
+        $today = new DateTime('now');
+        if ($date instanceof \DateTime === false &&
+            preg_match("/^\d{4}-\d{2}-\d{2}$/", $date)
+        ) {
+            $date = \DateTime::createFromFormat('Y-m-d', $date);
+        }
+        //TODO Age config?
+        return $date->diff($today)->y >= 18 && $date->diff($today)->y <= 120;
+    }
+
 
     /**
      * @param Customer $customer
@@ -55,11 +63,15 @@ class ValidationLib
      * Compares billing and shipping addresses.
      * If shipping is null, returns true.
      *
-     * @param Shopware\Models\Customer\Address|Shopware\Models\Customer\Billing $billing
-     * @param Shopware\Models\Customer\Address|Shopware\Models\Customer\Shipping $shipping
+     * @param Address|BillingAddress $billing
+     * @param Address|ShippingAddress $shipping
+     * @return bool
      */
     public static function areBillingAndShippingSame($billing, $shipping = null)
     {
+        if($billing->getId() == $shipping->getId()) {
+            return true;
+        }
         $classFunctions = [
             'getCompany',
             'getFirstname',
@@ -82,32 +94,49 @@ class ValidationLib
 
     /**
      * @param bool $b2b
-     * @param array $configData
+     * @param ConfigPayment $config
      * @param float $totalAmount
      * @return bool
      */
-    public static function areAmountsValid($b2b, $configData, $totalAmount)
+    public static function areAmountsValid($b2b, ConfigPayment $config, $totalAmount)
     {
-        if ($totalAmount < $configData['limit_min']) {
+        if ($totalAmount < $config->getLimitMin()) {
             return false;
         }
 
         if ($b2b) {
-            if ($configData['b2b'] != '1') { //this is a string, for some reason
+            if ($config->getB2b() != 1) {
                 return false;
             }
 
-            $b2bmax = $configData['limit_max_b2b'] > 0 ? $configData['limit_max_b2b'] : $configData['limit_max'];
+            $b2bMax = $config->getLimitMaxB2b() > 0 ? $config->getLimitMaxB2b() : $config->getLimitMax();
 
-            if ($totalAmount > $b2bmax) {
+            if ($totalAmount > $b2bMax) {
                 return false;
             }
         } else {
-            if ($totalAmount > $configData['limit_max']) {
+            if ($totalAmount > $config->getLimitMax()) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    public static function isCurrencyValid($allowedCurrencies, $currency)
+    {
+        $allowedCurrencies = is_array($allowedCurrencies) ? $allowedCurrencies : explode(',', $allowedCurrencies);
+        return array_search($currency, $allowedCurrencies, true) !== false;
+    }
+
+    public static function isCountryValid($allowedCountries, \Shopware\Models\Country\Country $countryBilling)
+    {
+        $allowedCountries = is_array($allowedCountries) ? $allowedCountries : explode(',', $allowedCountries);
+        return array_search($countryBilling->getIso(), $allowedCountries, true) !== false;
+    }
+
+    public static function isCompanySet(Address $billingAddress)
+    {
+        return !empty($billingAddress->getCompany());
     }
 }

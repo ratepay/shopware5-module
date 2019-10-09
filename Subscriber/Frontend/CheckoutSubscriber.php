@@ -7,8 +7,10 @@ use Enlight_Components_Session_Namespace;
 use Enlight_Event_EventArgs;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
+use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
@@ -24,10 +26,6 @@ class CheckoutSubscriber implements SubscriberInterface
      * @var ModelManager
      */
     protected $modelManager;
-    /**
-     * @var Enlight_Components_Session_Namespace
-     */
-    protected $session;
 
     /**
      * @var ConfigService
@@ -42,20 +40,30 @@ class CheckoutSubscriber implements SubscriberInterface
      * @var ShopContextInterface
      */
     protected $context;
+    /**
+     * @var SessionHelper
+     */
+    private $sessionHelper;
+    /**
+     * @var ProfileConfigService
+     */
+    private $profileConfigService;
 
     public function __construct(
         ModelManager $modelManager,
-        Enlight_Components_Session_Namespace $session,
+        SessionHelper $sessionHelper,
         ContextService $contextService,
         ConfigService $configService,
+        ProfileConfigService $profileConfigService,
         DfpService $dfpService
     )
     {
         $this->modelManager = $modelManager;
-        $this->session = $session;
         $this->context = $contextService->getContext();
         $this->configService = $configService;
         $this->dfpService = $dfpService;
+        $this->sessionHelper = $sessionHelper;
+        $this->profileConfigService = $profileConfigService;
     }
 
     public static function getSubscribedEvents()
@@ -77,34 +85,38 @@ class CheckoutSubscriber implements SubscriberInterface
             $response->isException() ||
             $request->getModuleName() != 'frontend' ||
             $request->getControllerName() != 'checkout' ||
-            $request->getActionName() !== 'confirm' ||
+            $request->getActionName() !== 'shippingPayment' ||
             !$view->hasTemplate()
         ) {
             return;
         }
 
-        //get ratepay config based on shopId @toDo: IF DI SNIPPET ID WILL BE VARIABLE BETWEEN SUBSHOPS WE NEED TO SELECT BY SHOPID AND COUNTRY CREDENTIALS
-        $pluginConfig = $this->getRatePayPluginConfig($this->context->getShop()->getId());
-
         $paymentId = null;
-        if (!is_null($this->session->get('sUserId'))) {
-            $customer = $this->modelManager->find(Customer::class, $this->session->get('sUserId'));
-            $paymentId = $customer->getPaymentId();
-        } elseif (!is_null($this->session->get('sPaymentID'))) { // PaymentId is set in case of new/guest customers
-            $paymentId = $this->session->get('sPaymentID');
-        }
-        if ($paymentId == null || is_nan($paymentId)) {
-            return $paymentId;
-        }
-        $paymentMethod = $this->modelManager->find(Payment::class, $paymentId);
+        $customer = $this->sessionHelper->getCustomer();
+        $billingAddress = $this->sessionHelper->getBillingAddress($customer);
+        $paymentMethod = $this->sessionHelper->getPaymentMethod($customer);
 
         if (PaymentMethods::exists($paymentMethod)) {
-            $data = [];
+            $pluginConfig = $this->profileConfigService->getProfileConfig(
+                $billingAddress->getCountry()->getIso(),
+                $this->context->getShop()->getId(),
+                false,
+                PaymentMethods::isZeroPercentInstallment($paymentMethod)
+            );
+            /** @var \DateTime $birthday */
+            $birthday = $customer->getBirthday();
 
-            $data['sandbox'] = $pluginConfig->isSandbox();
-            $userWrapped = new ShopwareCustomerWrapper($customer, $this->modelManager); //TODO service
-            $data['phone'] = $userWrapped->getBilling('phone');
-            //TODO add birthday ??
+            $data = [
+                'sandbox' => $pluginConfig->isSandbox(),
+                'customerData' => [
+                    'phone' => $billingAddress->getPhone(),
+                    'birthday' => [
+                        'year' => $birthday ? $birthday->format('Y') : null,
+                        'month' => $birthday ? $birthday->format('m') : null,
+                        'day' => $birthday ? $birthday->format('d') : null
+                    ]
+                ]
+            ];
 
             //if no DF token is set, receive all the necessary data to set it and extend template
             if ($this->dfpService->isDfpIdAlreadyGenerated() == false) {
@@ -112,13 +124,10 @@ class CheckoutSubscriber implements SubscriberInterface
                 $data['dfp']['token'] = $this->dfpService->getDfpId();
                 $data['dfp']['snippetId'] = $this->configService->getDfpSnippetId();
             }
+            if($view->getAssign('ratepay')) {
+                $data = array_merge($view->getAssign('ratepay'), $data);
+            }
             $view->assign('ratepay', $data);
         }
-    }
-
-
-    private function getRatePayPluginConfig($shopId)
-    {
-        return $this->modelManager->getRepository(ProfileConfig::class)->findOneByShop($shopId);
     }
 }

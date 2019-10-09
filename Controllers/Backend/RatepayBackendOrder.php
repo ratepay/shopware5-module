@@ -135,7 +135,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
 
         $customerAddress = $this->modelManager->find(Address::class, $billingId);
 
-        $installmentConfig = $this->profileConfigService->getInstallmentPaymentConfig($paymentMeansName, $shopId, $customerAddress->getCountry()->getIso(), true);
+        $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMeansName, $shopId, $customerAddress->getCountry()->getIso(), true);
 
         $optionsString = $installmentConfig->getPaymentFirstDay();
         $optionsArray = explode(',', $optionsString);
@@ -162,7 +162,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $calcParamSet = !empty($params['value']) && !empty($params['type']);
         $type = $calcParamSet ? $params['type'] : 'time';
 
-        $installmentConfig = $this->profileConfigService->getInstallmentPaymentConfig($paymentMethodName, $shopId, $addressObj->getCountry()->getIso(), true);
+        $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMethodName, $shopId, $addressObj->getCountry()->getIso(), true);
 
         //TODO refactor
         if ($calcParamSet) {
