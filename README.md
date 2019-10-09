@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.3.x` - `5.4.6`
-|Version | `5.3.12`
+|Version | `5.3.13`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.13 - Released 2019-10-01
+* RATEPLUG-16: logging: add pagination
 
 ### Version 5.3.12 - Released 2019-09-13
 * RATEPLUG-9: fix installer/updater
