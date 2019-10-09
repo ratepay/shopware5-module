@@ -72,8 +72,8 @@ class BasketArrayBuilder
         } else if($data instanceof PaymentRequestData) {
             $this->paymentRequestData = $data;
             $this->basket['Currency'] = $this->modelManager->find(Currency::class,  $this->paymentRequestData->getCurrencyId())->getCurrency();
-            $this->useFallbackShipping = $configService->isCommitShippingAsCartItem( $this->paymentRequestData->getShop()->getId());
-            $this->useFallbackDiscount = $configService->isCommitDiscountAsCartItem( $this->paymentRequestData->getShop()->getId());
+            $this->useFallbackShipping = $configService->isCommitShippingAsCartItem();
+            $this->useFallbackDiscount = $configService->isCommitDiscountAsCartItem();
             if($items == null) {
                 $items = $data->getItems();
             }

@@ -34,7 +34,7 @@ class ProfileConfigService
     public function getProfileConfig($countryIso, $shopId, $backend = false, $zeroPercentInstallment = false)
     {
 
-        $profileId = $this->configService->getProfileId($countryIso, $shopId, $zeroPercentInstallment, $backend);
+        $profileId = $this->configService->getProfileId($countryIso, $zeroPercentInstallment, $backend);
 
         /** @var ProfileConfigRepository $repo */
         $repo = $this->modelManager->getRepository(ProfileConfig::class);

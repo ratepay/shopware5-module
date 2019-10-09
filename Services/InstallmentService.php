@@ -96,7 +96,7 @@ class InstallmentService
 
         $installmentBuilder = new InstallmentBuilder($profileConfig->isSandbox());
         $installmentBuilder->setProfileId($profileConfig->getProfileId());
-        $installmentBuilder->setSecurityCode($this->configService->getSecurityCode($profileConfig->getCountry(), $profileConfig->getShopId(), $profileConfig->isBackend()));
+        $installmentBuilder->setSecurityCode($profileConfig->getSecurityCode());
         return $installmentBuilder;
     }
 

@@ -12,8 +12,9 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Services\Config\ProfileConfigService;
+use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
-use Shopware\Components\Logger;
+use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Country\Country;
 use Shopware\Models\Customer\Customer;
@@ -45,17 +46,17 @@ class PaymentFilterSubscriber implements SubscriberInterface
      */
     protected $modules;
     /**
-     * @var ShopContextInterface
-     */
-    protected $shopContextService;
-    /**
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var ShopContextInterface|null
+     */
+    protected $context;
 
     public function __construct(
         ModelManager $modelManager,
-        ShopContextInterface $shopContextService,
+        ContextService $contextService,
         Enlight_Components_Session_Namespace $session,
         Shopware_Components_Config $config,
         Shopware_Components_Modules $modules,
@@ -65,7 +66,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
     {
         $this->modelManager = $modelManager;
         $this->session = $session;
-        $this->shopContextService = $shopContextService;
+        $this->context = $contextService->getContext();
         $this->config = $config;
         $this->modules = $modules;
         $this->profileConfig = $profileConfig;
@@ -113,7 +114,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
             $countryDelivery = $countryBilling;
         }
 
-        $config = $this->getRatePayPluginConfigByCountry($this->shopContextService->getShop()->getId(), $countryBilling, false);
+        $config = $this->getRatePayPluginConfigByCountry($this->context->getShop()->getId(), $countryBilling, false);
         foreach ($config as $payment => $data) {
             $show[$payment] = $data['status'] == 2 ? true : false;
 

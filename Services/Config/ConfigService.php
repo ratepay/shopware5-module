@@ -50,56 +50,53 @@ class ConfigService
         return strlen($value) ? $value : $defaultValue;
     }
 
-    public function getProfileId($countryISO, $shopId = null, $zeroPercent = false, $isBackend = false)
+    public function getProfileId($countryISO, $zeroPercentPayment = false, $isBackend = false)
     {
-        $profileIdBase = $this->_config->get($this->getProfileIdKey($countryISO, $isBackend), $shopId);
-        return $zeroPercent ? $profileIdBase . '_0RT' : $profileIdBase;
+        return $this->_config->get($this->getProfileIdKey($countryISO, $zeroPercentPayment, $isBackend), null);
     }
 
-    public function getProfileIdKey($countryISO, $isBackend)
+    public function getProfileIdKey($countryISO, $zeroPercentPayment, $isBackend)
     {
         //ratepay/profile/de/frontend/id - this comment is just for finding this line ;-)
-        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/id";
+        //ratepay/profile/de/frontend/id/installment0 - this comment is just for finding this line ;-)
+        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/id".($zeroPercentPayment ? "/installment0" : "");
     }
 
-    public function getSecurityCode($countryISO, $shopId, $isBackend = false)
+    public function getSecurityCode($countryISO, $zeroPercentPayment, $isBackend = false)
     {
-        return $this->_config->get($this->getSecurityCodeKey($countryISO, $isBackend), $shopId);
+        return $this->_config->get($this->getSecurityCodeKey($countryISO, $zeroPercentPayment, $isBackend), null);
     }
 
-    public function getSecurityCodeKey($countryISO, $isBackend)
+    public function getSecurityCodeKey($countryISO, $zeroPercentPayment, $isBackend)
     {
         //ratepay/profile/de/frontend/security_code - this comment is just for finding this line ;-)
-        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/security_code";
+        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/security_code" . "/id".($zeroPercentPayment ? "/installment0" : "");
     }
 
     /**
-     * @param null $shopId
      * @return bool
      */
-    public function isCommitDiscountAsCartItem($shopId = null)
+    public function isCommitDiscountAsCartItem()
     {
-        return $this->_config->get('ratepay/advanced/use_fallback_discount_item', $shopId) == 1;
+        return $this->_config->get('ratepay/advanced/use_fallback_discount_item', null) == 1;
     }
 
     /**
-     * @param null $shopId
      * @return bool
      */
-    public function isCommitShippingAsCartItem($shopId = null)
+    public function isCommitShippingAsCartItem()
     {
-        return $this->_config->get('ratepay/advanced/use_fallback_shipping_item', $shopId) == 1;
+        return $this->_config->get('ratepay/advanced/use_fallback_shipping_item', null) == 1;
     }
 
     /**
      * boolean: `false` call the delivery only if all items has been delivered (or canceled)
      * so in the last deliver request, all items must be placed in the basket
      *
-     * @param int|null $shopId
      * @return bool
      */
-    public function isInstallmentDirectDelivery($shopId = null) {
-        return $this->_config->get('ratepay/advanced/installment_direct_delivery', $shopId) == 1;
+    public function isInstallmentDirectDelivery() {
+        return $this->_config->get('ratepay/advanced/installment_direct_delivery', null) == 1;
     }
 
     public function isBidirectionalEnabled()
@@ -114,21 +111,20 @@ class ConfigService
 
     /**
      * @param $paymentMethod
-     * @param null $shopId
      * @return int
      */
-    public function getPaymentStatusAfterPayment($paymentMethod, $shopId = null)
+    public function getPaymentStatusAfterPayment($paymentMethod)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
-        return $this->_config->get('ratepay/status/' . $paymentMethod, $shopId);
+        return $this->_config->get('ratepay/status/' . $paymentMethod, null);
     }
 
-    public function getBidirectionalOrderStatus($action, $shopId = null)
+    public function getBidirectionalOrderStatus($action)
     {
         $allowedActions = ['full_delivery', 'full_cancellation', 'full_return'];
         if (!in_array($action, $allowedActions)) {
             throw new RuntimeException('Just these actions are allowed: ' . implode(',', $allowedActions));
         }
-        return intval($this->_config->get('ratepay/bidirectional/status/' . $action, $shopId));
+        return intval($this->_config->get('ratepay/bidirectional/status/' . $action, null));
     }
 }

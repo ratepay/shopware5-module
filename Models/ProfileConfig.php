@@ -34,6 +34,7 @@ class ProfileConfig extends ModelEntity
     protected $backend = false;
     /**
      * @var string
+     * @ORM\Id()
      * @ORM\Column(name="profileId", type="string", length=255, nullable=false)
      */
     protected $profileId;

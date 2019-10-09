@@ -119,6 +119,7 @@ class ModelFactory
         $this->_transactionId = $transactionId;
     }
 
+    /** @deprecated  */
     public function callCalculationRequest($operationData)
     {
         $mbHead = $this->getHead();
@@ -319,7 +320,7 @@ class ModelFactory
                 "SELECT `subshopID` FROM `s_order` WHERE `transactionID`= '" . $this->_transactionId . "'"
             );
         }
-        return $this->configService->getProfileId($countryCode, $shopId, $this->_zPercent, $this->backend);
+        return $this->configService->getProfileId($countryCode, $this->_zPercent, $this->backend);
     }
 
     /**

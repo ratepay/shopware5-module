@@ -67,11 +67,13 @@ class WriterService
      * @param string $securityCode
      * @param int $shopId
      * @param string $country
+     * @param $isZeroInstallment
      * @param bool $backend
      *
      * @return bool
+     * @throws OptimisticLockException
      */
-    public function writeRatepayConfig($profileId, $securityCode, $shopId, $country, $backend = false)
+    public function writeRatepayConfig($profileId, $securityCode, $shopId, $country, $isZeroInstallment, $backend = false)
     {
         $factory = new ModelFactory(null, $backend); //TODO service
         $data = [
@@ -100,7 +102,7 @@ class WriterService
         $type = [];
         //INSERT INTO rpay_ratepay_config_payment AND sets $type[]
         foreach ($payments as $payment) {
-            if (strstr($profileId, '_0RT') !== false) {
+            if ($isZeroInstallment) {
                 if ($payment !== 'installment') {
                     continue;
                 }
@@ -135,47 +137,37 @@ class WriterService
         $this->modelManager->flush($entitiesToFlush);
         $entitiesToFlush = [];
 
-        //updates 0% field in rpay_ratepay_config or inserts into rpay_ratepay_config THIS MEANS WE HAVE TO SEND the 0RT profiles last
-        if (strstr($profileId, '_0RT') !== false) {
-            /** @var ProfileConfig $configModel */
-            $configModel = $this->modelManager->getRepository(ProfileConfig::class)->findOneBy(['profileId' => substr($profileId, 0, -4)]);
+        $configModel = new ProfileConfig();
+        $configModel->setProfileId($response['result']['merchantConfig']['profile-id']);
+        $configModel->setSecurityCode($securityCode);
+        if ($isZeroInstallment) {
             $configModel->setInstallment0Config($type['installment']);
-            try {
-                $this->modelManager->flush($configModel);
-            } catch (OptimisticLockException $e) {
-                $this->logger->error($e->getMessage());
-                return false;
-            }
         } else {
-            $configModel = new ProfileConfig();
-            $configModel->setProfileId($response['result']['merchantConfig']['profile-id']);
-            $configModel->setSecurityCode($securityCode);
             $configModel->setInvoiceConfig($type['invoice']);
             $configModel->setInstallmentConfig($type['installment']);
             $configModel->setDebitConfig($type['elv']);
-            $configModel->setInstallment0Config(null); // TODO why there is no value?
             $configModel->setInstallmentDebitConfig(null); // TODO why there is no value?
             $configModel->setPrepaymentConfig($type['prepayment']);
-            $configModel->setCountryCodeBilling(strtoupper($response['result']['merchantConfig']['country-code-billing']));
-            $configModel->setCountryCodeDelivery(strtoupper($response['result']['merchantConfig']['country-code-delivery']));
-            $configModel->setCurrency(strtoupper($response['result']['merchantConfig']['currency']));
-            $configModel->setCountry(strtoupper($country));
-            $configModel->setSandbox($response['sandbox'] == 1);
-            $configModel->setBackend($backend == 1);
-            $configModel->setShopId($shopId);
+        }
+        $configModel->setCountryCodeBilling(strtoupper($response['result']['merchantConfig']['country-code-billing']));
+        $configModel->setCountryCodeDelivery(strtoupper($response['result']['merchantConfig']['country-code-delivery']));
+        $configModel->setCurrency(strtoupper($response['result']['merchantConfig']['currency']));
+        $configModel->setCountry(strtoupper($country));
+        $configModel->setSandbox($response['sandbox'] == 1);
+        $configModel->setBackend($backend == 1);
+        $configModel->setShopId($shopId);
 
-            $this->modelManager->persist($configModel);
-            $entitiesToFlush[] = $configModel;
+        $this->modelManager->persist($configModel);
+        $entitiesToFlush[] = $configModel;
 
-            try {
-                $this->modelManager->flush($entitiesToFlush);
-                $this->paymentMethodsService->enableMethods();
+        try {
+            $this->modelManager->flush($entitiesToFlush);
+            $this->paymentMethodsService->enableMethods();
 
-                return true;
-            } catch (Exception $exception) {
-                $this->logger->error($exception->getMessage());
-                return false;
-            }
+            return true;
+        } catch (Exception $exception) {
+            $this->logger->error($exception->getMessage());
+            return false;
         }
     }
 }

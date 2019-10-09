@@ -66,27 +66,18 @@ class PluginConfigurationSubscriber implements SubscriberInterface
         $shopCredentials = [];
 
         foreach ($parameter['elements'] as $element) {
-            foreach ($this->_countries as $country) {
-                // TODO hier ist etwas faul ! die nächsten schleifen haben als innere Variable "$element" als name. das geht nicht !
-                if ($element['name'] === $this->config->getProfileIdKey($country, false)) {
-                    foreach ($element['values'] as $element) {
-                        $shopCredentials[$element['shopId']][$country]['profileID'] = trim($element['value']);
-                    }
-                }
-                if ($element['name'] === $this->config->getSecurityCodeKey($country, false)) {
-                    foreach ($element['values'] as $element) {
-                        $shopCredentials[$element['shopId']][$country]['securityCode'] = trim($element['value']);
-                    }
-                }
-                if ($element['name'] === $this->config->getProfileIdKey($country, true)) {
-                    foreach ($element['values'] as $element) {
-                        $shopCredentials[$element['shopId']][$country]['profileIDBackend'] = trim($element['value']);
-                    }
-                }
-                if ($element['name'] === $this->config->getSecurityCodeKey($country, true)) {
-                    foreach ($element['values'] as $element) {
-                        $shopCredentials[$element['shopId']][$country]['securityCodeBackend'] = trim($element['value']);
-                    }
+
+            $matches = [];
+            if(preg_match_all('/ratepay\/profile\/([a-z]{2})\/(frontend|backend)\/(id|security_code)\/?(installment0)?/', $element['name'], $matches)) {
+                foreach($element['values'] as $valueArray) {
+                    $shopId = $valueArray['shopId'];
+                    $value = trim($valueArray['value']);
+
+                    $country = $matches[1][0];
+                    $scope = $matches[2][0]; // frontend | backend
+                    $fieldName = $matches[3][0]; // id | security_code
+                    $profileType = $matches[4][0] === 'installment0' ? 'installment0' : 'general';
+                    $shopCredentials[$shopId][$country][$scope][$profileType][$fieldName] = $value;
                 }
             }
         }
@@ -95,32 +86,26 @@ class PluginConfigurationSubscriber implements SubscriberInterface
 
         $errors = [];
 
-        foreach ($shopCredentials as $shopId => $credentials) {
-            foreach ($this->_countries as $country) {
-                if (null !== $credentials[$country]['profileID'] &&
-                    null !== $credentials[$country]['securityCode']) {
-                    if ($this->configWriterService->writeRatepayConfig($credentials[$country]['profileID'], $credentials[$country]['securityCode'], $shopId, $country)) {
-                        $this->logger->addNotice('Ruleset for ' . strtoupper($country) . ' successfully updated.');
-                    } else {
-                        $errors[] = strtoupper($country) . ' Frontend';
-                    }
+        foreach ($shopCredentials as $shopId => $countries) { // de | at | nl | ch | be
+            foreach($countries as $countryCode => $scopes) { // backend | frontend
+                foreach($scopes as $scope => $profileTypes) {  // general | installment0
+                    foreach ($profileTypes as $type => $credentials) {
+                        if (null !== $credentials['id'] && null !== $credentials['security_code']) {
 
-                    if ($country == 'de') {
-                        if ($this->configWriterService->writeRatepayConfig($credentials[$country]['profileID'] . '_0RT', $credentials[$country]['securityCode'], $shopId, $country)) {
-                            $this->logger->addNotice('Ruleset 0RT for ' . strtoupper($country) . ' successfully updated.');
-                        }
-                    }
-                }
-                if (null !== $credentials[$country]['profileIDBackend'] &&
-                    null !== $credentials[$country]['securityCodeBackend']) {
-                    if ($this->configWriterService->writeRatepayConfig($credentials[$country]['profileIDBackend'], $credentials[$country]['securityCodeBackend'], $shopId, $country, true)) {
-                        $this->logger->addNotice('Ruleset BACKEND for ' . strtoupper($country) . ' successfully updated.');
-                    } else {
-                        $errors[] = strtoupper($country) . ' Backend';
-                    }
-                    if ($country == 'de') {
-                        if ($this->configWriterService->writeRatepayConfig($credentials[$country]['profileIDBackend'] . '_0RT', $credentials[$country]['securityCodeBackend'], $shopId, $country, true)) {
-                            $this->logger->addNotice('Ruleset BACKEND 0RT for ' . strtoupper($country) . ' successfully updated.');
+                            $saveResponse = $this->configWriterService->writeRatepayConfig(
+                                $credentials['id'],
+                                $credentials['security_code'],
+                                $shopId,
+                                $countryCode,
+                                $type == 'installment0',
+                                $scope == 'backend'
+                            );
+
+                            if ($saveResponse) {
+                                $this->logger->addNotice('Ruleset for ' . strtoupper($countryCode) . ' successfully updated.');
+                            } else {
+                                $errors[] = strtoupper($countryCode) . ' Frontend';
+                            }
                         }
                     }
                 }

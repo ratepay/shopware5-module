@@ -86,9 +86,10 @@ class Configuration extends AbstractBootstrap
 
     private function updateRatepayConfig($shopId, $backend)
     {
+        return; //TODO
         foreach (Country::getCountries() as $iso) {
-            $profileId = $this->config->getProfileId($iso, $shopId, false, $backend);
-            $securityCode = $this->config->getSecurityCode($iso, $shopId, $backend);
+            $profileId = $this->config->getProfileId($iso, false, $backend);
+            $securityCode = $this->config->getSecurityCode($iso, false, $shopId, $backend);
 
             if (empty($profileId)) {
                 continue;
@@ -97,8 +98,8 @@ class Configuration extends AbstractBootstrap
             $this->configWriter->writeRatepayConfig($profileId, $securityCode, $shopId, $iso, $backend);
 
             if ($iso == 'DE') {
-                $profileIdZeroPercent = $this->config->getProfileId($iso, $shopId, true, $backend);
-                $this->configWriter->writeRatepayConfig($profileIdZeroPercent, $securityCode, $shopId, $iso, $backend);
+                $profileIdZeroPercent = $this->config->getProfileId($iso, true, $backend);
+                $this->configWriter->writeRatepayConfig($profileIdZeroPercent, true, $securityCode, $shopId, $iso, $backend);
             }
         }
     }

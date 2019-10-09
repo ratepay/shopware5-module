@@ -60,7 +60,7 @@ final class PaymentMethods extends Enum
             'additionalDescription' => 'Kauf per 0% Finanzierung',
             'template' => 'RatePAYRate.tpl',
             'ratepay' => [
-                'methodName' => 'INSTALLMENT0'
+                'methodName' => 'INSTALLMENT'
             ]
         ],
         self::PAYMENT_PREPAYMENT => [
@@ -89,7 +89,7 @@ final class PaymentMethods extends Enum
     public static function exists($paymentMethod)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
-        return array_key_exists($paymentMethod, self::PAYMENTS);
+        return $paymentMethod ? array_key_exists($paymentMethod, self::PAYMENTS) : false;
     }
 
     /**
