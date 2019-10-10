@@ -53,6 +53,8 @@ class SessionHelper
             return $this->entityManager->find(Address::class, $addressId);
         } else if($customer) {
             return $customer->getDefaultBillingAddress();
+        } else {
+            return $this->getCustomer()->getDefaultBillingAddress();
         }
         return null;
     }
@@ -66,6 +68,8 @@ class SessionHelper
             return $this->entityManager->find(Address::class, $addressId);
         } else if($customer) {
             return $customer->getDefaultShippingAddress();
+        } else {
+            return $this->getCustomer()->getDefaultBillingAddress();
         }
         return null;
     }
@@ -122,7 +126,8 @@ class SessionHelper
         }
     }
 
-    protected function setData($key, $value) {
+    protected function setData($key = null, $value = null) {
+        $this->session->RatePay = null;
         $this->session->RatePay[$key] = $value;
     }
 
@@ -185,4 +190,7 @@ class SessionHelper
         return $this->session;
     }
 
+    public function cleanUp() {
+        $this->setData(null, null);
+    }
 }

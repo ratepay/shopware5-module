@@ -28,6 +28,7 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ShopwareUtil;
+use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
@@ -61,9 +62,13 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      */
     private $configService;
     /**
-     * @var object|PaymentConfirmService
+     * @var PaymentConfirmService
      */
     private $paymentConfirmService;
+    /**
+     * @var SessionHelper
+     */
+    protected $sessionHelper;
 
 
     public function setContainer(Container $container = null)
@@ -76,6 +81,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $this->logger = $container->get('rpay_rate_pay.logger');
         $this->dfpService = $this->container->get(DfpService::class);
         $this->configService = $this->container->get(ConfigService::class);
+        $this->sessionHelper = $this->container->get(SessionHelper::class);
     }
 
     /**
@@ -287,9 +293,8 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $this->paymentConfirmService->setOrder($order);
             $this->paymentConfirmService->doRequest();
 
-            /**
-             * unset DFI token
-             */
+            // Clear RatePAY session after call for authorization
+            $this->sessionHelper->cleanUp();
             $this->dfpService->deleteDfpId();
 
             /*
@@ -304,37 +309,16 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 ]
             );
         } else {
-            //TODO
-            $this->_error();
-        }
-
-        // Clear RatePAY session after call for authorization
-        Shopware()->Session()->RatePAY = [];
-    }
-
-    /**
-     * Redirects the User in case of an error
-     */
-    private function _error()
-    {
-        $this->View()->loadTemplate('frontend/payment_rpay_part/RatePAYErrorpage.tpl');
-        $customerMessage = $this->_customerMessage;
-
-        if (!empty($customerMessage)) {
-            $this->View()->assign('rpCustomerMsg', $customerMessage);
-        } else {
-            Shopware()->Session()->RatePAY['hidePayment'] = true;
-
-            $shopId = Shopware()->Shop()->getId();
-            $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
-            $userModel = $customerModel->findOneBy(['id' => Shopware()->Session()->sUserId]);
-            $userModelWrapped = new ShopwareCustomerWrapper($userModel, Shopware()->Models());
-            $countryBilling = $userModelWrapped->getBillingCountry();
-            $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
-
-            $this->View()->assign('rpCustomerMsg', $config['error_default']);
+            $this->redirect(
+                [
+                    'controller' => 'checkout',
+                    'action' => 'confirm',
+                    'rpay_message' => $requestResponse->getCustomerMessage()
+                ]
+            );
         }
     }
+
 
     /**
      * Get ratepay plugin config from rpay_ratepay_config table

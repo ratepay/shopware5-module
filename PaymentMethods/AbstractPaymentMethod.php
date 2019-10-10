@@ -29,6 +29,7 @@ class AbstractPaymentMethod extends GenericPaymentMethod
     }
 
     public function getCurrentPaymentDataAsArray($userId) {
+        $data = parent::getCurrentPaymentDataAsArray($userId);
         $customer = $this->sessionHelper->getCustomer();
         if($customer == null || $customer->getId() !== (int) $userId) {
             return [];
@@ -37,18 +38,16 @@ class AbstractPaymentMethod extends GenericPaymentMethod
 
         /** @var DateTime $birthday */
         $birthday = $customer->getBirthday();
-        return [
-            'ratepay' => [
-                'customer_data' => [
-                    'phone' => $billingAddress->getPhone(),
-                    'birthday' => [
-                        'year' => $birthday ? $birthday->format('Y') : null,
-                        'month' => $birthday ? $birthday->format('m'): null,
-                        'day' => $birthday ? $birthday->format('d'): null
-                    ]
-                ]
+
+        $data['ratepay']['customer_data'] = [
+            'phone' => $billingAddress->getPhone(),
+            'birthday' => [
+                'year' => $birthday ? $birthday->format('Y') : null,
+                'month' => $birthday ? $birthday->format('m'): null,
+                'day' => $birthday ? $birthday->format('d'): null
             ]
         ];
+        return $data;
     }
 
     public function validate($paymentData)

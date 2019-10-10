@@ -10,7 +10,7 @@
                name="ratepay[customer_data][phone]"
                type="text"
                placeholder="{s name="RegisterPlaceholderPhone"}Telefonnummer{/s}"
-               value="{$ratepay.customerData.phone}"
+               value="{$form_data.ratepay.customer_data.phone}"
                required="required"
                aria-required="true"
         />

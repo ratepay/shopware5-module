@@ -81,53 +81,49 @@ class CheckoutSubscriber implements SubscriberInterface
         $response = $controller->Response();
         $view = $controller->View();
 
-        if (!$request->isDispatched() ||
+        if(!$request->isDispatched() ||
             $response->isException() ||
+            !$view->hasTemplate() ||
             $request->getModuleName() != 'frontend' ||
-            $request->getControllerName() != 'checkout' ||
-            $request->getActionName() !== 'shippingPayment' ||
-            !$view->hasTemplate()
+            $request->getControllerName() != 'checkout'
         ) {
             return;
         }
 
-        $paymentId = null;
-        $customer = $this->sessionHelper->getCustomer();
-        $billingAddress = $this->sessionHelper->getBillingAddress($customer);
-        $paymentMethod = $this->sessionHelper->getPaymentMethod($customer);
+        if ($request->getActionName() === 'shippingPayment') {
+            $paymentId = null;
+            $customer = $this->sessionHelper->getCustomer();
+            $billingAddress = $this->sessionHelper->getBillingAddress($customer);
+            $paymentMethod = $this->sessionHelper->getPaymentMethod($customer);
 
-        if (PaymentMethods::exists($paymentMethod)) {
-            $pluginConfig = $this->profileConfigService->getProfileConfig(
-                $billingAddress->getCountry()->getIso(),
-                $this->context->getShop()->getId(),
-                false,
-                PaymentMethods::isZeroPercentInstallment($paymentMethod)
-            );
-            /** @var \DateTime $birthday */
-            $birthday = $customer->getBirthday();
+            if (PaymentMethods::exists($paymentMethod)) {
+                $pluginConfig = $this->profileConfigService->getProfileConfig(
+                    $billingAddress->getCountry()->getIso(),
+                    $this->context->getShop()->getId(),
+                    false,
+                    PaymentMethods::isZeroPercentInstallment($paymentMethod)
+                );
 
-            $data = [
-                'sandbox' => $pluginConfig->isSandbox(),
-                'customerData' => [
-                    'phone' => $billingAddress->getPhone(),
-                    'birthday' => [
-                        'year' => $birthday ? $birthday->format('Y') : null,
-                        'month' => $birthday ? $birthday->format('m') : null,
-                        'day' => $birthday ? $birthday->format('d') : null
-                    ]
-                ]
-            ];
+                $data = [
+                    'sandbox' => $pluginConfig->isSandbox(),
+                ];
 
-            //if no DF token is set, receive all the necessary data to set it and extend template
-            if ($this->dfpService->isDfpIdAlreadyGenerated() == false) {
-                // create id and write it to the session
-                $data['dfp']['token'] = $this->dfpService->getDfpId();
-                $data['dfp']['snippetId'] = $this->configService->getDfpSnippetId();
+                //if no DF token is set, receive all the necessary data to set it and extend template
+                if ($this->dfpService->isDfpIdAlreadyGenerated() == false) {
+                    // create id and write it to the session
+                    $data['dfp']['token'] = $this->dfpService->getDfpId();
+                    $data['dfp']['snippetId'] = $this->configService->getDfpSnippetId();
+                }
+                if($view->getAssign('ratepay')) {
+                    $data = array_merge($view->getAssign('ratepay'), $data);
+                }
+                $view->assign('ratepay', $data);
             }
-            if($view->getAssign('ratepay')) {
-                $data = array_merge($view->getAssign('ratepay'), $data);
+        } else if ($request->getActionName() === 'confirm') {
+            $error = $request->getParam('rpay_message');
+            if($error) {
+                $view->assign('ratepayMessage', $error);
             }
-            $view->assign('ratepay', $data);
         }
     }
 }

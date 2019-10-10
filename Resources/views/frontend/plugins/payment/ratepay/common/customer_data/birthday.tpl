@@ -14,11 +14,11 @@
             <br/>
             <input type="text"
                    id="ratepay_birthday"
-                   {if $payment_mean.id == $form_data.payment}required="required" aria-required="true"{/if}
                    name="ratepay[customer_data][birthday][day]" maxlength="2"
                    placeholder="{s name="RegisterPlaceholderBirthdayTag"}Tag{/s}"
-                   value="{$ratepay.customerData.birthday.day}"
-                   class="payment--field is--required{if $error_flags.mopt_payone__ratepay_invoice_telephone} has--error{/if}"
+                   value="{$form_data.ratepay.customer_data.birthday.day}"
+                   class="payment--field is--required"
+                   required="required" aria-required="true"
             />
         </div>
 
@@ -32,8 +32,8 @@
                     name="ratepay[customer_data][birthday][month]"
                     maxlength="2"
                     placeholder="{s name="RegisterPlaceholderBirthdayMonth"}Monat{/s}"
-                    value="{$ratepay.customerData.birthday.month}"
-                   {if $payment_mean.id == $form_data.payment}required="required" aria-required="true"{/if}
+                    value="{$form_data.ratepay.customer_data.birthday.month}"
+                    required="required" aria-required="true"
             />
         </div>
 
@@ -47,8 +47,8 @@
                    name="ratepay[customer_data][birthday][year]"
                    maxlength="4"
                    placeholder="{s name="RegisterPlaceholderBirthdayYear"}Jahr{/s}"
-                   value="{$ratepay.customerData.birthday.year}"
-                   {if $payment_mean.id == $form_data.payment}required="required" aria-required="true"{/if}
+                   value="{$form_data.ratepay.customer_data.birthday.year}"
+                   required="required" aria-required="true"
             />
         </div>
         <br style="clear: both">
