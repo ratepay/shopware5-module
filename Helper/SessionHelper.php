@@ -6,6 +6,7 @@ namespace RpayRatePay\Helper;
 
 use Doctrine\ORM\EntityManager;
 use Enlight_Components_Session_Namespace;
+use RpayRatePay\Bootstrap\PaymentMeans;
 use RpayRatePay\DTO\BankData;
 use RpayRatePay\DTO\InstallmentDetails;
 use RpayRatePay\Enum\PaymentSubType;
@@ -29,6 +30,15 @@ class SessionHelper
 
     protected $isFrontendSession;
 
+    /** @var Customer */
+    private $loadedCustomer;
+    /** @var Address */
+    private $loadedBillingAddress;
+    /** @var Address */
+    private $loadedShippingAddress;
+    /** @var PaymentMeans */
+    private $loadedPaymentMethod;
+
     public function __construct(ModelManager $entityManager, ContainerInterface $container)
     {
         $this->entityManager = $entityManager;
@@ -47,31 +57,44 @@ class SessionHelper
         if($this->isFrontendSession === false) {
             throw new \Exception('not implemented');
         }
+        if($this->loadedBillingAddress) {
+            return $this->loadedBillingAddress;
+        }
 
         $addressId = $this->session['checkoutBillingAddressId'];
         if ($addressId > 0) {
-            return $this->entityManager->find(Address::class, $addressId);
+            $this->loadedBillingAddress = $this->entityManager->find(Address::class, $addressId);
         } else if($customer) {
-            return $customer->getDefaultBillingAddress();
+            $this->loadedBillingAddress = $customer->getDefaultBillingAddress();
         } else {
-            return $this->getCustomer()->getDefaultBillingAddress();
+            $customer = $this->getCustomer();
+            if($customer !== null) {
+                $this->loadedBillingAddress = $customer->getDefaultBillingAddress();
+            }
         }
-        return null;
+        return $this->loadedBillingAddress;
     }
     public function getShippingAddress(Customer $customer = null) {
         if($this->isFrontendSession === false) {
             throw new \Exception('not implemented');
         }
 
+        if($this->loadedShippingAddress) {
+            return $this->loadedShippingAddress;
+        }
+
         $addressId = $this->session['checkoutShippingAddressId'];
         if ($addressId > 0) {
-            return $this->entityManager->find(Address::class, $addressId);
+            $this->loadedShippingAddress = $this->entityManager->find(Address::class, $addressId);
         } else if($customer) {
-            return $customer->getDefaultShippingAddress();
+            $this->loadedShippingAddress = $customer->getDefaultShippingAddress();
         } else {
-            return $this->getCustomer()->getDefaultBillingAddress();
+            $customer = $this->getCustomer();
+            if($customer !== null) {
+                $this->loadedShippingAddress = $customer->getDefaultBillingAddress();
+            }
         }
-        return null;
+        return $this->loadedShippingAddress;
     }
 
     public function getCustomer(){
@@ -79,21 +102,30 @@ class SessionHelper
             throw new \Exception('not implemented');
         }
 
+        if($this->loadedCustomer) {
+            return $this->loadedCustomer;
+        }
+
         $customerId = $this->session->get('sUserId');
         if (empty($customerId)) {
             return null;
         }
 
-        return $this->entityManager->find(Customer::class, $customerId);
+        return $this->loadedCustomer = $this->entityManager->find(Customer::class, $customerId);
     }
 
     public function getPaymentMethod(Customer $customer) {
         if($this->isFrontendSession === false) {
             throw new \Exception('not implemented');
         }
+
+        if($this->loadedPaymentMethod) {
+            return $this->loadedShippingAddress;
+        }
+
         $sessionVars = $this->session->get('sOrderVariables');
         $paymentId = isset($sessionVars['sPayment']['id']) ? $sessionVars['sPayment']['id'] : $customer->getPaymentId();
-        return $this->entityManager->find(Payment::class, $paymentId);
+        return $this->loadedPaymentMethod = $this->entityManager->find(Payment::class, $paymentId);
     }
 
     public function setBankData($customerId, $accountNumber, $bankCode = null)

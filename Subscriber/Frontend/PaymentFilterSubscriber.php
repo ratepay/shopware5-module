@@ -105,16 +105,13 @@ class PaymentFilterSubscriber implements SubscriberInterface
     public function filterPayments(Enlight_Event_EventArgs $arguments)
     {
         $return = $arguments->getReturn();
-        $currency = $this->config->get('currency');
-        $userId = $this->session->get('sUserId');
-        if (empty($userId) || empty($currency)) {
-            return;
-        }
+        $currency = $this->config->get('currency'); // TODO i think this should be fetch from the session not the config ?!
 
-        /** @var Customer $customer */
-        $customer = $this->modelManager->find(Customer::class, $userId);
-        $billingAddress = $this->sessionHelper->getBillingAddress($customer);
-        $shippingAddress = $this->sessionHelper->getShippingAddress($customer);
+        $billingAddress = $this->sessionHelper->getBillingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress();
+        if($billingAddress == null) {
+            return $return;
+        }
 
         $configs = $this->getRatePayPluginConfigByCountry($this->context->getShop()->getId(), $billingAddress->getCountry());
 
@@ -131,8 +128,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
                 continue;
             }
 
-            if (Shopware()->Session()->RatePAY['hidePayment'] || // TODO whats that ?
-                !ValidationService::isCurrencyValid($profileConfig->getCurrency(), $currency) ||
+            if (!ValidationService::isCurrencyValid($profileConfig->getCurrency(), $currency) ||
                 !ValidationService::isCountryValid($profileConfig->getCountryCodeBilling(), $billingAddress->getCountry()) ||
                 !ValidationService::isCountryValid($profileConfig->getCountryCodeDelivery(), $shippingAddress ? $shippingAddress->getCountry() : $billingAddress->getCountry()) ||
                 (!ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress) && !$paymentConfig->getAddress())
@@ -154,6 +150,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
             }
         }
 
+        $customer = $this->sessionHelper->getCustomer();
         $paymentModel = $this->modelManager->find(Payment::class, $customer->getPaymentId());
         $setToDefaultPayment = false;
 

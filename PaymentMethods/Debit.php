@@ -15,7 +15,7 @@ class Debit extends AbstractPaymentMethod
         $bankAccount = $paymentData['ratepay']['bank_account'];
 
         if(!isset($bankAccount['iban'])) {
-            $return['sErrorMessages'][] = 'Please insert a IBAN';//TODO translation
+            $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingIban');
         }
         $isIban = true;
         $bankAccount['iban'] = trim(str_replace(' ', '', $bankAccount['iban']));
@@ -25,11 +25,13 @@ class Debit extends AbstractPaymentMethod
             $isIban = false;
         } else if(ValidationLib::isIbanValid($bankAccount['iban']) === false) {
             $isIban = true;
-            $return['sErrorMessages'][] = 'Please verify your IBAN'; // TODO translate
+            $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidIban');
         }
 
-        if($isIban == false && (!isset($bankAccount['bankCode']) || is_numeric($bankAccount['bankCode']) === false)) {
-            $return['sErrorMessages'][] = 'Please insert a valid bank code'; // TODO translate
+        if($isIban == false && (!isset($bankAccount['bankCode']))) {
+            $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingBankCode');
+        } else if(is_numeric($bankAccount['bankCode']) === false) {
+            $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidBankCode');
         }
 
         return $return;

@@ -22,10 +22,14 @@ class AbstractPaymentMethod extends GenericPaymentMethod
      */
     protected $modelManager;
 
+
+    private $snippetManager;
+
     public function __construct()
     {
         $this->sessionHelper = Shopware()->Container()->get(SessionHelper::class);
         $this->modelManager = Shopware()->Container()->get('models');
+        $this->snippetManager = Shopware()->Container()->get('snippets');
     }
 
     public function getCurrentPaymentDataAsArray($userId) {
@@ -41,6 +45,7 @@ class AbstractPaymentMethod extends GenericPaymentMethod
 
         $data['ratepay']['customer_data'] = [
             'phone' => $billingAddress->getPhone(),
+            'birthday_required' => ValidationLib::isCompanySet($billingAddress) === false,
             'birthday' => [
                 'year' => $birthday ? $birthday->format('Y') : null,
                 'month' => $birthday ? $birthday->format('m'): null,
@@ -55,16 +60,19 @@ class AbstractPaymentMethod extends GenericPaymentMethod
         $return = [];
         $ratepayData = $paymentData['ratepay']['customer_data'];
         if(!isset($ratepayData['birthday'])) {
-            $return['sErrorMessages'][] = 'Please set a birthday';//TODO translation
+            $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingBirthday');
         }
-        if(!isset($ratepayData['phone']) || (strlen(trim($ratepayData['phone'])) > 6) === false) { //TODO config?
-            $return['sErrorMessages'][] = 'Please set a phone number';//TODO translation
+        if(!isset($ratepayData['phone'])) {
+            $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingPhone');
+        }
+        if((strlen(trim($ratepayData['phone'])) > 6) === false) {
+            $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidPhone'), 6); //TODO config?
         }
 
         $dateTime = new DateTime();
         $dateTime->setDate($ratepayData['birthday']['year'], $ratepayData['birthday']['month'], $ratepayData['birthday']['day']);
         if(ValidationLib::isOldEnough($dateTime) == false) {
-            $return['sErrorMessages'][] = 'Please verify your date of birth. You must be at least 18 years old!'; //TODO translation
+            $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidBirthday'), 18); //TODO config?
         }
         return $return;
     }
@@ -81,10 +89,12 @@ class AbstractPaymentMethod extends GenericPaymentMethod
         $customer = $this->sessionHelper->getCustomer();
         $customer->setBirthday($birthday);
         $customer->getDefaultBillingAddress()->setPhone(trim($ratepayData['phone']));
-        if(ValidationLib::isBirthdayValid($customer, $customer->getDefaultBillingAddress()) == false) {
-            $return['checkPayment']['sErrorMessages'][] = 'Please verify your date of birth. You must be at least 18 years old!'; //TODO translation
-        } else {
-            $this->modelManager->flush([$customer, $customer->getDefaultBillingAddress()]);
-        }
+
+        $this->modelManager->flush([$customer, $customer->getDefaultBillingAddress()]);
+    }
+
+    protected function getTranslatedMessage($snippetName)
+    {
+        return $this->snippetManager->getNamespace('frontend/ratepay/messages')->get($snippetName);
     }
 }
