@@ -59,20 +59,23 @@ class AbstractPaymentMethod extends GenericPaymentMethod
     {
         $return = [];
         $ratepayData = $paymentData['ratepay']['customer_data'];
-        if(!isset($ratepayData['birthday'])) {
-            $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingBirthday');
+        if(!isset($ratepayData['birthday_required']) || $ratepayData['birthday_required'] == 1) {
+            if (!isset($ratepayData['birthday'])) {
+                $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingBirthday');
+            } else {
+                $dateTime = new DateTime();
+                $dateTime->setDate($ratepayData['birthday']['year'], $ratepayData['birthday']['month'], $ratepayData['birthday']['day']);
+                if (ValidationLib::isOldEnough($dateTime) == false) {
+                    $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidBirthday'), 18); //TODO config?
+                }
+            }
         }
+
         if(!isset($ratepayData['phone'])) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingPhone');
         }
         if((strlen(trim($ratepayData['phone'])) > 6) === false) {
             $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidPhone'), 6); //TODO config?
-        }
-
-        $dateTime = new DateTime();
-        $dateTime->setDate($ratepayData['birthday']['year'], $ratepayData['birthday']['month'], $ratepayData['birthday']['day']);
-        if(ValidationLib::isOldEnough($dateTime) == false) {
-            $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidBirthday'), 18); //TODO config?
         }
         return $return;
     }
@@ -87,10 +90,11 @@ class AbstractPaymentMethod extends GenericPaymentMethod
             trim($ratepayData['birthday']['day'])
         );
         $customer = $this->sessionHelper->getCustomer();
+        $billingAddress = $this->sessionHelper->getBillingAddress();
         $customer->setBirthday($birthday);
-        $customer->getDefaultBillingAddress()->setPhone(trim($ratepayData['phone']));
+        $billingAddress->setPhone(trim($ratepayData['phone']));
 
-        $this->modelManager->flush([$customer, $customer->getDefaultBillingAddress()]);
+        $this->modelManager->flush([$customer, $billingAddress]);
     }
 
     protected function getTranslatedMessage($snippetName)
