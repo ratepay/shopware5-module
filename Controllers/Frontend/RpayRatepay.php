@@ -28,8 +28,10 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ShopwareUtil;
+use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
+use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
 use RpayRatePay\Services\Logger\RequestLogger;
@@ -69,6 +71,10 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      * @var SessionHelper
      */
     protected $sessionHelper;
+    /**
+     * @var object|ProfileConfigService
+     */
+    private $profileConfigService;
 
 
     public function setContainer(Container $container = null)
@@ -81,6 +87,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $this->logger = $container->get('rpay_rate_pay.logger');
         $this->dfpService = $this->container->get(DfpService::class);
         $this->configService = $this->container->get(ConfigService::class);
+        $this->profileConfigService = $this->container->get(ProfileConfigService::class);
         $this->sessionHelper = $this->container->get(SessionHelper::class);
     }
 
@@ -271,49 +278,59 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
     private function _proceedPayment()
     {
 
-        $this->paymentRequestService->setIsBackend(false);
-        $paymentRequestData = $this->paymentRequestDataFactory->createFromFrontendSession();
-        $this->paymentRequestService->setPaymentRequestData($paymentRequestData);
-        /** @var PaymentRequest $requestResponse */
-        $requestResponse = $this->paymentRequestService->doRequest();
+        try {
+            $this->paymentRequestService->setIsBackend(false);
+            $paymentRequestData = $this->paymentRequestDataFactory->createFromFrontendSession();
+            $this->paymentRequestService->setPaymentRequestData($paymentRequestData);
+            /** @var PaymentRequest $requestResponse */
+            $requestResponse = $this->paymentRequestService->doRequest();
 
-        if ($requestResponse->isSuccessful()) {
+            if ($requestResponse->isSuccessful()) {
 
-            $transactionId = $requestResponse->getTransactionId();
-            $uniqueId = $this->createPaymentUniqueId();
+                $transactionId = $requestResponse->getTransactionId();
+                $uniqueId = $this->createPaymentUniqueId();
 
-            $statusId = $this->configService->getPaymentStatusAfterPayment($paymentRequestData->getMethod());
-            $orderNumber = $this->saveOrder($transactionId, $uniqueId, $statusId ? $statusId : 17);
+                $statusId = $this->configService->getPaymentStatusAfterPayment($paymentRequestData->getMethod());
+                $orderNumber = $this->saveOrder($transactionId, $uniqueId, $statusId ? $statusId : 17);
 
-            $order = Shopware()->Models()->getRepository(Order\Order::class)
-                ->findOneBy(['number' => $orderNumber]);
+                $order = Shopware()->Models()->getRepository(Order\Order::class)
+                    ->findOneBy(['number' => $orderNumber]);
 
-            $this->paymentRequestService->completeOrder($order, $requestResponse);
+                $this->paymentRequestService->completeOrder($order, $requestResponse);
 
-            $this->paymentConfirmService->setOrder($order);
-            $this->paymentConfirmService->doRequest();
+                $this->paymentConfirmService->setOrder($order);
+                $this->paymentConfirmService->doRequest();
 
-            // Clear RatePAY session after call for authorization
-            $this->sessionHelper->cleanUp();
-            $this->dfpService->deleteDfpId();
+                // Clear RatePAY session after call for authorization
+                $this->sessionHelper->cleanUp();
+                $this->dfpService->deleteDfpId();
 
-            /*
-             * redirect to success page
-             */
-            $this->redirect(
-                [
-                    'controller' => 'checkout',
-                    'action' => 'finish',
-                    'sUniqueID' => $uniqueId,
-                    'forceSecure' => true
-                ]
-            );
-        } else {
+                /*
+                 * redirect to success page
+                 */
+                $this->redirect(
+                    [
+                        'controller' => 'checkout',
+                        'action' => 'finish',
+                        'sUniqueID' => $uniqueId,
+                        'forceSecure' => true
+                    ]
+                );
+            } else {
+                $this->redirect(
+                    [
+                        'controller' => 'checkout',
+                        'action' => 'confirm',
+                        'rpay_message' => !empty($requestResponse->getCustomerMessage()) ? $requestResponse->getCustomerMessage() : $requestResponse->getReasonMessage()
+                    ]
+                );
+            }
+        } catch(\Exception $e) {
             $this->redirect(
                 [
                     'controller' => 'checkout',
                     'action' => 'confirm',
-                    'rpay_message' => $requestResponse->getCustomerMessage()
+                    'rpay_message' => $e->getMessage()
                 ]
             );
         }
@@ -343,23 +360,41 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
     }
 
     /**
-     * calcDesign-function for installment
-     */
-    public function calcDesignAction()
-    {
-        Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
-        $calcPath = realpath(dirname(__FILE__) . '/../../Views/responsive/frontend/installment/php/');
-        require_once $calcPath . '/PiRatepayRateCalc.php';
-        require_once $calcPath . '/path.php';
-        require_once $calcPath . '/PiRatepayRateCalcDesign.php';
-    }
-
-    /**
      * calcRequest-function for installment
      */
     public function calcRequestAction()
     {
         Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
+        $params = $this->Request()->getParams();
+        if(!isset($params['calculationAmount']) ||
+            !isset($params['calculationValue']) ||
+            !isset($params['calculationType']) ||
+            !isset($params['paymentFirstday'])) {
+            exit(0);
+        }
+        $paymentMethod = $this->sessionHelper->getPaymentMethod();
+        $billingAddress = $this->sessionHelper->getBillingAddress();
+        $profileConfig = $this->profileConfigService->getProfileConfig(
+            $billingAddress->getCountry()->getIso(),
+            Shopware()->Shop()->getId(),
+            false,
+            PaymentMethods::isZeroPercentInstallment($paymentMethod)
+        );
+
+        $pluginDir = Shopware()->Container()->getParameter('rpay_rate_pay.plugin_dir');
+        $template = file_get_contents($pluginDir.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'template.installmentPlan.html');
+        $ib = new \RatePAY\Frontend\InstallmentBuilder($profileConfig->isSandbox()); // true = sandbox mode
+        $ib->setProfileId($profileConfig->getProfileId());
+        $ib->setSecuritycode($profileConfig->getSecurityCode());
+        echo $ib->getInstallmentPlanByTemplate(
+            $template,
+            $params['calculationAmount'],
+            $params['calculationType'],
+            $params['calculationValue']
+        );
+
+
+        return;
         $calcPath = realpath(dirname(__FILE__) . '/../../Views/responsive/frontend/installment/php/');
         require_once $calcPath . '/PiRatepayRateCalc.php';
         require_once $calcPath . '/path.php';

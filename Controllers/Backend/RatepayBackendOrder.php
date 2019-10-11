@@ -158,7 +158,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
 
         $paymentMethodName = $params['paymentMeansName'];
         $totalAmount = $params['totalAmount'];
-        $paymentSubtype = $params['paymentSubtype']; //todo this is the paymentFirstDay
+        $paymentFirstDay = $params['paymentSubtype']; //todo this is the paymentFirstDay
         $calcParamSet = !empty($params['value']) && !empty($params['type']);
         $type = $calcParamSet ? $params['type'] : 'time';
 
@@ -179,7 +179,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
                 true,
                 $totalAmount,
                 $type,
-                $paymentSubtype, //todo this is the paymentFirstDay
+                $paymentFirstDay,
                 $val
             );
             $this->view->assign([

@@ -11,6 +11,7 @@ use RpayRatePay\Models\ConfigPayment;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Models\ProfileConfigRepository;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Payment\Payment as PaymentMethod;
 
 class ProfileConfigService
 {
@@ -33,6 +34,13 @@ class ProfileConfigService
         $this->modelManager = $modelManager;
     }
 
+    /**
+     * @param $countryIso
+     * @param $shopId
+     * @param bool $backend
+     * @param bool $zeroPercentInstallment
+     * @return ProfileConfig|null
+     */
     public function getProfileConfig($countryIso, $shopId, $backend = false, $zeroPercentInstallment = false)
     {
         $profileId = $this->configService->getProfileId($countryIso, $zeroPercentInstallment, $backend);
@@ -43,23 +51,35 @@ class ProfileConfigService
     }
 
     // TODO naming is similar to `getPaymentConfig`, but do other stuffs
-    public function getInstallmentConfig($paymentMethodName, $shopId, $countryIso, $backend = false)
+
+    /**
+     * @param PaymentMethod $paymentMethodName string
+     * @param ProfileConfig|$shopId
+     * @param $countryIso
+     * @param bool $backend
+     * @return object|ConfigInstallment|null
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     */
+    public function getInstallmentConfig($paymentMethodName, $shopId, $countryIso = null, $backend = false)
     {
-        $config = $this->getPaymentConfig($paymentMethodName, $shopId, $countryIso, $backend);
+        $config = $this->getPaymentConfig($paymentMethodName, $shopId, $countryIso,  $backend);
         return $this->modelManager->find(ConfigInstallment::class, $config->getRpayId());
     }
 
 
     /**
-     * @param $shopId
+     * @param PaymentMethod $paymentMethod
+     * @param $shopId ProfileConfig|string
      * @param $countryIso
-     * @param $paymentMethod
      * @param $backend
      * @return ConfigPayment
      */
-    protected function getPaymentConfig($shopId, $countryIso, $paymentMethod, $backend)
+    protected function getPaymentConfig($paymentMethod, $shopId, $countryIso = null, $backend = null)
     {
-        $profileConfig = $this->getProfileConfig(
+        $paymentMethod = $paymentMethod instanceof PaymentMethod ? $paymentMethod->getName() : $paymentMethod;
+        $profileConfig = $shopId instanceof ProfileConfig ? $shopId : $this->getProfileConfig(
             $countryIso,
             $shopId,
             $backend,

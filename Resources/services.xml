@@ -87,6 +87,7 @@
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
             <argument id="RpayRatePay\Services\DfpService" type="service"/>
+            <argument>%rpay_rate_pay.plugin_dir%</argument>
             <tag name="shopware.event_subscriber"/>
         </service>
 

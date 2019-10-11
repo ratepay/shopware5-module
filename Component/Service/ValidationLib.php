@@ -142,6 +142,7 @@ class ValidationLib
 
     public static function isIbanValid($iban)
     {
+        return preg_match_all('/^[A-Za-z]{2}\d{1,32}$/', $iban) === 1;
         //TODO is this valid?
         //got this from https://stackoverflow.com/questions/20983339/validate-iban-php
         $iban = strtolower(str_replace(' ', '', $iban));

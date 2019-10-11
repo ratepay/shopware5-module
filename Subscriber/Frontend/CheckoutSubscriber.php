@@ -48,6 +48,7 @@ class CheckoutSubscriber implements SubscriberInterface
      * @var ProfileConfigService
      */
     private $profileConfigService;
+    private $pluginDir;
 
     public function __construct(
         ModelManager $modelManager,
@@ -55,7 +56,8 @@ class CheckoutSubscriber implements SubscriberInterface
         ContextService $contextService,
         ConfigService $configService,
         ProfileConfigService $profileConfigService,
-        DfpService $dfpService
+        DfpService $dfpService,
+        $pluginDir
     )
     {
         $this->modelManager = $modelManager;
@@ -64,6 +66,7 @@ class CheckoutSubscriber implements SubscriberInterface
         $this->dfpService = $dfpService;
         $this->sessionHelper = $sessionHelper;
         $this->profileConfigService = $profileConfigService;
+        $this->pluginDir = $pluginDir;
     }
 
     public static function getSubscribedEvents()
@@ -90,14 +93,14 @@ class CheckoutSubscriber implements SubscriberInterface
             return;
         }
 
-        if ($request->getActionName() === 'shippingPayment') {
+        if (in_array($request->getActionName(), ['shippingPayment', 'saveShippingPayment'])) {
             $paymentId = null;
             $customer = $this->sessionHelper->getCustomer();
             $billingAddress = $this->sessionHelper->getBillingAddress($customer);
             $paymentMethod = $this->sessionHelper->getPaymentMethod($customer);
 
             if (PaymentMethods::exists($paymentMethod)) {
-                $pluginConfig = $this->profileConfigService->getProfileConfig(
+                $profileConfig = $this->profileConfigService->getProfileConfig(
                     $billingAddress->getCountry()->getIso(),
                     $this->context->getShop()->getId(),
                     false,
@@ -105,7 +108,7 @@ class CheckoutSubscriber implements SubscriberInterface
                 );
 
                 $data = [
-                    'sandbox' => $pluginConfig->isSandbox(),
+                    'sandbox' => $profileConfig->isSandbox(),
                 ];
 
                 //if no DF token is set, receive all the necessary data to set it and extend template
@@ -118,6 +121,23 @@ class CheckoutSubscriber implements SubscriberInterface
                     $data = array_merge($view->getAssign('ratepay'), $data);
                 }
                 $view->assign('ratepay', $data);
+
+
+                if(PaymentMethods::isInstallment($paymentMethod)) {
+
+                    $template = file_get_contents($this->pluginDir.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'template.installmentCalculator.html');
+                    $ib = new \RatePAY\Frontend\InstallmentBuilder($profileConfig->isSandbox()); // true = sandbox mode
+                    $ib->setProfileId($profileConfig->getProfileId());
+                    $ib->setSecuritycode($profileConfig->getSecurityCode());
+                    $htmlCalculator = $ib->getInstallmentCalculatorByTemplate(600, $template);
+
+                    $view->assign('installmentCalculator',
+                        [
+                            'html' => $htmlCalculator,
+                            'totalAmount' => floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']), //TODO
+                        ]
+                    );
+                }
             }
         } else if ($request->getActionName() === 'confirm') {
             $error = $request->getParam('rpay_message');

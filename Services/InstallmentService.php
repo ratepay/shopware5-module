@@ -40,20 +40,22 @@ class InstallmentService
     }
 
     /**
-     * @param string $countryCode
+     * if the first parameter is a array than the function will not fetch the installment data from the gateway.
+     * the array must contains the installment data from the gateway. you can get it with the function `getInstallmentPlan`
+     * @param array|string $countryCode
      * @param int $shopId
      * @param string $paymentMethodName
      * @param boolean $isBackend
      * @param float $totalAmount
      * @param string $type //TODO better name
-     * @param string $paymentSubtype
+     * @param int $paymentFirstDate
      * @param float $value //TODO better name
      * @return mixed
      */
-    public function initInstallmentData($countryCode, $shopId, $paymentMethodName, $isBackend, $totalAmount, $type, $paymentSubtype, $value) {
-        $plan = $this->getInstallmentPlan($countryCode, $shopId, $paymentMethodName, $isBackend, $totalAmount, $type, $value);
+    public function initInstallmentData($countryCode, $shopId = null, $paymentMethodName = null, $isBackend = null, $totalAmount = null, $type = null, $paymentFirstDate = null, $value = null) {
+        $plan = is_array($countryCode) ? $countryCode : $this->getInstallmentPlan($countryCode, $shopId, $paymentMethodName, $isBackend, $totalAmount, $type, $value);
 
-        $this->sessionHelper->setInstallmentData(
+        $this->sessionHelper->setInstallmentDetails(
             $plan['totalAmount'],
             $plan['amount'],
             $plan['interestRate'],
@@ -64,7 +66,7 @@ class InstallmentService
             $plan['numberOfRatesFull'],
             $plan['rate'],
             $plan['lastRate'],
-            $paymentSubtype //$plan['paymentFirstday'] //todo this is the paymentFirstDay
+            $paymentFirstDate
         );
         return $plan;
     }

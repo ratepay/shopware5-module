@@ -9,9 +9,14 @@ use RpayRatePay\Component\Service\ValidationLib;
 class Debit extends AbstractPaymentMethod
 {
 
+    protected $isBankDataRequired = true;
+
     public function validate($paymentData)
     {
         $return = parent::validate($paymentData);
+        if($this->isBankDataRequired === false) {
+            return $return;
+        }
         $bankAccount = $paymentData['ratepay']['bank_account'];
 
         if(!isset($bankAccount['iban'])) {
@@ -28,9 +33,9 @@ class Debit extends AbstractPaymentMethod
             $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidIban');
         }
 
-        if($isIban == false && (!isset($bankAccount['bankCode']))) {
+        if($isIban === false && (!isset($bankAccount['bankCode']))) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingBankCode');
-        } else if(is_numeric($bankAccount['bankCode']) === false) {
+        } else if($isIban === false && is_numeric($bankAccount['bankCode']) === false) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidBankCode');
         }
 
@@ -40,6 +45,9 @@ class Debit extends AbstractPaymentMethod
     public function savePaymentData($userId, \Enlight_Controller_Request_Request $request)
     {
         parent::savePaymentData($userId, $request);
+        if($this->isBankDataRequired === false) {
+            return;
+        }
         $paymentData = $request->getParam('ratepay');
         $bankAccount = $paymentData['bank_account'];
 
@@ -56,7 +64,9 @@ class Debit extends AbstractPaymentMethod
     public function getCurrentPaymentDataAsArray($userId)
     {
         $data = parent::getCurrentPaymentDataAsArray($userId);
-
+        if($this->isBankDataRequired === false) {
+            return $data;
+        }
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $bankData = $this->sessionHelper->getBankData($billingAddress);
 

@@ -114,18 +114,23 @@ class SessionHelper
         return $this->loadedCustomer = $this->entityManager->find(Customer::class, $customerId);
     }
 
-    public function getPaymentMethod(Customer $customer) {
+    public function getPaymentMethod(Customer $customer = null) {
         if($this->isFrontendSession === false) {
             throw new \Exception('not implemented');
         }
 
         if($this->loadedPaymentMethod) {
-            return $this->loadedShippingAddress;
+            return $this->loadedPaymentMethod;
         }
+        $customer = $customer ? : $this->getCustomer();
 
         $sessionVars = $this->session->get('sOrderVariables');
         $paymentId = isset($sessionVars['sPayment']['id']) ? $sessionVars['sPayment']['id'] : $customer->getPaymentId();
         return $this->loadedPaymentMethod = $this->entityManager->find(Payment::class, $paymentId);
+    }
+
+    public function removeBankData($customerId) {
+        $this->setData('bankData_c'.$customerId, null);
     }
 
     public function setBankData($customerId, $accountNumber, $bankCode = null)
@@ -158,15 +163,6 @@ class SessionHelper
         }
     }
 
-    protected function setData($key = null, $value = null) {
-        $this->session->RatePay = null;
-        $this->session->RatePay[$key] = $value;
-    }
-
-    protected function getData($key) {
-        return $this->session->RatePay[$key];
-    }
-
     /**
      * @return InstallmentDetails
      */
@@ -191,7 +187,7 @@ class SessionHelper
         return $object;
     }
 
-    public function setInstallmentData($totalAmount, $amount, $interestRate, $interestAmount, $serviceCharge, $annualPercentageRate, $monthlyDebitInterest, $numberOfRatesFull, $rate, $lastRate, $paymentSubtype)
+    public function setInstallmentDetails($totalAmount, $amount, $interestRate, $interestAmount, $serviceCharge, $annualPercentageRate, $monthlyDebitInterest, $numberOfRatesFull, $rate, $lastRate, $paymentSubtype)
     {
         $this->setData('ratenrechner', [
             'total_amount' => $totalAmount,
@@ -215,6 +211,15 @@ class SessionHelper
         $data['payment_firstday'] = $paymentFirstDay;
         $data['dueDate'] = $paymentFirstDay;
         $this->setData('ratenrechner', $data);
+    }
+
+
+    public function setData($key = null, $value = null) {
+        $this->session->RatePay[$key] = $value;
+    }
+
+    public function getData($key, $default = null) {
+        return isset($this->session->RatePay[$key]) ? $this->session->RatePay[$key] : $default;
     }
 
     public function getSession()

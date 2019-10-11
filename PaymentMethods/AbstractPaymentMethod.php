@@ -7,12 +7,17 @@ namespace RpayRatePay\PaymentMethods;
 use DateTime;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Helper\SessionHelper;
+use Shopware\Components\DependencyInjection\Container;
 use Shopware\Components\Model\ModelManager;
 use ShopwarePlugin\PaymentMethods\Components\GenericPaymentMethod;
 
 class AbstractPaymentMethod extends GenericPaymentMethod
 {
 
+    /**
+     * @var Container
+     */
+    protected $container;
     /**
      * @var object|SessionHelper
      */
@@ -27,9 +32,10 @@ class AbstractPaymentMethod extends GenericPaymentMethod
 
     public function __construct()
     {
-        $this->sessionHelper = Shopware()->Container()->get(SessionHelper::class);
-        $this->modelManager = Shopware()->Container()->get('models');
-        $this->snippetManager = Shopware()->Container()->get('snippets');
+        $this->container = Shopware()->Container();
+        $this->sessionHelper = $this->container->get(SessionHelper::class);
+        $this->modelManager = $this->container->get('models');
+        $this->snippetManager = $this->container->get('snippets');
     }
 
     public function getCurrentPaymentDataAsArray($userId) {
