@@ -24,7 +24,8 @@ class Installment extends Debit
     public function getCurrentPaymentDataAsArray($userId)
     {
         $installmentData = $this->sessionHelper->getData('installment_calculator_input', []);
-        $this->isBankDataRequired = PaymentSubType::getPayTypByFirstPayDay($installmentData['payment_firstday']) === PaymentSubType::PAY_TYPE_DIRECT_DEBIT;
+        $this->isBankDataRequired = $installmentData['payment_type'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
+
         $data = parent::getCurrentPaymentDataAsArray($userId);
         $data['ratepay']['installment'] = $installmentData;
         return $data;
@@ -32,11 +33,11 @@ class Installment extends Debit
 
     public function validate($paymentData)
     {
+        $installmentData = isset($paymentData['ratepay']['installment']) ? $paymentData['ratepay']['installment'] : [];
+        $this->isBankDataRequired = $installmentData['payment_type'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
+
         $return = parent::validate($paymentData);
 
-        $installmentData = isset($paymentData['ratepay']['installment']) ? $paymentData['ratepay']['installment'] : [];
-
-        $this->isBankDataRequired = PaymentSubType::getPayTypByFirstPayDay($installmentData['payment_firstday']) === PaymentSubType::PAY_TYPE_DIRECT_DEBIT;
 
         if($installmentData == null ||
             !isset(
@@ -66,7 +67,7 @@ class Installment extends Debit
     {
         $paymentData = $request->getParam('ratepay');
         $installmentData = $paymentData['installment'];
-        $this->isBankDataRequired = PaymentSubType::getPayTypByFirstPayDay($installmentData['payment_firstday']) === PaymentSubType::PAY_TYPE_DIRECT_DEBIT;
+        $this->isBankDataRequired = $installmentData['payment_type'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
 
         parent::savePaymentData($userId, $request);
 

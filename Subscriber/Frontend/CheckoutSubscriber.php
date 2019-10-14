@@ -93,53 +93,20 @@ class CheckoutSubscriber implements SubscriberInterface
             return;
         }
 
-        if (in_array($request->getActionName(), ['shippingPayment', 'saveShippingPayment'])) {
-            $paymentId = null;
-            $customer = $this->sessionHelper->getCustomer();
-            $billingAddress = $this->sessionHelper->getBillingAddress($customer);
-            $paymentMethod = $this->sessionHelper->getPaymentMethod($customer);
+        if ($request->getActionName() === 'confirm') {
 
-            if (PaymentMethods::exists($paymentMethod)) {
-                $profileConfig = $this->profileConfigService->getProfileConfig(
-                    $billingAddress->getCountry()->getIso(),
-                    $this->context->getShop()->getId(),
-                    false,
-                    PaymentMethods::isZeroPercentInstallment($paymentMethod)
-                );
-
-                $data = [
-                    'sandbox' => $profileConfig->isSandbox(),
-                ];
-
-                //if no DF token is set, receive all the necessary data to set it and extend template
-                if ($this->dfpService->isDfpIdAlreadyGenerated() == false) {
-                    // create id and write it to the session
-                    $data['dfp']['token'] = $this->dfpService->getDfpId();
-                    $data['dfp']['snippetId'] = $this->configService->getDfpSnippetId();
-                }
-                if($view->getAssign('ratepay')) {
-                    $data = array_merge($view->getAssign('ratepay'), $data);
-                }
-                $view->assign('ratepay', $data);
-
-
-                if(PaymentMethods::isInstallment($paymentMethod)) {
-
-                    $template = file_get_contents($this->pluginDir.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'template.installmentCalculator.html');
-                    $ib = new \RatePAY\Frontend\InstallmentBuilder($profileConfig->isSandbox()); // true = sandbox mode
-                    $ib->setProfileId($profileConfig->getProfileId());
-                    $ib->setSecuritycode($profileConfig->getSecurityCode());
-                    $htmlCalculator = $ib->getInstallmentCalculatorByTemplate(600, $template);
-
-                    $view->assign('installmentCalculator',
-                        [
-                            'html' => $htmlCalculator,
-                            'totalAmount' => floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']), //TODO
-                        ]
-                    );
-                }
+            //TODO if no DF token is set, receive all the necessary data to set it and extend template
+            if ($this->dfpService->isDfpIdAlreadyGenerated() == false) {
+                // create id and write it to the session
+                $data['dfp']['token'] = $this->dfpService->getDfpId();
+                $data['dfp']['snippetId'] = $this->configService->getDfpSnippetId();
             }
-        } else if ($request->getActionName() === 'confirm') {
+            if($view->getAssign('ratepay')) {
+                $data = array_merge($view->getAssign('ratepay'), $data);
+            }
+            $view->assign('ratepay', $data);
+
+
             $error = $request->getParam('rpay_message');
             if($error) {
                 $view->assign('ratepayMessage', $error);
