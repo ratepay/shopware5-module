@@ -215,7 +215,11 @@ class SessionHelper
 
 
     public function setData($key = null, $value = null) {
-        $this->session->RatePay[$key] = $value;
+        if($key === null) {
+            $this->session->RatePay = [];
+        } else {
+            $this->session->RatePay[$key] = $value;
+        }
     }
 
     public function getData($key, $default = null) {

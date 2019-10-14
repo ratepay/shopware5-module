@@ -92,11 +92,11 @@
             <tag name="shopware.event_subscriber"/>
         </service>
         <service id="RpayRatePay\Subscriber\Frontend\PaymentShippingSubscriber">
-            <argument id="models" type="service"/>
             <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
             <argument id="shopware_storefront.context_service" type="service"/>
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\InstallmentService" type="service"/>
             <argument id="RpayRatePay\Services\DfpService" type="service"/>
             <argument>%rpay_rate_pay.plugin_dir%</argument>
             <tag name="shopware.event_subscriber"/>
@@ -146,9 +146,11 @@
             <argument id="service_container" type="service"/>
         </service>
         <service id="RpayRatePay\Services\InstallmentService">
+            <argument id="models" type="service"/>
             <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
+            <argument>%rpay_rate_pay.plugin_dir%</argument>
         </service>
 
 

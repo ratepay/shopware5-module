@@ -10,6 +10,7 @@ use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
+use RpayRatePay\Services\InstallmentService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Components\Model\ModelManager;
 use Shopware_Controllers_Frontend_Checkout;
@@ -21,41 +22,45 @@ class PaymentShippingSubscriber implements SubscriberInterface
     /**
      * @var ProfileConfigService
      */
-    private $profileConfigService;
+    protected $profileConfigService;
     /**
      * @var DfpService
      */
-    private $dfpService;
+    protected $dfpService;
     /**
      * @var ConfigService
      */
-    private $configService;
-    private $pluginDir;
+    protected $configService;
+    protected $pluginDir;
     /**
      * @var \Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface|null
      */
-    private $context;
+    protected $context;
     /**
      * @var SessionHelper
      */
-    private $sessionHelper;
+    protected $sessionHelper;
+    /**
+     * @var InstallmentService
+     */
+    protected $installmentService;
 
     public function __construct(
-        ModelManager $modelManager,
         SessionHelper $sessionHelper,
         ContextService $contextService,
         ConfigService $configService,
         ProfileConfigService $profileConfigService,
+        InstallmentService $installmentService,
         DfpService $dfpService,
         $pluginDir
     )
     {
-        $this->modelManager = $modelManager;
         $this->context = $contextService->getContext();
         $this->configService = $configService;
         $this->dfpService = $dfpService;
         $this->sessionHelper = $sessionHelper;
         $this->profileConfigService = $profileConfigService;
+        $this->installmentService = $installmentService;
         $this->pluginDir = $pluginDir;
     }
 
@@ -105,16 +110,20 @@ class PaymentShippingSubscriber implements SubscriberInterface
 
             if(PaymentMethods::isInstallment($paymentMethodName)) {
 
-                $template = file_get_contents($this->pluginDir.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'template.installmentCalculator.html');
-                $ib = new \RatePAY\Frontend\InstallmentBuilder($profileConfig->isSandbox()); // true = sandbox mode
-                $ib->setProfileId($profileConfig->getProfileId());
-                $ib->setSecuritycode($profileConfig->getSecurityCode());
-                $htmlCalculator = $ib->getInstallmentCalculatorByTemplate(600, $template);
+                $totalAmount = floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']); //TODO
+
+                $htmlCalculator = $this->installmentService->getInstallmentCalculatorTemplate(
+                    $billingAddress,
+                    $this->context->getShop()->getId(),
+                    $paymentMethodName,
+                    false,
+                    $totalAmount
+                );
 
                 $view->assign('installmentCalculator',
                     [
                         'html' => $htmlCalculator,
-                        'totalAmount' => floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']), //TODO
+                        'totalAmount' => $totalAmount,
                     ]
                 );
             }
