@@ -130,5 +130,4 @@ final class PaymentMethods extends Enum
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
         return $paymentMethod == self::PAYMENT_INSTALLMENT0;
     }
-
 }

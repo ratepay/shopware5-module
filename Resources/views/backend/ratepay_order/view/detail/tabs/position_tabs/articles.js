@@ -83,7 +83,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 renderer: Ext.util.Format.numberRenderer('0.00')
             },
             {
-                header: '{s namespace=RatePAY name=ordered}Bestellt{/s}',
+                header: '{s namespace="backend/ratepay" name=ordered}Bestellt{/s}',
                 dataIndex: 'quantity'
             },
             {
@@ -91,11 +91,11 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 dataIndex: 'delivered'
             },
             {
-                header: '{s namespace=RatePAY name=cancelled}Storniert{/s}',
+                header: '{s namespace="backend/ratepay" name=cancelled}Storniert{/s}',
                 dataIndex: 'cancelled'
             },
             {
-                header: '{s namespace=RatePAY name=returned}Retourniert{/s}',
+                header: '{s namespace="backend/ratepay" name=returned}Retourniert{/s}',
                 dataIndex: 'returned'
             },
         ];
@@ -106,7 +106,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
         var id = me.record.get('id');
         return [
             {
-                text: '{s namespace=RatePAY name=setzero}Anzahl auf 0 setzen{/s}',
+                text: '{s namespace="backend/ratepay" name=setzero}Anzahl auf 0 setzen{/s}',
                 handler: function () {
                     var id = me.record.get('id');
                     var positionStore = Ext.create('Shopware.apps.RatepayOrder.store.Position');
@@ -122,7 +122,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             },
             /*{
                 iconCls: 'sprite-inbox--plus',
-                text: '{s namespace=RatePAY name=addarticle}Artikel hinzuf&uuml;gen{/s}',
+                text: '{s namespace="backend/ratepay" name=addarticle}Artikel hinzuf&uuml;gen{/s}',
                 handler: function () {
                     Ext.create('Shopware.apps.RpayRatepayOrderdetail.view.detail.ratepayadditemwindow', {
                         parent: me,
@@ -132,10 +132,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             },*/
             {
                 iconCls: 'sprite-plus-circle-frame',
-                text: '{s namespace=RatePAY name=addcredit}Nachlass hinzuf&uuml;gen{/s}',
+                text: '{s namespace="backend/ratepay" name=addcredit}Nachlass hinzuf&uuml;gen{/s}',
                 handler: function () {
                     Ext.create('Ext.window.Window', {
-                        title: '{s namespace=RatePAY name=addcredit}Nachlass hinzuf&uuml;gen{/s}',
+                        title: '{s namespace="backend/ratepay" name=addcredit}Nachlass hinzuf&uuml;gen{/s}',
                         width: 200,
                         height: 100,
                         id: 'creditWindow',
@@ -153,7 +153,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                         ],
                         buttons: [
                             {
-                                text: '{s namespace=RatePAY name=ok}Ok{/s}',
+                                text: '{s namespace="backend/ratepay" name=ok}Ok{/s}',
                                 handler: function () {
                                     var randomnumber = Math.floor(Math.random() * 10001);
                                     var creditname = 'Credit' + id + '-' + randomnumber;
@@ -189,16 +189,16 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             insertedIds.push(response.data.id);
                                             if (me.initPositions(articleNumber)) {
                                                 if (me.paymentChange(id, 'credit', insertedIds)) {
-                                                    message = '{s namespace=RatePAY name=messagecreditsuccess}Nachlass wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
+                                                    message = '{s namespace="backend/ratepay" name=messagecreditsuccess}Nachlass wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
                                                 } else {
                                                     me.deletePosition(insertedIds);
-                                                    message = '{s namespace=RatePAY name=messagecreditfailrequest}Nachlass konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
+                                                    message = '{s namespace="backend/ratepay" name=messagecreditfailrequest}Nachlass konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
                                                 }
                                             } else {
-                                                message = '{s namespace=RatePAY name=messagecreditfailposition}Nachlass konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
+                                                message = '{s namespace="backend/ratepay" name=messagecreditfailposition}Nachlass konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
                                             }
                                             Ext.getCmp('creditWindow').close();
-                                            Ext.Msg.alert('{s namespace=RatePAY name=messagecredittitle}Nachlass hinzuf&uuml;gen{/s}', message);
+                                            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagecredittitle}Nachlass hinzuf&uuml;gen{/s}', message);
                                             me.reloadGrid();
                                         }
                                     });
@@ -216,10 +216,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             },
             {
                 iconCls: 'sprite-plus-circle-frame',
-                text: '{s namespace=RatePAY name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
+                text: '{s namespace="backend/ratepay" name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
                 handler: function () {
                     Ext.create('Ext.window.Window', {
-                        title: '{s namespace=RatePAY name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
+                        title: '{s namespace="backend/ratepay" name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
                         width: 200,
                         height: 100,
                         id: 'debitWindow',
@@ -237,7 +237,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                         ],
                         buttons: [
                             {
-                                text: '{s namespace=RatePAY name=ok}Ok{/s}',
+                                text: '{s namespace="backend/ratepay" name=ok}Ok{/s}',
                                 handler: function () {
                                     var randomnumber = Math.floor(Math.random() * 10001);
                                     var debitname = 'Debit' + id + '+' + randomnumber;
@@ -273,16 +273,16 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             insertedIds.push(response.data.id);
                                             if (me.initPositions(articleNumber)) {
                                                 if (me.paymentChange(id, 'debit', insertedIds)) {
-                                                    message = '{s namespace=RatePAY name=messagedebituccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
+                                                    message = '{s namespace="backend/ratepay" name=messagedebituccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
                                                 } else {
                                                     me.deletePosition(insertedIds);
-                                                    message = '{s namespace=RatePAY name=messagedebitfailrequest}Nachbelastung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
+                                                    message = '{s namespace="backend/ratepay" name=messagedebitfailrequest}Nachbelastung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
                                                 }
                                             } else {
-                                                message = '{s namespace=RatePAY name=messagedebitfailposition}Nachbelastung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
+                                                message = '{s namespace="backend/ratepay" name=messagedebitfailposition}Nachbelastung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
                                             }
                                             Ext.getCmp('debitWindow').close();
-                                            Ext.Msg.alert('{s namespace=RatePAY name=messagedebittitle}Nachbelastung hinzuf&uuml;gen{/s}', message);
+                                            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagedebittitle}Nachbelastung hinzuf&uuml;gen{/s}', message);
                                             me.reloadGrid();
                                         }
                                     });
@@ -300,21 +300,21 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             },
             {
                 iconCls: 'sprite-truck',
-                text: '{s namespace=RatePAY name=deliver}Auswahl versenden{/s}',
+                text: '{s namespace="backend/ratepay" name=deliver}Auswahl versenden{/s}',
                 handler: function () {
                     me.toolbarDeliver();
                 }
             },
             {
                 iconCls: 'sprite-minus-circle-frame',
-                text: '{s namespace=RatePAY name=cancel}Auswahl stornieren{/s}',
+                text: '{s namespace="backend/ratepay" name=cancel}Auswahl stornieren{/s}',
                 handler: function () {
                     me.toolbarCancel();
                 }
             },
             {
                 iconCls: 'sprite-minus-circle-frame',
-                text: '{s namespace=RatePAY name=cancelStock}Auswahl stornieren, Inventar aktualisieren{/s}',
+                text: '{s namespace="backend/ratepay" name=cancelStock}Auswahl stornieren, Inventar aktualisieren{/s}',
                 handler: function () {
                     me.toolbarCancelStock();
                 }
@@ -356,8 +356,8 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
         }
 
         if (error == true) {
-            Ext.Msg.alert('{s namespace=RatePAY name=messagedeliverytitle}Versand fehlgeschlagen{/s}',
-                '{s namespace=RatePAY name=messagedeliverytext}Es k&ouml;nnen nicht mehr Artikel versendet werden als bestellt wurden!{/s}');
+            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagedeliverytitle}Versand fehlgeschlagen{/s}',
+                '{s namespace="backend/ratepay" name=messagedeliverytext}Es k&ouml;nnen nicht mehr Artikel versendet werden als bestellt wurden!{/s}');
             return false;
         } else {
             Ext.Ajax.request({
@@ -420,8 +420,8 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
         }
 
         if (error == true) {
-            Ext.Msg.alert('{s namespace=RatePAY name=messagecanceltitle}Stornierung fehlgeschlagen{/s}',
-                '{s namespace=RatePAY name=messagecanceltext}Es k&ouml;nnen nicht mehr Artikel storniert werden als bestellt wurden!{/s}');
+            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagecanceltitle}Stornierung fehlgeschlagen{/s}',
+                '{s namespace="backend/ratepay" name=messagecanceltext}Es k&ouml;nnen nicht mehr Artikel storniert werden als bestellt wurden!{/s}');
             return false;
         } else {
             Ext.Ajax.request({
@@ -476,8 +476,8 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             items.push(item);
         }
         if (error == true) {
-            Ext.Msg.alert('{s namespace=RatePAY name=messagecanceltitle}Stornierung fehlgeschlagen{/s}',
-                '{s namespace=RatePAY name=messagecanceltext}Es k&ouml;nnen nicht mehr Artikel storniert werden als bestellt wurden!{/s}');
+            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagecanceltitle}Stornierung fehlgeschlagen{/s}',
+                '{s namespace="backend/ratepay" name=messagecanceltext}Es k&ouml;nnen nicht mehr Artikel storniert werden als bestellt wurden!{/s}');
             return false;
         } else {
             Ext.Ajax.request({

@@ -12,6 +12,7 @@ use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
+use RpayRatePay\Services\InstallmentService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware\Components\Model\ModelManager;
@@ -49,6 +50,10 @@ class CheckoutSubscriber implements SubscriberInterface
      */
     private $profileConfigService;
     private $pluginDir;
+    /**
+     * @var InstallmentService
+     */
+    private $installmentService;
 
     public function __construct(
         ModelManager $modelManager,
@@ -56,6 +61,7 @@ class CheckoutSubscriber implements SubscriberInterface
         ContextService $contextService,
         ConfigService $configService,
         ProfileConfigService $profileConfigService,
+        InstallmentService $installmentService,
         DfpService $dfpService,
         $pluginDir
     )
@@ -67,6 +73,7 @@ class CheckoutSubscriber implements SubscriberInterface
         $this->sessionHelper = $sessionHelper;
         $this->profileConfigService = $profileConfigService;
         $this->pluginDir = $pluginDir;
+        $this->installmentService = $installmentService;
     }
 
     public static function getSubscribedEvents()
@@ -84,16 +91,22 @@ class CheckoutSubscriber implements SubscriberInterface
         $response = $controller->Response();
         $view = $controller->View();
 
-        if(!$request->isDispatched() ||
+        if(//!$request->isDispatched() ||
             $response->isException() ||
             !$view->hasTemplate() ||
             $request->getModuleName() != 'frontend' ||
-            $request->getControllerName() != 'checkout'
+            $request->getControllerName() != 'checkout' ||
+            $view->getAssign('sPayment') == null
         ) {
             return;
         }
 
         if ($request->getActionName() === 'confirm') {
+            $paymentMethod = $this->sessionHelper->getPaymentMethod();
+            if(PaymentMethods::isInstallment($paymentMethod) == false) {
+                return;
+            }
+            $data = [];
 
             //TODO if no DF token is set, receive all the necessary data to set it and extend template
             if ($this->dfpService->isDfpIdAlreadyGenerated() == false) {
@@ -101,12 +114,21 @@ class CheckoutSubscriber implements SubscriberInterface
                 $data['dfp']['token'] = $this->dfpService->getDfpId();
                 $data['dfp']['snippetId'] = $this->configService->getDfpSnippetId();
             }
-            if($view->getAssign('ratepay')) {
-                $data = array_merge($view->getAssign('ratepay'), $data);
+
+            if(PaymentMethods::isInstallment($paymentMethod)) {
+                $billingAddress = $this->sessionHelper->getBillingAddress();
+                $calcInput = $this->sessionHelper->getData('installment_calculator_input');
+                $installmentPlanHtml = $this->installmentService->getInstallmentPlanTemplate(
+                    $billingAddress->getCountry()->getIso(),
+                    Shopware()->Shop()->getId(),
+                    $paymentMethod,
+                    false,
+                    $this->sessionHelper->getInstallmentRequestDTO()
+                );
+                $data['installmentPlan'] = $installmentPlanHtml;
             }
+
             $view->assign('ratepay', $data);
-
-
             $error = $request->getParam('rpay_message');
             if($error) {
                 $view->assign('ratepayMessage', $error);

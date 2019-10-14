@@ -48,17 +48,17 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.Window', {
 
         tabPanel.add([
             Ext.create('Shopware.apps.RatepayOrder.view.detail.tabs.Positions', {
-                title: '{s namespace=RatePAY name=tabarticlemanagement}RatePAY Artikelverwaltung{/s}',
+                title: '{s namespace="backend/ratepay" name=tabarticlemanagement}RatePAY Artikelverwaltung{/s}',
                 record: me.record,
                 orderStatusStore: me.orderStatusStore,
                 paymentStatusStore: me.paymentStatusStore
             }),
             Ext.create('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
-                title: '{s namespace=RatePAY name=tablog}RatePAY Log{/s}',
+                title: '{s namespace="backend/ratepay" name=tablog}RatePAY Log{/s}',
                 record: me.record
             }),
             Ext.create('Shopware.apps.RatepayOrder.view.detail.tab.History', {
-                title: '{s namespace=RatePAY name=tabhistory}RatePAY History{/s}',
+                title: '{s namespace="backend/ratepay" name=tabhistory}RatePAY History{/s}',
                 historyStore: me.historyStore,
                 record: me.record,
                 orderStatusStore: me.orderStatusStore,

@@ -25,6 +25,9 @@
             <argument id="rpay_rate_pay.logger" type="service" />
             <tag name="shopware.event_subscriber"/>
         </service>
+        <service id="RpayRatePay\Subscriber\PaymentMethodClassesSubscriber">
+            <tag name="shopware.event_subscriber"/>
+        </service>
 
         <!-- Subscribers - Backend -->
         <service id="RpayRatePay\Subscriber\Backend\OrderControllerSubscriber">
@@ -63,12 +66,6 @@
         </service>
 
         <!-- Subscriber - Frontend -->
-        <service id="RpayRatePay\Subscriber\Frontend\CheckoutValidationSubscriber">
-            <argument id="models" type="service"/>
-            <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
-            <argument id="rpay_rate_pay.logger" type="service" />
-            <tag name="shopware.event_subscriber"/>
-        </service>
         <service id="RpayRatePay\Subscriber\Frontend\PaymentFilterSubscriber">
             <argument id="models" type="service"/>
             <argument id="shopware_storefront.context_service" type="service"/>
@@ -87,6 +84,7 @@
             <argument id="shopware_storefront.context_service" type="service"/>
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\InstallmentService" type="service" />
             <argument id="RpayRatePay\Services\DfpService" type="service"/>
             <argument>%rpay_rate_pay.plugin_dir%</argument>
             <tag name="shopware.event_subscriber"/>

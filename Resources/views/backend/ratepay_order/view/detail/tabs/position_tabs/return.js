@@ -85,7 +85,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
                 renderer: Ext.util.Format.numberRenderer('0.00')
             },
             {
-                header: '{s namespace=RatePAY name=ordered}Bestellt{/s}',
+                header: '{s namespace="backend/ratepay" name=ordered}Bestellt{/s}',
                 dataIndex: 'quantity'
             },
             {
@@ -93,11 +93,11 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
                 dataIndex: 'delivered'
             },
             {
-                header: '{s namespace=RatePAY name=cancelled}Storniert{/s}',
+                header: '{s namespace="backend/ratepay" name=cancelled}Storniert{/s}',
                 dataIndex: 'cancelled'
             },
             {
-                header: '{s namespace=RatePAY name=returned}Retourniert{/s}',
+                header: '{s namespace="backend/ratepay" name=returned}Retourniert{/s}',
                 dataIndex: 'returned'
             },
         ];
@@ -108,7 +108,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
         var id = me.record.get('id');
         return [
             {
-                text: '{s namespace=RatePAY name=setzero}Anzahl auf 0 setzen{/s}',
+                text: '{s namespace="backend/ratepay" name=setzero}Anzahl auf 0 setzen{/s}',
                 handler: function () {
                     var id = me.record.get('id');
                     var positionStore = Ext.create('Shopware.apps.RatepayOrder.store.Position');
@@ -124,14 +124,14 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
             },
             {
                 iconCls: 'sprite-minus-circle-frame',
-                text: '{s namespace=RatePAY name=return}Auswahl retournieren{/s}',
+                text: '{s namespace="backend/ratepay" name=return}Auswahl retournieren{/s}',
                 handler: function () {
                     me.toolbarReturn();
                 }
             },
             {
                 iconCls: 'sprite-minus-circle-frame',
-                text: '{s namespace=RatePAY name=returnStock}Auswahl retournieren, Inventar aktuallisieren{/s}',
+                text: '{s namespace="backend/ratepay" name=returnStock}Auswahl retournieren, Inventar aktuallisieren{/s}',
                 handler: function () {
                     me.toolbarReturnStock();
                 }
@@ -179,8 +179,8 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
         }
 
         if (error == true) {
-            Ext.Msg.alert('{s namespace=RatePAY name=messagereturntitle}Retoure fehlgeschlagen{/s}',
-                '{s namespace=RatePAY name=messagereturntext}Es k&ouml;nnen nicht mehr Artikel retourniert werden als versand wurden!{/s}');
+            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagereturntitle}Retoure fehlgeschlagen{/s}',
+                '{s namespace="backend/ratepay" name=messagereturntext}Es k&ouml;nnen nicht mehr Artikel retourniert werden als versand wurden!{/s}');
             return false;
         } else {
             Ext.Ajax.request({
@@ -239,8 +239,8 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
         }
 
         if (error == true) {
-            Ext.Msg.alert('{s namespace=RatePAY name=messagereturntitle}Retoure fehlgeschlagen{/s}',
-                '{s namespace=RatePAY name=messagereturntext}Es k&ouml;nnen nicht mehr Artikel retourniert werden als versand wurden!{/s}');
+            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagereturntitle}Retoure fehlgeschlagen{/s}',
+                '{s namespace="backend/ratepay" name=messagereturntext}Es k&ouml;nnen nicht mehr Artikel retourniert werden als versand wurden!{/s}');
             return false;
         } else {
             Ext.Ajax.request({

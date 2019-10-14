@@ -4,6 +4,7 @@
 namespace RpayRatePay\PaymentMethods;
 
 
+use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Services\InstallmentService;
 
@@ -23,18 +24,22 @@ class Installment extends Debit
 
     public function getCurrentPaymentDataAsArray($userId)
     {
-        $installmentData = $this->sessionHelper->getData('installment_calculator_input', []);
-        $this->isBankDataRequired = $installmentData['payment_type'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
+        $installmentData = $this->sessionHelper->getInstallmentRequestDTO();
+        $this->isBankDataRequired = $installmentData->getPaymentType() !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
 
         $data = parent::getCurrentPaymentDataAsArray($userId);
-        $data['ratepay']['installment'] = $installmentData;
+        $data['ratepay']['installment'] = $installmentData->toArray();
+
+        //this is just a fix, cause we will not save this value. But if the payment data got validated,
+        // we will validate against this field.
+        $data['ratepay']['installment']['sepa_agreement'] = true;
         return $data;
     }
 
     public function validate($paymentData)
     {
         $installmentData = isset($paymentData['ratepay']['installment']) ? $paymentData['ratepay']['installment'] : [];
-        $this->isBankDataRequired = $installmentData['payment_type'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
+        $this->isBankDataRequired = $installmentData['paymentType'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
 
         $return = parent::validate($paymentData);
 
@@ -43,13 +48,13 @@ class Installment extends Debit
             !isset(
                 $installmentData['type'],
                 $installmentData['value'],
-                $installmentData['payment_type'],
-                $installmentData['payment_firstday']
+                $installmentData['paymentType'],
+                $installmentData['paymentFirstDay']
             ) ||
             empty($installmentData['type']) ||
             empty($installmentData['value']) ||
-            empty($installmentData['payment_type']) ||
-            empty($installmentData['payment_firstday'])
+            empty($installmentData['paymentType']) ||
+            empty($installmentData['paymentFirstDay'])
         ) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidCalculator');
         }
@@ -71,6 +76,14 @@ class Installment extends Debit
 
         parent::savePaymentData($userId, $request);
 
+        $dto = new InstallmentRequest(
+            floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']),
+            $installmentData['type'],
+            $installmentData['value'],
+            $installmentData['paymentType'],
+            $installmentData['paymentFirstDay']
+        );
+
         $paymentMethod = $this->sessionHelper->getPaymentMethod();
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $this->installmentService->initInstallmentData(
@@ -78,11 +91,7 @@ class Installment extends Debit
             Shopware()->Shop()->getId(),
             $paymentMethod->getName(),
             false,
-            floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']),
-            $installmentData['type'],
-            $installmentData['payment_firstday'],
-            $installmentData['value']
+            $dto
         );
-        $this->sessionHelper->setData('installment_calculator_input', $installmentData);
     }
 }

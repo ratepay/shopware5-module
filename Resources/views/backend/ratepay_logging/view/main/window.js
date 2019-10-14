@@ -53,7 +53,7 @@ Ext.define('Shopware.apps.RatepayLogging.view.main.Window', {
                 },
 
                 {
-                    header: '{s namespace=RatePAY name=version}Version{/s}',
+                    header: '{s namespace="backend/ratepay" name=version}Version{/s}',
                     dataIndex: 'version',
                     flex: 1
                 },
@@ -65,13 +65,13 @@ Ext.define('Shopware.apps.RatepayLogging.view.main.Window', {
                 },
 
                 {
-                    header: '{s namespace=RatePAY name=suboperation}Suboperation{/s}',
+                    header: '{s namespace="backend/ratepay" name=suboperation}Suboperation{/s}',
                     dataIndex: 'suboperation',
                     flex: 2
                 },
 
                 {
-                    header: '{s namespace=RatePAY name=transactionid}Transaction-ID{/s}',
+                    header: '{s namespace="backend/ratepay" name=transactionid}Transaction-ID{/s}',
                     dataIndex: 'transactionId',
                     flex: 2
                 },
@@ -132,7 +132,7 @@ Ext.define('Shopware.apps.RatepayLogging.view.main.Window', {
                     xtype: 'textareafield',
                     border: false,
                     layout: 'fit',
-                    title: '{s namespace=RatePAY name=response}Response{/s}',
+                    title: '{s namespace="backend/ratepay" name=response}Response{/s}',
                     value: 'N/A',
                     id: 'responsePanel',
                     autoScroll: true,

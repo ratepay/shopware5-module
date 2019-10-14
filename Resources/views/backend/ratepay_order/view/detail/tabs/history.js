@@ -52,7 +52,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tab.History', {
             },
 
             {
-                header: '{s namespace=RatePAY name=event}Event{/s}',
+                header: '{s namespace="backend/ratepay" name=event}Event{/s}',
                 dataIndex: 'event',
                 flex: 2
             },

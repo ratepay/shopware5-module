@@ -57,7 +57,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
             },
 
             {
-                header: '{s namespace=RatePAY name=version}Version{/s}',
+                header: '{s namespace="backend/ratepay" name=version}Version{/s}',
                 dataIndex: 'version',
                 flex: 1
             },
@@ -69,13 +69,13 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
             },
 
             {
-                header: '{s namespace=RatePAY name=suboperation}Suboperation{/s}',
+                header: '{s namespace="backend/ratepay" name=suboperation}Suboperation{/s}',
                 dataIndex: 'suboperation',
                 flex: 2
             },
 
             {
-                header: '{s namespace=RatePAY name=transactionid}Transaction-ID{/s}',
+                header: '{s namespace="backend/ratepay" name=transactionid}Transaction-ID{/s}',
                 dataIndex: 'transactionId',
                 flex: 2
             },
@@ -117,7 +117,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
                 ]
             },
             {
-                header: '{s namespace=RatePAY name=response}Response{/s}',
+                header: '{s namespace="backend/ratepay" name=response}Response{/s}',
                 xtype: 'actioncolumn',
                 flex: 1,
                 items: [

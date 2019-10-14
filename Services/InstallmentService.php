@@ -6,14 +6,17 @@ namespace RpayRatePay\Services;
 
 use Exception;
 use RatePAY\Frontend\InstallmentBuilder;
+use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Address;
+use Shopware\Models\Payment\Payment;
 use Shopware\Models\Shop\Shop;
 
+// TODO improve this service ....
 class InstallmentService
 {
 
@@ -58,14 +61,18 @@ class InstallmentService
      * @param int $shopId
      * @param string $paymentMethodName
      * @param boolean $isBackend
-     * @param float $totalAmount
-     * @param string $type //TODO better name
-     * @param int $paymentFirstDate
-     * @param float $value //TODO better name
+     * @param InstallmentRequest $requestDto
      * @return mixed
      */
-    public function initInstallmentData($countryCode, $shopId = null, $paymentMethodName = null, $isBackend = null, $totalAmount = null, $type = null, $paymentFirstDate = null, $value = null) {
-        $plan = is_array($countryCode) ? $countryCode : $this->getInstallmentPlan($countryCode, $shopId, $paymentMethodName, $isBackend, $totalAmount, $type, $value);
+    public function initInstallmentData(
+        $countryCode,
+        $shopId,
+        $paymentMethodName,
+        $isBackend,
+        InstallmentRequest $requestDto
+    ){
+
+        $plan = $this->getInstallmentPlan($countryCode, $shopId, $paymentMethodName, $isBackend, $requestDto);
 
         $this->sessionHelper->setInstallmentDetails(
             $plan['totalAmount'],
@@ -78,24 +85,27 @@ class InstallmentService
             $plan['numberOfRatesFull'],
             $plan['rate'],
             $plan['lastRate'],
-            $paymentFirstDate
+            $requestDto->getPaymentFirstDay(),
+            $requestDto
         );
+
         return $plan;
     }
 
-    public function getInstallmentPlan($countryCode, $shopId, $paymentMethodName, $isBackend, $totalAmount, $type, $value) {
+    public function getInstallmentPlan($countryCode, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto) {
         $installmentBuilder = $this->getInstallmentBuilder($countryCode, $shopId, $paymentMethodName, $isBackend);
-        $result = $installmentBuilder->getInstallmentPlanAsJson($totalAmount, $type, $value);
+        $result = $installmentBuilder->getInstallmentPlanAsJson($requestDto->getTotalAmount(), $requestDto->getType(), $requestDto->getValue());
         return json_decode($result, true);
     }
 
-    public function getInstallmentPlanTemplate($countryCode, $shopId, $paymentMethodName, $isBackend, $totalAmount, $type, $value) {
+    public function getInstallmentPlanTemplate($countryCode, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto) {
         $installmentBuilder = $this->getInstallmentBuilder($countryCode, $shopId, $paymentMethodName, $isBackend);
         return $installmentBuilder->getInstallmentPlanByTemplate(
             file_get_contents($this->getTemplate('template.installmentPlan.html', $isBackend)),
-            $totalAmount,
-            $type,
-            $value
+            $requestDto->getTotalAmount(),
+            $requestDto->getType(),
+            $requestDto->getValue(),
+            $requestDto->getPaymentFirstDay()
         );
     }
 
@@ -114,6 +124,7 @@ class InstallmentService
      */
     protected function getInstallmentBuilder($countryCode, $shopId, $paymentMethodName, $isBackend = false)
     {
+        $paymentMethodName = $paymentMethodName instanceof Payment ? $paymentMethodName->getName() : $paymentMethodName;
         $zeroPercentInstallment = $paymentMethodName === PaymentMethods::PAYMENT_INSTALLMENT0;
 
         $profileConfig = $this->profileConfigService->getProfileConfig($countryCode, $shopId, $isBackend, $zeroPercentInstallment);

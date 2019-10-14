@@ -28,7 +28,9 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ShopwareUtil;
+use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
@@ -201,14 +203,20 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $paymentMethod = $this->sessionHelper->getPaymentMethod();
         $billingAddress = $this->sessionHelper->getBillingAddress();
 
+        $requestDto = new InstallmentRequest(
+            $params['calculationAmount'],
+            $params['calculationType'],
+            $params['calculationValue'],
+            null,
+            $params['paymentFirstday']
+        );
+
         echo $this->installmentService->getInstallmentPlanTemplate(
             $billingAddress->getCountry()->getIso(),
             Shopware()->Shop()->getId(),
             $paymentMethod,
             false,
-            $params['calculationAmount'],
-            $params['calculationType'],
-            $params['calculationValue']
+            $requestDto
         );
     }
 

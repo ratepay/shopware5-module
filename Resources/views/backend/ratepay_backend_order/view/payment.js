@@ -1,4 +1,4 @@
-//{namespace name="backend/RatePay"}
+//{namespace name="backend/ratepay"}
 //{block name="backend/ratepay_backend_order/view/payment"}
 //
 Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {

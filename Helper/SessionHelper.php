@@ -9,6 +9,7 @@ use Enlight_Components_Session_Namespace;
 use RpayRatePay\Bootstrap\PaymentMeans;
 use RpayRatePay\DTO\BankData;
 use RpayRatePay\DTO\InstallmentDetails;
+use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentSubType;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Address;
@@ -187,7 +188,7 @@ class SessionHelper
         return $object;
     }
 
-    public function setInstallmentDetails($totalAmount, $amount, $interestRate, $interestAmount, $serviceCharge, $annualPercentageRate, $monthlyDebitInterest, $numberOfRatesFull, $rate, $lastRate, $paymentSubtype)
+    public function setInstallmentDetails($totalAmount, $amount, $interestRate, $interestAmount, $serviceCharge, $annualPercentageRate, $monthlyDebitInterest, $numberOfRatesFull, $rate, $lastRate, $paymentSubtype, InstallmentRequest $installmentRequest)
     {
         $this->setData('ratenrechner', [
             'total_amount' => $totalAmount,
@@ -202,6 +203,7 @@ class SessionHelper
             'last_rate' => $lastRate,
         ]);
         $this->setInstallmentPaymentSubtype($paymentSubtype); //todo this is the paymentFirstDay
+        $this->setData('installment_calculator_input', $installmentRequest->toArray());
     }
 
     public function setInstallmentPaymentSubtype($paymentFirstDay)
@@ -211,6 +213,13 @@ class SessionHelper
         $data['payment_firstday'] = $paymentFirstDay;
         $data['dueDate'] = $paymentFirstDay;
         $this->setData('ratenrechner', $data);
+    }
+
+    public function getInstallmentRequestDTO() {
+        $data = $this->getData('installment_calculator_input') ? : [];
+        $dto = new InstallmentRequest();
+        $dto->fromArray($data);
+        return $dto;
     }
 
 

@@ -35,7 +35,16 @@ class PaymentMeans extends AbstractBootstrap
 
     public function install()
     {
+        $repo = $this->modelManager->getRepository(Payment::class);
         foreach(PaymentMethods::PAYMENTS as $options) {
+            $payment = $repo->findOneBy(['name' => $options['name']]);
+            if($payment !== null) {
+                unset(
+                    $options['active'],
+                    $options['description'],
+                    $options['additionalDescription']
+                );
+            }
             $this->paymentInstaller->createOrUpdate($this->installContext->getPlugin(), $options);
         }
     }
