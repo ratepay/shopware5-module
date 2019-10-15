@@ -17,7 +17,8 @@ final class PaymentSubType extends Enum
         '2,28' => self::PAY_TYPE_FIRSTDAY_SWITCH
     ];
 
-    public static function getPayTypByFirstPayDay($firstPayDay) {
+    public static function getPayTypByFirstPayDay($firstPayDay)
+    {
         return self::PAY_TYPES[$firstPayDay];
     }
 }

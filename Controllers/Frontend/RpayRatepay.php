@@ -18,27 +18,18 @@
  * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
  */
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Doctrine\ORM\TransactionRequiredException;
 use Monolog\Logger;
 use RatePAY\Model\Response\PaymentRequest;
-use RpayRatePay\Component\Mapper\ModelFactory;
-use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\SessionLoader;
-use RpayRatePay\Component\Service\ShopwareUtil;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentMethods;
-use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
 use RpayRatePay\Services\InstallmentService;
-use RpayRatePay\Services\Logger\RequestLogger;
-use RpayRatePay\Services\PaymentProcessorService;
 use RpayRatePay\Services\Request\PaymentConfirmService;
 use RpayRatePay\Services\Request\PaymentRequestService;
 use Shopware\Components\CSRFWhitelistAware;
@@ -175,7 +166,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                     ]
                 );
             }
-        } catch(\Exception $e) {
+        } catch (Exception $e) {
             $this->redirect(
                 [
                     'controller' => 'checkout',
@@ -194,7 +185,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender(); // TODO is there a better way?
 
         $params = $this->Request()->getParams();
-        if(!isset($params['calculationAmount']) ||
+        if (!isset($params['calculationAmount']) ||
             !isset($params['calculationValue']) ||
             !isset($params['calculationType']) ||
             !isset($params['paymentFirstday'])) {

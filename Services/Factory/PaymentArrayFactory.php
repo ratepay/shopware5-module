@@ -6,7 +6,6 @@ namespace RpayRatePay\Services\Factory;
 
 use Exception;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
-use RpayRatePay\Component\Service\ShopwareUtil;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 

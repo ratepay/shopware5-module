@@ -5,6 +5,7 @@ namespace RpayRatePay\Subscriber\Frontend;
 
 
 use Enlight\Event\SubscriberInterface;
+use Enlight_Hook_HookArgs;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -12,7 +13,7 @@ use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\InstallmentService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
-use Shopware\Components\Model\ModelManager;
+use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware_Controllers_Frontend_Checkout;
 
 class PaymentShippingSubscriber implements SubscriberInterface
@@ -33,7 +34,7 @@ class PaymentShippingSubscriber implements SubscriberInterface
     protected $configService;
     protected $pluginDir;
     /**
-     * @var \Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface|null
+     * @var ShopContextInterface|null
      */
     protected $context;
     /**
@@ -71,18 +72,18 @@ class PaymentShippingSubscriber implements SubscriberInterface
         ];
     }
 
-    public function onShippingPaymentAction(\Enlight_Hook_HookArgs $args)
+    public function onShippingPaymentAction(Enlight_Hook_HookArgs $args)
     {
         /** @var Shopware_Controllers_Frontend_Checkout $subject */
         $subject = $args->getSubject();
         $view = $subject->View();
 
-        if($view->getAssign('sPayments') === null) {
+        if ($view->getAssign('sPayments') === null) {
             return;
         }
 
         $sUserData = $view->getAssign('sUserData');
-        if(isset($sUserData['additional']['payment']['name'])) {
+        if (isset($sUserData['additional']['payment']['name'])) {
             // this is a little bit tricky. Shopware set another ID to the data object. To use this value is a
             // little bit safer cause related to this value the payment section will show
             $paymentMethodName = $sUserData['additional']['payment']['name'];
@@ -103,12 +104,12 @@ class PaymentShippingSubscriber implements SubscriberInterface
                 'sandbox' => $profileConfig->isSandbox(),
             ];
 
-            if($view->getAssign('ratepay')) {
+            if ($view->getAssign('ratepay')) {
                 $data = array_merge($view->getAssign('ratepay'), $data);
             }
             $view->assign('ratepay', $data);
 
-            if(PaymentMethods::isInstallment($paymentMethodName)) {
+            if (PaymentMethods::isInstallment($paymentMethodName)) {
 
                 $totalAmount = floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']); //TODO
 
@@ -129,7 +130,6 @@ class PaymentShippingSubscriber implements SubscriberInterface
             }
         }
     }
-
 
 
 }

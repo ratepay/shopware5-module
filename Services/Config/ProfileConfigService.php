@@ -4,9 +4,12 @@
 namespace RpayRatePay\Services\Config;
 
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\TransactionRequiredException;
+use Exception;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Models\ConfigInstallment;
-use RpayRatePay\Models\ConfigInstallmentRepository;
 use RpayRatePay\Models\ConfigPayment;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Models\ProfileConfigRepository;
@@ -58,13 +61,13 @@ class ProfileConfigService
      * @param $countryIso
      * @param bool $backend
      * @return object|ConfigInstallment|null
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
     public function getInstallmentConfig($paymentMethodName, $shopId, $countryIso = null, $backend = false)
     {
-        $config = $this->getPaymentConfig($paymentMethodName, $shopId, $countryIso,  $backend);
+        $config = $this->getPaymentConfig($paymentMethodName, $shopId, $countryIso, $backend);
         return $this->modelManager->find(ConfigInstallment::class, $config->getRpayId());
     }
 
@@ -88,8 +91,9 @@ class ProfileConfigService
         return $this->getPaymentConfigForProfileAndMethod($profileConfig, $paymentMethod);
     }
 
-    public function getPaymentConfigForProfileAndMethod(ProfileConfig $profileConfig, $paymentMethod) {
-        switch($paymentMethod) {
+    public function getPaymentConfigForProfileAndMethod(ProfileConfig $profileConfig, $paymentMethod)
+    {
+        switch ($paymentMethod) {
             case PaymentMethods::PAYMENT_DEBIT:
                 return $profileConfig->getDebitConfig();
             case PaymentMethods::PAYMENT_INSTALLMENT0:
@@ -101,6 +105,6 @@ class ProfileConfigService
             case PaymentMethods::PAYMENT_PREPAYMENT:
                 return $profileConfig->getPrepaymentConfig();
         }
-        throw new \Exception('unknown payment method '.$paymentMethod);
+        throw new Exception('unknown payment method ' . $paymentMethod);
     }
 }

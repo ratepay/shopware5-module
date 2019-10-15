@@ -1,7 +1,6 @@
 <?php
 
 
-
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation; either
@@ -20,14 +19,15 @@
  * @package    RpayRatePAY
  * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
  */
+
 namespace RpayRatePay;
 
 use RpayRatePay\Bootstrap\AbstractBootstrap;
+use RpayRatePay\Bootstrap\Configuration;
 use RpayRatePay\Bootstrap\Database;
 use RpayRatePay\Bootstrap\OrderAttribute;
 use RpayRatePay\Bootstrap\OrderStatus;
 use RpayRatePay\Bootstrap\PaymentMeans;
-use RpayRatePay\Bootstrap\Configuration;
 use RpayRatePay\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -41,11 +41,11 @@ class RpayRatePay extends Plugin
     {
         parent::build($container);
 
-        $loggerServiceName = $this->getContainerPrefix().'.logger';
-        if($container->has($loggerServiceName) === false) {
+        $loggerServiceName = $this->getContainerPrefix() . '.logger';
+        if ($container->has($loggerServiceName) === false) {
             // SW 5.6 auto register a logger for each plugin - so if service not found
             // (cause lower sw-version than 5.6), we will register our own logger
-            $container->register($loggerServiceName,  FileLogger::class)
+            $container->register($loggerServiceName, FileLogger::class)
                 ->addArgument($container->getParameter('kernel.logs_dir'));
         }
     }
@@ -53,7 +53,8 @@ class RpayRatePay extends Plugin
     /**
      * @return AbstractBootstrap[]
      */
-    protected function getBootstrapClasses(Plugin\Context\InstallContext $context) {
+    protected function getBootstrapClasses(Plugin\Context\InstallContext $context)
+    {
         $modelManager = $this->container->get('models');
         return [
             new Database($context, $modelManager),
@@ -66,7 +67,7 @@ class RpayRatePay extends Plugin
 
     public function install(Plugin\Context\InstallContext $context)
     {
-        foreach($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->install();
         }
         parent::install($context);
@@ -75,7 +76,7 @@ class RpayRatePay extends Plugin
 
     public function update(Plugin\Context\UpdateContext $context)
     {
-        foreach($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->update();
         }
         parent::update($context);
@@ -84,7 +85,7 @@ class RpayRatePay extends Plugin
 
     public function uninstall(Plugin\Context\UninstallContext $context)
     {
-        foreach($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->uninstall($context->keepUserData());
         }
         parent::uninstall($context);
@@ -93,15 +94,16 @@ class RpayRatePay extends Plugin
 
     public function deactivate(Plugin\Context\DeactivateContext $context)
     {
-        foreach($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->deactivate();
         }
         parent::deactivate($context);
         $context->scheduleClearCache([$context::CACHE_LIST_ALL]);
     }
+
     public function activate(Plugin\Context\ActivateContext $context)
     {
-        foreach($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->activate();
         }
         parent::activate($context);

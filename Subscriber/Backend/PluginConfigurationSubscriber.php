@@ -68,8 +68,8 @@ class PluginConfigurationSubscriber implements SubscriberInterface
         foreach ($parameter['elements'] as $element) {
 
             $matches = [];
-            if(preg_match_all('/ratepay\/profile\/([a-z]{2})\/(frontend|backend)\/(id|security_code)\/?(installment0)?/', $element['name'], $matches)) {
-                foreach($element['values'] as $valueArray) {
+            if (preg_match_all('/ratepay\/profile\/([a-z]{2})\/(frontend|backend)\/(id|security_code)\/?(installment0)?/', $element['name'], $matches)) {
+                foreach ($element['values'] as $valueArray) {
                     $shopId = $valueArray['shopId'];
                     $value = trim($valueArray['value']);
 
@@ -87,8 +87,8 @@ class PluginConfigurationSubscriber implements SubscriberInterface
         $errors = [];
 
         foreach ($shopCredentials as $shopId => $countries) { // de | at | nl | ch | be
-            foreach($countries as $countryCode => $scopes) { // backend | frontend
-                foreach($scopes as $scope => $profileTypes) {  // general | installment0
+            foreach ($countries as $countryCode => $scopes) { // backend | frontend
+                foreach ($scopes as $scope => $profileTypes) {  // general | installment0
                     foreach ($profileTypes as $type => $credentials) {
                         if (null !== $credentials['id'] && null !== $credentials['security_code']) {
 

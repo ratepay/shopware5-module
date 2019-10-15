@@ -4,6 +4,7 @@
 namespace RpayRatePay\PaymentMethods;
 
 
+use Enlight_Controller_Request_Request;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Services\InstallmentService;
@@ -44,7 +45,7 @@ class Installment extends Debit
         $return = parent::validate($paymentData);
 
 
-        if($installmentData == null ||
+        if ($installmentData == null ||
             !isset(
                 $installmentData['type'],
                 $installmentData['value'],
@@ -59,8 +60,8 @@ class Installment extends Debit
             $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidCalculator');
         }
 
-        if($this->isBankDataRequired) {
-            if(!isset($installmentData['sepa_agreement']) || empty($installmentData['sepa_agreement'])) {
+        if ($this->isBankDataRequired) {
+            if (!isset($installmentData['sepa_agreement']) || empty($installmentData['sepa_agreement'])) {
                 $return['sErrorMessages'][] = $this->getTranslatedMessage('AcceptSepaAgreement');
             }
         }
@@ -68,7 +69,7 @@ class Installment extends Debit
         return $return;
     }
 
-    public function savePaymentData($userId, \Enlight_Controller_Request_Request $request)
+    public function savePaymentData($userId, Enlight_Controller_Request_Request $request)
     {
         $paymentData = $request->getParam('ratepay');
         $installmentData = $paymentData['installment'];

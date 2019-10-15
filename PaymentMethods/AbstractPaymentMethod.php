@@ -5,6 +5,7 @@ namespace RpayRatePay\PaymentMethods;
 
 
 use DateTime;
+use Enlight_Controller_Request_Request;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Helper\SessionHelper;
 use Shopware\Components\DependencyInjection\Container;
@@ -38,10 +39,11 @@ class AbstractPaymentMethod extends GenericPaymentMethod
         $this->snippetManager = $this->container->get('snippets');
     }
 
-    public function getCurrentPaymentDataAsArray($userId) {
+    public function getCurrentPaymentDataAsArray($userId)
+    {
         $data = parent::getCurrentPaymentDataAsArray($userId);
         $customer = $this->sessionHelper->getCustomer();
-        if($customer == null || $customer->getId() !== (int) $userId) {
+        if ($customer == null || $customer->getId() !== (int)$userId) {
             return [];
         }
         $billingAddress = $this->sessionHelper->getBillingAddress($customer);
@@ -54,8 +56,8 @@ class AbstractPaymentMethod extends GenericPaymentMethod
             'birthday_required' => ValidationLib::isCompanySet($billingAddress) === false,
             'birthday' => [
                 'year' => $birthday ? $birthday->format('Y') : null,
-                'month' => $birthday ? $birthday->format('m'): null,
-                'day' => $birthday ? $birthday->format('d'): null
+                'month' => $birthday ? $birthday->format('m') : null,
+                'day' => $birthday ? $birthday->format('d') : null
             ]
         ];
         return $data;
@@ -65,7 +67,7 @@ class AbstractPaymentMethod extends GenericPaymentMethod
     {
         $return = [];
         $ratepayData = $paymentData['ratepay']['customer_data'];
-        if(!isset($ratepayData['birthday_required']) || $ratepayData['birthday_required'] == 1) {
+        if (!isset($ratepayData['birthday_required']) || $ratepayData['birthday_required'] == 1) {
             if (!isset($ratepayData['birthday'])) {
                 $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingBirthday');
             } else {
@@ -77,15 +79,16 @@ class AbstractPaymentMethod extends GenericPaymentMethod
             }
         }
 
-        if(!isset($ratepayData['phone'])) {
+        if (!isset($ratepayData['phone'])) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingPhone');
         }
-        if((strlen(trim($ratepayData['phone'])) > 6) === false) {
+        if ((strlen(trim($ratepayData['phone'])) > 6) === false) {
             $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidPhone'), 6); //TODO config?
         }
         return $return;
     }
-    public function savePaymentData($userId, \Enlight_Controller_Request_Request $request)
+
+    public function savePaymentData($userId, Enlight_Controller_Request_Request $request)
     {
         $ratepayData = $request->getParam('ratepay')['customer_data'];
 

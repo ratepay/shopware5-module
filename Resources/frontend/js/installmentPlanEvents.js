@@ -1,4 +1,4 @@
-;(function(){
+;(function () {
     jQuery(document).on("click", "#rp-show-installment-plan-details", function (event) {
         event.preventDefault();
         jQuery('.rp-installment-plan-details').show();

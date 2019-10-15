@@ -20,7 +20,6 @@
 
 use Monolog\Logger;
 use RpayRatePay\DTO\InstallmentRequest;
-use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
@@ -86,7 +85,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
     {
         $params = $this->Request()->getParams();
 
-        $accountNumber = trim($params['accountNumber']) ? : trim($params['iban']);
+        $accountNumber = trim($params['accountNumber']) ?: trim($params['iban']);
         $bankCode = trim($params['bankCode']);
         $customerId = intval($params['customerId']);
 

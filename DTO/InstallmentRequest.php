@@ -20,7 +20,7 @@ class InstallmentRequest
         $this->totalAmount = $totalAmount;
         $this->type = $type;
         $this->value = $value;
-        $this->paymentType = $paymentType ? : $paymentFirstDay ? PaymentSubType::getPayTypByFirstPayDay($paymentFirstDay) : null;
+        $this->paymentType = $paymentType ?: $paymentFirstDay ? PaymentSubType::getPayTypByFirstPayDay($paymentFirstDay) : null;
         $this->paymentFirstDay = $paymentFirstDay;
     }
 
@@ -104,11 +104,13 @@ class InstallmentRequest
         $this->paymentFirstDay = $paymentFirstDay;
     }
 
-    public function toArray() {
+    public function toArray()
+    {
         return get_object_vars($this);
     }
 
-    public function fromArray($data) {
+    public function fromArray($data)
+    {
         foreach ($data as $key => $value) {
             $method = 'set' . ucfirst($key);
             if (method_exists($this, $method)) {

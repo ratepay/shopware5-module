@@ -5,6 +5,7 @@ namespace RpayRatePay\Component\Service;
 use DateTime;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Models\ConfigPayment;
+use Shopware\Models\Country\Country;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Order\Billing as BillingAddress;
@@ -37,10 +38,10 @@ class ValidationLib
     public static function isOldEnough($date)
     {
         $today = new DateTime('now');
-        if ($date instanceof \DateTime === false &&
+        if ($date instanceof DateTime === false &&
             preg_match("/^\d{4}-\d{2}-\d{2}$/", $date)
         ) {
-            $date = \DateTime::createFromFormat('Y-m-d', $date);
+            $date = DateTime::createFromFormat('Y-m-d', $date);
         }
         //TODO Age config?
         return $date->diff($today)->y >= 18 && $date->diff($today)->y <= 120;
@@ -69,7 +70,7 @@ class ValidationLib
      */
     public static function areBillingAndShippingSame($billing, $shipping = null)
     {
-        if($billing->getId() == $shipping->getId()) {
+        if ($billing->getId() == $shipping->getId()) {
             return true;
         }
         $classFunctions = [
@@ -129,7 +130,7 @@ class ValidationLib
         return array_search($currency, $allowedCurrencies, true) !== false;
     }
 
-    public static function isCountryValid($allowedCountries, \Shopware\Models\Country\Country $countryBilling)
+    public static function isCountryValid($allowedCountries, Country $countryBilling)
     {
         $allowedCountries = is_array($allowedCountries) ? $allowedCountries : explode(',', $allowedCountries);
         return array_search($countryBilling->getIso(), $allowedCountries, true) !== false;

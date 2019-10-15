@@ -1,15 +1,15 @@
 <?php
+
 namespace RpayRatePay\Component\Mapper;
+
+use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use Monolog\Logger;
+use RatePAY\Exception\ModelException;
 use RatePAY\ModelBuilder;
 use RatePAY\RequestBuilder;
-use RatePAY\Service\Math;
-use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Mapper\BankData;
-use RatePAY\Service\Util;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\SessionLoader;
-use RpayRatePay\Component\Service\ShopwareUtil;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Logger\RequestLogger;
 
@@ -48,7 +48,7 @@ class ModelFactory
 
     private $netItemPrices;
 
-    /** @var \Enlight_Components_Db_Adapter_Pdo_Mysql */
+    /** @var Enlight_Components_Db_Adapter_Pdo_Mysql */
     protected $db;
     /**
      * @var object|ConfigService
@@ -119,7 +119,7 @@ class ModelFactory
         $this->_transactionId = $transactionId;
     }
 
-    /** @deprecated  */
+    /** @deprecated */
     public function callCalculationRequest($operationData)
     {
         $mbHead = $this->getHead();
@@ -143,13 +143,13 @@ class ModelFactory
     }
 
     /**
-
-    /**
+     *
+     * /**
      * get request head
      *
      * @param bool $countryCode
-     * @return \RatePAY\ModelBuilder
-     * @throws \RatePAY\Exception\ModelException
+     * @return ModelBuilder
+     * @throws ModelException
      */
     private function getHead($countryCode = false)
     {
@@ -182,7 +182,7 @@ class ModelFactory
         //side effect
         $this->_sandboxMode = $this->getSandboxMode($countryCode);
 
-        $mbHead = new \RatePAY\ModelBuilder('head');
+        $mbHead = new ModelBuilder('head');
         $mbHead->setArray($head);
 
         $transactionId = $this->_transactionId;
@@ -221,7 +221,7 @@ class ModelFactory
     /**
      * @param $operationData
      * @return bool|array
-     * @throws \RatePAY\Exception\ModelException
+     * @throws ModelException
      */
     public function callProfileRequest($operationData)
     {
@@ -235,7 +235,7 @@ class ModelFactory
             $sandbox = false;
         }
 
-        $mbHead = new \RatePAY\ModelBuilder();
+        $mbHead = new ModelBuilder();
         $mbHead->setArray([
             'SystemId' => $systemId,
             'Credential' => [
@@ -252,7 +252,7 @@ class ModelFactory
             ]
         ]);
 
-        $rb = new \RatePAY\RequestBuilder($sandbox);
+        $rb = new RequestBuilder($sandbox);
 
         $profileRequest = $rb->callProfileRequest($mbHead);
         $this->_logging->logRequest($profileRequest->getRequestRaw(), $profileRequest->getResponseRaw());
@@ -260,7 +260,7 @@ class ModelFactory
         if ($sandbox == true && $profileRequest->getReasonCode() == 120) {
             $sandbox = false;
 
-            $rb = new \RatePAY\RequestBuilder($sandbox);
+            $rb = new RequestBuilder($sandbox);
 
             $profileRequest = $rb->callProfileRequest($mbHead);
             $this->_logging->logRequest($profileRequest->getRequestRaw(), $profileRequest->getResponseRaw());

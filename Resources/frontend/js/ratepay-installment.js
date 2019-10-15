@@ -1,4 +1,4 @@
-;(function() {
+;(function () {
     if (typeof window.installmentCalculator == 'undefined') {
         return;
     }

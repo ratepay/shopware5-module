@@ -10,6 +10,7 @@ use RpayRatePay\Services\PaymentMethodsService;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Models\Shop\Shop;
+use Shopware_Components_Config;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class Configuration extends AbstractBootstrap
@@ -32,7 +33,7 @@ class Configuration extends AbstractBootstrap
         InstallContext $context,
         ContainerInterface $container,
         ModelManager $modelManager,
-        \Shopware_Components_Config $config,
+        Shopware_Components_Config $config,
         Logger $pluginLogger
     )
     {

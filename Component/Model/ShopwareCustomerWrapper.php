@@ -2,9 +2,17 @@
 
 namespace RpayRatePay\Component\Model;
 
-use RpayRatePay\Component\Service\Logger;
-use Shopware\Models\Customer\Customer;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\TransactionRequiredException;
 use RatePAY\Service\Util;
+use RpayRatePay\Component\Service\Logger;
+use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Country\Country;
+use Shopware\Models\Customer\Address;
+use Shopware\Models\Customer\Billing;
+use Shopware\Models\Customer\Customer;
+use Shopware\Models\Customer\Shipping;
 
 /**
  * Class ShopwareUserWrapper
@@ -18,13 +26,13 @@ class ShopwareCustomerWrapper
     /** @var Customer $customer */
     private $customer;
 
-    /** @var \Shopware\Components\Model\ModelManager $em */
+    /** @var ModelManager $em */
     private $em;
 
     /**
      * ShopwareCustomerWrapper constructor.
      * @param Customer $customer
-     * @param \Shopware\Components\Model\ModelManager $em
+     * @param ModelManager $em
      */
     public function __construct(Customer $customer, $em)
     {
@@ -38,7 +46,7 @@ class ShopwareCustomerWrapper
      */
     public function getShipping($property = null)
     {
-        if($shipping = $this->getShippingAddressFromSession()) {
+        if ($shipping = $this->getShippingAddressFromSession()) {
             return $shipping;
         }
 
@@ -72,7 +80,7 @@ class ShopwareCustomerWrapper
      */
     public function getBilling($property = null)
     {
-        if($billingAddress = $this->getBillingAddressFromSession()) {
+        if ($billingAddress = $this->getBillingAddressFromSession()) {
             return $billingAddress;
         }
 
@@ -122,13 +130,13 @@ class ShopwareCustomerWrapper
     }
 
     /**
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
     public function getBillingCountry()
     {
-        if($shipping = $this->getShippingAddressFromSession()) {
+        if ($shipping = $this->getShippingAddressFromSession()) {
             return $shipping->getCountry();
         }
 
@@ -184,10 +192,10 @@ class ShopwareCustomerWrapper
     }
 
     /**
-     * @return null|object|\Shopware\Models\Country\Country
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @return null|object|Country
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
     public function getShippingCountry()
     {
@@ -209,7 +217,7 @@ class ShopwareCustomerWrapper
     }
 
     /**
-     * @return null|\Shopware\Models\Customer\Address
+     * @return null|Address
      */
     private function getBillingFresh()
     {
@@ -221,7 +229,7 @@ class ShopwareCustomerWrapper
     }
 
     /**
-     * @return null|\Shopware\Models\Customer\Billing
+     * @return null|Billing
      */
     private function getBillingRotten()
     {
@@ -233,7 +241,7 @@ class ShopwareCustomerWrapper
     }
 
     /**
-     * @return null|\Shopware\Models\Customer\Address
+     * @return null|Address
      */
     private function getShippingFresh()
     {
@@ -245,7 +253,7 @@ class ShopwareCustomerWrapper
     }
 
     /**
-     * @return null|\Shopware\Models\Customer\Shipping
+     * @return null|Shipping
      */
     private function getShippingRotten()
     {
@@ -257,10 +265,11 @@ class ShopwareCustomerWrapper
     }
 
     /**
-     * @return \Shopware\Models\Customer\Address|null
+     * @return Address|null
      */
-    protected function getShippingAddressFromSession() {
-        if($this->isAddressAccessibleViaSession()) {
+    protected function getShippingAddressFromSession()
+    {
+        if ($this->isAddressAccessibleViaSession()) {
             $shippingAddressId = Shopware()->Session()->offsetGet('checkoutShippingAddressId');
             if (!empty($shippingAddressId)) {
                 return Shopware()->Models()->find('Shopware\Models\Customer\Address', $shippingAddressId);
@@ -270,10 +279,11 @@ class ShopwareCustomerWrapper
     }
 
     /**
-     * @return \Shopware\Models\Customer\Address|null
+     * @return Address|null
      */
-    protected function getBillingAddressFromSession() {
-        if($this->isAddressAccessibleViaSession()) {
+    protected function getBillingAddressFromSession()
+    {
+        if ($this->isAddressAccessibleViaSession()) {
             $billingAddressId = Shopware()->Session()->offsetGet('checkoutBillingAddressId');
             if (!empty($billingAddressId)) {
                 return Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingAddressId);
@@ -282,7 +292,8 @@ class ShopwareCustomerWrapper
         return null;
     }
 
-    protected function isAddressAccessibleViaSession() {
+    protected function isAddressAccessibleViaSession()
+    {
         //validate if the model does exist and if the user uses the frontend or the administration (session will call the `shop`-service)
         return class_exists('Shopware\Models\Customer\Address') && Shopware()->Container()->has('Shop');
     }

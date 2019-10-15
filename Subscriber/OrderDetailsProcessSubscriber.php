@@ -24,7 +24,7 @@ class OrderDetailsProcessSubscriber implements SubscriberInterface
     public function __construct(
         ModelManager $modelManager,
         HelperService $helperService,
-    $arg4
+        $arg4
     )
     {
         $this->modelManager = $modelManager;

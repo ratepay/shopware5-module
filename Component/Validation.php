@@ -1,5 +1,8 @@
 <?php
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\TransactionRequiredException;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 
@@ -123,7 +126,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
      */
     public function isAgeValid()
     {
-        $today = new \DateTime('now');
+        $today = new DateTime('now');
 
         $birthday = $this->_user->getBirthday();
         if (empty($birthday) || is_null($birthday)) {
@@ -206,9 +209,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
 
     /**
      * @return bool
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
     public function isCountryEqual()
     {
@@ -258,9 +261,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
 
     /**
      * @return bool
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
      */
     public function isRatepayHidden()
     {

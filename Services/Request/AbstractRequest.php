@@ -102,7 +102,7 @@ abstract class AbstractRequest
             $this->isRequestSkipped = true;
             return true;
         }
-        $content = $content ? : $this->getRequestContent();
+        $content = $content ?: $this->getRequestContent();
         $profileConfig = $this->getProfileConfig();
 
         $mbHead = new ModelBuilder('head');

@@ -1,4 +1,5 @@
 <?php
+
 namespace RpayRatePay\Component\Mapper;
 
 use DateTime;
@@ -76,7 +77,8 @@ class PaymentRequestData
         $currencyId,
         BankData $bankData = null,
         InstallmentDetails $installmentDetails = null
-    ) {
+    )
+    {
         $this->method = $paymentMethod;
         $this->customer = $customer;
         $this->billingAddress = $billingAddress;

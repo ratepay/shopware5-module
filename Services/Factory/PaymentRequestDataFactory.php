@@ -5,15 +5,12 @@ namespace RpayRatePay\Services\Factory;
 
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
-use RpayRatePay\DTO\BankData;
-use RpayRatePay\DTO\InstallmentDetails;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\DfpService;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Article\Detail;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
@@ -69,12 +66,12 @@ class PaymentRequestDataFactory
 
         $installmentDetails = null;
         $bankData = null;
-        if(PaymentMethods::isInstallment($paymentMethod)) {
+        if (PaymentMethods::isInstallment($paymentMethod)) {
             $installmentDetails = $this->sessionHelper->getInstallmentDetails();
             if ($installmentDetails->getPaymentSubtype() == PaymentSubType::PAY_TYPE_DIRECT_DEBIT) {  //is rate payment with elv subtype
                 $bankData = $this->sessionHelper->getBankData($billingAddress);
             }
-        } else if(PaymentMethods::PAYMENT_DEBIT === $paymentMethod->getName()) { // is elv payment
+        } else if (PaymentMethods::PAYMENT_DEBIT === $paymentMethod->getName()) { // is elv payment
             $bankData = $this->sessionHelper->getBankData($billingAddress);
         }
 
@@ -96,7 +93,8 @@ class PaymentRequestDataFactory
         );
     }
 
-    public function createFromFrontendSession() {
+    public function createFromFrontendSession()
+    {
 
         $session = $this->sessionHelper->getSession();
         $customer = $this->sessionHelper->getCustomer();

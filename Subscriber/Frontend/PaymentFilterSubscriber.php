@@ -8,7 +8,7 @@ use Doctrine\ORM\TransactionRequiredException;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace;
 use Enlight_Event_EventArgs;
-use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+use Monolog\Logger;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
@@ -17,10 +17,8 @@ use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
-use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Country\Country;
-use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
 use Shopware_Components_Config;
 use Shopware_Components_Modules;
@@ -109,7 +107,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $shippingAddress = $this->sessionHelper->getShippingAddress();
-        if($billingAddress == null) {
+        if ($billingAddress == null) {
             return $return;
         }
 
@@ -124,7 +122,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
             /** @var ConfigPayment $paymentConfig */
             $paymentConfig = $config['paymentConfig'];
 
-            if((int)$paymentConfig->getStatus() !== 2) { //TODO change type of `status` to int
+            if ((int)$paymentConfig->getStatus() !== 2) { //TODO change type of `status` to int
                 continue;
             }
 
@@ -209,7 +207,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
                 false,
                 $payment == PaymentMethods::PAYMENT_INSTALLMENT0
             );
-            if($profileConfig == null) {
+            if ($profileConfig == null) {
                 continue;
             }
             $paymentConfig = $this->profileConfig->getPaymentConfigForProfileAndMethod($profileConfig, $payment);

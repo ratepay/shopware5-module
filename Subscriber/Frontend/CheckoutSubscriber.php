@@ -3,13 +3,10 @@
 namespace RpayRatePay\Subscriber\Frontend;
 
 use Enlight\Event\SubscriberInterface;
-use Enlight_Components_Session_Namespace;
 use Enlight_Event_EventArgs;
 use RatePAY\Service\DeviceFingerprint;
-use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
-use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
@@ -17,8 +14,6 @@ use RpayRatePay\Services\InstallmentService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Customer\Customer;
-use Shopware\Models\Payment\Payment;
 use Shopware_Controllers_Frontend_Checkout;
 
 class CheckoutSubscriber implements SubscriberInterface
@@ -92,7 +87,7 @@ class CheckoutSubscriber implements SubscriberInterface
         $response = $controller->Response();
         $view = $controller->View();
 
-        if(//!$request->isDispatched() ||
+        if (//!$request->isDispatched() ||
             $response->isException() ||
             !$view->hasTemplate() ||
             $request->getModuleName() != 'frontend' ||
@@ -104,7 +99,7 @@ class CheckoutSubscriber implements SubscriberInterface
 
         if ($request->getActionName() === 'confirm') {
             $paymentMethod = $this->sessionHelper->getPaymentMethod();
-            if(PaymentMethods::isInstallment($paymentMethod) == false) {
+            if (PaymentMethods::isInstallment($paymentMethod) == false) {
                 return;
             }
             $data = [];
@@ -115,7 +110,7 @@ class CheckoutSubscriber implements SubscriberInterface
             }
             $this->dfpService->deleteDfpId();
 
-            if(PaymentMethods::isInstallment($paymentMethod)) {
+            if (PaymentMethods::isInstallment($paymentMethod)) {
                 $billingAddress = $this->sessionHelper->getBillingAddress();
                 $installmentPlanHtml = $this->installmentService->getInstallmentPlanTemplate(
                     $billingAddress->getCountry()->getIso(),
@@ -129,7 +124,7 @@ class CheckoutSubscriber implements SubscriberInterface
 
             $view->assign('ratepay', $data);
             $error = $request->getParam('rpay_message');
-            if($error) {
+            if ($error) {
                 $view->assign('ratepayMessage', $error);
             }
         }

@@ -6,7 +6,7 @@ namespace RpayRatePay\Bootstrap;
 use RpayRatePay\Enum\PaymentMethods;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\Context\InstallContext;
-use \Shopware\Components\Plugin\PaymentInstaller;
+use Shopware\Components\Plugin\PaymentInstaller;
 use Shopware\Models\Payment\Payment;
 
 class PaymentMeans extends AbstractBootstrap
@@ -36,9 +36,9 @@ class PaymentMeans extends AbstractBootstrap
     public function install()
     {
         $repo = $this->modelManager->getRepository(Payment::class);
-        foreach(PaymentMethods::PAYMENTS as $options) {
+        foreach (PaymentMethods::PAYMENTS as $options) {
             $payment = $repo->findOneBy(['name' => $options['name']]);
-            if($payment !== null) {
+            if ($payment !== null) {
                 unset(
                     $options['active'],
                     $options['description'],

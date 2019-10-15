@@ -10,7 +10,6 @@ use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 use SwagBackendOrder\Components\Order\Struct\OrderStruct;
 use SwagBackendOrder\Components\Order\Struct\PositionStruct;
-use SwagBackendOrder\Components\Translation\PaymentTranslator;
 
 class TaxHelper
 {
@@ -85,7 +84,7 @@ class TaxHelper
         } else if ($order instanceof PaymentRequestData) {
 //TODO implement
             return $order->getShippingTax();
-        } else if($order instanceof OrderStruct) {
+        } else if ($order instanceof OrderStruct) {
 //TODO implement
             return $order->getShippingCostsTaxRate();
         } else {

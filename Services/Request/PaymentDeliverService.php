@@ -6,7 +6,6 @@ namespace RpayRatePay\Services\Request;
 
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
-use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
@@ -14,7 +13,6 @@ use RpayRatePay\Services\Factory\InvoiceArrayFactory;
 use RpayRatePay\Services\Logger\HistoryLogger;
 use RpayRatePay\Services\Logger\RequestLogger;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Order\Detail;
 
 class PaymentDeliverService extends AbstractModifyRequest
 {
@@ -47,9 +45,8 @@ class PaymentDeliverService extends AbstractModifyRequest
     protected function isSkipRequest()
     {
         /** @deprecated v6.2 */
-        if ($this->_order->getAttribute()->getRatepayDirectDelivery() == false)
-        {
-            if($this->positionHelper->doesOrderHasOpenPositions($this->_order, $this->items)) {
+        if ($this->_order->getAttribute()->getRatepayDirectDelivery() == false) {
+            if ($this->positionHelper->doesOrderHasOpenPositions($this->_order, $this->items)) {
                 return true;
             } else {
                 //deliver ALL positions!
@@ -78,8 +75,7 @@ class PaymentDeliverService extends AbstractModifyRequest
         foreach ($this->items as $item) {
             $position = $this->getOrderPosition($item->getProductNumber());
 
-            if ($this->_order->getAttribute()->getRatepayDirectDelivery() == false && $this->isRequestSkipped == false)
-            {
+            if ($this->_order->getAttribute()->getRatepayDirectDelivery() == false && $this->isRequestSkipped == false) {
                 /** @deprecated v6.2 */
                 // this is a little bit tricky:
                 // if a rate payment has been processed and all items has been delivered,

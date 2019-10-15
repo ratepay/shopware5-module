@@ -1,8 +1,10 @@
 <?php
 
 namespace RpayRatePay\Component\Service;
+
 use RpayRatePay\Services\Config\ConfigService;
 use Shopware;
+use Shopware\Models\Customer\Customer;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -30,14 +32,16 @@ class ShopwareUtil
     /**
      * @return ConfigService
      */
-    protected static function getConfigInstance() {
+    protected static function getConfigInstance()
+    {
         return Shopware()->Container()->get(ConfigService::class);
     }
 
     /**
      * @deprecated
      */
-    protected static function getLoggerInstance() {
+    protected static function getLoggerInstance()
+    {
 
     }
 
@@ -95,10 +99,10 @@ class ShopwareUtil
     }
 
     /**
-     * @param \Shopware\Models\Customer\Customer $customer
+     * @param Customer $customer
      * @return bool
      */
-    public static function customerCreatesNetOrders(Shopware\Models\Customer\Customer $customer)
+    public static function customerCreatesNetOrders(Customer $customer)
     {
         return $customer->getGroup()->getTax() === false;
     }

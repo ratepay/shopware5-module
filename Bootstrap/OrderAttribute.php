@@ -46,7 +46,7 @@ class OrderAttribute extends AbstractBootstrap
 
     public function uninstall($keepUserData = false)
     {
-        if($keepUserData === false) {
+        if ($keepUserData === false) {
             $this->crudService->delete('s_order_attributes', 'ratepay_fallback_shipping');
             $this->crudService->delete('s_order_attributes', 'ratepay_fallback_discount');
             $this->crudService->delete('s_order_attributes', 'ratepay_backend');
@@ -67,7 +67,8 @@ class OrderAttribute extends AbstractBootstrap
     }
 
 
-    protected function cleanUp() {
+    protected function cleanUp()
+    {
         $this->modelManager->generateAttributeModels([
             's_order_attributes',
         ]);

@@ -4,6 +4,7 @@ label {
   margin-bottom: 5px;
   font-weight: 700;
 }
+
 input[type="search"] {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -11,12 +12,14 @@ input[type="search"] {
   -webkit-appearance: none;
   appearance: none;
 }
+
 input[type="radio"],
 input[type="checkbox"] {
   margin: 4px 0 0;
   margin-top: 1px \9;
   line-height: normal;
 }
+
 input[type="radio"][disabled],
 input[type="checkbox"][disabled],
 input[type="radio"].disabled,
@@ -25,23 +28,28 @@ fieldset[disabled] input[type="radio"],
 fieldset[disabled] input[type="checkbox"] {
   cursor: not-allowed;
 }
+
 input[type="file"] {
   display: block;
 }
+
 input[type="range"] {
   display: block;
   width: 100%;
 }
+
 select[multiple],
 select[size] {
   height: auto;
 }
+
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
+
 output {
   display: block;
   padding-top: 7px;
@@ -49,6 +57,7 @@ output {
   line-height: 1.42857143;
   color: #555555;
 }
+
 .form-control {
   display: block;
   width: 100%;
@@ -67,39 +76,48 @@ output {
   -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
+
 .form-control:focus {
   border-color: #66afe9;
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
 }
+
 .form-control::-moz-placeholder {
   color: #999999;
   opacity: 1;
 }
+
 .form-control:-ms-input-placeholder {
   color: #999999;
 }
+
 .form-control::-webkit-input-placeholder {
   color: #999999;
 }
+
 .form-control::-ms-expand {
   background-color: transparent;
   border: 0;
 }
+
 .form-control[disabled],
 .form-control[readonly],
 fieldset[disabled] .form-control {
   background-color: #eeeeee;
   opacity: 1;
 }
+
 .form-control[disabled],
 fieldset[disabled] .form-control {
   cursor: not-allowed;
 }
+
 textarea.form-control {
   height: auto;
 }
+
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   input[type="date"].form-control,
   input[type="time"].form-control,
@@ -107,6 +125,7 @@ textarea.form-control {
   input[type="month"].form-control {
     line-height: 34px;
   }
+
   input[type="date"].input-sm,
   input[type="time"].input-sm,
   input[type="datetime-local"].input-sm,
@@ -117,6 +136,7 @@ textarea.form-control {
   .input-group-sm input[type="month"] {
     line-height: 30px;
   }
+
   input[type="date"].input-lg,
   input[type="time"].input-lg,
   input[type="datetime-local"].input-lg,
@@ -128,9 +148,11 @@ textarea.form-control {
     line-height: 46px;
   }
 }
+
 .form-group {
   margin-bottom: 15px;
 }
+
 .radio,
 .checkbox {
   position: relative;
@@ -138,12 +160,14 @@ textarea.form-control {
   margin-top: 10px;
   margin-bottom: 10px;
 }
+
 .radio.disabled label,
 .checkbox.disabled label,
 fieldset[disabled] .radio label,
 fieldset[disabled] .checkbox label {
   cursor: not-allowed;
 }
+
 .radio label,
 .checkbox label {
   min-height: 20px;
@@ -152,6 +176,7 @@ fieldset[disabled] .checkbox label {
   font-weight: 400;
   cursor: pointer;
 }
+
 .radio input[type="radio"],
 .radio-inline input[type="radio"],
 .checkbox input[type="checkbox"],
@@ -160,10 +185,12 @@ fieldset[disabled] .checkbox label {
   margin-top: 4px \9;
   margin-left: -20px;
 }
+
 .radio + .radio,
 .checkbox + .checkbox {
   margin-top: -5px;
 }
+
 .radio-inline,
 .checkbox-inline {
   position: relative;
@@ -174,28 +201,33 @@ fieldset[disabled] .checkbox label {
   vertical-align: middle;
   cursor: pointer;
 }
+
 .radio-inline.disabled,
 .checkbox-inline.disabled,
 fieldset[disabled] .radio-inline,
 fieldset[disabled] .checkbox-inline {
   cursor: not-allowed;
 }
+
 .radio-inline + .radio-inline,
 .checkbox-inline + .checkbox-inline {
   margin-top: 0;
   margin-left: 10px;
 }
+
 .form-control-static {
   min-height: 34px;
   padding-top: 7px;
   padding-bottom: 7px;
   margin-bottom: 0;
 }
+
 .form-control-static.input-lg,
 .form-control-static.input-sm {
   padding-right: 0;
   padding-left: 0;
 }
+
 .input-sm {
   height: 30px;
   padding: 5px 10px;
@@ -203,14 +235,17 @@ fieldset[disabled] .checkbox-inline {
   line-height: 1.5;
   border-radius: 3px;
 }
+
 select.input-sm {
   height: 30px;
   line-height: 30px;
 }
+
 textarea.input-sm,
 select[multiple].input-sm {
   height: auto;
 }
+
 .form-group-sm .form-control {
   height: 30px;
   padding: 5px 10px;
@@ -218,14 +253,17 @@ select[multiple].input-sm {
   line-height: 1.5;
   border-radius: 3px;
 }
+
 .form-group-sm select.form-control {
   height: 30px;
   line-height: 30px;
 }
+
 .form-group-sm textarea.form-control,
 .form-group-sm select[multiple].form-control {
   height: auto;
 }
+
 .form-group-sm .form-control-static {
   height: 30px;
   min-height: 32px;
@@ -233,6 +271,7 @@ select[multiple].input-sm {
   font-size: 12px;
   line-height: 1.5;
 }
+
 .input-lg {
   height: 46px;
   padding: 10px 16px;
@@ -240,14 +279,17 @@ select[multiple].input-sm {
   line-height: 1.3333333;
   border-radius: 6px;
 }
+
 select.input-lg {
   height: 46px;
   line-height: 46px;
 }
+
 textarea.input-lg,
 select[multiple].input-lg {
   height: auto;
 }
+
 .form-group-lg .form-control {
   height: 46px;
   padding: 10px 16px;
@@ -255,14 +297,17 @@ select[multiple].input-lg {
   line-height: 1.3333333;
   border-radius: 6px;
 }
+
 .form-group-lg select.form-control {
   height: 46px;
   line-height: 46px;
 }
+
 .form-group-lg textarea.form-control,
 .form-group-lg select[multiple].form-control {
   height: auto;
 }
+
 .form-group-lg .form-control-static {
   height: 46px;
   min-height: 38px;
@@ -270,12 +315,15 @@ select[multiple].input-lg {
   font-size: 18px;
   line-height: 1.3333333;
 }
+
 .has-feedback {
   position: relative;
 }
+
 .has-feedback .form-control {
   padding-right: 42.5px;
 }
+
 .form-control-feedback {
   position: absolute;
   top: 0;
@@ -288,6 +336,7 @@ select[multiple].input-lg {
   text-align: center;
   pointer-events: none;
 }
+
 .input-lg + .form-control-feedback,
 .input-group-lg + .form-control-feedback,
 .form-group-lg .form-control + .form-control-feedback {
@@ -295,6 +344,7 @@ select[multiple].input-lg {
   height: 46px;
   line-height: 46px;
 }
+
 .input-sm + .form-control-feedback,
 .input-group-sm + .form-control-feedback,
 .form-group-sm .form-control + .form-control-feedback {
@@ -302,6 +352,7 @@ select[multiple].input-lg {
   height: 30px;
   line-height: 30px;
 }
+
 .has-success .help-block,
 .has-success .control-label,
 .has-success .radio,
@@ -314,24 +365,29 @@ select[multiple].input-lg {
 .has-success.checkbox-inline label {
   color: #3c763d;
 }
+
 .has-success .form-control {
   border-color: #3c763d;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 }
+
 .has-success .form-control:focus {
   border-color: #2b542c;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #67b168;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #67b168;
 }
+
 .has-success .input-group-addon {
   color: #3c763d;
   background-color: #dff0d8;
   border-color: #3c763d;
 }
+
 .has-success .form-control-feedback {
   color: #3c763d;
 }
+
 .has-warning .help-block,
 .has-warning .control-label,
 .has-warning .radio,
@@ -344,24 +400,29 @@ select[multiple].input-lg {
 .has-warning.checkbox-inline label {
   color: #8a6d3b;
 }
+
 .has-warning .form-control {
   border-color: #8a6d3b;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 }
+
 .has-warning .form-control:focus {
   border-color: #66512c;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #c0a16b;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #c0a16b;
 }
+
 .has-warning .input-group-addon {
   color: #8a6d3b;
   background-color: #fcf8e3;
   border-color: #8a6d3b;
 }
+
 .has-warning .form-control-feedback {
   color: #8a6d3b;
 }
+
 .has-error .help-block,
 .has-error .control-label,
 .has-error .radio,
@@ -374,66 +435,81 @@ select[multiple].input-lg {
 .has-error.checkbox-inline label {
   color: #a94442;
 }
+
 .has-error .form-control {
   border-color: #a94442;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 }
+
 .has-error .form-control:focus {
   border-color: #843534;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483;
 }
+
 .has-error .input-group-addon {
   color: #a94442;
   background-color: #f2dede;
   border-color: #a94442;
 }
+
 .has-error .form-control-feedback {
   color: #a94442;
 }
+
 .has-feedback label ~ .form-control-feedback {
   top: 25px;
 }
+
 .has-feedback label.sr-only ~ .form-control-feedback {
   top: 0;
 }
+
 .help-block {
   display: block;
   margin-top: 5px;
   margin-bottom: 10px;
   color: #737373;
 }
+
 @media (min-width: 768px) {
   .form-inline .form-group {
     display: inline-block;
     margin-bottom: 0;
     vertical-align: middle;
   }
+
   .form-inline .form-control {
     display: inline-block;
     width: auto;
     vertical-align: middle;
   }
+
   .form-inline .form-control-static {
     display: inline-block;
   }
+
   .form-inline .input-group {
     display: inline-table;
     vertical-align: middle;
   }
+
   .form-inline .input-group .input-group-addon,
   .form-inline .input-group .input-group-btn,
   .form-inline .input-group .form-control {
     width: auto;
   }
+
   .form-inline .input-group > .form-control {
     width: 100%;
   }
+
   .form-inline .control-label {
     margin-bottom: 0;
     vertical-align: middle;
   }
+
   .form-inline .radio,
   .form-inline .checkbox {
     display: inline-block;
@@ -441,19 +517,23 @@ select[multiple].input-lg {
     margin-bottom: 0;
     vertical-align: middle;
   }
+
   .form-inline .radio label,
   .form-inline .checkbox label {
     padding-left: 0;
   }
+
   .form-inline .radio input[type="radio"],
   .form-inline .checkbox input[type="checkbox"] {
     position: relative;
     margin-left: 0;
   }
+
   .form-inline .has-feedback .form-control-feedback {
     top: 0;
   }
 }
+
 .form-horizontal .radio,
 .form-horizontal .checkbox,
 .form-horizontal .radio-inline,
@@ -462,14 +542,17 @@ select[multiple].input-lg {
   margin-top: 0;
   margin-bottom: 0;
 }
+
 .form-horizontal .radio,
 .form-horizontal .checkbox {
   min-height: 27px;
 }
+
 .form-horizontal .form-group {
   margin-right: -15px;
   margin-left: -15px;
 }
+
 @media (min-width: 768px) {
   .form-horizontal .control-label {
     padding-top: 7px;
@@ -477,31 +560,37 @@ select[multiple].input-lg {
     text-align: right;
   }
 }
+
 .form-horizontal .has-feedback .form-control-feedback {
   right: 15px;
 }
+
 @media (min-width: 768px) {
   .form-horizontal .form-group-lg .control-label {
     padding-top: 11px;
     font-size: 18px;
   }
 }
+
 @media (min-width: 768px) {
   .form-horizontal .form-group-sm .control-label {
     padding-top: 6px;
     font-size: 12px;
   }
 }
+
 .input-group {
   position: relative;
   display: table;
   border-collapse: separate;
 }
+
 .input-group[class*="col-"] {
   float: none;
   padding-right: 0;
   padding-left: 0;
 }
+
 .input-group .form-control {
   position: relative;
   z-index: 2;
@@ -509,9 +598,11 @@ select[multiple].input-lg {
   width: 100%;
   margin-bottom: 0;
 }
+
 .input-group .form-control:focus {
   z-index: 3;
 }
+
 .input-group-lg > .form-control,
 .input-group-lg > .input-group-addon,
 .input-group-lg > .input-group-btn > .btn {
@@ -521,12 +612,14 @@ select[multiple].input-lg {
   line-height: 1.3333333;
   border-radius: 6px;
 }
+
 select.input-group-lg > .form-control,
 select.input-group-lg > .input-group-addon,
 select.input-group-lg > .input-group-btn > .btn {
   height: 46px;
   line-height: 46px;
 }
+
 textarea.input-group-lg > .form-control,
 textarea.input-group-lg > .input-group-addon,
 textarea.input-group-lg > .input-group-btn > .btn,
@@ -535,6 +628,7 @@ select[multiple].input-group-lg > .input-group-addon,
 select[multiple].input-group-lg > .input-group-btn > .btn {
   height: auto;
 }
+
 .input-group-sm > .form-control,
 .input-group-sm > .input-group-addon,
 .input-group-sm > .input-group-btn > .btn {
@@ -544,12 +638,14 @@ select[multiple].input-group-lg > .input-group-btn > .btn {
   line-height: 1.5;
   border-radius: 3px;
 }
+
 select.input-group-sm > .form-control,
 select.input-group-sm > .input-group-addon,
 select.input-group-sm > .input-group-btn > .btn {
   height: 30px;
   line-height: 30px;
 }
+
 textarea.input-group-sm > .form-control,
 textarea.input-group-sm > .input-group-addon,
 textarea.input-group-sm > .input-group-btn > .btn,
@@ -558,22 +654,26 @@ select[multiple].input-group-sm > .input-group-addon,
 select[multiple].input-group-sm > .input-group-btn > .btn {
   height: auto;
 }
+
 .input-group-addon,
 .input-group-btn,
 .input-group .form-control {
   display: table-cell;
 }
+
 .input-group-addon:not(:first-child):not(:last-child),
 .input-group-btn:not(:first-child):not(:last-child),
 .input-group .form-control:not(:first-child):not(:last-child) {
   border-radius: 0;
 }
+
 .input-group-addon,
 .input-group-btn {
   width: 1%;
   white-space: nowrap;
   vertical-align: middle;
 }
+
 .input-group-addon {
   padding: 6px 12px;
   font-size: 14px;
@@ -585,20 +685,24 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   border: 1px solid #cccccc;
   border-radius: 4px;
 }
+
 .input-group-addon.input-sm {
   padding: 5px 10px;
   font-size: 12px;
   border-radius: 3px;
 }
+
 .input-group-addon.input-lg {
   padding: 10px 16px;
   font-size: 18px;
   border-radius: 6px;
 }
+
 .input-group-addon input[type="radio"],
 .input-group-addon input[type="checkbox"] {
   margin-top: 0;
 }
+
 .input-group .form-control:first-child,
 .input-group-addon:first-child,
 .input-group-btn:first-child > .btn,
@@ -609,9 +713,11 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
+
 .input-group-addon:first-child {
   border-right: 0;
 }
+
 .input-group .form-control:last-child,
 .input-group-addon:last-child,
 .input-group-btn:last-child > .btn,
@@ -622,34 +728,42 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
+
 .input-group-addon:last-child {
   border-left: 0;
 }
+
 .input-group-btn {
   position: relative;
   font-size: 0;
   white-space: nowrap;
 }
+
 .input-group-btn > .btn {
   position: relative;
 }
+
 .input-group-btn > .btn + .btn {
   margin-left: -1px;
 }
+
 .input-group-btn > .btn:hover,
 .input-group-btn > .btn:focus,
 .input-group-btn > .btn:active {
   z-index: 2;
 }
+
 .input-group-btn:first-child > .btn,
 .input-group-btn:first-child > .btn-group {
   margin-right: -1px;
 }
+
 .input-group-btn:last-child > .btn,
 .input-group-btn:last-child > .btn-group {
   z-index: 2;
   margin-left: -1px;
 }
+
 .clearfix:before,
 .clearfix:after,
 .form-horizontal .form-group:before,
@@ -657,6 +771,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   display: table;
   content: " ";
 }
+
 .clearfix:after,
 .form-horizontal .form-group:after {
   clear: both;

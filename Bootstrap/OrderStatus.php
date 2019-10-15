@@ -2,10 +2,10 @@
 
 namespace RpayRatePay\Bootstrap;
 
+use Exception;
 use RpayRatePay\Component\Service\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\Context\InstallContext;
-use Shopware\Models\Mail\Mail;
 use Shopware\Models\Order\Status;
 
 class OrderStatus extends AbstractBootstrap
@@ -26,14 +26,14 @@ class OrderStatus extends AbstractBootstrap
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function install()
     {
-        foreach(\RpayRatePay\Enum\OrderStatus::STATUS as $type => $status) {
-            foreach($status as $id => $options) {
+        foreach (\RpayRatePay\Enum\OrderStatus::STATUS as $type => $status) {
+            foreach ($status as $id => $options) {
                 $entity = $this->modelManager->getRepository(Status::class)->findOneBy(['name' => $options['name']]);
-                if($entity) {
+                if ($entity) {
                     continue;
                 }
                 $this->modelManager->getConnection()->insert(
@@ -54,7 +54,7 @@ class OrderStatus extends AbstractBootstrap
 
     /**
      * @return mixed|void
-     * @throws \Exception
+     * @throws Exception
      */
     public function update()
     {

@@ -18,7 +18,9 @@
     </changelog>
 
     <changelog version="5.4.2">
-        <changes>RATEPLUG-9: move device fingerprinting config from PROFILE_REQUEST to plugin config &amp; improve processing of device fingerprinting</changes>
+        <changes>RATEPLUG-9: move device fingerprinting config from PROFILE_REQUEST to plugin config &amp; improve
+            processing of device fingerprinting
+        </changes>
         <changes>Update README version information</changes>
     </changelog>
     <changelog version="5.4.1">
@@ -210,7 +212,9 @@
         <changes>Added invoicing block inside CONFIRMATION DELIVER</changes>
         <changes>Improved customer messages in refusals (Extended Response)</changes>
         <changes>Few frontend changes</changes>
-        <changes>Changed controller&amp;action check in preValidation to avoid trouble with third party plugin controllers</changes>
+        <changes>Changed controller&amp;action check in preValidation to avoid trouble with third party plugin
+            controllers
+        </changes>
         <changes>Transferred rate calc necessary values to DB and removed CONFIGURATION REQUEST</changes>
         <changes>Checkout warning in case of sandbox mode</changes>
         <changes>Implemented additional max limit on b2b orders</changes>

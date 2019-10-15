@@ -1,12 +1,12 @@
 <?php
+
 namespace RpayRatePay\Component\Mapper;
-use RatePAY\Service\Math;
+
 use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Helper\TaxHelper;
-use RpayRatePay\Models\Position\AbstractPosition;
-use RpayRatePay\Models\Position\Product as ProductPosition;
 use RpayRatePay\Services\Config\ConfigService;
+use RuntimeException;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
@@ -30,7 +30,7 @@ class BasketArrayBuilder
      */
     protected $useFallbackShipping;
 
-    /** @var bool  */
+    /** @var bool */
     protected $useFallbackDiscount;
 
     /**
@@ -64,24 +64,24 @@ class BasketArrayBuilder
 
         $this->basket = [];
 
-        if($data instanceof Order) {
+        if ($data instanceof Order) {
             $this->order = $data;
             $this->basket['Currency'] = $this->order->getCurrency();
             $this->useFallbackShipping = $this->order->getAttribute()->getRatepayFallbackShipping() == 1;
             $this->useFallbackDiscount = $this->order->getAttribute()->getRatepayFallbackDiscount() == 1;
-        } else if($data instanceof PaymentRequestData) {
+        } else if ($data instanceof PaymentRequestData) {
             $this->paymentRequestData = $data;
-            $this->basket['Currency'] = $this->modelManager->find(Currency::class,  $this->paymentRequestData->getCurrencyId())->getCurrency();
+            $this->basket['Currency'] = $this->modelManager->find(Currency::class, $this->paymentRequestData->getCurrencyId())->getCurrency();
             $this->useFallbackShipping = $configService->isCommitShippingAsCartItem();
             $this->useFallbackDiscount = $configService->isCommitDiscountAsCartItem();
-            if($items == null) {
+            if ($items == null) {
                 $items = $data->getItems();
             }
         } else {
-            throw new \RuntimeException('$data must by type of '.Order::class.' or '.PaymentRequestData::class.'. '. ($data ? get_class($data) : 'null') . ' given');
+            throw new RuntimeException('$data must by type of ' . Order::class . ' or ' . PaymentRequestData::class . '. ' . ($data ? get_class($data) : 'null') . ' given');
         }
 
-        foreach($items as $item) {
+        foreach ($items as $item) {
             $this->addItem($item);
         }
     }
@@ -100,46 +100,45 @@ class BasketArrayBuilder
      */
     public function addItem($item, $quantity = null)
     {
-        if($item === 'shipping') {
+        if ($item === 'shipping') {
             $this->addShippingItem();
             return;
-        } else if($item instanceof Detail) {
-            if(PositionHelper::isDiscount($item) && $this->useFallbackDiscount == false) {
+        } else if ($item instanceof Detail) {
+            if (PositionHelper::isDiscount($item) && $this->useFallbackDiscount == false) {
                 $this->addDiscountItem($item);
                 return;
             }
             $name = $item->getArticleName();
             $productNumber = $item->getArticleNumber();
-            $itemQuantity = $quantity ? : $item->getQuantity();
+            $itemQuantity = $quantity ?: $item->getQuantity();
             $price = TaxHelper::getItemGrossPrice($item->getOrder(), $item);
             $taxRate = TaxHelper::getItemTaxRate($item->getOrder(), $item);
 
-        } else if($item instanceof PositionStruct) {
-            if(PositionHelper::isDiscount($item) && $this->useFallbackDiscount == false) {
+        } else if ($item instanceof PositionStruct) {
+            if (PositionHelper::isDiscount($item) && $this->useFallbackDiscount == false) {
                 $this->addDiscountItem($item);
                 return;
             }
             $name = $item->getName();
             $productNumber = $item->getNumber();
-            $itemQuantity = $quantity ? : $item->getQuantity();
+            $itemQuantity = $quantity ?: $item->getQuantity();
             $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $item);
             $taxRate = TaxHelper::getItemTaxRate($this->paymentRequestData, $item);
-        } else if(is_array($item)) {
+        } else if (is_array($item)) {
             //frontend call
             //TODO verify if it is necessary to calculate the tax info
             $detail = new Detail();
             $detail->setArticleNumber($item['ordernumber']);
             $detail->setNumber($item['ordernumber']);
-            $detail->setQuantity((int) $item['quantity']);
+            $detail->setQuantity((int)$item['quantity']);
             $detail->setArticleName($item['articlename']);
             $detail->setPrice(floatval($item['priceNumeric']));
             $detail->setTaxRate($item['tax_rate']);
             $detail->setMode($item['modus']);
             $this->addItem($detail);
             return;
-        }
-        else {
-            throw new \RuntimeException('type '.get_class($item).' is not supported');
+        } else {
+            throw new RuntimeException('type ' . get_class($item) . ' is not supported');
         }
 
         $this->basket['Items'][] = [
@@ -156,16 +155,16 @@ class BasketArrayBuilder
 
     public function addShippingItem()
     {
-        if($this->order) {
+        if ($this->order) {
             $shippingCost = TaxHelper::getShippingGrossPrice($this->order);
             $shippingTax = TaxHelper::getShippingTaxRate($this->order);
-        } else if($this->paymentRequestData) {
+        } else if ($this->paymentRequestData) {
             $shippingCost = TaxHelper::getShippingGrossPrice($this->paymentRequestData);
             $shippingTax = TaxHelper::getShippingTaxRate($this->paymentRequestData);
         } else {
-            throw new \RuntimeException('no payment request data or order is available');
+            throw new RuntimeException('no payment request data or order is available');
         }
-        if($shippingCost <= 0) {
+        if ($shippingCost <= 0) {
             return;
         }
 
@@ -194,19 +193,20 @@ class BasketArrayBuilder
     /**
      * @param PositionStruct|Detail $item
      */
-    public function addDiscountItem($item) {
-        if(PositionHelper::isDiscount($item) === false) {
-            throw new \RuntimeException('given object is not a discount (number: '.$item->getNumber().')');
+    public function addDiscountItem($item)
+    {
+        if (PositionHelper::isDiscount($item) === false) {
+            throw new RuntimeException('given object is not a discount (number: ' . $item->getNumber() . ')');
         }
         if ($this->useFallbackDiscount) {
             $this->addItem($item);
         } else {
-            if($item instanceof Detail) {
+            if ($item instanceof Detail) {
                 $name = $item->getArticleName();
                 $productNumber = $item->getArticleNumber();
                 $price = TaxHelper::getItemGrossPrice($item->getOrder(), $item);
                 $taxRate = TaxHelper::getItemTaxRate($item->getOrder(), $item);
-            } else if($item instanceof PositionStruct) {
+            } else if ($item instanceof PositionStruct) {
                 $name = $item->getName();
                 $productNumber = $item->getNumber();
                 $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $item, $item->getTotal());
@@ -214,11 +214,11 @@ class BasketArrayBuilder
             } else {
                 // should never occurs cause the function call `PositionHelper::isDiscount`
                 // already throw an exception if it is the wrong type
-                throw new \RuntimeException('the object must be a type of '.Detail::class.' or '.PositionStruct::class);
+                throw new RuntimeException('the object must be a type of ' . Detail::class . ' or ' . PositionStruct::class);
             }
 
-            if(isset($this->basket['Discount'])) {
-                throw new \RuntimeException('ratepay does not support more than one discount element');
+            if (isset($this->basket['Discount'])) {
+                throw new RuntimeException('ratepay does not support more than one discount element');
             } else {
                 $this->basket['Discount'] = [
                     'Description' => $name,

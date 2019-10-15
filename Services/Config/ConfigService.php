@@ -59,7 +59,7 @@ class ConfigService
     {
         //ratepay/profile/de/frontend/id - this comment is just for finding this line ;-)
         //ratepay/profile/de/frontend/id/installment0 - this comment is just for finding this line ;-)
-        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/id".($zeroPercentPayment ? "/installment0" : "");
+        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/id" . ($zeroPercentPayment ? "/installment0" : "");
     }
 
     public function getSecurityCode($countryISO, $zeroPercentPayment, $isBackend = false)
@@ -70,7 +70,7 @@ class ConfigService
     public function getSecurityCodeKey($countryISO, $zeroPercentPayment, $isBackend)
     {
         //ratepay/profile/de/frontend/security_code - this comment is just for finding this line ;-)
-        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/security_code" . "/id".($zeroPercentPayment ? "/installment0" : "");
+        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/security_code" . "/id" . ($zeroPercentPayment ? "/installment0" : "");
     }
 
     /**
@@ -95,7 +95,8 @@ class ConfigService
      *
      * @return bool
      */
-    public function isInstallmentDirectDelivery() {
+    public function isInstallmentDirectDelivery()
+    {
         return $this->_config->get('ratepay/advanced/installment_direct_delivery', null) == 1;
     }
 

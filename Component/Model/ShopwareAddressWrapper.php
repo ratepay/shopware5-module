@@ -2,6 +2,10 @@
 
 namespace RpayRatePay\Component\Model;
 
+use Exception;
+use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Country\Country;
+
 /**
  * Class ShopwareAddressWrapper
  * @package RpayRatePay\Component\Model
@@ -11,7 +15,7 @@ class ShopwareAddressWrapper
     /** @var object */
     private $address;
 
-    /** @var \Shopware\Components\Model\ModelManager */
+    /** @var ModelManager */
     private $em;
 
     /** @var string */
@@ -20,7 +24,7 @@ class ShopwareAddressWrapper
     /**
      * ShopwareAddressWrapper constructor.
      * @param object $address
-     * @param \Shopware\Components\Model\ModelManager $em
+     * @param ModelManager $em
      */
     public function __construct($address, $em)
     {
@@ -30,8 +34,8 @@ class ShopwareAddressWrapper
     }
 
     /**
-     * @return \Shopware\Models\Country\Country
-     * @throws \Exception
+     * @return Country
+     * @throws Exception
      */
     public function getCountry()
     {
@@ -43,6 +47,6 @@ class ShopwareAddressWrapper
             return $this->em->find('Shopware\Models\Country\Country', $this->address->getCountryId());
         }
 
-        throw new \Exception('False object type sent to ShopwareAddressWrapper');
+        throw new Exception('False object type sent to ShopwareAddressWrapper');
     }
 }

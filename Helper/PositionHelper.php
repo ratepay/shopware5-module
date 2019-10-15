@@ -96,7 +96,7 @@ class PositionHelper
     public function doesOrderHasOpenPositions(Order $_order, $items = [])
     {
         /** @var Detail $detail */
-        foreach($_order->getDetails() as $detail) {
+        foreach ($_order->getDetails() as $detail) {
             $position = $this->getPositionForDetail($detail);
             $number = $detail->getArticleNumber();
             /** @var  $basketPosition */
@@ -106,7 +106,7 @@ class PositionHelper
             }
         }
         $shippingPosition = $this->getShippingPositionForOrder($_order);
-        if($shippingPosition) {
+        if ($shippingPosition) {
             $quantity = isset($items[BasketPosition::SHIPPING_NUMBER]) ? $items[BasketPosition::SHIPPING_NUMBER]->getQuantity() : 0;
             if (($shippingPosition->getOpenQuantity() - $quantity) !== 0) {
                 return true;

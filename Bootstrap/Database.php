@@ -7,14 +7,14 @@ namespace RpayRatePay\Bootstrap;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
-use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Models\ConfigInstallment;
 use RpayRatePay\Models\ConfigPayment;
 use RpayRatePay\Models\Log;
-use RpayRatePay\Models\Position\Discount;
 use RpayRatePay\Models\OrderHistory;
+use RpayRatePay\Models\Position\Discount;
 use RpayRatePay\Models\Position\Product;
 use RpayRatePay\Models\Position\Shipping;
+use RpayRatePay\Models\ProfileConfig;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\Context\InstallContext;
 
@@ -24,10 +24,10 @@ class Database extends AbstractBootstrap
     /** @var ModelManager */
     protected $entityManager;
 
-    /** @var SchemaTool  */
+    /** @var SchemaTool */
     protected $schemaTool;
 
-    /** @var AbstractSchemaManager  */
+    /** @var AbstractSchemaManager */
     protected $schemaManager;
 
     public function __construct(
@@ -41,34 +41,37 @@ class Database extends AbstractBootstrap
         $this->schemaManager = $this->entityManager->getConnection()->getSchemaManager();
     }
 
-    public function install() {
+    public function install()
+    {
         $this->renameOldColumns();
 
         $install = [];
         $update = [];
 
-        foreach($this->getClassMetas() as $meta) {
-            if($this->schemaManager->tablesExist([$meta->getTableName()])) {
+        foreach ($this->getClassMetas() as $meta) {
+            if ($this->schemaManager->tablesExist([$meta->getTableName()])) {
                 $update[] = $meta;
             } else {
                 $install[] = $meta;
             }
         }
 
-        if(count($install)) {
+        if (count($install)) {
             $this->schemaTool->createSchema($install);
         }
-        if(count($update)) {
+        if (count($update)) {
             $this->schemaTool->updateSchema($update, true);
         }
     }
 
-    public function update() {
+    public function update()
+    {
         $this->install();
     }
 
-    public function uninstall($keepUserData = false) {
-        if($keepUserData === false) {
+    public function uninstall($keepUserData = false)
+    {
+        if ($keepUserData === false) {
             $remove = [];
             foreach ($this->getClassMetas() as $meta) {
                 if ($this->entityManager->getConnection()->getSchemaManager()->tablesExist([$meta->getTableName()])) {
@@ -84,7 +87,8 @@ class Database extends AbstractBootstrap
     /**
      * @return ClassMetadata[]
      */
-    protected function getClassMetas() {
+    protected function getClassMetas()
+    {
         return [
             $this->entityManager->getClassMetadata(ProfileConfig::class),
             $this->entityManager->getClassMetadata(ConfigInstallment::class),
@@ -101,7 +105,7 @@ class Database extends AbstractBootstrap
     {
         $renames = [
             ProfileConfig::class => [
-                'country-code-billing'  => [
+                'country-code-billing' => [
                     'country_code_billing',
                     'varchar(30) COLLATE utf8_unicode_ci DEFAULT NULL'
                 ],
@@ -133,18 +137,18 @@ class Database extends AbstractBootstrap
                 ],
             ]
         ];
-        foreach($renames as $class => $columns) {
+        foreach ($renames as $class => $columns) {
             $classMeta = $this->entityManager->getClassMetadata($class);
-            if($this->schemaManager->tablesExist([$classMeta->getTableName()])) {
+            if ($this->schemaManager->tablesExist([$classMeta->getTableName()])) {
                 $columnList = $this->schemaManager->listTableColumns($classMeta->getTableName());
                 $toRename = [];
-                foreach($columns as $oldName => $definition) {
+                foreach ($columns as $oldName => $definition) {
                     if (array_key_exists($oldName, $columnList)) {
                         $toRename[] = ' CHANGE COLUMN `' . $oldName . '` ' . $definition[0] . ' ' . $definition[1];
                     }
                 }
-                if(count($toRename)) {
-                    $sql = 'ALTER TABLE '.$classMeta->getTableName().' '.implode(',', $toRename);
+                if (count($toRename)) {
+                    $sql = 'ALTER TABLE ' . $classMeta->getTableName() . ' ' . implode(',', $toRename);
                     $this->entityManager->getConnection()->executeQuery($sql);
                 }
             }
