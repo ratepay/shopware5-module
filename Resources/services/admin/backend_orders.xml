@@ -7,15 +7,14 @@
     <services>
         <service id="RpayRatePay\Subscriber\Backend\OrderControllerSubscriber">
             <argument id="models" type="service"/>
-            <argument id="swag_backend_order.order.order_hydrator" type="service"/>
-            <argument id="swag_backend_order.order.order_validator" type="service"/>
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="RpayRatePay\Services\DfpService" type="service"/>
             <argument id="RpayRatePay\Services\Factory\PaymentRequestDataFactory" type="service"/>
             <argument id="RpayRatePay\Services\Request\PaymentRequestService" type="service"/>
             <argument id="RpayRatePay\Services\Request\PaymentConfirmService" type="service"/>
             <argument id="rpay_rate_pay.logger" type="service"/>
-            <argument>%rpay_rate_pay.plugin_dir%</argument>
+            <argument id="swag_backend_order.order.order_hydrator" type="service" on-invalid="null"/>
+            <argument id="swag_backend_order.order.order_validator" type="service" on-invalid="null"/>
             <tag name="shopware.event_subscriber"/>
         </service>
     </services>

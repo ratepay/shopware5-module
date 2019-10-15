@@ -59,14 +59,14 @@ class OrderControllerSubscriber implements SubscriberInterface
 
     public function __construct(
         ModelManager $modelManager,
-        OrderHydrator $orderHydrator,
-        OrderValidator $orderValidator,
         ConfigService $config,
         DfpService $dfpService,
         PaymentRequestDataFactory $paymentRequestDataFactory,
         PaymentRequestService $paymentRequestService,
         PaymentConfirmService $paymentConfirmService,
-        Logger $logger
+        Logger $logger,
+        OrderHydrator $orderHydrator = null,
+        OrderValidator $orderValidator = null
     )
     {
         $this->modelManager = $modelManager;
@@ -89,6 +89,8 @@ class OrderControllerSubscriber implements SubscriberInterface
 
     public function replaceCreateOrderAction(Enlight_Hook_HookArgs $args)
     {
+        $this->validateDependencies();
+
         /** @var Shopware_Controllers_Backend_SwagBackendOrder $subject */
         $subject = $args->getSubject();
         $request = $subject->Request();
@@ -171,5 +173,11 @@ class OrderControllerSubscriber implements SubscriberInterface
             'success' => false,
             'violations' => $messages,
         ]);
+    }
+
+    protected function validateDependencies() {
+        if($this->orderHydrator == null || $this->orderValidator == null) {
+            throw new \Exception('Please install the plugin "SwagBackendOrders" by Shopware');
+        }
     }
 }
