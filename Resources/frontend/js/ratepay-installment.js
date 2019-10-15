@@ -29,7 +29,7 @@
             }
         });
 
-        jQuery("#rp-payment-firstday").val((rpDirectDebitAllowed == "1") ? rpDirectDebitFirstday : rpBankTransferFirstday);
+        jQuery("#rp-payment-firstday").val((window.rpDirectDebitAllowed == "1") ? rpDirectDebitFirstday : rpBankTransferFirstday);
 
         // initialize visibility
 
@@ -37,7 +37,7 @@
         jQuery('.rp-sepa-form').hide();
         jQuery('.rp-payment-type-switch').hide();
 
-        if (rpDirectDebitAllowed == "1") {
+        if (window.rpDirectDebitAllowed == "1") {
             jQuery('#rp-payment-type').val("DIRECT-DEBIT");
         } else {
             // if direct debit is not allowed 'BANK_TRANSFER' is set by default
@@ -76,21 +76,21 @@
             + "&calculationType=" + calcType
             + "&paymentFirstday=" + jQuery("#rp-payment-firstday").val();
 
-        jQuery.ajax(rpInstallmentController + params)
+        jQuery.ajax(window.rpInstallmentController + params)
             .done(function (result) {
                 // show filled calculation plan template
                 jQuery('#rpResultContainer').html(result);
 
-                if (rpDirectDebitAllowed == "1" && jQuery("#rp-payment-type").val() == "DIRECT-DEBIT") {
+                if (window.rpDirectDebitAllowed == "1" && jQuery("#rp-payment-type").val() == "DIRECT-DEBIT") {
                     jQuery('.rp-sepa-form').show();
                 }
 
                 jQuery('.rp-payment-type-switch').hide();
                 // if payment type bank transfer is allowed show switch
-                if (rpBankTransferAllowed == "1") {
+                if (window.rpBankTransferAllowed == "1") {
                     if (jQuery("#rp-payment-type").val() == "DIRECT-DEBIT") {
                         jQuery('#rp-switch-payment-type-bank-transfer').show();
-                    } else if (rpDirectDebitAllowed == "1") {
+                    } else if (window.rpDirectDebitAllowed == "1") {
                         jQuery('#rp-switch-payment-type-direct-debit').show();
                     }
                 }
@@ -132,14 +132,14 @@
             jQuery('#rp-switch-payment-type-bank-transfer').hide();
             jQuery('#rp-switch-payment-type-direct-debit').show();
             jQuery("#rp-payment-type").val("BANK-TRANSFER");
-            jQuery("#rp-payment-firstday").val(rpBankTransferFirstday);
+            jQuery("#rp-payment-firstday").val(window.rpBankTransferFirstday);
         } else {
             jQuery('.rp-sepa-form').show();
             //jQuery('#rp-sepa-agreement').hide();
             jQuery('#rp-switch-payment-type-direct-debit').hide();
             jQuery('#rp-switch-payment-type-bank-transfer').show();
             jQuery("#rp-payment-type").val("DIRECT-DEBIT");
-            jQuery("#rp-payment-firstday").val(rpDirectDebitFirstday);
+            jQuery("#rp-payment-firstday").val(window.rpDirectDebitFirstday);
         }
         // After changing payment type, re-call of installment plan because of changed firstday
         callInstallmentPlan(jQuery('#rp-calculation-type').val(), jQuery('#rp-calculation-value').val());

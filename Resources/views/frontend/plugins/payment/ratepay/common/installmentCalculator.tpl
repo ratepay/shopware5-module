@@ -1,7 +1,8 @@
 {namespace name="frontend/ratepay/installment_calculator"}
 
 <script>
-    var rpInstallmentController = '{url controller="RpayRatepay" action="calcRequest"}';
+    window.installmentCalculator = true;
+    window.rpInstallmentController = '{url controller="RpayRatepay" action="calcRequest"}';
 </script>
 
 <input type="hidden" name="rp-calculation-amount" id="rp-calculation-amount" value="{$installmentCalculator.totalAmount}" />

@@ -162,6 +162,7 @@ class InstallmentService
     protected function getTemplate($templateName, $isBackend)
     {
         if($isBackend) {
+            //TODO implement
             throw new \Exception('not implemented');
         }
 
