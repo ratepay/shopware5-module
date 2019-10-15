@@ -5,6 +5,7 @@ namespace RpayRatePay\Subscriber\Frontend;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace;
 use Enlight_Event_EventArgs;
+use RatePAY\Service\DeviceFingerprint;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
@@ -108,16 +109,14 @@ class CheckoutSubscriber implements SubscriberInterface
             }
             $data = [];
 
-            //TODO if no DF token is set, receive all the necessary data to set it and extend template
             if ($this->dfpService->isDfpIdAlreadyGenerated() == false) {
-                // create id and write it to the session
-                $data['dfp']['token'] = $this->dfpService->getDfpId();
-                $data['dfp']['snippetId'] = $this->configService->getDfpSnippetId();
+                $dfpHelper = new DeviceFingerprint($this->configService->getDfpSnippetId());
+                $data['dfp'] = str_replace('\\"', '"', $dfpHelper->getDeviceIdentSnippet($this->dfpService->getDfpId()));
             }
+            $this->dfpService->deleteDfpId();
 
             if(PaymentMethods::isInstallment($paymentMethod)) {
                 $billingAddress = $this->sessionHelper->getBillingAddress();
-                $calcInput = $this->sessionHelper->getData('installment_calculator_input');
                 $installmentPlanHtml = $this->installmentService->getInstallmentPlanTemplate(
                     $billingAddress->getCountry()->getIso(),
                     Shopware()->Shop()->getId(),

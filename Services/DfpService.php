@@ -5,6 +5,7 @@ namespace RpayRatePay\Services;
 
 
 use BadMethodCallException;
+use RatePAY\Service\DeviceFingerprint;
 use Shopware\Components\DependencyInjection\Container;
 
 /**
@@ -35,6 +36,7 @@ class DfpService
         if ($backend) {
             return null; //TODO currently it is not supported
         }
+
         $isStoreFront = $this->container->has('shop');
         if ($isStoreFront) {
             if ($this->isDfpIdAlreadyGenerated()) {
@@ -47,7 +49,7 @@ class DfpService
             $sessionId = rand();
         }
 
-        $token = md5($sessionId . microtime());
+        $token = DeviceFingerprint::createDeviceIdentToken($sessionId);
 
         if ($isStoreFront) {
             // if it is a storefront request we will safe the token to the session for later access

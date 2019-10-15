@@ -20,3 +20,10 @@
         </div>
     {/if}
 {/block}
+
+{block name="frontend_index_footer"}
+    {$smarty.block.parent}
+    {if $ratepay.dfp}
+        {$ratepay.dfp}
+    {/if}
+{/block}
