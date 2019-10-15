@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        https://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+
+        <service id="RpayRatePay\Services\Factory\CustomerArrayFactory"/>
+
+        <service id="RpayRatePay\Services\Factory\PaymentArrayFactory">
+            <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
+        </service>
+
+        <service id="RpayRatePay\Services\Factory\InvoiceArrayFactory">
+            <argument id="models" type="service"/>
+        </service>
+
+        <service id="RpayRatePay\Services\Factory\BasketArrayFactory"/> <!-- TODO does not have any functionality -->
+
+        <service id="RpayRatePay\Services\Factory\PaymentRequestDataFactory"> <!-- TODO wrong namespace -->
+            <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Services\DfpService" type="service"/>
+            <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
+        </service>
+
+    </services>
+</container>

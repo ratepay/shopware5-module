@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        https://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+
+        <service id="RpayRatePay\Subscriber\TemplateSubscriber">
+            <argument id="template" type="service"/>
+            <argument>%rpay_rate_pay.plugin_dir%</argument>
+            <tag name="shopware.event_subscriber"/>
+        </service>
+
+        <!-- TODO implement service -->
+        <!--service id="RpayRatePay\Subscriber\OrderDetailsProcessSubscriber">
+            <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Services\HelperService" type="service"/>
+            <argument id="RpayRatePay\Services\Request\PaymentConfirmService" type="service"/>
+            <tag name="shopware.event_subscriber"/>
+        </service-->
+
+        <service id="RpayRatePay\Subscriber\Cron\UpdateTransactionsSubscriber">
+            <argument id="models" type="service"/>
+            <argument id="db" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
+            <argument id="rpay_rate_pay.logger" type="service"/>
+            <tag name="shopware.event_subscriber"/>
+        </service>
+
+        <service id="RpayRatePay\Subscriber\PaymentMethodClassesSubscriber">
+            <tag name="shopware.event_subscriber"/>
+        </service>
+
+    </services>
+</container>

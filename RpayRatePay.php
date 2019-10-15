@@ -32,10 +32,18 @@ use RpayRatePay\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-require_once __DIR__ . '/vendor/autoload.php';
-
 class RpayRatePay extends Plugin
 {
+
+    public static function isPackage()
+    {
+        return file_exists(self::getPackageVendorAutoload());
+    }
+
+    public static function getPackageVendorAutoload()
+    {
+        return __DIR__ . '/vendor/autoload.php';
+    }
 
     public function build(ContainerBuilder $container)
     {
@@ -109,4 +117,8 @@ class RpayRatePay extends Plugin
         parent::activate($context);
         $context->scheduleClearCache([$context::CACHE_LIST_ALL]);
     }
+}
+
+if(RpayRatePay::isPackage()) {
+    require_once RpayRatePay::getPackageVendorAutoload();
 }
