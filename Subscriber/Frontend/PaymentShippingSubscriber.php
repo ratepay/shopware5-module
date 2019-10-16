@@ -121,6 +121,8 @@ class PaymentShippingSubscriber implements SubscriberInterface
                     $totalAmount
                 );
 
+
+
                 $view->assign('installmentCalculator',
                     [
                         'html' => $htmlCalculator,

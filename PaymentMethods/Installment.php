@@ -8,9 +8,13 @@ use Enlight_Controller_Request_Request;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Services\InstallmentService;
+use Shopware\Models\Payment\Payment;
 
 class Installment extends Debit
 {
+
+    //we need this to prevent that the installment0 got not the payment data from THIS installment
+    protected $formDataKey = 'installment';
 
     /**
      * @var object|InstallmentService
@@ -29,17 +33,17 @@ class Installment extends Debit
         $this->isBankDataRequired = $installmentData->getPaymentType() !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
 
         $data = parent::getCurrentPaymentDataAsArray($userId);
-        $data['ratepay']['installment'] = $installmentData->toArray();
+        $data['ratepay'][$this->formDataKey] = $installmentData->toArray();
 
-        //this is just a fix, cause we will not save this value. But if the payment data got validated,
+        // this is just a fix, cause we will not save this value. But if the payment data got validated,
         // we will validate against this field.
-        $data['ratepay']['installment']['sepa_agreement'] = true;
+        $data['ratepay'][$this->formDataKey]['sepa_agreement'] = true;
         return $data;
     }
 
     public function validate($paymentData)
     {
-        $installmentData = isset($paymentData['ratepay']['installment']) ? $paymentData['ratepay']['installment'] : [];
+        $installmentData = isset($paymentData['ratepay'][$this->formDataKey]) ? $paymentData['ratepay'][$this->formDataKey] : [];
         $this->isBankDataRequired = $installmentData['paymentType'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
 
         $return = parent::validate($paymentData);
@@ -72,7 +76,7 @@ class Installment extends Debit
     public function savePaymentData($userId, Enlight_Controller_Request_Request $request)
     {
         $paymentData = $request->getParam('ratepay');
-        $installmentData = $paymentData['installment'];
+        $installmentData = $paymentData[$this->formDataKey];
         $this->isBankDataRequired = $installmentData['payment_type'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
 
         parent::savePaymentData($userId, $request);
@@ -85,10 +89,10 @@ class Installment extends Debit
             $installmentData['paymentFirstDay']
         );
 
-        $paymentMethod = $this->sessionHelper->getPaymentMethod();
+        $paymentMethod = $this->getPaymentMethodFromRequest($request);
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $this->installmentService->initInstallmentData(
-            $billingAddress->getCountry()->getIso(),
+            $billingAddress,
             Shopware()->Shop()->getId(),
             $paymentMethod->getName(),
             false,

@@ -10,6 +10,7 @@ use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Helper\SessionHelper;
 use Shopware\Components\DependencyInjection\Container;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Payment\Payment;
 use ShopwarePlugin\PaymentMethods\Components\GenericPaymentMethod;
 
 class AbstractPaymentMethod extends GenericPaymentMethod
@@ -109,5 +110,9 @@ class AbstractPaymentMethod extends GenericPaymentMethod
     protected function getTranslatedMessage($snippetName)
     {
         return $this->snippetManager->getNamespace('frontend/ratepay/messages')->get($snippetName);
+    }
+    protected function getPaymentMethodFromRequest(Enlight_Controller_Request_Request $request)
+    {
+        return $this->modelManager->find(Payment::class, $request->getParam('payment'));
     }
 }

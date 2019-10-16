@@ -203,7 +203,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         );
 
         echo $this->installmentService->getInstallmentPlanTemplate(
-            $billingAddress->getCountry()->getIso(),
+            $billingAddress,
             Shopware()->Shop()->getId(),
             $paymentMethod,
             false,

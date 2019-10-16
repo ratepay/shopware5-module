@@ -155,7 +155,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $shopId = $params['shopId'];
         $billingId = $params['billingId'];
 
-        $addressObj = $this->modelManager->find(Address::class, $billingId);
+        $billingAddress = $this->modelManager->find(Address::class, $billingId);
 
         $paymentMethodName = $params['paymentMeansName'];
         $totalAmount = $params['totalAmount'];
@@ -163,7 +163,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $calcParamSet = !empty($params['value']) && !empty($params['type']);
         $type = $calcParamSet ? $params['type'] : 'time';
 
-        $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMethodName, $shopId, $addressObj->getCountry()->getIso(), true);
+        $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMethodName, $shopId, $billingAddress->getCountry()->getIso(), true);
 
         //TODO refactor
         if ($calcParamSet) {
@@ -182,7 +182,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
             );
 
             $plan = $this->installmentService->initInstallmentData(
-                $addressObj->getCountry()->getIso(),
+                $billingAddress,
                 $shopId,
                 $paymentMethodName,
                 true,

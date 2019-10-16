@@ -25,7 +25,7 @@
         />
     </div>
 {/block}
-{debug}
+
 {* Bankcode *}
 {block name='ratepay_frontend_bankcode'}
     <div class="register--accountnumber ratepay_debit_bankcode">

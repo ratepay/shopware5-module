@@ -1,20 +1,39 @@
+.ratepay-payment-method {
+  @import 'components/bootstrap/bootstrap-grid';
+  @import 'components/bootstrap/bootstrap-form-group';
+  @import 'components/bootstrap/fixes';
+  @import 'components/bootstrap/xxs';
+}
 @import 'components/installment';
 
-.rp-birthday, .rp-birthmonth, .rp-birthyear {
-  float: left;
-  width: 32%;
-  margin-right: 5px;
-  margin-bottom: 5px;
-  min-width: 145px;
+@media (min-width: 992px) {
+  .birthday-group-label {
+    margin-top: 35px;
+    display: block;
+  }
 }
-
-.rp-birthday .js--fancy-select,
-.rp-birthmonth .js--fancy-select,
-.rp-birthyear .js--fancy-select {
-  width: 95%
+.register--birthdate > .row > div {
+  & > .row {
+    margin: 0;
+    & > div {
+      padding: 0;
+    }
+  }
+  @media (max-width: 480px) {
+    & + div {
+      margin-top: 10px;
+    }
+    label {
+      line-height: 36px;
+    }
+  }
+  label {
+    margin: 0;
+  }
+  input {
+    width: 100%;
+  }
 }
-
-.birthday--label {
-  width: 15%;
-  float: left;
+input#ratepay_phone {
+  width: 100%;
 }

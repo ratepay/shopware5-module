@@ -113,7 +113,7 @@ class CheckoutSubscriber implements SubscriberInterface
             if (PaymentMethods::isInstallment($paymentMethod)) {
                 $billingAddress = $this->sessionHelper->getBillingAddress();
                 $installmentPlanHtml = $this->installmentService->getInstallmentPlanTemplate(
-                    $billingAddress->getCountry()->getIso(),
+                    $billingAddress,
                     Shopware()->Shop()->getId(),
                     $paymentMethod,
                     false,

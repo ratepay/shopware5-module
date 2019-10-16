@@ -4,6 +4,7 @@ namespace RpayRatePay\Enum;
 
 use RpayRatePay\PaymentMethods\Debit;
 use RpayRatePay\PaymentMethods\Installment;
+use RpayRatePay\PaymentMethods\InstallmentZeroPercent;
 use RpayRatePay\PaymentMethods\Invoice;
 use RpayRatePay\PaymentMethods\PrePayment;
 use RuntimeException;
@@ -70,7 +71,7 @@ final class PaymentMethods extends Enum
             'additionalDescription' => 'Kauf per 0% Finanzierung',
             'template' => 'ratepay/installment.tpl',
             'class' => self::PAYMENT_INSTALLMENT0,
-            'real_class' => Installment::class,
+            'real_class' => InstallmentZeroPercent::class,
             'ratepay' => [
                 'methodName' => 'INSTALLMENT'
             ]

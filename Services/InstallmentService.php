@@ -58,7 +58,7 @@ class InstallmentService
     /**
      * if the first parameter is a array than the function will not fetch the installment data from the gateway.
      * the array must contains the installment data from the gateway. you can get it with the function `getInstallmentPlan`
-     * @param array|string $countryCode
+     * @param Address $billingAddress
      * @param int $shopId
      * @param string $paymentMethodName
      * @param boolean $isBackend
@@ -66,7 +66,7 @@ class InstallmentService
      * @return mixed
      */
     public function initInstallmentData(
-        $countryCode,
+        Address $billingAddress,
         $shopId,
         $paymentMethodName,
         $isBackend,
@@ -74,7 +74,7 @@ class InstallmentService
     )
     {
 
-        $plan = $this->getInstallmentPlan($countryCode, $shopId, $paymentMethodName, $isBackend, $requestDto);
+        $plan = $this->getInstallmentPlan($billingAddress, $shopId, $paymentMethodName, $isBackend, $requestDto);
 
         $this->sessionHelper->setInstallmentDetails(
             $plan['totalAmount'],
@@ -94,16 +94,16 @@ class InstallmentService
         return $plan;
     }
 
-    public function getInstallmentPlan($countryCode, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto)
+    public function getInstallmentPlan(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto)
     {
-        $installmentBuilder = $this->getInstallmentBuilder($countryCode, $shopId, $paymentMethodName, $isBackend);
+        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
         $result = $installmentBuilder->getInstallmentPlanAsJson($requestDto->getTotalAmount(), $requestDto->getType(), $requestDto->getValue());
         return json_decode($result, true);
     }
 
-    public function getInstallmentPlanTemplate($countryCode, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto)
+    public function getInstallmentPlanTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto)
     {
-        $installmentBuilder = $this->getInstallmentBuilder($countryCode, $shopId, $paymentMethodName, $isBackend);
+        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
         return $installmentBuilder->getInstallmentPlanByTemplate(
             file_get_contents($this->getTemplate('template.installmentPlan.html', $isBackend)),
             $requestDto->getTotalAmount(),
@@ -121,18 +121,23 @@ class InstallmentService
     }
 
     /**
-     * @param $countryCode
+     * @param Address $billingAddress
      * @param $shopId
      * @param $paymentMethodName
      * @param bool $isBackend
      * @return InstallmentBuilder
      */
-    protected function getInstallmentBuilder($countryCode, $shopId, $paymentMethodName, $isBackend = false)
+    protected function getInstallmentBuilder(Address $billingAddress, $shopId, $paymentMethodName, $isBackend = false)
     {
         $paymentMethodName = $paymentMethodName instanceof Payment ? $paymentMethodName->getName() : $paymentMethodName;
         $zeroPercentInstallment = $paymentMethodName === PaymentMethods::PAYMENT_INSTALLMENT0;
 
-        $profileConfig = $this->profileConfigService->getProfileConfig($countryCode, $shopId, $isBackend, $zeroPercentInstallment);
+        $profileConfig = $this->profileConfigService->getProfileConfig(
+            $billingAddress->getCountry()->getIso(),
+            $shopId,
+            $isBackend,
+            $zeroPercentInstallment
+        );
 
         $shop = $this->modelManager->find(Shop::class, $shopId); //TODO improve performance
 
@@ -141,7 +146,7 @@ class InstallmentService
             $profileConfig->getProfileId(),
             $profileConfig->getSecurityCode(),
             strtoupper(substr($shop->getLocale()->getLocale(), 0, 2)),
-            $countryCode
+            $billingAddress->getCountry()->getIso()
         );
         return $installmentBuilder;
     }
@@ -150,7 +155,7 @@ class InstallmentService
     {
         $bankData = $this->sessionHelper->getBankData($billingAddress);
 
-        $installmentBuilder = $this->getInstallmentBuilder($billingAddress->getCountry()->getIso(), $shopId, $paymentMethodName, $isBackend);
+        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
         $template = file_get_contents($this->getTemplate('template.installmentCalculator.html', $isBackend));
         $htmlCalculator = $installmentBuilder->getInstallmentCalculatorByTemplate($totalAmount, $template);
         $htmlCalculator = Util::templateReplace(

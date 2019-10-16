@@ -1,51 +1,58 @@
 <script type="text/javascript">
-    window.rpBankTransferAllowed = "{{ rp_paymentType_bankTransfer }}";
+    window.rpBankTransferAllowed = "{{ rp_paymentType_bankTransfer }}" === "1";
     window.rpBankTransferFirstday = "{{ rp_paymentType_bankTransfer_firstday }}";
-    window.rpDirectDebitAllowed = "{{ rp_paymentType_directDebit }}";
+    window.rpDirectDebitAllowed = "{{ rp_paymentType_directDebit }}" === "1";
     window.rpDirectDebitFirstday = "{{ rp_paymentType_directDebit_firstday }}";
 </script>
 
 <div class="installment-calculator">
     <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                {{ rp_calculation_intro_part1 }} {{ rp_calculation_intro_part2 }} {{ rp_calculation_intro_part3 }}
+        <div class="rp-container-calculator">
+            <div class="row">
+                <div class="col-md-12">
+                    <hr/>
+                </div>
             </div>
-        </div>
+            <div class="row">
+                <div class="col-md-12">
+                    {{ rp_calculation_intro_part1 }} {{ rp_calculation_intro_part2 }} {{ rp_calculation_intro_part3 }}
+                </div>
+            </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="panel panel-default">
-                    <div class="panel-heading text-center" id="firstInput">
-                        <h2>{{ rp_runtime_title }}</h2>
-                        {{ rp_runtime_description }}
-                    </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading text-center" id="firstInput">
+                            <h2>{{ rp_runtime_title }}</h2>
+                            {{ rp_runtime_description }}
+                        </div>
 
-                    <div class="panel-body">
-                        <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                            @loop
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button class="btn btn-default rp-btn-runtime" role="button" data-bind="{{ rp_allowedMonths }}">{{ rp_allowedMonths }}</button>
+                        <div class="panel-body">
+                            <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                                @loop
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button class="btn btn-default rp-btn-runtime" role="button" data-bind="{{ rp_allowedMonths }}">{{ rp_allowedMonths }}</button>
+                                </div>
+                                @endloop
                             </div>
-                            @endloop
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="panel panel-default">
-                    <div class="panel-heading text-center" id="secondInput">
-                        <h2>{{ rp_rate_title }}</h2>
-                        {{ rp_rate_description }}
-                    </div>
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading text-center" id="secondInput">
+                            <h2>{{ rp_rate_title }}</h2>
+                            {{ rp_rate_description }}
+                        </div>
 
-                    <div class="panel-body">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-addon">&euro;</span>
-                            <input type="text" id="rp-rate-value" class="form-control" aria-label="Amount" />
-                            <span class="input-group-btn">
-                                <button class="btn btn-default rp-btn-rate" type="button" disabled>{{ rp_calculate_rate }}</button>
-                            </span>
+                        <div class="panel-body">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-addon">&euro;</span>
+                                <input type="text" id="rp-rate-value" class="form-control" aria-label="Amount" />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default rp-btn-rate" type="button" disabled>{{ rp_calculate_rate }}</button>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,25 +1,28 @@
-.installment-calculator > .container > .row {
-  max-width: 100%;
-
+.installment-calculator > .container > .row,
+.rp-container-calculator > .row {
   & + .row {
     margin-top: 10px;
   }
+}
+
+//hide some components on initial load
+.rp-container-calculator,
+.rp-installment-plan-details,
+#rp-form-bank-code,
+#rp-switch-payment-type-direct-debit,
+#rp-rate-elv,
+#rp-hide-installment-plan-details,
+.rp-sepa-form,
+.rp-payment-type-switch{
+  display: none;
 }
 
 .rp-installment-plan-description {
   margin: 0;
 }
 
-.rp-installment-plan-details {
-  display: none;
-}
-
 #rp-installment-plan-no-details {
   display: block;
-}
-
-#rp-hide-installment-plan-details {
-  display: none;
 }
 
 #rp-show-installment-plan-details {
@@ -49,11 +52,6 @@
   cursor: pointer;
 }
 
-#rp-switch-payment-type-direct-debit,
-#rp-rate-elv {
-  display: none;
-}
-
 #rp-iban-account-number {
   display: block;
 }
@@ -64,4 +62,16 @@
 
 .rp-label-sepa-agreement {
   display: inline !important;
+}
+
+.table-striped td.headline {
+  border-top: 1px solid #000;
+  padding: 10px;
+}
+
+#rpResultContainer {
+  margin-top: 20px;
+}
+.rp-container-calculator {
+  margin-top: 20px;
 }
