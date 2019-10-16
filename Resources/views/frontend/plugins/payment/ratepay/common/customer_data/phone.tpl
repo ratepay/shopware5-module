@@ -2,11 +2,11 @@
 
 {* Phone *}
 {block name='ratepay_frontend_phone'}
-    <div class="rp-birthday field--select row">
-        <div class="col-xs-12 col-sm-3">
-            <label for="ratepay_phone" class="birthday--label">{s name="RegisterPlaceholderPhone"}Telefonnummer{/s}*</label>
-        </div>
-        <div class="col-xs-12 col-sm-6">
+    <div class="form-group row phone-input">
+        <label class="col-sm-2 col-form-label">
+            {s name="RegisterPlaceholderPhone"}Telefonnummer{/s}*
+        </label>
+        <div class="col-sm-10">
             <input id="ratepay_phone"
                    class="register--field is--required"
                    name="ratepay[customer_data][phone]"

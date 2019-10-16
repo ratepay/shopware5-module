@@ -12,28 +12,37 @@
     display: block;
   }
 }
-.register--birthdate > .row > div {
+.birthday-input-group {
   & > .row {
     margin: 0;
-    & > div {
-      padding: 0;
-    }
+    padding: 0;
   }
   @media (max-width: 480px) {
-    & + div {
-      margin-top: 10px;
+    .row > div + div {
+        margin-top: 5px;
     }
     label {
-      line-height: 36px;
+      padding: 10px 0;
+      line-height: 1.5;
     }
+  }
+}
+@media (min-width: 768px) {
+  .bank-account-input,
+  .phone-input {
+    .col-form-label {
+      padding: 10px;
+      line-height: 1.5;
+    }
+  }
+}
+
+
+.ratepay-payment-method {
+  input[type="text"], select {
+    width: 100%;
   }
   label {
     margin: 0;
   }
-  input {
-    width: 100%;
-  }
-}
-input#ratepay_phone {
-  width: 100%;
 }

@@ -3,14 +3,13 @@
 <input type="hidden" name="ratepay[customer_data][birthday_required]" value="{$form_data.ratepay.customer_data.birthday_required}">
 {if $form_data.ratepay.customer_data.birthday_required !== false}
     {block name='ratepay_frontend_birthday'}
-        <div class="register--birthdate">
-
-            <div class="row">
-                <div class="col-xxs-12 col-sm-3">
-                    <strong class="birthday-group-label">{s name="RegisterPlaceholderBirthday"}Geburtsdatum{/s}</strong>
-                </div>
+        <div class="form-group row birthday-input-group">
+            <label class="col-sm-2 col-form-label">
+                {s name="RegisterPlaceholderBirthday"}Geburtsdatum{/s}
+            </label>
+            <div class="col-sm-10 row">
                 <div class="col-xxs-12 col-xs-4 col-sm-3 col-md-2">
-                    <div class="row">
+                    <div class="row row-no-gutters">
                         <div class="col-xxs-4 col-xs-12">
                             <label for="register_personal_birthdate" class="birthday--label">{s name="RegisterPlaceholderBirthdayTag"}Tag{/s}*</label>
                         </div>
@@ -27,7 +26,7 @@
                     </div>
                 </div>
                 <div class="col-xxs-12 col-xs-4 col-sm-3 col-md-2">
-                    <div class="row">
+                    <div class="row row-no-gutters">
                         <div class="col-xxs-4 col-xs-12">
                             <label for="register_personal_birthdate" class="birthday--label">{s name="RegisterPlaceholderBirthdayMonth"}Monat{/s}*</label>
                         </div>
@@ -45,7 +44,7 @@
                 </div>
 
                 <div class="col-xxs-12 col-xs-4 col-sm-3 col-md-2">
-                    <div class="row">
+                    <div class="row row-no-gutters">
                         <div class="col-xxs-4 col-xs-12">
                             <label for="register_personal_birthdate" class="birthday--label">{s name="RegisterPlaceholderBirthdayYear"}Jahr{/s}*</label>
                         </div>
@@ -62,6 +61,9 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="register--birthdate">
+
             <p>
                 <small>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um per {$sPayment.description} bezahlen zu können.{/s}</small>
             </p>
