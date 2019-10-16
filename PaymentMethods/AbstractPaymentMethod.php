@@ -111,6 +111,7 @@ class AbstractPaymentMethod extends GenericPaymentMethod
     {
         return $this->snippetManager->getNamespace('frontend/ratepay/messages')->get($snippetName);
     }
+
     protected function getPaymentMethodFromRequest(Enlight_Controller_Request_Request $request)
     {
         return $this->modelManager->find(Payment::class, $request->getParam('payment'));

@@ -8,7 +8,6 @@ use Enlight_Controller_Request_Request;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Services\InstallmentService;
-use Shopware\Models\Payment\Payment;
 
 class Installment extends Debit
 {

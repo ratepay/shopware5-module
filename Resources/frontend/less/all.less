@@ -4,6 +4,7 @@
   @import 'components/bootstrap/fixes';
   @import 'components/bootstrap/xxs';
 }
+
 @import 'components/installment';
 
 @media (min-width: 992px) {
@@ -12,21 +13,25 @@
     display: block;
   }
 }
+
 .birthday-input-group {
   & > .row {
     margin: 0;
     padding: 0;
   }
+
   @media (max-width: 480px) {
     .row > div + div {
-        margin-top: 5px;
+      margin-top: 5px;
     }
+
     label {
       padding: 10px 0;
       line-height: 1.5;
     }
   }
 }
+
 @media (min-width: 768px) {
   .bank-account-input,
   .phone-input {
@@ -42,6 +47,7 @@
   input[type="text"], select {
     width: 100%;
   }
+
   label {
     margin: 0;
   }

@@ -23,7 +23,7 @@
             var me = this;
 
             me.applyDataAttributes();
-            if(me.opts.calcRequestUrl == null) {
+            if (me.opts.calcRequestUrl == null) {
                 alert('calcRequestUrl is not set!');
                 return;
             }
@@ -32,8 +32,12 @@
             me._on(me.selectors.fixAmountButtonSelector, 'click', $.proxy(me.selectFixAmount, me));
             me._on(me.selectors.fixAmountInputSelector, 'keyup', $.proxy(me.keyupFixedAmount, me));
             me._on(me.selectors.ibanInputSelector, 'keyup', $.proxy(me.switchBankCodeInput, me));
-            me._on(me.selectors.paymentSwitchDirectDebitSelector, 'keyup', $.proxy(function() {this.switchPaymentType(this.paymentTypes.directDebit);}, me));
-            me._on(me.selectors.paymentSwitchBankTransferSelector, 'keyup', $.proxy(function() {this.switchPaymentType(this.paymentTypes.bankTransfer);}, me));
+            me._on(me.selectors.paymentSwitchDirectDebitSelector, 'keyup', $.proxy(function () {
+                this.switchPaymentType(this.paymentTypes.directDebit);
+            }, me));
+            me._on(me.selectors.paymentSwitchBankTransferSelector, 'keyup', $.proxy(function () {
+                this.switchPaymentType(this.paymentTypes.bankTransfer);
+            }, me));
 
             me.initCalculator();
         },
@@ -110,7 +114,7 @@
                 me.$el.find('#rp-switch-payment-type-direct-debit').show();
                 me.$el.find("#rp-payment-type").val("BANK-TRANSFER");
                 me.$el.find("#rp-payment-firstday").val(window.rpBankTransferFirstday);
-            } else if(paymentType === me.paymentTypes.directDebit) {
+            } else if (paymentType === me.paymentTypes.directDebit) {
                 me.$el.find('.rp-sepa-form').show();
                 //jQuery('#rp-sepa-agreement').hide();
                 me.$el.find('#rp-switch-payment-type-direct-debit').hide();
@@ -128,13 +132,13 @@
             jQuery.ajax({
                 url: me.opts.calcRequestUrl,
                 method: "GET",
-                    data: {
-                        calculationAmount: me.$el.find('#rp-calculation-amount').val(),
-                        calculationValue: calcValue,
-                        calculationType: calcType,
-                        paymentFirstday: me.$el.find("#rp-payment-firstday").val()
-                    }
-                })
+                data: {
+                    calculationAmount: me.$el.find('#rp-calculation-amount').val(),
+                    calculationValue: calcValue,
+                    calculationType: calcType,
+                    paymentFirstday: me.$el.find("#rp-payment-firstday").val()
+                }
+            })
                 .done(function (result) {
                     // show filled calculation plan template
                     me.$el.find('#rpResultContainer').html(result);
@@ -164,15 +168,13 @@
     });
 
 
+    // show sepa agreement
+    /*jQuery('#rp-show-sepa-agreement').click(function() {
+        jQuery(this).hide();
+        jQuery('#rp-sepa-agreement').show();
+    });*/
 
-        // show sepa agreement
-        /*jQuery('#rp-show-sepa-agreement').click(function() {
-            jQuery(this).hide();
-            jQuery('#rp-sepa-agreement').show();
-        });*/
-
-        // show bank code if account number is entered
-
+    // show bank code if account number is entered
 
 
     StateManager.addPlugin('[data-ratepay-installment-calculator="true"]', 'RatePayInstallmentCalculator');

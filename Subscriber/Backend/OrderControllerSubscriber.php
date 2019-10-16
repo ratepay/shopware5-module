@@ -175,9 +175,10 @@ class OrderControllerSubscriber implements SubscriberInterface
         ]);
     }
 
-    protected function validateDependencies() {
-        if($this->orderHydrator == null || $this->orderValidator == null) {
-            throw new \Exception('Please install the plugin "SwagBackendOrders" by Shopware');
+    protected function validateDependencies()
+    {
+        if ($this->orderHydrator == null || $this->orderValidator == null) {
+            throw new Exception('Please install the plugin "SwagBackendOrders" by Shopware');
         }
     }
 }
