@@ -6,6 +6,23 @@ class BankData
 {
 
     /**
+     * @var string
+     */
+    private $accountHolder;
+    /**
+     * @var string|null
+     */
+    private $iban;
+    /**
+     * @var string|null
+     */
+    private $bankCode;
+    /**
+     * @var string|null
+     */
+    private $accountNumber;
+
+    /**
      * BankData constructor.
      * @param $accountHolder
      * @param $iban
@@ -19,26 +36,6 @@ class BankData
         $this->bankCode = $bankCode;
         $this->accountNumber = $accountNumber;
     }
-
-    /**
-     * @var string
-     */
-    private $accountHolder;
-
-    /**
-     * @var string|null
-     */
-    private $iban;
-
-    /**
-     * @var string|null
-     */
-    private $bankCode;
-
-    /**
-     * @var string|null
-     */
-    private $accountNumber;
 
     /**
      * @return string

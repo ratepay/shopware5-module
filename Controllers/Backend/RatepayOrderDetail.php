@@ -4,7 +4,6 @@ use Monolog\Logger;
 use RatePAY\Model\Response\AbstractResponse;
 use RpayRatePay\Component\History;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
-use RpayRatePay\Component\Mapper\ModelFactory;
 use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Services\Request\PaymentCancelService;
@@ -36,12 +35,6 @@ use Shopware\Models\Order\Order;
  */
 class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controllers_Backend_ExtJs
 {
-    private $_config;
-
-    /** @var ModelFactory */
-    private $_modelFactory;
-    private $_service;
-    private $_history;
     /**
      * @var Logger
      */
@@ -52,13 +45,13 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
      */
     protected $modelManager;
     /**
-     * @var PaymentCancelService
-     */
-    private $paymentCancelService;
-    /**
      * @var PaymentDeliverService
      */
     protected $paymentDeliverService;
+    /**
+     * @var PaymentCancelService
+     */
+    private $paymentCancelService;
     /**
      * @var PaymentReturnService
      */
@@ -85,76 +78,14 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $this->logger = $this->container->get('rpay_rate_pay.logger');
     }
 
-    /**
-     * index action is called if no other action is triggered
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function init()
-    {
-
-    }
-
     public function preDispatch()
     {
         parent::preDispatch();
 
-        //set correct subshop for backend processes
         $orderId = $this->Request()->getParam('orderId');
-        if (null !== $orderId) {
-            $order = $this->modelManager->find(Order::class, $orderId);
-
-            $attributes = $order->getAttribute();
-            $backend = (bool)($attributes->getRatepayBackend());
-            $netPrices = $order->getNet() === 1;
-            $this->_modelFactory = new ModelFactory($this->_config, $backend, $netPrices);
-        } else {
+        if (null == $orderId) {
             throw new Exception('RatepayOrderDetail controller requires parameter orderId');
-            //$this->_modelFactory = new ModelFactory();
         }
-        $this->_history = new History();
-    }
-
-    /**
-     * Initiate the PositionDetails for the given Article in the given Order
-     */
-    public function initPositionsAction()
-    {
-        $articleNumbers = json_decode($this->Request()->getParam('articleNumber'));
-        $orderId = $this->Request()->getParam('orderId');
-        $success = true;
-        $articleNumberToInsert = [];
-
-        $sqlCountEntries = "
-          SELECT `id`, COUNT(*) AS 'count', SUM(`quantity`) AS 'quantity' FROM `s_order_details`
-          WHERE `orderID`=?
-          AND `articleordernumber`=?
-          GROUP BY `id`
-        ";
-
-        foreach (array_unique($articleNumbers) as $articleNumber) {
-            try {
-                $row = Shopware()->Db()->fetchRow($sqlCountEntries, [$orderId, $articleNumber]);
-                if ($row['count'] > 1) { // article already in order, update its quantity
-                    $sqlUpdate = 'UPDATE `s_order_details` SET `quantity`=? WHERE `id`=?';
-                    $sqlDelete = 'DELETE FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber` = ? AND `id`!=?';
-                    Shopware()->Db()->query($sqlUpdate, [$row['quantity'], $row['id']]);
-                    Shopware()->Db()->query($sqlDelete, [$orderId, $articleNumber, $row['id']]);
-                } else {
-                    $articleNumberToInsert[] = $articleNumber;
-                }
-            } catch (Exception $exception) {
-                $this->logger->warn('Unable to initialize order position ' . $articleNumber . '. ' . $exception->getMessage());
-                $success = false;
-            }
-        }
-
-        if (!empty($articleNumberToInsert)) { // add new items to order
-            $success = $this->insertNewPositionsToOrder($articleNumberToInsert, $orderId);
-        }
-
-        $this->View()->assign(compact('success'));
     }
 
     /**
@@ -162,12 +93,16 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
      */
     public function loadHistoryStoreAction()
     {
+        //TODO DQL & Models + update store in ExtJs to use own controller
         $orderId = $this->Request()->getParam('orderId');
-        $history = new History();
-        $historyData = $history->getHistory($orderId);
+        $sql = 'SELECT * FROM `rpay_ratepay_order_history`'
+            . ' WHERE `orderId`=? '
+            . 'ORDER BY `id` DESC';
+        $history = Shopware()->Db()->fetchAll($sql, [$orderId]);
+
         $this->View()->assign(
             [
-                'data' => $historyData,
+                'data' => $history,
                 'success' => true
             ]
         );
@@ -203,223 +138,42 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
     }
 
     /**
-     * Delivers the given Items and assigns the result to the backend
-     */
-    public function deliverItemsAction()
-    {
-        $orderId = $this->Request()->getParam('orderId');
-        $itemsParam = json_decode($this->Request()->getParam('items'));
-        $order = $this->modelManager
-            ->getRepository(Order::class)
-            ->findOneBy(['id' => $orderId]);
-
-
-        $items = [];
-        foreach ($itemsParam as $item) {
-            if ($item->deliveredItems > 0) {
-                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->deliveredItems);
-            }
-        }
-        $isSuccess = true;
-        if (count($items) > 0) {
-
-            $this->paymentDeliverService->setItems($items);
-            $this->paymentDeliverService->setOrder($order);
-            /** @var AbstractResponse $response */
-            $response = $this->paymentDeliverService->doRequest();
-            $isSuccess = $response === true || $response->isSuccessful();
-            if ($isSuccess) {
-                $this->setNewOrderState($orderId, 'delivery');
-            } else {
-                $this->View()->assign('message', $response->getReasonMessage());
-            }
-        }
-        $this->View()->assign([
-            'result' => $isSuccess,
-            'success' => true
-        ]);
-    }
-
-    /**
-     * Cancel the given Items and returns the result to the backend
-     */
-    public function cancelItemsAction()
-    {
-        $orderId = $this->Request()->getParam('orderId');
-        $itemsParam = json_decode($this->Request()->getParam('items'));
-
-        $items = [];
-        foreach ($itemsParam as $item) {
-            if ($item->cancelledItems > 0) {
-                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->cancelledItems);
-            }
-        }
-
-        $isSuccess = true;
-        if (count($items) > 0) {
-            $this->paymentCancelService->setOrder($orderId);
-            $this->paymentCancelService->setItems($items);
-            $this->paymentCancelService->setUpdateStock($this->Request()->getParam('articleStock') == 1);
-            /** @var AbstractResponse $response */
-            $response = $this->paymentCancelService->doRequest();
-            $isSuccess = $response === true || $response->isSuccessful();
-            if ($isSuccess) {
-                $this->setNewOrderState($orderId, 'cancellation');
-            } else {
-                $this->View()->assign('message', $response->getReasonMessage());
-            }
-        }
-        $this->View()->assign([
-            'result' => $isSuccess,
-            'success' => true
-        ]);
-    }
-
-    /**
-     * returns the given Items and returns the result to the backend
-     */
-    public function returnItemsAction()
-    {
-        $orderId = $this->Request()->getParam('orderId');
-        $itemsParam = json_decode($this->Request()->getParam('items'));
-
-        $items = [];
-        foreach ($itemsParam as $item) {
-            if ($item->returnedItems > 0) {
-                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->returnedItems);
-            }
-        }
-
-        $isSuccess = true;
-        if (count($items) > 0) {
-            $this->paymentReturnService->setOrder($orderId);
-            $this->paymentReturnService->setItems($items);
-            $this->paymentReturnService->setUpdateStock($this->Request()->getParam('articleStock') == 1);
-            /** @var AbstractResponse $response */
-            $response = $this->paymentReturnService->doRequest();
-            $isSuccess = $response === true || $response->isSuccessful();
-            if ($isSuccess) {
-                $this->setNewOrderState($orderId, 'return');
-            } else {
-                $this->View()->assign('message', $response->getReasonMessage());
-            }
-        }
-        $this->View()->assign([
-            'result' => $isSuccess,
-            'success' => true
-        ]);
-    }
-
-    /**
-     * Add the given Items to the given order
-     */
-    public function addAction()
-    {
-        $orderId = $this->Request()->getParam('orderId');
-        $addedDetailIds = json_decode($this->Request()->getParam('insertedIds'));
-        $subOperation = $this->Request()->getParam('suboperation');
-
-        $order = $this->modelManager->find(Order::class, $orderId);
-
-        if (PaymentMethods::isInstallment($order->getPayment())) {
-            $this->View()->assign([
-                'message' => 'Einer Bestellung mit der Zahlart Ratenzahlung/Finanzierung kann kein Artikel automatisch hinzugefügt werden.',
-                'result' => false,
-                'success' => true
-            ]);
-            return;
-        }
-
-        $qb = $this->modelManager->getRepository(Detail::class)->createQueryBuilder('detail');
-        $qb->andWhere($qb->expr()->in('detail.id', $addedDetailIds));
-        $addedDetails = $qb->getQuery()->getResult();
-
-        $isSuccess = true;
-        if (count($addedDetails)) {
-            $basketArrayBuilder = new BasketArrayBuilder($order);
-            foreach ($addedDetails as $detail) {
-                $basketArrayBuilder->addItem($detail);
-            }
-
-            switch ($subOperation) {
-                case 'debit':
-                    $service = $this->paymentDebitService;
-                    break;
-                case 'credit':
-                    $service = $this->paymentCreditService;
-                    break;
-                default:
-                    throw new RuntimeException('unknown operation');
-            }
-
-            $service->setOrder($order);
-            $service->setItems($basketArrayBuilder);
-            $response = $service->doRequest();
-
-            $isSuccess = $response === true || $response->isSuccessful();
-
-            $this->setNewOrderState($orderId);
-        }
-        $this->View()->assign([
-            'result' => $isSuccess,
-            'success' => true
-        ]);
-    }
-
-
-    /**
-     * Returns the article for the given id
-     */
-    public function getArticleAction()
-    {
-        $id = $this->Request()->getParam('id');
-        $data = $this->modelManager->getRepository('Shopware\Models\Article\Article')->getArticleBaseDataQuery($id)->getArrayResult();
-        $data[0]['mainPrices'] = $this->getPrices($data[0]['mainDetail']['id'], $data[0]['tax']);
-        $this->View()->assign(
-            [
-                'data' => $data[0],
-                'success' => true
-            ]
-        );
-    }
-
-    /**
-     * Returns the Price for the given id
+     * Returns the whole Basket
      *
-     * @param string $id
-     * @param float $tax
+     * @param string $orderId
      *
-     * @return float
+     * @return array
      */
-    protected function getPrices($id, $tax)
+    private function getFullBasket($orderId)
     {
-        $prices = $this->modelManager->getRepository('Shopware\Models\Article\Article')
-            ->getPricesQuery($id)
-            ->getArrayResult();
+        //TODO DQL/Models
+        $sql = 'SELECT '
+            . '`articleID`, '
+            . '`name`, '
+            . '`articleordernumber`, '
+            . '`price`, '
+            . '`quantity`, '
+            . '(`quantity` - `delivered` - `cancelled`) AS `quantityDeliver`, '
+            . '(`delivered` - `returned`) AS `quantityReturn`, '
+            . '`delivered`, '
+            . '`cancelled`, '
+            . '`returned`'
+            . 'FROM `s_order_details` AS detail '
+            . 'INNER JOIN `rpay_ratepay_order_positions` AS ratepay ON detail.`id`=ratepay.`s_order_details_id` '
+            . 'WHERE detail.`orderId`=? '
+            . 'ORDER BY detail.`id`;';
 
-        return $this->formatPricesFromNetToGross($prices, $tax);
-    }
-
-    /**
-     * Converts the given data from netto to gross
-     *
-     * @param float $prices
-     * @param float $tax
-     *
-     * @return float
-     */
-    protected function formatPricesFromNetToGross($prices, $tax)
-    {
-        foreach ($prices as $key => $price) {
-            $customerGroup = $price['customerGroup'];
-            if ($customerGroup['taxInput']) {
-                $price['price'] = $price['price'] / 100 * (100 + $tax['tax']);
-                $price['pseudoPrice'] = $price['pseudoPrice'] / 100 * (100 + $tax['tax']);
-            }
-            $prices[$key] = $price;
+        $data = Shopware()->Db()->fetchAll($sql, [$orderId]);
+        $shipping = $this->getShippingFromDBAsItem($orderId);
+        if (!is_null($shipping)) {
+            $data[] = $shipping;
+        }
+        $discount = $this->getDiscountFromDBAsItem($orderId);
+        if (!is_null($discount)) {
+            $data[] = $discount;
         }
 
-        return $prices;
+        return $data;
     }
 
     /**
@@ -497,111 +251,158 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
     }
 
     /**
-     * Returns the whole Basket
-     *
-     * @param string $orderId
-     *
-     * @return array
+     * Delivers the given Items and assigns the result to the backend
      */
-    private function getFullBasket($orderId)
+    public function deliverItemsAction()
     {
-        //TODO DQL/Models
-        $sql = 'SELECT '
-            . '`articleID`, '
-            . '`name`, '
-            . '`articleordernumber`, '
-            . '`price`, '
-            . '`quantity`, '
-            . '(`quantity` - `delivered` - `cancelled`) AS `quantityDeliver`, '
-            . '(`delivered` - `returned`) AS `quantityReturn`, '
-            . '`delivered`, '
-            . '`cancelled`, '
-            . '`returned`'
-            . 'FROM `s_order_details` AS detail '
-            . 'INNER JOIN `rpay_ratepay_order_positions` AS ratepay ON detail.`id`=ratepay.`s_order_details_id` '
-            . 'WHERE detail.`orderId`=? '
-            . 'ORDER BY detail.`id`;';
+        $orderId = $this->Request()->getParam('orderId');
+        $itemsParam = json_decode($this->Request()->getParam('items'));
+        $order = $this->modelManager
+            ->getRepository(Order::class)
+            ->findOneBy(['id' => $orderId]);
 
-        $data = Shopware()->Db()->fetchAll($sql, [$orderId]);
-        $shipping = $this->getShippingFromDBAsItem($orderId);
-        if (!is_null($shipping)) {
-            $data[] = $shipping;
-        }
-        $discount = $this->getDiscountFromDBAsItem($orderId);
-        if (!is_null($discount)) {
-            $data[] = $discount;
-        }
 
-        return $data;
+        $items = [];
+        foreach ($itemsParam as $item) {
+            if ($item->deliveredItems > 0) {
+                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->deliveredItems);
+            }
+        }
+        $isSuccess = true;
+        if (count($items) > 0) {
+
+            $this->paymentDeliverService->setItems($items);
+            $this->paymentDeliverService->setOrder($order);
+            /** @var AbstractResponse $response */
+            $response = $this->paymentDeliverService->doRequest();
+            $isSuccess = $response === true || $response->isSuccessful();
+            if ($isSuccess === false) {
+                $this->View()->assign('message', $response->getReasonMessage());
+            }
+        }
+        $this->View()->assign([
+            'result' => $isSuccess,
+            'success' => true
+        ]);
     }
 
     /**
-     * Sets the new Orderstate
-     *
-     * @param boolean $orderComplete
+     * Cancel the given Items and returns the result to the backend
      */
-    private function setNewOrderState($orderId, $operation = null)
+    public function cancelItemsAction()
     {
-        $sql = "SELECT COUNT((`quantity` - `delivered` - `cancelled`)) AS 'itemsLeft' "
-            . 'FROM `s_order_details` '
-            . 'JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` '
-            . 'WHERE `orderID`=? AND (`quantity` - `delivered` - `cancelled`) > 0';
-        try {
-            $orderComplete = Shopware()->Db()->fetchOne($sql, [$orderId]);
+        $orderId = $this->Request()->getParam('orderId');
+        $itemsParam = json_decode($this->Request()->getParam('items'));
 
-            if ($operation === 'cancellation') {
-                $newState = $orderComplete == 0 ? $this->_config['RatePayPartialCancellation'] : $this->_config['RatePayFullCancellation'];
-            } elseif ($operation === 'delivery') {
-                //only set if order is not partial returned / cancelled
-                if ($orderComplete != $this->_config['RatePayPartialReturn'] && $orderComplete != $this->_config['RatePayPartialCancellation']) {
-                    $newState = $orderComplete == 0 ? $this->_config['RatePayFullDelivery'] : $this->_config['RatePayPartialDelivery'];
-                }
-            } elseif ($operation === 'return') {
-                $newState = $orderComplete == 0 ? $this->_config['RatePayFullReturn'] : $this->_config['RatePayFullCancellation'];
+        $items = [];
+        foreach ($itemsParam as $item) {
+            if ($item->cancelledItems > 0) {
+                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->cancelledItems);
             }
-
-            // return if no status update
-            if (null === $newState) {
-                return;
-            }
-
-            Shopware()->Db()->update('s_order', [
-                'status' => $newState
-            ], '`id`=' . $orderId);
-        } catch (Exception $exception) {
-            $this->logger->error($exception->getMessage());
         }
+
+        $isSuccess = true;
+        if (count($items) > 0) {
+            $this->paymentCancelService->setOrder($orderId);
+            $this->paymentCancelService->setItems($items);
+            $this->paymentCancelService->setUpdateStock($this->Request()->getParam('articleStock') == 1);
+            /** @var AbstractResponse $response */
+            $response = $this->paymentCancelService->doRequest();
+            $isSuccess = $response === true || $response->isSuccessful();
+            if ($isSuccess === false) {
+                $this->View()->assign('message', $response->getReasonMessage());
+            }
+        }
+        $this->View()->assign([
+            'result' => $isSuccess,
+            'success' => true
+        ]);
     }
 
     /**
-     * @param $articleOrderNumbers
-     * @param $orderId
-     * @return bool
+     * returns the given Items and returns the result to the backend
      */
-    private function insertNewPositionsToOrder($articleOrderNumbers, $orderId)
+    public function returnItemsAction()
     {
-        $articleBinds = array_map(function ($item) {
-            return '?';
-        }, $articleOrderNumbers);
-        $orderDetailIdsQuery = 'SELECT `id` FROM `s_order_details`
-          WHERE `orderID`=? AND `articleordernumber` IN (' . join(', ', $articleBinds) . ')';
+        $orderId = $this->Request()->getParam('orderId');
+        $itemsParam = json_decode($this->Request()->getParam('items'));
 
-        try {
-            $queryArguments = array_merge([$orderId], $articleOrderNumbers);
-            $orderDetailIds = array_map(
-                function ($item) {
-                    return $item['id'];
-                },
-                Shopware()->Db()->fetchAll($orderDetailIdsQuery, $queryArguments)
-            );
-            $newValues = '(' . implode('), (', $orderDetailIds) . ')';
-            $sqlInsert = 'INSERT INTO `rpay_ratepay_order_positions` (`s_order_details_id`) VALUES ' . $newValues;
-            Shopware()->Db()->query($sqlInsert);
-        } catch (Exception $exception) {
-            $this->logger->error($exception->getMessage() . '. SQL:' . $sqlInsert);
-            return false;
+        $items = [];
+        foreach ($itemsParam as $item) {
+            if ($item->returnedItems > 0) {
+                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->returnedItems);
+            }
         }
 
-        return true;
+        $isSuccess = true;
+        if (count($items) > 0) {
+            $this->paymentReturnService->setOrder($orderId);
+            $this->paymentReturnService->setItems($items);
+            $this->paymentReturnService->setUpdateStock($this->Request()->getParam('articleStock') == 1);
+            /** @var AbstractResponse $response */
+            $response = $this->paymentReturnService->doRequest();
+            $isSuccess = $response === true || $response->isSuccessful();
+            if ($isSuccess == false) {
+                $this->View()->assign('message', $response->getReasonMessage());
+            }
+        }
+        $this->View()->assign([
+            'result' => $isSuccess,
+            'success' => true
+        ]);
+    }
+
+    /**
+     * Add the given Items to the given order
+     */
+    public function addAction()
+    {
+        $orderId = $this->Request()->getParam('orderId');
+        $addedDetailIds = json_decode($this->Request()->getParam('insertedIds'));
+        $subOperation = $this->Request()->getParam('suboperation');
+
+        $order = $this->modelManager->find(Order::class, $orderId);
+
+        if (PaymentMethods::isInstallment($order->getPayment())) {
+            $this->View()->assign([
+                'message' => 'Einer Bestellung mit der Zahlart Ratenzahlung/Finanzierung kann kein Artikel automatisch hinzugefügt werden.',
+                'result' => false,
+                'success' => true
+            ]);
+            return;
+        }
+
+        $qb = $this->modelManager->getRepository(Detail::class)->createQueryBuilder('detail');
+        $qb->andWhere($qb->expr()->in('detail.id', $addedDetailIds));
+        $addedDetails = $qb->getQuery()->getResult();
+
+        $isSuccess = true;
+        if (count($addedDetails)) {
+            $basketArrayBuilder = new BasketArrayBuilder($order);
+            foreach ($addedDetails as $detail) {
+                $basketArrayBuilder->addItem($detail);
+            }
+
+            switch ($subOperation) {
+                case 'debit':
+                    $service = $this->paymentDebitService;
+                    break;
+                case 'credit':
+                    $service = $this->paymentCreditService;
+                    break;
+                default:
+                    throw new RuntimeException('unknown operation');
+            }
+
+            $service->setOrder($order);
+            $service->setItems($basketArrayBuilder);
+            $response = $service->doRequest();
+
+            $isSuccess = $response === true || $response->isSuccessful();
+        }
+        $this->View()->assign([
+            'result' => $isSuccess,
+            'success' => true
+        ]);
     }
 }

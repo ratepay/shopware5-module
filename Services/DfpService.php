@@ -26,11 +26,6 @@ class DfpService
         $this->container = Shopware()->Container(); //TODO - das muss doch irgendwie via DI reinkommen können... oder?
     }
 
-    public function isDfpIdAlreadyGenerated()
-    {
-        return $this->getRatePaySession(self::SESSION_VAR_NAME) !== null;
-    }
-
     public function getDfpId($backend = false)
     {
         if ($backend) {
@@ -59,15 +54,9 @@ class DfpService
         return $token;
     }
 
-    public function deleteDfpId()
+    public function isDfpIdAlreadyGenerated()
     {
-        $this->setRatePaySession(self::SESSION_VAR_NAME, null);
-    }
-
-
-    protected function setRatePaySession($key, $value)
-    {
-        return $this->getSession()->RatePAY[$key] = $value;
+        return $this->getRatePaySession(self::SESSION_VAR_NAME) !== null;
     }
 
     protected function getRatePaySession($key)
@@ -82,6 +71,16 @@ class DfpService
             return $this->container->get('session');
         }
         throw new BadMethodCallException('this call is not allowed if you do not have a storefront session');
+    }
+
+    protected function setRatePaySession($key, $value)
+    {
+        return $this->getSession()->RatePAY[$key] = $value;
+    }
+
+    public function deleteDfpId()
+    {
+        $this->setRatePaySession(self::SESSION_VAR_NAME, null);
     }
 
 }

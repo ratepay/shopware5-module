@@ -35,6 +35,11 @@ class ValidationLib
         return false;
     }
 
+    public static function isCompanySet(Address $billingAddress)
+    {
+        return !empty($billingAddress->getCompany());
+    }
+
     public static function isOldEnough($date)
     {
         $today = new DateTime('now');
@@ -45,19 +50,6 @@ class ValidationLib
         }
         //TODO Age config?
         return $date->diff($today)->y >= 18 && $date->diff($today)->y <= 120;
-    }
-
-
-    /**
-     * @param Customer $customer
-     * @return bool
-     */
-    public static function isTelephoneNumberSet(Customer $customer)
-    {
-        $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
-        $phone = $customerWrapped->getBilling('phone');
-
-        return !empty($phone);
     }
 
     /**
@@ -134,11 +126,6 @@ class ValidationLib
     {
         $allowedCountries = is_array($allowedCountries) ? $allowedCountries : explode(',', $allowedCountries);
         return array_search($countryBilling->getIso(), $allowedCountries, true) !== false;
-    }
-
-    public static function isCompanySet(Address $billingAddress)
-    {
-        return !empty($billingAddress->getCompany());
     }
 
     public static function isIbanValid($iban)

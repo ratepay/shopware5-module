@@ -15,14 +15,9 @@ use RpayRatePay\Models\Position\Discount;
 use RpayRatePay\Models\Position\Product;
 use RpayRatePay\Models\Position\Shipping;
 use RpayRatePay\Models\ProfileConfig;
-use Shopware\Components\Model\ModelManager;
-use Shopware\Components\Plugin\Context\InstallContext;
 
 class Database extends AbstractBootstrap
 {
-
-    /** @var ModelManager */
-    protected $entityManager;
 
     /** @var SchemaTool */
     protected $schemaTool;
@@ -30,15 +25,16 @@ class Database extends AbstractBootstrap
     /** @var AbstractSchemaManager */
     protected $schemaManager;
 
-    public function __construct(
-        InstallContext $context,
-        ModelManager $entityManager
-    )
+    public function setContainer($container)
     {
-        parent::__construct($context);
-        $this->entityManager = $entityManager;
-        $this->schemaTool = new SchemaTool($this->entityManager);
-        $this->schemaManager = $this->entityManager->getConnection()->getSchemaManager();
+        parent::setContainer($container);
+        $this->schemaTool = new SchemaTool($this->modelManager);
+        $this->schemaManager = $this->modelManager->getConnection()->getSchemaManager();
+    }
+
+    public function update()
+    {
+        $this->install();
     }
 
     public function install()
@@ -62,43 +58,6 @@ class Database extends AbstractBootstrap
         if (count($update)) {
             $this->schemaTool->updateSchema($update, true);
         }
-    }
-
-    public function update()
-    {
-        $this->install();
-    }
-
-    public function uninstall($keepUserData = false)
-    {
-        if ($keepUserData === false) {
-            $remove = [];
-            foreach ($this->getClassMetas() as $meta) {
-                if ($this->entityManager->getConnection()->getSchemaManager()->tablesExist([$meta->getTableName()])) {
-                    $remove[] = $meta;
-                }
-            }
-            if (count($remove)) {
-                $this->schemaTool->dropSchema($remove);
-            }
-        }
-    }
-
-    /**
-     * @return ClassMetadata[]
-     */
-    protected function getClassMetas()
-    {
-        return [
-            $this->entityManager->getClassMetadata(ProfileConfig::class),
-            $this->entityManager->getClassMetadata(ConfigInstallment::class),
-            $this->entityManager->getClassMetadata(ConfigPayment::class),
-            $this->entityManager->getClassMetadata(Discount::class),
-            $this->entityManager->getClassMetadata(OrderHistory::class),
-            $this->entityManager->getClassMetadata(Product::class),
-            $this->entityManager->getClassMetadata(Shipping::class),
-            $this->entityManager->getClassMetadata(Log::class),
-        ];
     }
 
     protected function renameOldColumns()
@@ -138,7 +97,7 @@ class Database extends AbstractBootstrap
             ]
         ];
         foreach ($renames as $class => $columns) {
-            $classMeta = $this->entityManager->getClassMetadata($class);
+            $classMeta = $this->modelManager->getClassMetadata($class);
             if ($this->schemaManager->tablesExist([$classMeta->getTableName()])) {
                 $columnList = $this->schemaManager->listTableColumns($classMeta->getTableName());
                 $toRename = [];
@@ -149,8 +108,40 @@ class Database extends AbstractBootstrap
                 }
                 if (count($toRename)) {
                     $sql = 'ALTER TABLE ' . $classMeta->getTableName() . ' ' . implode(',', $toRename);
-                    $this->entityManager->getConnection()->executeQuery($sql);
+                    $this->modelManager->getConnection()->executeQuery($sql);
                 }
+            }
+        }
+    }
+
+    /**
+     * @return ClassMetadata[]
+     */
+    protected function getClassMetas()
+    {
+        return [
+            $this->modelManager->getClassMetadata(ProfileConfig::class),
+            $this->modelManager->getClassMetadata(ConfigInstallment::class),
+            $this->modelManager->getClassMetadata(ConfigPayment::class),
+            $this->modelManager->getClassMetadata(Discount::class),
+            $this->modelManager->getClassMetadata(OrderHistory::class),
+            $this->modelManager->getClassMetadata(Product::class),
+            $this->modelManager->getClassMetadata(Shipping::class),
+            $this->modelManager->getClassMetadata(Log::class),
+        ];
+    }
+
+    public function uninstall($keepUserData = false)
+    {
+        if ($keepUserData === false) {
+            $remove = [];
+            foreach ($this->getClassMetas() as $meta) {
+                if ($this->schemaManager->tablesExist([$meta->getTableName()])) {
+                    $remove[] = $meta;
+                }
+            }
+            if (count($remove)) {
+                $this->schemaTool->dropSchema($remove);
             }
         }
     }

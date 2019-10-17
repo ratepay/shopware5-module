@@ -105,7 +105,7 @@ class CheckoutSubscriber implements SubscriberInterface
             $data = [];
 
             if ($this->dfpService->isDfpIdAlreadyGenerated() == false) {
-                $dfpHelper = new DeviceFingerprint($this->configService->getDfpSnippetId());
+                $dfpHelper = new DeviceFingerprint($this->configService->getDfpSnippetId(Shopware()->Shop()));
                 $data['dfp'] = str_replace('\\"', '"', $dfpHelper->getDeviceIdentSnippet($this->dfpService->getDfpId()));
             }
             $this->dfpService->deleteDfpId();

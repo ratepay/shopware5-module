@@ -55,18 +55,6 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
      */
     protected $sessionHelper;
 
-    /**
-     * @param string $namespace
-     * @param string $name
-     * @param string $default
-     * @return mixed
-     */
-    private function getSnippet($namespace, $name, $default)
-    {
-        $ns = Shopware()->Snippets()->getNamespace($namespace);
-        return $ns->get($name, $default);
-    }
-
     public function setContainer(Container $loader = null)
     {
         parent::setContainer($loader);
@@ -205,5 +193,17 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
     {
         $params = $this->Request()->getParams();
         $this->sessionHelper->setInstallmentPaymentSubtype($params['paymentSubtype']);
+    }
+
+    /**
+     * @param string $namespace
+     * @param string $name
+     * @param string $default
+     * @return mixed
+     */
+    private function getSnippet($namespace, $name, $default)
+    {
+        $ns = Shopware()->Snippets()->getNamespace($namespace);
+        return $ns->get($name, $default);
     }
 }

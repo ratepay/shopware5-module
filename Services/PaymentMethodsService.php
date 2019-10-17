@@ -43,16 +43,6 @@ class PaymentMethodsService
         $this->modelManager->flush($payments);
     }
 
-    public function disableMethods()
-    {
-        $payments = $this->getPlugin()->getPayments()->toArray();
-        /** @var Payment $payment */
-        foreach ($payments as $payment) {
-            $payment->setActive(true);
-        }
-        $this->modelManager->flush($payments);
-    }
-
     protected function getPlugin()
     {
         return $this->plugin ?: $this->plugin = $this->modelManager->getRepository(Plugin::class)->findOneBy(['name' => $this->pluginName]);
@@ -61,6 +51,16 @@ class PaymentMethodsService
     protected function setPlugin(Plugin $plugin)
     {
         $this->plugin = $plugin;
+    }
+
+    public function disableMethods()
+    {
+        $payments = $this->getPlugin()->getPayments()->toArray();
+        /** @var Payment $payment */
+        foreach ($payments as $payment) {
+            $payment->setActive(true);
+        }
+        $this->modelManager->flush($payments);
     }
 
 }

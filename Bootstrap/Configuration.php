@@ -2,72 +2,63 @@
 
 namespace RpayRatePay\Bootstrap;
 
-use Monolog\Logger;
-use RpayRatePay\Enum\Country;
 use RpayRatePay\Services\Config\ConfigService;
+use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\Config\WriterService;
+use RpayRatePay\Services\Logger\RequestLogger;
 use RpayRatePay\Services\PaymentMethodsService;
-use Shopware\Components\Model\ModelManager;
-use Shopware\Components\Plugin\Context\InstallContext;
-use Shopware\Models\Shop\Shop;
-use Shopware_Components_Config;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use RpayRatePay\Services\Request\ProfileRequestService;
 
 class Configuration extends AbstractBootstrap
 {
 
     /**
-     * @var ModelManager
+     * @var PaymentMethodsService
      */
-    protected $modelManager;
+    protected $paymentMethodsService;
     /**
-     * @var WriterService
+     * @var ProfileConfigService
      */
-    protected $configWriter;
-    /**
-     * @var ConfigService
-     */
-    protected $config;
+    protected $profileConfigService;
 
-    public function __construct(
-        InstallContext $context,
-        ContainerInterface $container,
-        ModelManager $modelManager,
-        Shopware_Components_Config $config,
-        Logger $pluginLogger
-    )
+    public function setContainer($container)
     {
-        parent::__construct($context);
-        $this->modelManager = $modelManager;
-        $this->configWriter = new WriterService(
+        parent::setContainer($container);
+        $this->paymentMethodsService = new PaymentMethodsService($this->modelManager, $this->installContext->getPlugin()->getName());
+        $configService = new ConfigService(
+            $this->container,
+            $this->container->get('shopware.plugin.cached_config_reader'),
             $this->modelManager,
-            new PaymentMethodsService($this->modelManager, $context->getPlugin()->getName()),
-            $pluginLogger
+            $this->installContext->getPlugin()->getName(),
+            $this->updateContext ? $this->updateContext->getUpdateVersion() : $this->installContext->getPlugin()->getVersion()
         );
-        $this->config = new ConfigService($container, $config, $context->getPlugin()->getName());
+        $configWriter = new WriterService( /// TODO uhhh - that's not soo beautiful
+            $this->modelManager,
+            new ProfileRequestService(
+                $db = $this->container->get('db'),
+                $configService,
+                new RequestLogger(
+                    $configService,
+                    $this->modelManager,
+                    $this->logger
+                )
+            ),
+            $this->logger
+        );
+        $this->profileConfigService = new ProfileConfigService($this->modelManager, $configService, $configWriter, $this->logger);
     }
 
     public function install()
     {
-        //do nothing
+        $this->profileConfigService->refreshProfileConfigs();
     }
 
     public function update()
     {
-        if ($this->installContext->getPlugin()->getActive() == false) {
+        if ($this->updateContext === null && $this->installContext->getPlugin()->getActive() == false) {
             return;
         }
-
-        $this->configWriter->truncateConfigTables();
-
-        $repo = $this->modelManager->getRepository(Shop::class);
-        $shops = $repo->findBy(['active' => true]);
-
-        /** @var Shop $shop */
-        foreach ($shops as $shop) {
-            $this->updateRatepayConfig($shop->getId(), false);
-            $this->updateRatepayConfig($shop->getId(), true);
-        }
+        $this->profileConfigService->refreshProfileConfigs();
     }
 
     public function uninstall($keepUserData = false)
@@ -77,31 +68,11 @@ class Configuration extends AbstractBootstrap
 
     public function activate()
     {
-        //do nothing
+        $this->profileConfigService->refreshProfileConfigs();
     }
 
     public function deactivate()
     {
         //do nothing
-    }
-
-    private function updateRatepayConfig($shopId, $backend)
-    {
-        return; //TODO
-        foreach (Country::getCountries() as $iso) {
-            $profileId = $this->config->getProfileId($iso, false, $backend);
-            $securityCode = $this->config->getSecurityCode($iso, false, $shopId, $backend);
-
-            if (empty($profileId)) {
-                continue;
-            }
-
-            $this->configWriter->writeRatepayConfig($profileId, $securityCode, $shopId, $iso, $backend);
-
-            if ($iso == 'DE') {
-                $profileIdZeroPercent = $this->config->getProfileId($iso, true, $backend);
-                $this->configWriter->writeRatepayConfig($profileIdZeroPercent, true, $securityCode, $shopId, $iso, $backend);
-            }
-        }
     }
 }

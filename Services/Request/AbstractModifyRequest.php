@@ -51,21 +51,58 @@ abstract class AbstractModifyRequest extends AbstractRequest
      * @var PositionHelper
      */
     protected $positionHelper;
+    /**
+     * @var ProfileConfigService
+     */
+    protected $profileConfigService;
 
     public function __construct(
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         ConfigService $configService,
-        ProfileConfigService $profileConfigService,
         RequestLogger $requestLogger,
+        ProfileConfigService $profileConfigService,
         HistoryLogger $historyLogger,
         ModelManager $modelManager,
         PositionHelper $positionHelper
     )
     {
-        parent::__construct($db, $configService, $profileConfigService, $requestLogger);
+        parent::__construct($db, $configService, $requestLogger);
         $this->historyLogger = $historyLogger;
         $this->modelManager = $modelManager;
         $this->positionHelper = $positionHelper;
+        $this->profileConfigService = $profileConfigService;
+    }
+
+    /**
+     * @param Order|int $order
+     */
+    public final function setOrder($order = null)
+    {
+        if (is_numeric($order)) {
+            $order = $this->modelManager->find(Order::class, $order);
+        }
+        if ($order == null) {
+            throw new RuntimeException('The order should not be null or the order could not found!');
+        }
+        $this->_order = $order;
+    }
+
+    /**
+     * key: product number
+     * value: quantity
+     * @param BasketArrayBuilder|BasketPosition[] $items
+     */
+    public final function setItems($items)
+    {
+        if ($items instanceof BasketArrayBuilder) {
+            $this->basketArrayBuilder = $items;
+            $this->items = $this->basketArrayBuilder->getSimpleItems();
+        } else if (is_array($items)) {
+            $this->basketArrayBuilder = null;
+            $this->items = $items;
+        } else {
+            throw new RuntimeException('invalid argument');
+        }
     }
 
     protected function getProfileConfig()
@@ -114,64 +151,6 @@ abstract class AbstractModifyRequest extends AbstractRequest
         return $requestContent;
     }
 
-    protected function updateArticleStock($productNumber, $count)
-    {
-        $repository = $this->modelManager->getRepository(Detail::class);
-        $article = $repository->findOneBy(['number' => $productNumber]);
-        if ($article) {
-            // article still exist
-            $article->setInStock($article->getInStock() + $count);
-            $this->modelManager->persist($article);
-            $this->modelManager->flush();
-        }
-    }
-
-    /**
-     * @param Order|int $order
-     */
-    public final function setOrder($order = null)
-    {
-        if (is_numeric($order)) {
-            $order = $this->modelManager->find(Order::class, $order);
-        }
-        if ($order == null) {
-            throw new RuntimeException('The order should not be null or the order could not found!');
-        }
-        $this->_order = $order;
-    }
-
-    /**
-     * key: product number
-     * value: quantity
-     * @param BasketArrayBuilder|BasketPosition[] $items
-     */
-    public final function setItems($items)
-    {
-        if ($items instanceof BasketArrayBuilder) {
-            $this->basketArrayBuilder = $items;
-            $this->items = $this->basketArrayBuilder->getSimpleItems();
-        } else if (is_array($items)) {
-            $this->basketArrayBuilder = null;
-            $this->items = $items;
-        } else {
-            throw new RuntimeException('invalid argument');
-        }
-    }
-
-    /**
-     * @param $productNumber
-     * @return AbstractPosition
-     */
-    protected function getOrderPosition($productNumber)
-    {
-        if ($productNumber === BasketPosition::SHIPPING_NUMBER) {
-            return $this->positionHelper->getShippingPositionForOrder($this->_order);
-        } else {
-            $detail = $this->getOrderDetailByNumber($productNumber);
-            return $this->positionHelper->getPositionForDetail($detail);
-        }
-    }
-
     /**
      * @param Order $order
      * @param $productNumber
@@ -186,5 +165,36 @@ abstract class AbstractModifyRequest extends AbstractRequest
             }
         }
         return null;
+    }
+
+    protected function updateArticleStock($productNumber, $count)
+    {
+        $repository = $this->modelManager->getRepository(Detail::class);
+        $article = $repository->findOneBy(['number' => $productNumber]);
+        if ($article) {
+            // article still exist
+            $article->setInStock($article->getInStock() + $count);
+            $this->modelManager->persist($article);
+            $this->modelManager->flush();
+        }
+    }
+
+    protected function processSuccess()
+    {
+        //TODO RATEPLUG-23
+    }
+
+    /**
+     * @param $productNumber
+     * @return AbstractPosition
+     */
+    protected function getOrderPosition($productNumber)
+    {
+        if ($productNumber === BasketPosition::SHIPPING_NUMBER) {
+            return $this->positionHelper->getShippingPositionForOrder($this->_order);
+        } else {
+            $detail = $this->getOrderDetailByNumber($productNumber);
+            return $this->positionHelper->getPositionForDetail($detail);
+        }
     }
 }

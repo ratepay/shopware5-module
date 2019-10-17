@@ -3,8 +3,12 @@
 
 namespace RpayRatePay\Services\Request;
 
+use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Models\ProfileConfig;
+use RpayRatePay\Services\Config\ConfigService;
+use RpayRatePay\Services\Config\ProfileConfigService;
+use RpayRatePay\Services\Logger\RequestLogger;
 use Shopware\Models\Order\Order;
 
 class PaymentConfirmService extends AbstractRequest
@@ -14,6 +18,29 @@ class PaymentConfirmService extends AbstractRequest
      * @var Order
      */
     protected $order;
+    /**
+     * @var ProfileConfigService
+     */
+    private $profileConfigService;
+
+    public function __construct(
+        Enlight_Components_Db_Adapter_Pdo_Mysql $db,
+        ConfigService $configService,
+        RequestLogger $requestLogger,
+        ProfileConfigService $profileConfigService
+    )
+    {
+        parent::__construct($db, $configService, $requestLogger);
+        $this->profileConfigService = $profileConfigService;
+    }
+
+    /**
+     * @param Order $order
+     */
+    public function setOrder($order)
+    {
+        $this->order = $order;
+    }
 
     /**
      * @return string
@@ -59,13 +86,5 @@ class PaymentConfirmService extends AbstractRequest
             $this->order->getAttribute()->getRatepayBackend() == 1,
             $this->order->getPayment()->getName() == PaymentMethods::PAYMENT_INSTALLMENT0
         );
-    }
-
-    /**
-     * @param Order $order
-     */
-    public function setOrder($order)
-    {
-        $this->order = $order;
     }
 }

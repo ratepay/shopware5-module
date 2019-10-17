@@ -3,26 +3,18 @@
 namespace RpayRatePay\Bootstrap;
 
 use Exception;
-use RpayRatePay\Component\Service\Logger;
-use Shopware\Components\Model\ModelManager;
-use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Models\Order\Status;
 
 class OrderStatus extends AbstractBootstrap
 {
 
     /**
-     * @var ModelManager
+     * @return mixed|void
+     * @throws Exception
      */
-    protected $modelManager;
-
-    public function __construct(
-        InstallContext $context,
-        ModelManager $modelManager
-    )
+    public function update()
     {
-        parent::__construct($context);
-        $this->modelManager = $modelManager;
+        $this->install();
     }
 
     /**
@@ -50,15 +42,6 @@ class OrderStatus extends AbstractBootstrap
 
             }
         }
-    }
-
-    /**
-     * @return mixed|void
-     * @throws Exception
-     */
-    public function update()
-    {
-        $this->install();
     }
 
     public function uninstall($keepUserData = false)

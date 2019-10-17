@@ -21,15 +21,18 @@
 
         <service id="RpayRatePay\Services\Config\ConfigService">
             <argument id="service_container" type="service"/>
-            <argument id="config" type="service"/>
+            <argument id="shopware.plugin.cached_config_reader" type="service"/>
+            <argument id="models" type="service"/>
             <argument>%rpay_rate_pay.plugin_name%</argument>
         </service>
 
         <service id="RpayRatePay\Services\DfpService"/>
 
         <service id="RpayRatePay\Services\Config\ProfileConfigService">
-            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Config\WriterService" type="service"/>
+            <argument id="rpay_rate_pay.logger" type="service"/>
         </service>
 
         <service id="RpayRatePay\Services\PaymentMethodsService">
@@ -39,7 +42,7 @@
 
         <service id="RpayRatePay\Services\Config\WriterService">
             <argument id="models" type="service"/>
-            <argument id="RpayRatePay\Services\PaymentMethodsService" type="service"/>
+            <argument id="RpayRatePay\Services\Request\ProfileRequestService" type="service" />
             <argument id="rpay_rate_pay.logger" type="service"/>
         </service>
 

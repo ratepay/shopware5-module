@@ -32,16 +32,10 @@ class BasketArrayBuilder
 
     /** @var bool */
     protected $useFallbackDiscount;
-
-    /**
-     * @var Order
-     */
-    private $order;
     /**
      * @var PaymentRequestData|Order
      */
     protected $paymentRequestData;
-
     /**
      * contains a simple list of items
      * key: product number
@@ -49,7 +43,10 @@ class BasketArrayBuilder
      * @var
      */
     protected $simpleItems = [];
-
+    /**
+     * @var Order
+     */
+    private $order;
 
     /**
      * BasketArrayBuilder constructor.
@@ -84,11 +81,6 @@ class BasketArrayBuilder
         foreach ($items as $item) {
             $this->addItem($item);
         }
-    }
-
-    public function toArray()
-    {
-        return $this->basket;
     }
 
     /**
@@ -228,6 +220,11 @@ class BasketArrayBuilder
             }
             $this->simpleItems[$productNumber] = new BasketPosition($productNumber, 1);
         }
+    }
+
+    public function toArray()
+    {
+        return $this->basket;
     }
 
     /**

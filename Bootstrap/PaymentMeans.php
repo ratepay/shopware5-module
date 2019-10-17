@@ -4,8 +4,7 @@
 namespace RpayRatePay\Bootstrap;
 
 use RpayRatePay\Enum\PaymentMethods;
-use Shopware\Components\Model\ModelManager;
-use Shopware\Components\Plugin\Context\InstallContext;
+use RpayRatePay\Services\PaymentMethodsService;
 use Shopware\Components\Plugin\PaymentInstaller;
 use Shopware\Models\Payment\Payment;
 
@@ -17,21 +16,24 @@ class PaymentMeans extends AbstractBootstrap
     protected $paymentInstaller;
 
     /**
-     * @var ModelManager
+     * @var PaymentMethodsService
      */
-    protected $modelManager;
+    private $paymentMethodsService;
 
-    public function __construct(
-        InstallContext $context,
-        ModelManager $modelManager,
-        PaymentInstaller $paymentInstaller
-    )
+    public function setContainer($container)
     {
-        parent::__construct($context);
-        $this->modelManager = $modelManager;
-        $this->paymentInstaller = $paymentInstaller;
+        parent::setContainer($container);
+        $this->paymentInstaller = $this->container->get('shopware.plugin_payment_installer');
+        $this->paymentMethodsService = new PaymentMethodsService(
+            $this->modelManager,
+            $this->installContext->getPlugin()->getName()
+        );
     }
 
+    public function update()
+    {
+        $this->install();
+    }
 
     public function install()
     {
@@ -47,39 +49,22 @@ class PaymentMeans extends AbstractBootstrap
             }
             $this->paymentInstaller->createOrUpdate($this->installContext->getPlugin(), $options);
         }
-    }
-
-    public function update()
-    {
-        $this->install();
+        $this->paymentMethodsService->enableMethods();
     }
 
     public function uninstall($keepUserData = false)
     {
         $this->deactivate();
-    }
-
-    public function activate()
-    {
-        $this->setActiveFlag(true);
+        $this->paymentMethodsService->disableMethods();
     }
 
     public function deactivate()
     {
-        $this->setActiveFlag(false);
+        $this->paymentMethodsService->disableMethods();
     }
 
-    /**
-     * @param Payment[] $payments
-     * @param $active bool
-     */
-    private function setActiveFlag($active)
+    public function activate()
     {
-        //we could use the PaymentMethodsService, but the services are not available while the install process
-        $payments = $this->installContext->getPlugin()->getPayments()->toArray();
-        foreach ($payments as $payment) {
-            $payment->setActive($active);
-        }
-        $this->modelManager->flush($payments);
+        $this->paymentMethodsService->enableMethods();
     }
 }

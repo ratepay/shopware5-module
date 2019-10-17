@@ -10,6 +10,14 @@ class PaymentCancelService extends AbstractModifyRequest
 
     protected $updateStock = false;
 
+    /**
+     * @param bool $updateStock
+     */
+    public function setUpdateStock($updateStock)
+    {
+        $this->updateStock = $updateStock;
+    }
+
     protected function getCallName()
     {
         return self::CALL_CHANGE;
@@ -27,14 +35,7 @@ class PaymentCancelService extends AbstractModifyRequest
             }
             $this->historyLogger->logHistory($position, $item->getQuantity(), 'Artikel wurde storniert.');
         }
-    }
-
-    /**
-     * @param bool $updateStock
-     */
-    public function setUpdateStock($updateStock)
-    {
-        $this->updateStock = $updateStock;
+        parent::processSuccess();
     }
 
 }

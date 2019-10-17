@@ -54,6 +54,14 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      */
     protected $paymentRequestDataFactory;
     /**
+     * @var SessionHelper
+     */
+    protected $sessionHelper;
+    /**
+     * @var object|InstallmentService
+     */
+    protected $installmentService;
+    /**
      * @var object|ConfigService
      */
     private $configService;
@@ -62,18 +70,9 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      */
     private $paymentConfirmService;
     /**
-     * @var SessionHelper
-     */
-    protected $sessionHelper;
-    /**
      * @var object|ProfileConfigService
      */
     private $profileConfigService;
-    /**
-     * @var object|InstallmentService
-     */
-    protected $installmentService;
-
 
     public function setContainer(Container $container = null)
     {
@@ -131,7 +130,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 $transactionId = $requestResponse->getTransactionId();
                 $uniqueId = $this->createPaymentUniqueId();
 
-                $statusId = $this->configService->getPaymentStatusAfterPayment($paymentRequestData->getMethod());
+                $statusId = $this->configService->getPaymentStatusAfterPayment($paymentRequestData->getMethod(), $paymentRequestData->getShop());
                 $orderNumber = $this->saveOrder($transactionId, $uniqueId, $statusId ? $statusId : 17);
 
                 $order = Shopware()->Models()->getRepository(Order\Order::class)

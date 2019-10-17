@@ -38,6 +38,7 @@ class Shopware_Controllers_Backend_RatepayLogging extends Shopware_Controllers_B
      */
     public function loadLogEntriesAction()
     {
+        //TODO improve
         $start = intval($this->Request()->getParam('start'));
         $limit = intval($this->Request()->getParam('limit'));
         $orderId = $this->Request()->getParam('orderId');
@@ -70,10 +71,10 @@ class Shopware_Controllers_Backend_RatepayLogging extends Shopware_Controllers_B
         foreach ($data as $row) {
 
             if ($row['user_id']) {
+                //TODO hier muss eigentlich die billing_address aus der Order gezogen werden.
                 $customer = Shopware()->Models()->find(Customer::class, $row['user_id']);
-                $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
-                $row['firstname'] = $customerWrapped->getBillingFirstName();
-                $row['lastname'] = $customerWrapped->getBillingLastName();
+                $row['firstname'] = $customer->getDefaultBillingAddress()->getFirstname();
+                $row['lastname'] = $customer->getDefaultBillingAddress()->getLastname();
             }
 
             $matchesRequest = [];

@@ -10,7 +10,6 @@ use RatePAY\ModelBuilder;
 use RatePAY\RequestBuilder;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
-use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\Logger\RequestLogger;
 
 abstract class AbstractRequest
@@ -20,66 +19,31 @@ abstract class AbstractRequest
     const CALL_PAYMENT_CONFIRM = "paymentConfirm";
     const CALL_DELIVER = "confirmationDeliver";
     const CALL_CHANGE = "paymentChange";
-
+    const CALL_PROFILE_REQUEST = "profileRequest";
     /**
-     * @return string
+     * @var ConfigService
      */
-    abstract protected function getCallName();
-
+    protected $configService;
     /**
-     * @return array
+     * @var RequestLogger
      */
-    abstract protected function getRequestContent();
-
-    /**
-     * @param $isBackend
-     * @return ProfileConfig
-     */
-    abstract protected function getProfileConfig();
-
-    abstract protected function processSuccess();
-
-    protected function isSkipRequest()
-    {
-        return false;
-    }
-
-
+    protected $requestLogger;
+    protected $_subType = null;
+    /** @var bool */
+    protected $isRequestSkipped = false;
     /**
      * @var Enlight_Components_Db_Adapter_Pdo_Mysql
      */
     private $db;
 
-    /**
-     * @var ConfigService
-     */
-    protected $configService;
-
-    /**
-     * @var ProfileConfigService
-     */
-    protected $profileConfigService;
-
-    /**
-     * @var RequestLogger
-     */
-    protected $requestLogger;
-
-    protected $_subType = null;
-
-    /** @var bool */
-    protected $isRequestSkipped = false;
-
     public function __construct(
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         ConfigService $configService,
-        ProfileConfigService $profileConfigService,
         RequestLogger $requestLogger
     )
     {
         $this->db = $db;
         $this->configService = $configService;
-        $this->profileConfigService = $profileConfigService;
         $this->requestLogger = $requestLogger;
     }
 
@@ -135,6 +99,22 @@ abstract class AbstractRequest
         }
     }
 
+    protected function isSkipRequest()
+    {
+        return false;
+    }
+
+    /**
+     * @return array
+     */
+    abstract protected function getRequestContent();
+
+    /**
+     * @param $isBackend
+     * @return ProfileConfig
+     */
+    abstract protected function getProfileConfig();
+
     protected function getRequestHead(ProfileConfig $profileConfig)
     {
         $head = [
@@ -159,5 +139,12 @@ abstract class AbstractRequest
     {
         return $this->db->fetchOne('SELECT `host` FROM `s_core_shops` WHERE `default`=1') ?: $_SERVER['SERVER_ADDR'];
     }
+
+    /**
+     * @return string
+     */
+    abstract protected function getCallName();
+
+    abstract protected function processSuccess();
 
 }

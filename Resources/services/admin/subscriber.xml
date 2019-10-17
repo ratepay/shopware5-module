@@ -24,6 +24,7 @@
         <service id="RpayRatePay\Subscriber\Backend\PluginConfigurationSubscriber">
             <argument id="RpayRatePay\Services\Config\WriterService" type="service"/>
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
             <argument id="rpay_rate_pay.logger" type="service"/>
             <argument>%rpay_rate_pay.plugin_name%</argument>
             <tag name="shopware.event_subscriber"/>

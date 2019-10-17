@@ -112,9 +112,10 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
     private function findCandidateOrdersForUpdate()
     {
         $allowedOrderStates = [
-            $this->configService->getConfig('ratepay/bidirectional/status/full_delivery'),
-            $this->configService->getConfig('ratepay/bidirectional/status/full_cancellation'),
-            $this->configService->getConfig('ratepay/bidirectional/status/full_return'),
+            // these are global configurations
+            $this->configService->getBidirectionalOrderStatus('full_delivery'),
+            $this->configService->getBidirectionalOrderStatus('full_cancellation'),
+            $this->configService->getBidirectionalOrderStatus('full_return'),
         ];
         $changeDate = $this->getChangeDateLimit();
 

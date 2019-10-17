@@ -55,10 +55,6 @@ class PaymentRequestData
      */
     private $installmentDetails;
     /**
-     * @var boolean
-     */
-    private $itemsAreInNet;
-    /**
      * @var Shop
      */
     private $shop;

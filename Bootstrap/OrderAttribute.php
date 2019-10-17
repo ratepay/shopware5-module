@@ -3,8 +3,6 @@
 namespace RpayRatePay\Bootstrap;
 
 use Shopware\Bundle\AttributeBundle\Service\CrudService;
-use Shopware\Components\Model\ModelManager;
-use Shopware\Components\Plugin\Context\InstallContext;
 
 class OrderAttribute extends AbstractBootstrap
 {
@@ -13,20 +11,16 @@ class OrderAttribute extends AbstractBootstrap
      * @var CrudService
      */
     protected $crudService;
-    /**
-     * @var ModelManager
-     */
-    protected $modelManager;
 
-    public function __construct(
-        InstallContext $context,
-        ModelManager $modelManager,
-        CrudService $crudService
-    )
+    public function setContainer($container)
     {
-        parent::__construct($context);
-        $this->modelManager = $modelManager;
-        $this->crudService = $crudService;
+        parent::setContainer($container);
+        $this->crudService = $this->container->get('shopware_attribute.crud_service');
+    }
+
+    public function update()
+    {
+        $this->install();
     }
 
     public function install()
@@ -39,9 +33,11 @@ class OrderAttribute extends AbstractBootstrap
         $this->cleanUp();
     }
 
-    public function update()
+    protected function cleanUp()
     {
-        $this->install();
+        $this->modelManager->generateAttributeModels([
+            's_order_attributes',
+        ]);
     }
 
     public function uninstall($keepUserData = false)
@@ -64,13 +60,5 @@ class OrderAttribute extends AbstractBootstrap
     public function deactivate()
     {
         // TODO: Implement deactivate() method.
-    }
-
-
-    protected function cleanUp()
-    {
-        $this->modelManager->generateAttributeModels([
-            's_order_attributes',
-        ]);
     }
 }

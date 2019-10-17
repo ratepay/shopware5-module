@@ -14,17 +14,6 @@ use SwagBackendOrder\Components\Order\Struct\PositionStruct;
 class TaxHelper
 {
     /**
-     * @param float|int $netPrice
-     * @param float|int $grossPrice
-     * @return float|int
-     */
-    public static function taxFromPrices($netPrice, $grossPrice)
-    {
-        $tax = ($grossPrice - $netPrice) / $netPrice;
-        return $tax * 100;
-    }
-
-    /**
      * @param Order|PaymentRequestData $order
      * @param Detail|PositionStruct $item
      * @return float
@@ -90,6 +79,17 @@ class TaxHelper
         } else {
             throw new RuntimeException('Invalid argument');
         }
+    }
+
+    /**
+     * @param float|int $netPrice
+     * @param float|int $grossPrice
+     * @return float|int
+     */
+    public static function taxFromPrices($netPrice, $grossPrice)
+    {
+        $tax = ($grossPrice - $netPrice) / $netPrice;
+        return $tax * 100;
     }
 
 

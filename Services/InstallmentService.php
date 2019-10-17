@@ -101,25 +101,6 @@ class InstallmentService
         return json_decode($result, true);
     }
 
-    public function getInstallmentPlanTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto)
-    {
-        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
-        return $installmentBuilder->getInstallmentPlanByTemplate(
-            file_get_contents($this->getTemplate('template.installmentPlan.html', $isBackend)),
-            $requestDto->getTotalAmount(),
-            $requestDto->getType(),
-            $requestDto->getValue(),
-            $requestDto->getPaymentFirstDay()
-        );
-    }
-
-    public function getInstallmentCalculator($countryCode, $shopId, $paymentMethodName, $isBackend, $totalAmount)
-    {
-        $installmentBuilder = $this->getInstallmentBuilder($countryCode, $shopId, $paymentMethodName, $isBackend);
-        $result = $installmentBuilder->getInstallmentCalculatorAsJson($totalAmount);
-        return json_decode($result, true);
-    }
-
     /**
      * @param Address $billingAddress
      * @param $shopId
@@ -151,22 +132,16 @@ class InstallmentService
         return $installmentBuilder;
     }
 
-    public function getInstallmentCalculatorTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount)
+    public function getInstallmentPlanTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto)
     {
-        $bankData = $this->sessionHelper->getBankData($billingAddress);
-
         $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
-        $template = file_get_contents($this->getTemplate('template.installmentCalculator.html', $isBackend));
-        $htmlCalculator = $installmentBuilder->getInstallmentCalculatorByTemplate($totalAmount, $template);
-        $htmlCalculator = Util::templateReplace(
-            $htmlCalculator,
-            [
-                'customer_name' => $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
-                'bank_data_iban' => $bankData ? ($bankData->getIban() ? $bankData->getIban() : $bankData->getAccountNumber()) : null,
-                'bank_data_bankcode' => $bankData ? $bankData->getBankCode() : null,
-            ]
+        return $installmentBuilder->getInstallmentPlanByTemplate(
+            file_get_contents($this->getTemplate('template.installmentPlan.html', $isBackend)),
+            $requestDto->getTotalAmount(),
+            $requestDto->getType(),
+            $requestDto->getValue(),
+            $requestDto->getPaymentFirstDay()
         );
-        return $htmlCalculator;
     }
 
     protected function getTemplate($templateName, $isBackend)
@@ -186,6 +161,31 @@ class InstallmentService
             ($isBackend ? 'backend' : 'frontend') .
             DIRECTORY_SEPARATOR .
             $templateName;
+    }
+
+    public function getInstallmentCalculator($countryCode, $shopId, $paymentMethodName, $isBackend, $totalAmount)
+    {
+        $installmentBuilder = $this->getInstallmentBuilder($countryCode, $shopId, $paymentMethodName, $isBackend);
+        $result = $installmentBuilder->getInstallmentCalculatorAsJson($totalAmount);
+        return json_decode($result, true);
+    }
+
+    public function getInstallmentCalculatorTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount)
+    {
+        $bankData = $this->sessionHelper->getBankData($billingAddress);
+
+        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
+        $template = file_get_contents($this->getTemplate('template.installmentCalculator.html', $isBackend));
+        $htmlCalculator = $installmentBuilder->getInstallmentCalculatorByTemplate($totalAmount, $template);
+        $htmlCalculator = Util::templateReplace(
+            $htmlCalculator,
+            [
+                'customer_name' => $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
+                'bank_data_iban' => $bankData ? ($bankData->getIban() ? $bankData->getIban() : $bankData->getAccountNumber()) : null,
+                'bank_data_bankcode' => $bankData ? $bankData->getBankCode() : null,
+            ]
+        );
+        return $htmlCalculator;
     }
 
 }

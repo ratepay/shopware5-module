@@ -13,6 +13,11 @@ class PaymentReturnService extends AbstractModifyRequest
      */
     protected $updateStock;
 
+    public function setUpdateStock($updateStock)
+    {
+        $this->updateStock = $updateStock;
+    }
+
     protected function getCallName()
     {
         return self::CALL_CHANGE;
@@ -30,10 +35,6 @@ class PaymentReturnService extends AbstractModifyRequest
                 $this->updateArticleStock($item->getProductNumber(), $item->getQuantity());
             }
         }
-    }
-
-    public function setUpdateStock($updateStock)
-    {
-        $this->updateStock = $updateStock;
+        parent::processSuccess();
     }
 }

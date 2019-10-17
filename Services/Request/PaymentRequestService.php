@@ -65,13 +65,17 @@ class PaymentRequestService extends AbstractRequest
      * @var boolean
      */
     protected $isBackend;
+    /**
+     * @var ProfileConfigService
+     */
+    private $profileConfigService;
 
 
     public function __construct(
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         ConfigService $configService,
-        ProfileConfigService $profileConfigService,
         RequestLogger $requestLogger,
+        ProfileConfigService $profileConfigService,
         CustomerArrayFactory $customerArrayFactory,
         PaymentArrayFactory $paymentArrayFactory,
         ModelManager $modelManager,
@@ -79,61 +83,13 @@ class PaymentRequestService extends AbstractRequest
         Logger $logger
     )
     {
-        parent::__construct($db, $configService, $profileConfigService, $requestLogger);
+        parent::__construct($db, $configService, $requestLogger);
         $this->customerArrayFactory = $customerArrayFactory;
         $this->paymentArrayFactory = $paymentArrayFactory;
         $this->modelManager = $modelManager;
         $this->moduleManager = $moduleManager;
         $this->logger = $logger;
-    }
-
-    protected function getCallName()
-    {
-        return 'paymentRequest';
-    }
-
-    protected function getRequestHead(ProfileConfig $profileConfig)
-    {
-        $data = parent::getRequestHead($profileConfig);
-        $data['External'] = [
-            'OrderId' => null, //TODO currently not transmitted
-            'MerchantConsumerId' => $this->paymentRequestData->getCustomer()->getNumber()
-        ];
-        if ($this->paymentRequestData->getDfpToken()) {
-            $data['CustomerDevice']['DeviceToken'] = $this->paymentRequestData->getDfpToken();
-        }
-        return $data;
-    }
-
-    protected function getRequestContent()
-    {
-        if ($this->paymentRequestData === null) {
-            throw new RuntimeException('please set paymentRequestData with function `setPaymentRequestData()`');
-        }
-        if ($this->isBackend === null) {
-            throw new RuntimeException('please set the backend variable to `true` if it is a backend call with function `setIsBackend()`');
-        }
-
-        $basketFactory = new BasketArrayBuilder($this->paymentRequestData);
-        $shoppingBasket = $basketFactory->toArray();
-
-        $data = [
-            CustomerArrayFactory::ARRAY_KEY => $this->customerArrayFactory->getData($this->paymentRequestData),
-            BasketArrayFactory::ARRAY_KEY => $shoppingBasket,
-            PaymentArrayFactory::ARRAY_KEY => $this->paymentArrayFactory->getData($this->paymentRequestData)
-        ];
-
-        return $data;
-    }
-
-    protected function getProfileConfig()
-    {
-        return $this->profileConfigService->getProfileConfig(
-            $this->paymentRequestData->getBillingAddress()->getCountry()->getIso(),
-            $this->paymentRequestData->getShop()->getId(),
-            $this->isBackend,
-            $this->paymentRequestData->getMethod()->getName() == PaymentMethods::PAYMENT_INSTALLMENT0
-        );
+        $this->profileConfigService = $profileConfigService;
     }
 
     /**
@@ -152,11 +108,6 @@ class PaymentRequestService extends AbstractRequest
         $this->paymentRequestData = $paymentRequestData;
     }
 
-    protected function processSuccess()
-    {
-        // TODO: Implement processSuccess() method.
-    }
-
     public function completeOrder(Order $order, RequestBuilder $paymentResponse)
     {
         $this->setOrderTransactionId($order, $paymentResponse);
@@ -164,6 +115,17 @@ class PaymentRequestService extends AbstractRequest
         $this->insertProductPositions($order, $paymentResponse);
         $this->insertOrderAttributes($order, $paymentResponse);
         $this->setPaymentStatus($order, $paymentResponse);
+    }
+
+    /**
+     * @param Order $order
+     * @param RequestBuilder $paymentResponse
+     */
+    protected function setOrderTransactionId(Order $order, RequestBuilder $paymentResponse)
+    {
+        /** @var $paymentResponse PaymentResponse */ // RequestBuilder is a proxy
+        $order->setTransactionId($paymentResponse->getTransactionId());
+        $this->modelManager->flush($order);
     }
 
     /**
@@ -239,24 +201,13 @@ class PaymentRequestService extends AbstractRequest
      * @param Order $order
      * @param RequestBuilder $paymentResponse
      */
-    protected function setOrderTransactionId(Order $order, RequestBuilder $paymentResponse)
-    {
-        /** @var $paymentResponse PaymentResponse */ // RequestBuilder is a proxy
-        $order->setTransactionId($paymentResponse->getTransactionId());
-        $this->modelManager->flush($order);
-    }
-
-    /**
-     * @param Order $order
-     * @param RequestBuilder $paymentResponse
-     */
     protected function setPaymentStatus(Order $order, RequestBuilder $paymentResponse)
     {
         //set cleared date
         $order->setClearedDate(new DateTime());
         $this->modelManager->flush($order);
 
-        $paymentStatusId = $this->configService->getPaymentStatusAfterPayment($order->getPayment());
+        $paymentStatusId = $this->configService->getPaymentStatusAfterPayment($order->getPayment(), $order->getShop());
         if ($paymentStatusId == null) {
             $paymentStatusId = Status::PAYMENT_STATE_OPEN;
             $this->logger->error(
@@ -265,5 +216,59 @@ class PaymentRequestService extends AbstractRequest
         }
 
         $this->moduleManager->Order()->setPaymentStatus($order->getId(), $paymentStatusId, false);
+    }
+
+    protected function getCallName()
+    {
+        return 'paymentRequest';
+    }
+
+    protected function getRequestHead(ProfileConfig $profileConfig)
+    {
+        $data = parent::getRequestHead($profileConfig);
+        $data['External'] = [
+            'OrderId' => null, //TODO currently not transmitted
+            'MerchantConsumerId' => $this->paymentRequestData->getCustomer()->getNumber()
+        ];
+        if ($this->paymentRequestData->getDfpToken()) {
+            $data['CustomerDevice']['DeviceToken'] = $this->paymentRequestData->getDfpToken();
+        }
+        return $data;
+    }
+
+    protected function getRequestContent()
+    {
+        if ($this->paymentRequestData === null) {
+            throw new RuntimeException('please set paymentRequestData with function `setPaymentRequestData()`');
+        }
+        if ($this->isBackend === null) {
+            throw new RuntimeException('please set the backend variable to `true` if it is a backend call with function `setIsBackend()`');
+        }
+
+        $basketFactory = new BasketArrayBuilder($this->paymentRequestData);
+        $shoppingBasket = $basketFactory->toArray();
+
+        $data = [
+            CustomerArrayFactory::ARRAY_KEY => $this->customerArrayFactory->getData($this->paymentRequestData),
+            BasketArrayFactory::ARRAY_KEY => $shoppingBasket,
+            PaymentArrayFactory::ARRAY_KEY => $this->paymentArrayFactory->getData($this->paymentRequestData)
+        ];
+
+        return $data;
+    }
+
+    protected function getProfileConfig()
+    {
+        return $this->profileConfigService->getProfileConfig(
+            $this->paymentRequestData->getBillingAddress()->getCountry()->getIso(),
+            $this->paymentRequestData->getShop()->getId(),
+            $this->isBackend,
+            $this->paymentRequestData->getMethod()->getName() == PaymentMethods::PAYMENT_INSTALLMENT0
+        );
+    }
+
+    protected function processSuccess()
+    {
+        // TODO: Implement processSuccess() method.
     }
 }

@@ -25,15 +25,15 @@ class PaymentDeliverService extends AbstractModifyRequest
     public function __construct(
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         ConfigService $configService,
-        ProfileConfigService $profileConfigService,
         RequestLogger $requestLogger,
+        ProfileConfigService $profileConfigService,
         HistoryLogger $historyLogger,
         ModelManager $modelManager,
         PositionHelper $positionHelper,
         InvoiceArrayFactory $invoiceArrayFactory
     )
     {
-        parent::__construct($db, $configService, $profileConfigService, $requestLogger, $historyLogger, $modelManager, $positionHelper);
+        parent::__construct($db, $configService, $requestLogger, $profileConfigService, $historyLogger, $modelManager, $positionHelper);
         $this->invoiceArrayFactory = $invoiceArrayFactory;
     }
 
@@ -94,6 +94,7 @@ class PaymentDeliverService extends AbstractModifyRequest
                 $this->historyLogger->logHistory($position, $item->getQuantity(), 'Artikel wurde für den Versand vorbereitet.');
             }
         }
+        parent::processSuccess();
     }
 
 }

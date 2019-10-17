@@ -2,40 +2,38 @@
 
 namespace RpayRatePay\Services\Config;
 
-use Doctrine\ORM\OptimisticLockException;
 use Exception;
 use Monolog\Logger;
 use RpayRatePay\Component\Mapper\ModelFactory;
 use RpayRatePay\Models\ConfigInstallment;
 use RpayRatePay\Models\ConfigPayment;
 use RpayRatePay\Models\ProfileConfig;
-use RpayRatePay\Services\PaymentMethodsService;
+use RpayRatePay\Services\Request\ProfileRequestService;
 use Shopware\Components\Model\ModelManager;
 
 class WriterService
 {
-    private $db;
-
     /** @var ModelManager */
     protected $modelManager;
-    /**
-     * @var PaymentMethodsService
-     */
-    protected $paymentMethodsService;
     /**
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var ProfileRequestService
+     */
+    protected $profileRequestService;
+    private $db;
 
     public function __construct(
         ModelManager $modelManager,
-        PaymentMethodsService $paymentMethodsService,
+        ProfileRequestService $profileRequestService,
         Logger $logger
     )
     {
         $this->db = $modelManager->getConnection();
         $this->modelManager = $modelManager;
-        $this->paymentMethodsService = $paymentMethodsService;
+        $this->profileRequestService = $profileRequestService;
         $this->logger = $logger;
     }
 
@@ -63,36 +61,37 @@ class WriterService
     /**
      * Sends a Profile_request and saves the data into the Database
      *
-     * @param string $profileId
-     * @param string $securityCode
-     * @param int $shopId
-     * @param string $country
+     * @param ProfileConfig $profileConfig
      * @param $isZeroInstallment
-     * @param bool $backend
-     *
      * @return bool
-     * @throws OptimisticLockException
      */
-    public function writeRatepayConfig($profileId, $securityCode, $shopId, $country, $isZeroInstallment, $backend = false)
+    public function writeRatepayConfig(ProfileConfig $profileConfig, $isZeroInstallment)
     {
-        $factory = new ModelFactory(null, $backend); //TODO service
-        $data = [
-            'profileId' => $profileId,
-            'securityCode' => $securityCode
-        ];
-
         try {
-            $response = $factory->callProfileRequest($data);
+            $this->profileRequestService->setProfileConfig($profileConfig);
+            $response = $this->profileRequestService->doRequest();
+            $profileConfig = $this->profileRequestService->getProfileConfig();
+
+            // if response is failed, we will try as a production request
+            if ($response->getReasonCode() == 120 && $profileConfig->isSandbox()) {
+                $profileConfig->setSandbox(false);
+                $response = $this->profileRequestService->doRequest();
+            } else if ($response->isSuccessful() === false) {
+                $this->logger->error(
+                    'RatePAY: Profile_Request failed for profileId ' . $profileConfig->getProfileId()
+                );
+                return false;
+            }
         } catch (Exception $e) {
             $this->logger->error(
-                'RatePAY: Profile_Request failed for profileId ' . $profileId
+                'RatePAY: Profile_Request failed for profileId ' . $profileConfig->getProfileId()
             );
             return false;
         }
-
-        if (!is_array($response) || $response === false) {
+        $responseResult = $response->getResult();
+        if (!is_array($responseResult) || $response === false) {
             $this->logger
-                ->info('RatePAY: Profile_Request for profileId ' . $profileId . ' was empty ');
+                ->notice('RatePAY: Profile_Request for profileId ' . $profileConfig->getProfileId() . ' was empty ');
             return false;
         }
 
@@ -108,12 +107,12 @@ class WriterService
                 }
             }
             $configPaymentModel = new ConfigPayment();
-            $configPaymentModel->setStatus($response['result']['merchantConfig']['activation-status-' . $payment]);
-            $configPaymentModel->setB2b($response['result']['merchantConfig']['b2b-' . $payment] == 'yes');
-            $configPaymentModel->setLimitMin($response['result']['merchantConfig']['tx-limit-' . $payment . '-min']);
-            $configPaymentModel->setLimitMax($response['result']['merchantConfig']['tx-limit-' . $payment . '-max']);
-            $configPaymentModel->setLimitMaxB2b($response['result']['merchantConfig']['tx-limit-' . $payment . '-max-b2b']);
-            $configPaymentModel->setAddress($response['result']['merchantConfig']['delivery-address-' . $payment] == 'yes' ? 1 : 0);
+            $configPaymentModel->setStatus($responseResult['merchantConfig']['activation-status-' . $payment]);
+            $configPaymentModel->setB2b($responseResult['merchantConfig']['b2b-' . $payment] == 'yes');
+            $configPaymentModel->setLimitMin($responseResult['merchantConfig']['tx-limit-' . $payment . '-min']);
+            $configPaymentModel->setLimitMax($responseResult['merchantConfig']['tx-limit-' . $payment . '-max']);
+            $configPaymentModel->setLimitMaxB2b($responseResult['merchantConfig']['tx-limit-' . $payment . '-max-b2b']);
+            $configPaymentModel->setAddress($responseResult['merchantConfig']['delivery-address-' . $payment] == 'yes' ? 1 : 0);
 
             $this->modelManager->persist($configPaymentModel);
             $entitiesToFlush[] = $configPaymentModel;
@@ -123,13 +122,13 @@ class WriterService
         $this->modelManager->flush(array_values($type));
 
         //performs insert into the 'config installment' table
-        if ($response['result']['merchantConfig']['activation-status-installment'] == 2) {
+        if ($responseResult['merchantConfig']['activation-status-installment'] == 2) {
             $configInstallmentModel = new ConfigInstallment();
             $configInstallmentModel->setPaymentConfig($type['installment']);
-            $configInstallmentModel->setMonthAllowed($response['result']['installmentConfig']['month-allowed']);
-            $configInstallmentModel->setPaymentFirstDay($response['result']['installmentConfig']['valid-payment-firstdays']);
-            $configInstallmentModel->setRateMinNormal($response['result']['installmentConfig']['rate-min-normal']);
-            $configInstallmentModel->setInterestRateDateDefault($response['result']['installmentConfig']['interestrate-default']);
+            $configInstallmentModel->setMonthAllowed($responseResult['installmentConfig']['month-allowed']);
+            $configInstallmentModel->setPaymentFirstDay($responseResult['installmentConfig']['valid-payment-firstdays']);
+            $configInstallmentModel->setRateMinNormal($responseResult['installmentConfig']['rate-min-normal']);
+            $configInstallmentModel->setInterestRateDateDefault($responseResult['installmentConfig']['interestrate-default']);
 
             $this->modelManager->persist($configInstallmentModel);
             $entitiesToFlush[] = $configInstallmentModel;
@@ -138,8 +137,8 @@ class WriterService
         $entitiesToFlush = [];
 
         $configModel = new ProfileConfig();
-        $configModel->setProfileId($response['result']['merchantConfig']['profile-id']);
-        $configModel->setSecurityCode($securityCode);
+        $configModel->setProfileId($responseResult['merchantConfig']['profile-id']);
+        $configModel->setSecurityCode($profileConfig->getSecurityCode());
         if ($isZeroInstallment) {
             $configModel->setInstallment0Config($type['installment']);
         } else {
@@ -149,21 +148,21 @@ class WriterService
             $configModel->setInstallmentDebitConfig(null); // TODO why there is no value?
             $configModel->setPrepaymentConfig($type['prepayment']);
         }
-        $configModel->setCountryCodeBilling(strtoupper($response['result']['merchantConfig']['country-code-billing']));
-        $configModel->setCountryCodeDelivery(strtoupper($response['result']['merchantConfig']['country-code-delivery']));
-        $configModel->setCurrency(strtoupper($response['result']['merchantConfig']['currency']));
-        $configModel->setCountry(strtoupper($country));
-        $configModel->setSandbox($response['sandbox'] == 1);
-        $configModel->setBackend($backend == 1);
-        $configModel->setShopId($shopId);
+        $configModel->setCountryCodeBilling(strtoupper($responseResult['merchantConfig']['country-code-billing']));
+        $configModel->setCountryCodeDelivery(strtoupper($responseResult['merchantConfig']['country-code-delivery']));
+        $configModel->setCurrency(strtoupper($responseResult['merchantConfig']['currency']));
+        $configModel->setCountry(strtoupper($profileConfig->getCountry()));
+        $configModel->setSandbox($profileConfig->isSandbox());
+        $configModel->setBackend($profileConfig->isBackend());
+        $configModel->setShopId($profileConfig->getShopId());
 
         $this->modelManager->persist($configModel);
         $entitiesToFlush[] = $configModel;
 
         try {
             $this->modelManager->flush($entitiesToFlush);
-            $this->paymentMethodsService->enableMethods();
-
+            $this->logger
+                ->info('RatePAY: Profile_Request for profileId ' . $profileConfig->getProfileId() . ' was successfully ');
             return true;
         } catch (Exception $exception) {
             $this->logger->error($exception->getMessage());

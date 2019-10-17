@@ -6,7 +6,9 @@ use Enlight\Event\SubscriberInterface;
 use Enlight_Hook_HookArgs;
 use Exception;
 use Monolog\Logger;
+use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
+use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\Config\WriterService;
 
 class PluginConfigurationSubscriber implements SubscriberInterface
@@ -30,15 +32,22 @@ class PluginConfigurationSubscriber implements SubscriberInterface
      */
     protected $logger;
 
+    /**
+     * @var ProfileConfigService
+     */
+    protected $profileConfigService;
+
     public function __construct(
         WriterService $configWriterService,
         ConfigService $configService,
+        ProfileConfigService $profileConfigService,
         Logger $logger,
         $name
     )
     {
         $this->configWriterService = $configWriterService;
         $this->config = $configService;
+        $this->profileConfigService = $profileConfigService;
         $this->logger = $logger;
         $this->name = $name;
     }
@@ -46,7 +55,7 @@ class PluginConfigurationSubscriber implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Shopware_Controllers_Backend_Config::saveFormAction::before' => 'beforeSavePluginConfig',
+            'Shopware_Controllers_Backend_Config::saveFormAction::after' => 'beforeSavePluginConfig',
         ];
     }
 
@@ -56,7 +65,9 @@ class PluginConfigurationSubscriber implements SubscriberInterface
      */
     public function beforeSavePluginConfig(Enlight_Hook_HookArgs $arguments)
     {
-        $request = $arguments->getSubject()->Request();
+        /** @var \Shopware_Controllers_Backend_Config $controller */
+        $controller = $arguments->getSubject();
+        $request = $controller->Request();
         $parameter = $request->getParams();
 
         if ($parameter['name'] !== $this->name || $parameter['controller'] !== 'config') {
@@ -68,7 +79,7 @@ class PluginConfigurationSubscriber implements SubscriberInterface
         foreach ($parameter['elements'] as $element) {
 
             $matches = [];
-            if (preg_match_all('/ratepay\/profile\/([a-z]{2})\/(frontend|backend)\/(id|security_code)\/?(installment0)?/', $element['name'], $matches)) {
+            if (preg_match_all(ProfileConfigService::REGEX_CONFIG, $element['name'], $matches)) {
                 foreach ($element['values'] as $valueArray) {
                     $shopId = $valueArray['shopId'];
                     $value = trim($valueArray['value']);
@@ -82,35 +93,7 @@ class PluginConfigurationSubscriber implements SubscriberInterface
             }
         }
 
-        $this->configWriterService->truncateConfigTables();
-
-        $errors = [];
-
-        foreach ($shopCredentials as $shopId => $countries) { // de | at | nl | ch | be
-            foreach ($countries as $countryCode => $scopes) { // backend | frontend
-                foreach ($scopes as $scope => $profileTypes) {  // general | installment0
-                    foreach ($profileTypes as $type => $credentials) {
-                        if (null !== $credentials['id'] && null !== $credentials['security_code']) {
-
-                            $saveResponse = $this->configWriterService->writeRatepayConfig(
-                                $credentials['id'],
-                                $credentials['security_code'],
-                                $shopId,
-                                $countryCode,
-                                $type == 'installment0',
-                                $scope == 'backend'
-                            );
-
-                            if ($saveResponse) {
-                                $this->logger->addNotice('Ruleset for ' . strtoupper($countryCode) . ' successfully updated.');
-                            } else {
-                                $errors[] = strtoupper($countryCode) . ' Frontend';
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        $this->profileConfigService->refreshProfileConfigs($shopCredentials);
 
         if (count($errors) > 0) {
             throw new Exception('Form could not be saved. The following settings have errors ' .

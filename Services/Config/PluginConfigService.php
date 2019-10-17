@@ -17,17 +17,6 @@ class XXXConfigService
         $this->config = $config;
     }
 
-    private function getPaymentMeansMap()
-    {
-        return [
-            'rpayratepayrate' => 'installment',
-            'rpayratepayinvoice' => 'invoice',
-            'rpayratepaydebit' => 'debit',
-            'rpayratepayrate0' => 'installment0',
-            'rpayratepayprepayment' => 'prepayment'
-        ];
-    }
-
     /**
      * @param $paymentName
      * @return string|null
@@ -40,5 +29,16 @@ class XXXConfigService
         } else {
             return null;
         }
+    }
+
+    private function getPaymentMeansMap()
+    {
+        return [
+            'rpayratepayrate' => 'installment',
+            'rpayratepayinvoice' => 'invoice',
+            'rpayratepaydebit' => 'debit',
+            'rpayratepayrate0' => 'installment0',
+            'rpayratepayprepayment' => 'prepayment'
+        ];
     }
 }

@@ -78,6 +78,24 @@ class SessionHelper
         return $this->loadedBillingAddress;
     }
 
+    public function getCustomer()
+    {
+        if ($this->isFrontendSession === false) {
+            throw new Exception('not implemented');
+        }
+
+        if ($this->loadedCustomer) {
+            return $this->loadedCustomer;
+        }
+
+        $customerId = $this->session->get('sUserId');
+        if (empty($customerId)) {
+            return null;
+        }
+
+        return $this->loadedCustomer = $this->entityManager->find(Customer::class, $customerId);
+    }
+
     public function getShippingAddress(Customer $customer = null)
     {
         if ($this->isFrontendSession === false) {
@@ -102,24 +120,6 @@ class SessionHelper
         return $this->loadedShippingAddress;
     }
 
-    public function getCustomer()
-    {
-        if ($this->isFrontendSession === false) {
-            throw new Exception('not implemented');
-        }
-
-        if ($this->loadedCustomer) {
-            return $this->loadedCustomer;
-        }
-
-        $customerId = $this->session->get('sUserId');
-        if (empty($customerId)) {
-            return null;
-        }
-
-        return $this->loadedCustomer = $this->entityManager->find(Customer::class, $customerId);
-    }
-
     public function getPaymentMethod(Customer $customer = null)
     {
         if ($this->isFrontendSession === false) {
@@ -139,6 +139,15 @@ class SessionHelper
     public function removeBankData($customerId)
     {
         $this->setData('bankData_c' . $customerId, null);
+    }
+
+    public function setData($key = null, $value = null)
+    {
+        if ($key === null) {
+            $this->session->RatePay = [];
+        } else {
+            $this->session->RatePay[$key] = $value;
+        }
     }
 
     public function setBankData($customerId, $accountNumber, $bankCode = null)
@@ -170,6 +179,11 @@ class SessionHelper
         } else {
             return new BankData($accountHolder, $account);
         }
+    }
+
+    public function getData($key, $default = null)
+    {
+        return isset($this->session->RatePay[$key]) ? $this->session->RatePay[$key] : $default;
     }
 
     /**
@@ -229,21 +243,6 @@ class SessionHelper
         $dto = new InstallmentRequest();
         $dto->fromArray($data);
         return $dto;
-    }
-
-
-    public function setData($key = null, $value = null)
-    {
-        if ($key === null) {
-            $this->session->RatePay = [];
-        } else {
-            $this->session->RatePay[$key] = $value;
-        }
-    }
-
-    public function getData($key, $default = null)
-    {
-        return isset($this->session->RatePay[$key]) ? $this->session->RatePay[$key] : $default;
     }
 
     public function getSession()

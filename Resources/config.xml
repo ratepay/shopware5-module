@@ -8,46 +8,46 @@
             <label lang="en">Credentials for Germany</label>
             <label lang="de">Zugangsdaten für Deutschland:</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDDE -->
             <name>ratepay/profile/de/frontend/id</name>
             <label lang="en">Profile-ID for Germany</label>
             <label lang="de">Deutschland Profile-ID</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeDE -->
             <name>ratepay/profile/de/frontend/security_code</name>
             <label lang="en">Security Code for Germany</label>
             <label lang="de">Deutschland Security Code</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/de/frontend/id/installment0</name>
             <label lang="en">Profile-ID for Germany (0% financing)</label>
             <label lang="de">Deutschland Profile-ID (0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/de/frontend/security_code/installment0</name>
             <label lang="en">Security Code for Germany (0% financing)</label>
             <label lang="de">Deutschland Security Code(0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDDEBackend -->
             <name>ratepay/profile/de/backend/id</name>
             <label lang="en">Profile-ID for Germany (Backend)</label>
             <label lang="de">Deutschland Profile-ID (Backend)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeDEBackend -->
             <name>ratepay/profile/de/backend/security_code</name>
             <label lang="en">Security Code for Germany (Backend)</label>
             <label lang="de">Deutschland Security Code (Backend)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/de/backend/id/installment0</name>
             <label lang="en">Profile-ID for Germany (Backend - 0% financing)</label>
             <label lang="de">Deutschland Profile-ID (Backend - 0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/de/backend/security_code/installment0</name>
             <label lang="en">Security Code for Germany (Backend - 0% financing)</label>
             <label lang="de">Deutschland Security Code (Backend- 0% Finanzierung)</label>
@@ -59,46 +59,46 @@
             <label lang="en">Credentials for Austria</label>
             <label lang="de">Zugangsdaten für Österreich:</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDAT -->
             <name>ratepay/profile/at/frontend/id</name>
             <label lang="en">Profile-ID for Austria</label>
             <label lang="de">Österreich Profile-ID</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeAT -->
             <name>ratepay/profile/at/frontend/security_code</name>
             <label lang="en">Security Code for Austria</label>
             <label lang="de">Österreich Security Code</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/at/frontend/id/installment0</name>
             <label lang="en">Profile-ID for Austria (0% financing)</label>
             <label lang="de">Österreich Profile-ID (0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/at/frontend/security_code/installment0</name>
             <label lang="en">Security Code for Austria (0% financing)</label>
             <label lang="de">Österreich Security Code (0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDATBackend -->
             <name>ratepay/profile/at/backend/id</name>
             <label lang="en">Profile-ID for Austria (Backend)</label>
             <label lang="de">Österreich Profile-ID (Backend)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeATBackend -->
             <name>ratepay/profile/at/backend/security_code</name>
             <label lang="en">Security Code for Austria (Backend)</label>
             <label lang="de">Österreich Security Code (Backend)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/at/backend/id/installment0</name>
             <label lang="en">Profile-ID for Austria (Backend - 0% financing)</label>
             <label lang="de">Österreich Profile-ID (Backend - 0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/at/backend/security_code/installment0</name>
             <label lang="en">Security Code for Austria (Backend - 0% financing)</label>
             <label lang="de">Österreich Security Code (Backend - 0% Finanzierung)</label>
@@ -109,46 +109,46 @@
             <label lang="en">Credentials for Switzerland</label>
             <label lang="de">Zugangsdaten für die Schweiz:</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDCH -->
             <name>ratepay/profile/ch/frontend/id</name>
             <label lang="en">Profile-ID for Switzerland</label>
             <label lang="de">Schweiz Profile-ID</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeCH -->
             <name>ratepay/profile/ch/frontend/security_code</name>
             <label lang="en">Security Code for Switzerland</label>
             <label lang="de">Schweiz Security Code</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/ch/frontend/id/installment0</name>
             <label lang="en">Profile-ID for Switzerland (0% financing)</label>
             <label lang="de">Schweiz Profile-ID (0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/ch/frontend/security_code/installment0</name>
             <label lang="en">Security Code for Switzerland (0% financing)</label>
             <label lang="de">Schweiz Security Code (0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDCHBackend -->
             <name>ratepay/profile/ch/backend/id</name>
             <label lang="en">Profile-ID for Switzerland (Backend)</label>
             <label lang="de">Schweiz Profile-ID (Backend)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeCHBackend -->
             <name>ratepay/profile/ch/backend/security_code</name>
             <label lang="en">Security Code for Switzerland (Backend)</label>
             <label lang="de">Schweiz Security Code (Backend)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/ch/backend/id/installment0</name>
             <label lang="en">Profile-ID for Switzerland (Backend - 0% financing)</label>
             <label lang="de">Schweiz Profile-ID (Backend - 0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/ch/backend/security_code/installment0</name>
             <label lang="en">Security Code for Switzerland (Backend - 0% financing)</label>
             <label lang="de">Schweiz Security Code (Backend - 0% Finanzierung)</label>
@@ -160,46 +160,46 @@
             <label lang="en">Credentials for Belgium</label>
             <label lang="de">Zugangsdaten für Belgien:</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDBE -->
             <name>ratepay/profile/be/frontend/id</name>
             <label lang="en">Profile-ID for Belgium</label>
             <label lang="de">Belgien Profile-ID</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeBE -->
             <name>ratepay/profile/be/frontend/security_code</name>
             <label lang="en">Security Code for Belgium</label>
             <label lang="de">Belgien Security Code</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/be/frontend/id/installment0</name>
             <label lang="en">Profile-ID for Belgium (0% financing)</label>
             <label lang="de">Belgien Profile-ID (0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/be/frontend/security_code/installment0</name>
             <label lang="en">Security Code for Belgium (0% financing)</label>
             <label lang="de">Belgien Security Code (0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDBEBackend -->
             <name>ratepay/profile/be/backend/id</name>
             <label lang="en">Profile-ID for Belgium (Backend)</label>
             <label lang="de">Belgien Profile-ID (Backend)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeBEBackend -->
             <name>ratepay/profile/be/backend/security_code</name>
             <label lang="en">Security Code for Belgium (Backend)</label>
             <label lang="de">Belgien Security Code (Backend)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/be/backend/id/installment0</name>
             <label lang="en">Profile-ID for Belgium (Backend - 0% financing)</label>
             <label lang="de">Belgien Profile-ID (Backend - 0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/be/backend/security_code/installment0</name>
             <label lang="en">Security Code for Belgium (Backend - 0% financing)</label>
             <label lang="de">Belgien Security Code (Backend - 0% Finanzierung)</label>
@@ -211,35 +211,35 @@
             <label lang="en">Credentials for the Netherlands</label>
             <label lang="de">Zugangsdaten für die Niederlande:</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDNL -->
             <name>ratepay/profile/nl/frontend/id</name>
             <label lang="en">Profile-ID for the Netherlands</label>
             <label lang="de">Niederlande Profile-ID</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/nl/frontend/id/installment0</name>
             <label lang="en">Profile-ID for Netherlands (0% financing)</label>
             <label lang="de">Niederlande Profile-ID (0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeNL -->
             <name>ratepay/profile/nl/frontend/security_code</name>
             <label lang="en">Security Code for the Netherlands</label>
             <label lang="de">Niederlande Security Code</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePayProfileIDNLBackend -->
             <name>ratepay/profile/nl/backend/id</name>
             <label lang="en">Profile-ID for the Netherlands (Backend)</label>
             <label lang="de">Niederlande Profile-ID (Backend)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <name>ratepay/profile/nl/backend/id/installment0</name>
             <label lang="en">Profile-ID for Netherlands (Backend - 0% financing)</label>
             <label lang="de">Niederlande Profile-ID (Backend - 0% Finanzierung)</label>
         </element>
-        <element type="text">
+        <element type="text" scope="shop">
             <!-- TODO old field: RatePaySecurityCodeNLBackend -->
             <name>ratepay/profile/nl/backend/security_code</name>
             <label lang="en">Security Code for the Netherlands (Backend)</label>
@@ -389,7 +389,6 @@
                 <displayField>description</displayField>
             </options>
         </element>
-
         <element required="true" type="combo">
             <!-- TODO old field: RatePayPrepaidPaymentStatus -->
             <name>ratepay/status/rpayratepayprepayment</name>
@@ -403,9 +402,8 @@
             </options>
         </element>
 
-
         <element type="button">
-            <name>ratepay/buttons/button9</name>
+            <name>ratepay/buttons/button10</name>
             <label lang="en">Device fingerprinting</label>
             <label lang="de">Device fingerprinting</label>
         </element>

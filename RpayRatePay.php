@@ -28,6 +28,7 @@ use RpayRatePay\Bootstrap\Database;
 use RpayRatePay\Bootstrap\OrderAttribute;
 use RpayRatePay\Bootstrap\OrderStatus;
 use RpayRatePay\Bootstrap\PaymentMeans;
+use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -59,18 +60,27 @@ class RpayRatePay extends Plugin
     }
 
     /**
+     * @param Plugin\Context\InstallContext $context
      * @return AbstractBootstrap[]
      */
     protected function getBootstrapClasses(Plugin\Context\InstallContext $context)
     {
-        $modelManager = $this->container->get('models');
-        return [
-            new Database($context, $modelManager),
-            new OrderAttribute($context, $modelManager, $this->container->get('shopware_attribute.crud_service')),
-            new PaymentMeans($context, $modelManager, $this->container->get('shopware.plugin_payment_installer')),
-            new OrderStatus($context, $modelManager),
-            new Configuration($context, $this->container, $modelManager, $this->container->get('config'), $this->container->get('pluginlogger'))
+        /** @var AbstractBootstrap[] $bootstrapper */
+        $bootstrapper =  [
+            new Database(),
+            new OrderAttribute(),
+            new PaymentMeans(),
+            new OrderStatus(),
+            new Configuration()
         ];
+
+        $logger = new FileLogger($this->container->getParameter('kernel.logs_dir'));
+        foreach($bootstrapper as $bootstrap) {
+            $bootstrap->setContext($context);
+            $bootstrap->setLogger($logger);
+            $bootstrap->setContainer($this->container);
+        }
+        return $bootstrapper;
     }
 
     public function install(Plugin\Context\InstallContext $context)
@@ -79,7 +89,7 @@ class RpayRatePay extends Plugin
             $bootstrap->install();
         }
         parent::install($context);
-        $context->scheduleClearCache([$context::CACHE_LIST_ALL]);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
 
     public function update(Plugin\Context\UpdateContext $context)
@@ -88,7 +98,7 @@ class RpayRatePay extends Plugin
             $bootstrap->update();
         }
         parent::update($context);
-        $context->scheduleClearCache([$context::CACHE_LIST_ALL]);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
 
     public function uninstall(Plugin\Context\UninstallContext $context)
@@ -97,7 +107,7 @@ class RpayRatePay extends Plugin
             $bootstrap->uninstall($context->keepUserData());
         }
         parent::uninstall($context);
-        $context->scheduleClearCache([$context::CACHE_LIST_ALL]);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
 
     public function deactivate(Plugin\Context\DeactivateContext $context)
@@ -106,7 +116,7 @@ class RpayRatePay extends Plugin
             $bootstrap->deactivate();
         }
         parent::deactivate($context);
-        $context->scheduleClearCache([$context::CACHE_LIST_ALL]);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
 
     public function activate(Plugin\Context\ActivateContext $context)
@@ -115,7 +125,7 @@ class RpayRatePay extends Plugin
             $bootstrap->activate();
         }
         parent::activate($context);
-        $context->scheduleClearCache([$context::CACHE_LIST_ALL]);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
 }
 

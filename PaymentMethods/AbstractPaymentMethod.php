@@ -89,6 +89,11 @@ class AbstractPaymentMethod extends GenericPaymentMethod
         return $return;
     }
 
+    protected function getTranslatedMessage($snippetName)
+    {
+        return $this->snippetManager->getNamespace('frontend/ratepay/messages')->get($snippetName);
+    }
+
     public function savePaymentData($userId, Enlight_Controller_Request_Request $request)
     {
         $ratepayData = $request->getParam('ratepay')['customer_data'];
@@ -105,11 +110,6 @@ class AbstractPaymentMethod extends GenericPaymentMethod
         $billingAddress->setPhone(trim($ratepayData['phone']));
 
         $this->modelManager->flush([$customer, $billingAddress]);
-    }
-
-    protected function getTranslatedMessage($snippetName)
-    {
-        return $this->snippetManager->getNamespace('frontend/ratepay/messages')->get($snippetName);
     }
 
     protected function getPaymentMethodFromRequest(Enlight_Controller_Request_Request $request)

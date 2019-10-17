@@ -75,29 +75,6 @@ class CustomerArrayFactory
         return $data;
     }
 
-    private function _getCheckoutAddress(Address $address, $addressType)
-    {
-        $return = [
-            'Type' => strtolower($addressType),
-            'Street' => $address->getStreet(),
-            'ZipCode' => $address->getZipCode(),
-            'City' => $address->getCity(),
-            'CountryCode' => $address->getCountry()->getIso(),
-        ];
-
-        if ($addressType === 'DELIVERY') {
-            $return['FirstName'] = $address->getFirstName();
-            $return['LastName'] = $address->getLastName();
-        }
-
-        $company = $address->getCompany();
-        if (!empty($company)) {
-            $return['Company'] = $address->getCompany();
-        }
-
-        return $return;
-    }
-
     /**
      * Returns the IP Address for the current customer
      *
@@ -120,6 +97,29 @@ class CustomerArrayFactory
         }
 
         return $customerIp;
+    }
+
+    private function _getCheckoutAddress(Address $address, $addressType)
+    {
+        $return = [
+            'Type' => strtolower($addressType),
+            'Street' => $address->getStreet(),
+            'ZipCode' => $address->getZipCode(),
+            'City' => $address->getCity(),
+            'CountryCode' => $address->getCountry()->getIso(),
+        ];
+
+        if ($addressType === 'DELIVERY') {
+            $return['FirstName'] = $address->getFirstName();
+            $return['LastName'] = $address->getLastName();
+        }
+
+        $company = $address->getCompany();
+        if (!empty($company)) {
+            $return['Company'] = $address->getCompany();
+        }
+
+        return $return;
     }
 
 }

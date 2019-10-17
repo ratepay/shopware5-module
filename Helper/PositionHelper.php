@@ -35,26 +35,6 @@ class PositionHelper
         $this->modelManager = $modelManager;
     }
 
-    public static function getPositionClass(Detail $detail)
-    {
-        /** @var Product $position */
-        switch ($detail->getMode()) {
-            case self::MODE_SW_PRODUCT[0]: //product
-            case self::MODE_SW_PRODUCT[1]: //premium product
-                return Product::class;
-                break;
-            case self::MODE_SW_DISCOUNT[0]: //voucher
-            case self::MODE_SW_DISCOUNT[1]: //IS_REBATE = rabatt
-            case self::MODE_SW_DISCOUNT[2]: //IS_SURCHARGE_DISCOUNT //IST ZUSCHLAGSRABATT
-                return Discount::class;
-                break;
-            case self::MODE_RP_SHIPPING:
-                return ShippingPosition::class;
-            default:
-                return null;
-        }
-    }
-
     /**
      * @param PositionStruct|Detail $object
      * @return bool
@@ -69,21 +49,12 @@ class PositionHelper
     }
 
     /**
-     * @param Detail $detail
-     * @return AbstractPosition
-     */
-    public function getPositionForDetail($detail)
-    {
-        return $this->modelManager->find(self::getPositionClass($detail), $detail->getId());
-    }
-
-    /**
      * @param Order $order
-     * @return ShippingPosition
+     * @return bool
      */
-    public function getShippingPositionForOrder(Order $order)
+    public function isOrderComplete(Order $order)
     {
-        return $this->modelManager->find(ShippingPosition::class, $order->getId());
+        return $this->doesOrderHasOpenPositions($order) === false;
     }
 
     /**
@@ -113,6 +84,44 @@ class PositionHelper
             }
         }
         return false;
+    }
+
+    /**
+     * @param Detail $detail
+     * @return AbstractPosition
+     */
+    public function getPositionForDetail($detail)
+    {
+        return $this->modelManager->find(self::getPositionClass($detail), $detail->getId());
+    }
+
+    public static function getPositionClass(Detail $detail)
+    {
+        /** @var Product $position */
+        switch ($detail->getMode()) {
+            case self::MODE_SW_PRODUCT[0]: //product
+            case self::MODE_SW_PRODUCT[1]: //premium product
+                return Product::class;
+                break;
+            case self::MODE_SW_DISCOUNT[0]: //voucher
+            case self::MODE_SW_DISCOUNT[1]: //IS_REBATE = rabatt
+            case self::MODE_SW_DISCOUNT[2]: //IS_SURCHARGE_DISCOUNT //IST ZUSCHLAGSRABATT
+                return Discount::class;
+                break;
+            case self::MODE_RP_SHIPPING:
+                return ShippingPosition::class;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * @param Order $order
+     * @return ShippingPosition
+     */
+    public function getShippingPositionForOrder(Order $order)
+    {
+        return $this->modelManager->find(ShippingPosition::class, $order->getId());
     }
 
 }

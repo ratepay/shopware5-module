@@ -99,16 +99,6 @@ final class PaymentMethods extends Enum
 
     /**
      * @param string|Payment $paymentMethod
-     * @return boolean
-     */
-    public static function exists($paymentMethod)
-    {
-        $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
-        return $paymentMethod ? array_key_exists($paymentMethod, self::PAYMENTS) : false;
-    }
-
-    /**
-     * @param string|Payment $paymentMethod
      * @return string
      */
     public static function getRatepayPaymentMethod($paymentMethod)
@@ -118,6 +108,16 @@ final class PaymentMethods extends Enum
             throw new RuntimeException('the method ' . $paymentMethod . ' is not a ratepay payment method');
         }
         return self::PAYMENTS[$paymentMethod]['ratepay']['methodName'];
+    }
+
+    /**
+     * @param string|Payment $paymentMethod
+     * @return boolean
+     */
+    public static function exists($paymentMethod)
+    {
+        $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
+        return $paymentMethod ? array_key_exists($paymentMethod, self::PAYMENTS) : false;
     }
 
     public static function isInstallment($paymentMethod)

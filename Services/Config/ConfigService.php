@@ -4,55 +4,99 @@
 namespace RpayRatePay\Services\Config;
 
 
+use InvalidArgumentException;
 use RuntimeException;
+use Shopware\Components\Model\ModelManager;
+use Shopware\Components\Plugin\CachedConfigReader;
 use Shopware\Models\Payment\Payment;
-use Shopware_Components_Config;
+use Shopware\Models\Shop\Shop;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ConfigService
 {
 
     /**
-     * @var Shopware_Components_Config
-     */
-    private $_config;
-
-    /**
      * @var ContainerInterface
      */
     protected $container;
-
     /**
      * @var string
      */
     protected $pluginName;
+    /**
+     * @var CachedConfigReader
+     */
+    private $configReader;
+    /**
+     * @var ModelManager
+     */
+    private $modelManager;
+
+    /**
+     * this field got filled by Bootstrap\Configuration
+     * @var string
+     */
+    private $updateVersion;
 
     public function __construct(
         ContainerInterface $container,
-        Shopware_Components_Config $config,
-        $pluginName
+        CachedConfigReader $configReader,
+        ModelManager $modelManager,
+        $pluginName,
+        $updateVersion = null
     )
     {
         $this->container = $container;
-        $this->_config = $config;
+        $this->configReader = $configReader;
+        $this->modelManager = $modelManager;
         $this->pluginName = $pluginName;
+        $this->updateVersion = $updateVersion;
     }
 
     public function getPluginVersion()
     {
-        return $this->container->getParameter('active_plugins')[$this->pluginName];
+        return $this->updateVersion ?: $this->container->getParameter('active_plugins')[$this->pluginName];
     }
 
-    public function getDfpSnippetId()
+    public function getDfpSnippetId($shopId = null)
     {
         $defaultValue = 'ratepay';
-        $value = $this->_config->get('ratepay/dfp/snippet_id', $defaultValue);
+        $value = $this->getConfig('ratepay/dfp/snippet_id', $defaultValue, $shopId);
         return strlen($value) ? $value : $defaultValue;
     }
 
-    public function getProfileId($countryISO, $zeroPercentPayment = false, $isBackend = false)
+    /**
+     * @param $configName
+     * @param null $default
+     * @param Shop|int $shop
+     * @return mixed
+     */
+    public function getConfig($configName, $default = null, $shop = null)
     {
-        return $this->_config->get($this->getProfileIdKey($countryISO, $zeroPercentPayment, $isBackend), null);
+        if ($shop === null) {
+            //$shop = $this->modelManager->getRepository(Shop::class)->getActiveDefault();
+        } else if (is_numeric($shop)) {
+            $shop = $this->modelManager->find(Shop::class, $shop);
+            if ($shop === null) {
+                throw new InvalidArgumentException('the given shop does not exist');
+            }
+        } else if ($shop instanceof Shop === false) {
+            throw new InvalidArgumentException('please provide a valid shop parameter (Shop-Model, Shop-Id or NULL for the default default)');
+        }
+        $config = $this->configReader->getByPluginName($this->pluginName, $shop);
+        return isset($config[$configName]) ? $config[$configName] : $default;
+    }
+
+    /**
+     * @param $countryISO
+     * @param bool $zeroPercentPayment
+     * @param bool $isBackend
+     * @param Shop|int $shop
+     * @return mixed
+     */
+    public function getProfileId($countryISO, $zeroPercentPayment = false, $isBackend = false, $shop = null)
+    {
+        return $this->getConfig($this->getProfileIdKey($countryISO, $zeroPercentPayment, $isBackend), null, $shop);
     }
 
     public function getProfileIdKey($countryISO, $zeroPercentPayment, $isBackend)
@@ -62,9 +106,16 @@ class ConfigService
         return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/id" . ($zeroPercentPayment ? "/installment0" : "");
     }
 
-    public function getSecurityCode($countryISO, $zeroPercentPayment, $isBackend = false)
+    /**
+     * @param $countryISO
+     * @param $zeroPercentPayment
+     * @param bool $isBackend
+     * @param Shop|int $shop
+     * @return mixed
+     */
+    public function getSecurityCode($countryISO, $zeroPercentPayment, $isBackend = false, $shop = null)
     {
-        return $this->_config->get($this->getSecurityCodeKey($countryISO, $zeroPercentPayment, $isBackend), null);
+        return $this->getConfig($this->getSecurityCodeKey($countryISO, $zeroPercentPayment, $isBackend), null, $shop);
     }
 
     public function getSecurityCodeKey($countryISO, $zeroPercentPayment, $isBackend)
@@ -78,7 +129,8 @@ class ConfigService
      */
     public function isCommitDiscountAsCartItem()
     {
-        return $this->_config->get('ratepay/advanced/use_fallback_discount_item', null) == 1;
+        //this is a global configuration
+        return $this->getConfig('ratepay/advanced/use_fallback_discount_item', null, null) == 1;
     }
 
     /**
@@ -86,7 +138,8 @@ class ConfigService
      */
     public function isCommitShippingAsCartItem()
     {
-        return $this->_config->get('ratepay/advanced/use_fallback_shipping_item', null) == 1;
+        //this is a global configuration
+        return $this->getConfig('ratepay/advanced/use_fallback_shipping_item', null, null) == 1;
     }
 
     /**
@@ -97,27 +150,25 @@ class ConfigService
      */
     public function isInstallmentDirectDelivery()
     {
-        return $this->_config->get('ratepay/advanced/installment_direct_delivery', null) == 1;
+        //this is a global configuration
+        return $this->getConfig('ratepay/advanced/installment_direct_delivery', null, null) == 1;
     }
 
     public function isBidirectionalEnabled()
     {
-        return $this->_config->get('ratepay/bidirectional/enable') == 1;
-    }
-
-    public function getConfig($configName, $default = null)
-    {
-        return $this->_config->get($configName, $default);
+        //this is a global configuration
+        return $this->getConfig('ratepay/bidirectional/enable', null, null) == 1;
     }
 
     /**
      * @param $paymentMethod
+     * @param Shop|int $shop
      * @return int
      */
-    public function getPaymentStatusAfterPayment($paymentMethod)
+    public function getPaymentStatusAfterPayment($paymentMethod, $shop)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
-        return $this->_config->get('ratepay/status/' . $paymentMethod, null);
+        return $this->getConfig('ratepay/status/' . $paymentMethod, null, $shop);
     }
 
     public function getBidirectionalOrderStatus($action)
@@ -126,6 +177,14 @@ class ConfigService
         if (!in_array($action, $allowedActions)) {
             throw new RuntimeException('Just these actions are allowed: ' . implode(',', $allowedActions));
         }
-        return intval($this->_config->get('ratepay/bidirectional/status/' . $action, null));
+        return intval($this->getConfig('ratepay/bidirectional/status/' . $action, null));
+    }
+
+    public function getAllProfileConfigs(Shop $shop)
+    {
+        $allConfig = $this->configReader->getByPluginName($this->pluginName, $shop);
+        return array_filter($allConfig, function ($key) {
+            return strpos($key, 'ratepay/profile/') === 0;
+        }, ARRAY_FILTER_USE_KEY);
     }
 }
