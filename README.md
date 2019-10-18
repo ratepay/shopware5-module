@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.5.x` - `5.6.x`
-|Version | `5.4.4`
+|Version | `5.4.5`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,10 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.4.5 - Released 2019-10-18
+* RATEPLUG-24: add support for different stores/subshops
+* fix a few bugs with zero percent installment
 
 ### Version 5.4.4 - Released 2019-10-01
 * RATEPLUG-16: logging: add pagination

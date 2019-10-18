@@ -12,100 +12,31 @@
 
     //do i need a require here?
     use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
+use RpayRatePay\Models\ProfileConfig;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
 
-    /**
+/**
      * Developer needs to specify how the Calculator gets the Data
      */
     class PiRatepayRateCalcData implements PiRatepayRateCalcDataInterface
     {
 
         /**
-         * This method get the RatePAY profile-id and has to be rewritten
-         *
-         * @deprecated
-         * @return string
+         * @return ProfileConfig
          */
-        public function getProfileId()
-        {
+        public function getProfileConfig() {
             $customer = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')
                 ->findOneBy(array('id' => Shopware()->Session()->sUserId));
-            $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
-
-            $country = $customerWrapped->getBillingCountry();
-
-            $profileId = null;
-            if('DE' === $country->getIso())
-            {
-                $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePayProfileIDDE;
-            } elseif('AT' === $country->getIso())
-            {
-                $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePayProfileIDAT;
-            } elseif('CH' === $country->getIso())
-            {
-                $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePayProfileIDCH; // ToDo! Make config field variable
-            }
-
-            return $profileId;
-        }
-
-        /**
-         * This method get the RatePAY security-code and has to be rewritten
-         * If you only have the hashed security-code, return an empty string.
-         *
-         * @return string
-         */
-        public function getSecurityCode()
-        {
-            return '';
-        }
-
-        /**
-         * This method get the security-code md5 hashed and has to be rewritten
-         * If you only have the non hashed security-code, return an empty string.
-         *
-         * @return string
-         */
-        public function getSecurityCodeHashed()
-        {
-            $customer = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')
-                                  ->findOneBy(array('id' => Shopware()->Session()->sUserId));
 
             $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
             $country = $customerWrapped->getBillingCountry();
 
-            $securityCode = null;
-            if('DE' === $country->getIso())
-            {
-                $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySecurityCodeDE;
-            } elseif('AT' === $country->getIso())
-            {
-                $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySecurityCodeAT;
-            } elseif('CH' === $country->getIso())
-            {
-                $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->RatePaySecurityCodeCH;
-            }
-
-            return $securityCode;
-        }
-
-        /**
-         * This method get the status live or sandbox and has to be rewritten
-         *
-         * @return boolean
-         */
-        public function isLive()
-        {
-            /** @var Shopware\Models\Customer\Customer $customer */
-            $customer = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer')
-                                  ->findOneBy(array('id' => Shopware()->Session()->sUserId));
-
-            $customerWrapped = new ShopwareCustomerWrapper($customer, Shopware()->Models());
-            $country = $customerWrapped->getBillingCountry();
-
-            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();
-            $sandbox = $modelFactory->getSandboxMode($country->getIso());
-
-            return (bool)$sandbox;
+            return ProfileConfigService::getProfileConfig(
+                $country->getIso(),
+                Shopware()->Shop()->getId(),
+                Shopware()->Session()->get('sOrderVariables')['sPayment']['name'] === 'rpayratepayrate0',
+                false
+            );
         }
 
         /**
