@@ -9,6 +9,7 @@
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
+|Legal Disclaimer|https://ratepay.gitbook.io/docs/#legal-disclaimer
 
 ## Installation
 1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `engine/Shopware/Plugins/Community/Frontend`
