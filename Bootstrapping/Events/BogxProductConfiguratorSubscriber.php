@@ -4,7 +4,11 @@
 namespace RpayRatePay\Bootstrapping\Events;
 
 
+use BogxProductConfigurator\Subscriber\BogxFrontendSubscriber;
+use Doctrine\DBAL\Query\QueryBuilder;
 use Enlight\Event\SubscriberInterface;
+use Enlight_Event_EventArgs;
+use Enlight_Event_EventManager;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Attribute\OrderDetail as OrderDetailAttribute;
 
@@ -13,25 +17,58 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
     /**
      * @var ModelManager
      */
-    protected $modelManager;
+    private $modelManager;
+    /**
+     * @var Enlight_Event_EventManager
+     */
+    private $eventManager;
+
 
     public function __construct()
     {
         $this->modelManager = Shopware()->Models();
+        $this->eventManager = Shopware()->Events();
     }
 
     public static function getSubscribedEvents()
     {
-        return [
-            'RatePAY_filter_order_items' => 'onFilterOrderItems'
-        ];
+        if (self::isBogsPluginInstalled()) {
+            return [
+                'Enlight_Controller_Front_RouteStartup' => 'unregisterPluginEvent',
+                'Shopware_Modules_Basket_AddArticle_CheckBasketForArticle' => 'checkBasketForArticle',
+                'RatePAY_filter_order_items' => 'onFilterOrderItems'
+            ];
+        }
+        return [];
     }
 
-    public function onFilterOrderItems(\Enlight_Event_EventArgs $args)
+    public function unregisterPluginEvent(Enlight_Event_EventArgs $args)
     {
-        if ($this->isBogsPluginInstalled() === false) {
-            return;
+        $handlers = $this->eventManager->getListeners('Shopware_Modules_Basket_AddArticle_CheckBasketForArticle');
+        foreach ($handlers as $handler) {
+            if (isset($handler->getListener()[0]) && $handler->getListener()[0] instanceof BogxFrontendSubscriber) {
+                $this->eventManager->removeListener($handler);
+            }
         }
+    }
+
+    public function checkBasketForArticle(Enlight_Event_EventArgs $args)
+    {
+        /** @var QueryBuilder $qb */
+        $qb = $args->get('queryBuilder');
+        $configuration = Shopware()->Front()->Request()->getParam('bogxProductConfiguratorSelection');
+
+        if ($configuration) {
+            $qb->resetQueryPart('select');
+            $qb->select(['basket.id', 'quantity']);
+            $qb->innerJoin('basket', 's_order_basket_attributes', 'attribute', 'basket.id = attribute.basketID')
+                ->where($qb->expr()->eq('attribute.bogx_productconfigurator', ':configuration'))
+                ->setParameter('configuration', $configuration);
+        }
+    }
+
+    public function onFilterOrderItems(Enlight_Event_EventArgs $args)
+    {
         $data = $args->getReturn();
 
         if (isset($data['ordernumber'])) {
@@ -67,9 +104,9 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         $args->setReturn($data);
     }
 
-    protected function isBogsPluginInstalled()
+    protected static function isBogsPluginInstalled()
     {
-        return $this->modelManager->getConnection()->query("SELECT 1 FROM s_core_plugins WHERE name = 'BogxProductConfigurator' AND active = 1")->fetchColumn() !== false;
+        return Shopware()->Db()->query("SELECT 1 FROM s_core_plugins WHERE name = 'BogxProductConfigurator' AND active = 1")->fetchColumn() !== false;
     }
 
 }
