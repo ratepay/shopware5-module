@@ -176,6 +176,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
             /** @var Detail $item */
             foreach ($order->getDetails() as $item) {
                 $items[$i]['articlename'] = $item->getArticlename();
+                $items[$i]['orderDetailId'] = $item->getId();
                 $items[$i]['ordernumber'] = $item->getArticlenumber();
                 $items[$i]['quantity'] = $item->getQuantity();
                 $items[$i]['priceNumeric'] = $item->getPrice();
@@ -188,6 +189,10 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
                 $items[$i]['tax_rate'] = $taxRate;
 
                 $i++;
+            }
+            $eventManager = Shopware()->Events();
+            foreach($items as $index => $item) {
+                $items[$index] = $eventManager->filter('RatePAY_filter_order_items', $item);
             }
             if (!empty($shippingCosts)) {
                 $items['Shipping']['articlename'] = 'Shipping';

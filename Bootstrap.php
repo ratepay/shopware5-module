@@ -20,6 +20,7 @@
  */
 
 use RpayRatePay\Component\Service\Logger;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Bootstrapping\Events\BogxProductConfiguratorSubscriber;
 
 require_once __DIR__ . '/Component/CSRFWhitelistAware.php';
 
@@ -270,6 +271,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             new \RpayRatePay\Bootstrapping\Events\UpdateTransactionsSubscriber(),
             new \RpayRatePay\Bootstrapping\Events\BackendOrderControllerSubscriber(new \RpayRatePay\Component\Service\ConfigLoader($this->get('db')), $this->Path()),
             new \RpayRatePay\Bootstrapping\Events\BackendOrderViewExtensionSubscriber($this->Path()),
+            new \RpayRatePay\Bootstrapping\Events\BogxProductConfiguratorSubscriber()
         ];
 
         foreach ($subscribers as $subscriber) {

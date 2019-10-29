@@ -134,6 +134,11 @@ class SessionLoader
 
         $items = $this->session->sOrderVariables['sBasket']['content'];
 
+        $eventManager = Shopware()->Events();
+        foreach($items as $index => $item) {
+            $items[$index] = $eventManager->filter('RatePAY_filter_order_items', $item);
+        }
+
         $shippingCost = $this->session->sOrderVariables['sBasket']['sShippingcosts'];
 
         $shippingTax = $this->session->sOrderVariables['sBasket']['sShippingcostsTax'];
