@@ -146,17 +146,25 @@ class SessionHelper
         if ($key === null) {
             $this->session->RatePay = [];
         } else {
-            $this->session->RatePay[$key] = $value;
+            if($value !== null) {
+                $this->session->RatePay[$key] = $value;
+            } else {
+                unset($this->session->RatePay[$key]);
+            }
         }
     }
 
-    public function setBankData($customerId, $accountNumber, $bankCode = null)
+    public function setBankData($customerId, $accountNumber = null, $bankCode = null)
     {
-        $this->setData('bankData_c' . $customerId, [
-            'customerId' => $customerId,
-            'account' => $accountNumber,
-            'bankcode' => $bankCode
-        ]);
+        if($accountNumber !== null) {
+            $this->setData('bankData_c' . $customerId, [
+                'customerId' => $customerId,
+                'account' => $accountNumber,
+                'bankcode' => $bankCode
+            ]);
+        } else {
+            $this->setData('bankData_c' . $customerId, null);
+        }
     }
 
     /**

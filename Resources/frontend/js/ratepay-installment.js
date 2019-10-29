@@ -15,8 +15,8 @@
             fixAmountButtonSelector: '.rp-btn-rate',
             fixAmountInputSelector: '#rp-rate-value',
             ibanInputSelector: '#rp-iban-account-number',
-            paymentSwitchDirectDebitSelector: '#rp-switch-payment-type-direct-debit',
-            paymentSwitchBankTransferSelector: '#rp-switch-payment-type-direct-debit',
+            paymentSwitchDirectDebitSelector: '#rp-switch-payment-type-direct-debit a',
+            paymentSwitchBankTransferSelector: '#rp-switch-payment-type-bank-transfer a',
         },
 
         init: function () {
@@ -32,11 +32,11 @@
             me._on(me.selectors.fixAmountButtonSelector, 'click', $.proxy(me.selectFixAmount, me));
             me._on(me.selectors.fixAmountInputSelector, 'keyup', $.proxy(me.keyupFixedAmount, me));
             me._on(me.selectors.ibanInputSelector, 'keyup', $.proxy(me.switchBankCodeInput, me));
-            me._on(me.selectors.paymentSwitchDirectDebitSelector, 'keyup', $.proxy(function () {
-                this.switchPaymentType(this.paymentTypes.directDebit);
+            me._on(me.selectors.paymentSwitchDirectDebitSelector, 'click', $.proxy(function () {
+                me.switchPaymentType(this.paymentTypes.directDebit);
             }, me));
-            me._on(me.selectors.paymentSwitchBankTransferSelector, 'keyup', $.proxy(function () {
-                this.switchPaymentType(this.paymentTypes.bankTransfer);
+            me._on(me.selectors.paymentSwitchBankTransferSelector, 'click', $.proxy(function () {
+                me.switchPaymentType(this.paymentTypes.bankTransfer);
             }, me));
 
             me.initCalculator();

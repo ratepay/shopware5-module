@@ -72,13 +72,13 @@ class Installment extends Debit
         return $return;
     }
 
-    public function savePaymentData($userId, Enlight_Controller_Request_Request $request)
+    protected function saveRatePayPaymentData($userId, Enlight_Controller_Request_Request $request)
     {
         $paymentData = $request->getParam('ratepay');
         $installmentData = $paymentData[$this->formDataKey];
-        $this->isBankDataRequired = $installmentData['payment_type'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
+        $this->isBankDataRequired = $installmentData['paymentType'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
 
-        parent::savePaymentData($userId, $request);
+        parent::saveRatePayPaymentData($userId, $request);
 
         $dto = new InstallmentRequest(
             floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']),

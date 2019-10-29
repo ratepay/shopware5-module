@@ -11,9 +11,10 @@ use RpayRatePay\Helper\SessionHelper;
 use Shopware\Components\DependencyInjection\Container;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Payment\Payment;
+use Shopware_Components_Snippet_Manager;
 use ShopwarePlugin\PaymentMethods\Components\GenericPaymentMethod;
 
-class AbstractPaymentMethod extends GenericPaymentMethod
+abstract class AbstractPaymentMethod extends GenericPaymentMethod
 {
 
     /**
@@ -29,8 +30,12 @@ class AbstractPaymentMethod extends GenericPaymentMethod
      */
     protected $modelManager;
 
-
+    /**
+     * @var Shopware_Components_Snippet_Manager
+     */
     private $snippetManager;
+
+    protected abstract function saveRatePayPaymentData($userId, Enlight_Controller_Request_Request $request);
 
     public function __construct()
     {
@@ -94,8 +99,12 @@ class AbstractPaymentMethod extends GenericPaymentMethod
         return $this->snippetManager->getNamespace('frontend/ratepay/messages')->get($snippetName);
     }
 
-    public function savePaymentData($userId, Enlight_Controller_Request_Request $request)
+    public final function savePaymentData($userId, Enlight_Controller_Request_Request $request)
     {
+        // firstly delete all previous saved data. maybe the customer has canceled
+        // a payment and now switched to another payment method.
+        $this->sessionHelper->cleanUp();
+
         $ratepayData = $request->getParam('ratepay')['customer_data'];
 
         $birthday = new DateTime();
@@ -110,6 +119,7 @@ class AbstractPaymentMethod extends GenericPaymentMethod
         $billingAddress->setPhone(trim($ratepayData['phone']));
 
         $this->modelManager->flush([$customer, $billingAddress]);
+        $this->saveRatePayPaymentData($userId, $request);
     }
 
     protected function getPaymentMethodFromRequest(Enlight_Controller_Request_Request $request)

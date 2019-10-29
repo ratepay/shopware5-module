@@ -43,10 +43,10 @@ class Debit extends AbstractPaymentMethod
         return $return;
     }
 
-    public function savePaymentData($userId, Enlight_Controller_Request_Request $request)
+    protected function saveRatePayPaymentData($userId, Enlight_Controller_Request_Request $request)
     {
-        parent::savePaymentData($userId, $request);
         if ($this->isBankDataRequired === false) {
+            $this->sessionHelper->setBankData($userId, null);
             return;
         }
         $paymentData = $request->getParam('ratepay');
