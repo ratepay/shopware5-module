@@ -67,7 +67,7 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
             $qb->resetQueryPart('select');
             $qb->select(['basket.id', 'quantity']);
             $qb->innerJoin('basket', 's_order_basket_attributes', 'attribute', 'basket.id = attribute.basketID')
-                ->where($qb->expr()->eq('attribute.bogx_productconfigurator', ':configuration'))
+                ->andWhere($qb->expr()->eq('attribute.bogx_productconfigurator', ':configuration'))
                 ->setParameter('configuration', $configuration);
         }
     }
