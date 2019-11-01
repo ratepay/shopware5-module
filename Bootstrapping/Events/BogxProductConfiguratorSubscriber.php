@@ -42,6 +42,11 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         return [];
     }
 
+    protected static function isBogsPluginInstalled()
+    {
+        return Shopware()->Db()->query("SELECT 1 FROM s_core_plugins WHERE name = 'BogxProductConfigurator' AND active = 1")->fetchColumn() !== false;
+    }
+
     public function unregisterPluginEvent(Enlight_Event_EventArgs $args)
     {
         $handlers = $this->eventManager->getListeners('Shopware_Modules_Basket_AddArticle_CheckBasketForArticle');
@@ -80,6 +85,15 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
             return;
         }
 
+        if (isset($data['articlename'])) {
+            $productNameKey = 'articlename';
+        } else if (isset($data['name'])) {
+            $productNameKey = 'name';
+        } else {
+            //original name can not be found - we don't care
+            $productNameKey = null;
+        }
+
         if (isset($data['ob_bogx_configurator'])) {
             $config = $data['ob_bogx_configurator'];
         } else {
@@ -101,12 +115,12 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         }
 
         $data[$orderNumberKey] = $data[$orderNumberKey] . '-' . md5($config);
+        $config = json_decode($config, true);
+        if ($productNameKey) {
+            $productConfigName = str_replace(" \n", ', ', trim($config['additionaltext'], "\n"));
+            $data[$productNameKey] = $data[$productNameKey] . ' (' . $productConfigName . ')';
+        }
         $args->setReturn($data);
-    }
-
-    protected static function isBogsPluginInstalled()
-    {
-        return Shopware()->Db()->query("SELECT 1 FROM s_core_plugins WHERE name = 'BogxProductConfigurator' AND active = 1")->fetchColumn() !== false;
     }
 
 }
