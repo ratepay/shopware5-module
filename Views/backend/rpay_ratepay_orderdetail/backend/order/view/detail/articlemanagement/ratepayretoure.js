@@ -227,6 +227,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
             }
 
             item['id'] = row.articleID;
+            item['orderDetailId'] = row.orderDetailId;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;

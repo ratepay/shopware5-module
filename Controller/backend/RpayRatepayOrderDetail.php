@@ -1,6 +1,9 @@
 <?php
 
+use Doctrine\ORM\Query\Expr\Join;
 use RpayRatePay\Component\Service\Logger;
+use Shopware\Models\Article\Detail;
+use Shopware\Models\Order\Detail as OrderDetail;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -252,7 +255,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                     }
 
                     if ($this->Request()->getParam('articleStock') == 1) {
-                        $this->_updateArticleStock($item->articlenumber, $item->cancelledItems);
+                        $this->_updateArticleStock($item->orderDetailId, $item->cancelledItems);
                     }
 
                     $this->_history->logHistory($orderId, 'Artikel wurde storniert.', $item->name, $item->articlenumber, $item->cancelledItems);
@@ -318,7 +321,7 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
                 $this->updateItem($orderId, $item->orderDetailId, $bind);
 
                 if ($this->Request()->getParam('articleStock') == 1) {
-                    $this->_updateArticleStock($item->articlenumber, $item->returnedItems);
+                    $this->_updateArticleStock($item->orderDetailId, $item->returnedItems);
                 }
 
                 $this->_history->logHistory($orderId, 'Artikel wurde retourniert.', $item->name, $item->articlenumber, $item->returnedItems);
@@ -445,16 +448,24 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
     /**
      * update the stock of an article
      *
-     * @param $article
-     * @param $count
+     * @param int $orderDetailsId
+     * @param int $quantity
      */
-    protected function _updateArticleStock($article, $count)
+    protected function _updateArticleStock($orderDetailsId, $quantity)
     {
-        $repository = Shopware()->Models()->getRepository('Shopware\Models\Article\Detail');
-        $article = $repository->findOneBy(['number' => $article]);
-        $article->setInStock($article->getInStock() + $count);
-        Shopware()->Models()->persist($article);
-        Shopware()->Models()->flush();
+        $repo = Shopware()->Models()->getRepository(Detail::class);
+
+        $qb = $repo->createQueryBuilder('detail');
+        $qb->innerJoin(OrderDetail::class, 'orderDetail', Join::WITH, 'detail.id = orderDetail.articleDetail')
+            ->andWhere($qb->expr()->eq('orderDetail.id', $orderDetailsId))
+        ;
+        $qb->setMaxResults(1);
+        /** @var Detail $detail */
+        $detail = $qb->getQuery()->getOneOrNullResult();
+        if($detail) {
+            $detail->setInStock($detail->getInStock() + $quantity);
+            Shopware()->Models()->flush($detail);
+        }
     }
 
     /**
