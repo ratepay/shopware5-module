@@ -342,6 +342,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             }
 
             item['id'] = row.articleID;
+            item['orderDetailId'] = row.orderDetailId;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
@@ -399,6 +400,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             }
 
             item['id'] = row.articleID;
+            item['orderDetailId'] = row.orderDetailId;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
@@ -456,6 +458,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
             }
 
             item['id'] = row.articleID;
+            item['orderDetailId'] = row.orderDetailId;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;

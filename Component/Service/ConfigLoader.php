@@ -2,6 +2,9 @@
 
 namespace RpayRatePay\Component\Service;
 
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ConfigService;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
+
 class ConfigLoader
 {
     private $db;
@@ -54,10 +57,16 @@ class ConfigLoader
      */
     public function getPluginConfigForPaymentType($shopId, $countryISO, $paymentColumn, $backend = false)
     {
-        $configKey = self::getProfileIdKey($countryISO, $backend);
-        $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get($configKey, $shopId);
+        $profileConfig = ProfileConfigService::getProfileConfig(
+            $countryISO,
+            $shopId,
+            $paymentColumn == 'installment0',
+            $backend
+        );
 
-        $sBackend = $backend ? '1' : '0';
+        if($profileConfig === null) {
+            return null;
+        }
 
         $qry = 'SELECT *
                         FROM `rpay_ratepay_config` AS rrc
@@ -66,8 +75,8 @@ class ConfigLoader
                           LEFT JOIN `rpay_ratepay_config_installment` AS rrci
                             ON rrci.`rpay_id` = rrc.`' . $paymentColumn . "`
                         WHERE rrc.`shopId` = '" . $shopId . "'
-                             AND rrc.`profileId`= '" . $profileId . "'
-                        AND rrc.backend=$sBackend";
+                             AND rrc.`profileId`= '" . $profileConfig->getProfileId() . "'
+                        AND rrc.backend=".($profileConfig->isBackend() ? 1 : 0);
 
         $result = Shopware()->Db()->fetchRow($qry);
 
@@ -75,73 +84,20 @@ class ConfigLoader
     }
 
     /**
-     * @param string $countryISO
-     * @param int $shopId
-     * @param bool $zeroPercent
-     * @param bool $backend
-     * @return string
-     */
-    public function getProfileId($countryISO, $shopId, $zeroPercent = false, $backend = false)
-    {
-        $key = self::getProfileIdKey($countryISO, $backend);
-
-        $profileIdBase = $this->config->get($key, $shopId);
-        $profileId = $zeroPercent ? $profileIdBase . '_0RT' : $profileIdBase;
-
-        return $profileId;
-    }
-
-    /**
-     * @param string $countryISO
-     * @param int $shopId
-     * @param bool $backend
-     * @return string
-     */
-    public function getSecurityCode($countryISO, $shopId, $backend = false)
-    {
-        $key = self::getSecurityCodeKey($countryISO, $backend);
-
-        $securityCode = $this->config->get($key, $shopId);
-
-        return $securityCode;
-    }
-
-    /**
      * @param null $shopId
      * @return bool
+     * @deprecated use ConfigService
      */
     public function commitDiscountAsCartItem($shopId = null) {
-        return $this->config->get('RatePayUseFallbackDiscountItem', $shopId) == 1;
+        return ConfigService::getInstance()->getConfig('RatePayUseFallbackDiscountItem', false, $shopId) == 1;
     }
 
     /**
      * @param null $shopId
      * @return bool
+     * @deprecated use ConfigService
      */
     public function commitShippingAsCartItem($shopId = null) {
-        return $this->config->get('RatePayUseFallbackShippingItem', $shopId) == 1;
-    }
-
-    /**
-     * @param string $countryISO
-     * @param bool $backend
-     * @return string
-     */
-    public static function getProfileIdKey($countryISO, $backend = false)
-    {
-        $profileId = 'RatePayProfileID' . $countryISO;
-        if ($backend) {
-            $profileId .= 'Backend';
-        }
-        return $profileId;
-    }
-
-    public static function getSecurityCodeKey($countryISO, $backend = false)
-    {
-        $securityCodeKey = 'RatePaySecurityCode' . $countryISO;
-        if ($backend) {
-            $securityCodeKey .= 'Backend';
-        }
-        return $securityCodeKey;
+        return ConfigService::getInstance()->getConfig('RatePayUseFallbackShippingItem', false, $shopId) == 1;
     }
 }

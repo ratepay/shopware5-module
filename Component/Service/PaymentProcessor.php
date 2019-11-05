@@ -3,7 +3,6 @@
 namespace RpayRatePay\Component\Service;
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
-use RpayRatePay\Component\Service\ShopwareUtil;
 use Shopware\Models\Order\Detail;
 
 class PaymentProcessor
@@ -164,9 +163,12 @@ class PaymentProcessor
     {
         $netPrices = $order->getNet() === 1;
         $countryCode = PaymentRequestData::findCountryISO($order->getBilling());
-        $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices);
+        $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices, $order->getShop()->getId());
         $modelFactory->setTransactionId($transactionId);
         $modelFactory->setOrderId($order->getNumber());
+        if($order->getPayment()->getName() == 'rpayratepayrate0') {
+            $modelFactory->setZPercent();
+        }
         $modelFactory->callPaymentConfirm($countryCode);
     }
 

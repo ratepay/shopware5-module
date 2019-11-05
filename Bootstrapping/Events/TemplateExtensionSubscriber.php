@@ -97,7 +97,7 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
             if ($this->dfpService->isDfpIdAlreadyGenerated() == false) {
                 // create id and write it to the session
                 $view->assign('token', $this->dfpService->getDfpId());
-                $view->assign('snippetId', $this->configService->getDfpSnippetId());
+                $view->assign('snippetId', $this->configService->getDfpSnippetId(Shopware()->Shop()));
                 $view->extendsTemplate('frontend/payment_rpay_part/index/dfp.tpl');
             }
         }

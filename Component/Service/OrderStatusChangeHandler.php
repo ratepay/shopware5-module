@@ -114,7 +114,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         $backend = (bool)($attributes->getRatepayBackend());
 
         $netPrices = $order->getNet() === 1;
-        $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices);
+        $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices, $order->getShop());
 
         $shippingCosts = $order->getInvoiceShipping();
 
@@ -126,6 +126,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         if (!empty($shippingCosts)) {
             $items['Shipping'] = [
                 'articlename' => 'Shipping',
+                'orderDetailId' => 'shipping',
                 'ordernumber' => 'shipping',
                 'quantity' => 1,
                 'priceNumeric' => $shippingCosts,
@@ -155,19 +156,18 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
      * Updates the given binding for the given article
      *
      * @param $orderID
-     * @param $articleOrderNumber
+     * @param $articleOrderNumberOrId
      * @param $bind
      * @throws \Zend_Db_Adapter_Exception
      */
-    private function updateItem($orderID, $articleOrderNumber, $bind)
+    private function updateItem($orderID, $articleOrderNumberOrId, $bind)
     {
-        if ($articleOrderNumber === 'shipping') {
+        if ($articleOrderNumberOrId === 'shipping') {
             Shopware()->Db()->update('rpay_ratepay_order_shipping', $bind, '`s_order_id`=' . $orderID);
-        } else if ($articleOrderNumber === 'discount') {
+        } else if ($articleOrderNumberOrId === 'discount') {
             Shopware()->Db()->update('rpay_ratepay_order_discount', $bind, '`s_order_id`=' . $orderID);
         } else {
-            $positionId = Shopware()->Db()->fetchOne('SELECT `id` FROM `s_order_details` WHERE `orderID`=? AND `articleordernumber`=?', [$orderID, $articleOrderNumber]);
-            Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $positionId);
+            Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $articleOrderNumberOrId);
         }
     }
 
@@ -177,8 +177,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
      */
     private function getItemForOrderDetails($item)
     {
-        return [
+        $data = [
             'articlename' => $item->getArticlename(),
+            'orderDetailId' => $item->getId(),
             'ordernumber' => $item->getArticlenumber(),
             'quantity' => $item->getQuantity(),
             'priceNumeric' => $item->getPrice(),
@@ -186,6 +187,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
             // Issue: https://issues.shopware.com/issues/SW-24119
             'tax_rate' => $item->getTax() == null ? 0 : $item->getTaxRate()
         ];
+        return Shopware()->Events()->filter('RatePAY_filter_order_items', $data);
     }
 
     /**
@@ -208,7 +210,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 $state => $item['quantity']
             ];
 
-            $this->updateItem($order->getId(), $item['ordernumber'], $bind);
+            $this->updateItem($order->getId(), $item['orderDetailId'], $bind);
             if ($item['quantity'] <= 0) {
                 continue;
             }
