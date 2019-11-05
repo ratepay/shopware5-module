@@ -218,8 +218,15 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
             var item = new Object();
             var tax_rate = row.tax_rate;
 
-            if (row.quantityReturn > (row.quantity - row.returned) || row.delivered == 0) {
+            if (row.quantityReturn > (row.quantity - row.returned - row.cancelled)) {
                 error = true;
+            }
+            if (row.quantityReturn > row.delivered) {
+                error = true;
+            }
+
+            if (row.quantityReturn < 1) {
+                continue;
             }
 
             if (row.tax_rate == null) {
