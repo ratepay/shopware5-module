@@ -453,6 +453,10 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      */
     protected function _updateArticleStock($orderDetailsId, $quantity)
     {
+        if(is_numeric($orderDetailsId) === false) {
+            // id is "shipping" or "discount" - we can't update this ;-)
+            return;
+        }
         $repo = Shopware()->Models()->getRepository(Detail::class);
 
         $qb = $repo->createQueryBuilder('detail');
