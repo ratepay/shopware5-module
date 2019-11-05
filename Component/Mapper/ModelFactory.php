@@ -166,7 +166,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      * @return \RatePAY\ModelBuilder
      * @throws \RatePAY\Exception\ModelException
      */
-    private function getHead($countryCode = false)
+    private function getHead($countryCode = null)
     {
         $systemId = $this->getSystemId();
         $bootstrap = new \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
@@ -749,7 +749,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         return $address;
     }
 
-    public function getProfileConfig($countryCode = false, $shopId = null) {
+    public function getProfileConfig($countryCode = null, $shopId = null) {
         if ($countryCode === null) {
             $countryCode = $this->_getCountryCodesByBillingAddress();
         }
