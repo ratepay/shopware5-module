@@ -54,7 +54,7 @@ class ProfileConfigService
 
     /**
      * @param PaymentMethod $paymentMethodName string
-     * @param ProfileConfig|$shopId
+     * @param $shopId
      * @param $countryIso
      * @param bool $backend
      * @return object|ConfigInstallment|null
@@ -71,7 +71,7 @@ class ProfileConfigService
 
     /**
      * @param PaymentMethod $paymentMethod
-     * @param $shopId ProfileConfig|string
+     * @param $shopId int
      * @param $countryIso
      * @param $backend
      * @return ConfigPayment
@@ -79,7 +79,7 @@ class ProfileConfigService
     protected function getPaymentConfig($paymentMethod, $shopId, $countryIso = null, $backend = null)
     {
         $paymentMethod = $paymentMethod instanceof PaymentMethod ? $paymentMethod->getName() : $paymentMethod;
-        $profileConfig = $shopId instanceof ProfileConfig ? $shopId : $this->getProfileConfig(
+        $profileConfig = $this->getProfileConfig(
             $countryIso,
             $shopId,
             $backend,
@@ -90,11 +90,9 @@ class ProfileConfigService
 
     public function getProfileConfig($countryIso, $shopId, $backend = false, $zeroPercentInstallment = false)
     {
-        $profileId = $this->configService->getProfileId($countryIso, $zeroPercentInstallment, $backend, $shopId);
-
         /** @var ProfileConfigRepository $repo */
         $repo = $this->modelManager->getRepository(ProfileConfig::class);
-        return $repo->findOneByShopAndProfileId($profileId, $shopId);
+        return $repo->findConfiguration($shopId, $countryIso, $zeroPercentInstallment, $backend);
     }
 
     public function getPaymentConfigForProfileAndMethod(ProfileConfig $profileConfig, $paymentMethod)

@@ -11,22 +11,34 @@ class ProfileConfigRepository extends ModelRepository
 
     /**
      * @param int $shopId
-     * @param bool $backend
+     * @param string $countryCode
+     * @param boolean $isZeroInstallment
+     * @param boolean $isBackend
      * @return ProfileConfig|null
      */
-    public function findOneByShop($shopId, $backend = false)
-    {
-        return $this->findOneBy(['shopId' => $shopId, 'backend' => $backend]);
-    }
+    public function findConfiguration($shopId, $countryCode, $isZeroInstallment, $isBackend) {
+        $qb = $this->createQueryBuilder('config');
+        $qb->where(
+            $qb->expr()->andX(
+                $qb->expr()->eq('config.country', ':country_code'),
+                $qb->expr()->eq('config.shopId', ':shop_id'),
+                $qb->expr()->eq('config.backend', ':backend')
+            )
+        );
+        $qb->setParameter('country_code', $countryCode);
+        $qb->setParameter('shop_id', $shopId);
+        $qb->setParameter('backend', $isBackend);
 
-    /**
-     * @param string $profileId
-     * @param int $shopId
-     * @return ProfileConfig|null
-     */
-    public function findOneByShopAndProfileId($profileId, $shopId)
-    {
-        return $this->findOneBy(['shopId' => $shopId, 'profileId' => $profileId]);
+        if($isZeroInstallment) {
+            $qb->andWhere(
+                $qb->expr()->isNotNull('config.installment0Config')
+            );
+        } else {
+            $qb->andWhere(
+                $qb->expr()->isNull('config.installment0Config')
+            );
+        }
+        return $qb->getQuery()->getOneOrNullResult();
     }
 
 }
