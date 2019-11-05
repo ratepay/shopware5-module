@@ -32,7 +32,7 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
 
     public static function getSubscribedEvents()
     {
-        if (self::isBogsPluginInstalled()) {
+        if (self::isBogxPluginInstalled()) {
             return [
                 'Enlight_Controller_Front_RouteStartup' => 'unregisterPluginEvent',
                 'Shopware_Modules_Basket_AddArticle_CheckBasketForArticle' => 'checkBasketForArticle',
@@ -42,7 +42,7 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         return [];
     }
 
-    protected static function isBogsPluginInstalled()
+    protected static function isBogxPluginInstalled()
     {
         return Shopware()->Db()->query("SELECT 1 FROM s_core_plugins WHERE name = 'BogxProductConfigurator' AND active = 1")->fetchColumn() !== false;
     }

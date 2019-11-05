@@ -5,6 +5,7 @@ namespace RpayRatePay\Bootstrapping\Events;
 use RatePAY\Service\Math;
 use RpayRatePay\Component\Service\Logger;
 use Shopware\Models\Order\Detail;
+use Shopware\Models\Order\Order;
 
 class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -166,6 +167,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
             Logger::singleton()->warning('RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.');
             $arguments->stop();
         } else {
+            /** @var Order $order */
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
 
             $sqlShipping = 'SELECT invoice_shipping, invoice_shipping_net, invoice_shipping_tax_rate FROM s_order WHERE id = ?';
@@ -215,7 +217,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
 
             $netPrices = $order->getNet() === 1;
 
-            $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices);
+            $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices, $order->getShop());
             $modelFactory->setTransactionId($parameter['transactionId']);
             $modelFactory->setTransactionId($order->getTransactionID());
             $operationData['orderId'] = $order->getId();

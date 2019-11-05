@@ -114,7 +114,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         $backend = (bool)($attributes->getRatepayBackend());
 
         $netPrices = $order->getNet() === 1;
-        $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices);
+        $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices, $order->getShop());
 
         $shippingCosts = $order->getInvoiceShipping();
 

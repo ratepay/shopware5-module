@@ -6,7 +6,7 @@ namespace RpayRatePay\Bootstrapping\Database;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
-use RpayRatePay\Models\Config;
+use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Models\ConfigInstallment;
 use RpayRatePay\Models\ConfigPayment;
 use RpayRatePay\Models\Log;
@@ -79,7 +79,7 @@ class InstallModels
      */
     protected function getClassMetas() {
         return [
-            $this->entityManager->getClassMetadata(Config::class),
+            $this->entityManager->getClassMetadata(ProfileConfig::class),
             $this->entityManager->getClassMetadata(ConfigInstallment::class),
             $this->entityManager->getClassMetadata(ConfigPayment::class),
             $this->entityManager->getClassMetadata(OrderDiscount::class),
@@ -93,7 +93,7 @@ class InstallModels
     protected function renameOldColumns()
     {
         $renames = [
-            Config::class => [
+            ProfileConfig::class => [
                 'country-code-billing'  => [
                     'country_code_billing',
                     'varchar(30) COLLATE utf8_unicode_ci DEFAULT NULL'
@@ -147,7 +147,7 @@ class InstallModels
     private function deleteOldColumns()
     {
         $deletes = [
-            Config::class => [
+            ProfileConfig::class => [
                 'device-fingerprint-status',
                 'device-fingerprint-snippet-id',
             ],

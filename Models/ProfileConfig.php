@@ -6,10 +6,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Shopware\Components\Model\ModelEntity;
 
 /**
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="Shopware\Plugins\Community\Frontend\RpayRatePay\Models\ConfigRepository")
  * @ORM\Table(name="rpay_ratepay_config")
  */
-class Config extends ModelEntity
+class ProfileConfig extends ModelEntity
 {
 
     /**
@@ -20,7 +20,6 @@ class Config extends ModelEntity
     protected $shopId;
     /**
      * @var int
-     * @ORM\Id()
      * @ORM\Column(name="country", type="string", length=30, nullable=false)
      */
     protected $country;
@@ -32,37 +31,44 @@ class Config extends ModelEntity
     protected $backend = false;
     /**
      * @var string
+     * @ORM\Id()
      * @ORM\Column(name="profileId", type="string", length=255, nullable=false)
      */
     protected $profileId;
+
+    /**
+     * @var string
+     * @ORM\Column(name="security_code", type="string", length=255, nullable=false)
+     */
+    protected $securityCode;
     /**
      * @var int
-     * @ORM\Column(name="invoice", type="integer", length=2, nullable=false)
+     * @ORM\Column(name="invoice", type="integer", length=2, nullable=true)
      */
     protected $invoice;
     /**
      * @var int
-     * @ORM\Column(name="debit", type="integer", length=2, nullable=false)
+     * @ORM\Column(name="debit", type="integer", length=2, nullable=true)
      */
     protected $debit;
     /**
      * @var int
-     * @ORM\Column(name="installment", type="integer", length=2, nullable=false)
+     * @ORM\Column(name="installment", type="integer", length=2, nullable=true)
      */
     protected $installment;
     /**
      * @var int
-     * @ORM\Column(name="installment0", type="integer", length=2, nullable=false)
+     * @ORM\Column(name="installment0", type="integer", length=2, nullable=true)
      */
     protected $installment0;
     /**
      * @var int
-     * @ORM\Column(name="installmentDebit", type="integer", length=2, nullable=false)
+     * @ORM\Column(name="installmentDebit", type="integer", length=2, nullable=true)
      */
     protected $installmentDebit;
     /**
      * @var int
-     * @ORM\Column(name="prepayment", type="integer", length=2, nullable=false)
+     * @ORM\Column(name="prepayment", type="integer", length=2, nullable=true)
      */
     protected $prepayment;
     /**
@@ -330,5 +336,21 @@ class Config extends ModelEntity
     public function setSandbox($sandbox)
     {
         $this->sandbox = $sandbox;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSecurityCode()
+    {
+        return $this->securityCode;
+    }
+
+    /**
+     * @param string $securityCode
+     */
+    public function setSecurityCode($securityCode)
+    {
+        $this->securityCode = $securityCode;
     }
 }
