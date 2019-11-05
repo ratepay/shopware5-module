@@ -19,7 +19,9 @@
  * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
  */
 
+use BogxProductConfigurator\Subscriber\BogxFrontendSubscriber;
 use RpayRatePay\Component\Service\Logger;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Bootstrapping\Events\BogxProductConfiguratorSubscriber;
 
 require_once __DIR__ . '/Component/CSRFWhitelistAware.php';
 
@@ -270,10 +272,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             new \RpayRatePay\Bootstrapping\Events\UpdateTransactionsSubscriber(),
             new \RpayRatePay\Bootstrapping\Events\BackendOrderControllerSubscriber(new \RpayRatePay\Component\Service\ConfigLoader($this->get('db')), $this->Path()),
             new \RpayRatePay\Bootstrapping\Events\BackendOrderViewExtensionSubscriber($this->Path()),
+            new \RpayRatePay\Bootstrapping\Events\BogxProductConfiguratorSubscriber()
         ];
 
+        $eventManager = Shopware()->Events();
+
         foreach ($subscribers as $subscriber) {
-            Shopware()->Events()->addSubscriber($subscriber);
+            $eventManager->addSubscriber($subscriber);
 //            Logger::singleton()->info('[OK] ' . get_class($subscriber));
         }
     }
