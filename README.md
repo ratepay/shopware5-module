@@ -9,6 +9,7 @@
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
+|Legal Disclaimer|https://ratepay.gitbook.io/docs/#legal-disclaimer
 
 ## Installation
 1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `engine/Shopware/Plugins/Community/Frontend`
@@ -26,6 +27,7 @@
 
 ### Version 5.4.5 - Released 2019-10-18
 * RATEPLUG-24: add support for different stores/subshops
+* RATEPLUG-20: add third-party support for extension "BogxProductConfigurator"
 * fix a few bugs with zero percent installment
 
 ### Version 5.4.4 - Released 2019-10-01

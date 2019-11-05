@@ -18,7 +18,7 @@
  */
 Ext.define('Shopware.apps.Order.model.ratepaypositions', {
     extend: 'Ext.data.Model',
-    fields: [ 'name', 'articleID', 'articleordernumber', 'price', 'quantity', 'quantityDeliver', 'quantityReturn', 'delivered', 'cancelled', 'returned', 'tax_rate' ],
+    fields: [ 'name', 'articleID', 'orderDetailId', 'articleordernumber', 'price', 'quantity', 'quantityDeliver', 'quantityReturn', 'delivered', 'cancelled', 'returned', 'tax_rate' ],
     proxy: {
         type: 'ajax',
         api: {
