@@ -2,8 +2,7 @@
 
 namespace RpayRatePay\Component\Service;
 
-use Doctrine\ORM\OptimisticLockException;
-use RpayRatePay\Models\Config;
+use RpayRatePay\Models\ProfileConfig;
 use Shopware\Components\Model\ModelManager;
 class RatepayConfigWriter
 {
@@ -50,7 +49,9 @@ class RatepayConfigWriter
      */
     public function writeRatepayConfig($profileId, $securityCode, $shopId, $country, $backend = false)
     {
-        $factory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend);
+        $profileId = trim($profileId);
+        $securityCode = trim($securityCode);
+        $factory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, null, $shopId);
         $data = [
             'profileId' => $profileId,
             'securityCode' => $securityCode
@@ -71,24 +72,29 @@ class RatepayConfigWriter
             return false;
         }
 
-        $payments = ['invoice', 'elv', 'installment', 'prepayment'];
+        $payments = ['invoice', 'elv', 'installment', 'installment0', 'prepayment'];
 
         $type = [];
         //INSERT INTO rpay_ratepay_config_payment AND sets $type[]
         foreach ($payments as $payment) {
-            if (strstr($profileId, '_0RT') !== false) {
-                if ($payment !== 'installment') {
-                    continue;
-                }
+            if(strpos($profileId, '_0RT') === false && $payment === 'installment0' ||
+                strpos($profileId, '_0RT') !== false && $payment !== 'installment0'
+            ) {
+                continue;
+            }
+
+            $pseudoPayment = $payment;
+            if($payment === 'installment0') {
+                $pseudoPayment = 'installment';
             }
 
             $dataPayment = [
-                $response['result']['merchantConfig']['activation-status-' . $payment],
-                $response['result']['merchantConfig']['b2b-' . $payment] == 'yes' ? 1 : 0,
-                $response['result']['merchantConfig']['tx-limit-' . $payment . '-min'],
-                $response['result']['merchantConfig']['tx-limit-' . $payment . '-max'],
-                $response['result']['merchantConfig']['tx-limit-' . $payment . '-max-b2b'],
-                $response['result']['merchantConfig']['delivery-address-' . $payment] == 'yes' ? 1 : 0,
+                $response['result']['merchantConfig']['activation-status-' . $pseudoPayment],
+                $response['result']['merchantConfig']['b2b-' . $pseudoPayment] == 'yes' ? 1 : 0,
+                $response['result']['merchantConfig']['tx-limit-' . $pseudoPayment . '-min'],
+                $response['result']['merchantConfig']['tx-limit-' . $pseudoPayment . '-max'],
+                $response['result']['merchantConfig']['tx-limit-' . $pseudoPayment . '-max-b2b'],
+                $response['result']['merchantConfig']['delivery-address-' . $pseudoPayment] == 'yes' ? 1 : 0,
             ];
 
             $paymentSql = 'INSERT INTO `rpay_ratepay_config_payment`'
@@ -108,7 +114,7 @@ class RatepayConfigWriter
         //performs insert into the 'config installment' table
         if ($response['result']['merchantConfig']['activation-status-installment'] == 2) {
             $installmentConfig = [
-                $type['installment'],
+                isset($type['installment0']) ? $type['installment0'] : $type['installment'],
                 $response['result']['installmentConfig']['month-allowed'],
                 $response['result']['installmentConfig']['valid-payment-firstdays'],
                 $response['result']['installmentConfig']['rate-min-normal'],
@@ -126,55 +132,43 @@ class RatepayConfigWriter
             }
         }
 
-        //updates 0% field in rpay_ratepay_config or inserts into rpay_ratepay_config THIS MEANS WE HAVE TO SEND the 0RT profiles last
-        if (strstr($profileId, '_0RT') !== false) {
-            /** @var Config $configModel */
-            $configModel = $this->modelManager->getRepository(Config::class)->findOneBy(['profileId' => substr($profileId, 0, -4)]);
-            $configModel->setInstallment0($type['installment']);
-            try {
-                $this->modelManager->flush($configModel);
-            } catch (OptimisticLockException $e) {
-                Logger::singleton()->error($e->getMessage());
-                return false;
+        $configModel = new ProfileConfig();
+        $configModel->setProfileId($response['result']['merchantConfig']['profile-id']);
+        $configModel->setSecurityCode($securityCode);
+        $configModel->setInvoice($type['invoice']);
+        $configModel->setInstallment($type['installment']);
+        $configModel->setDebit($type['elv']);
+        $configModel->setInstallment0($type['installment0']);
+        $configModel->setInstallmentDebit(null); // TODO why there is no value?
+        $configModel->setPrepayment($type['prepayment']);
+        $configModel->setCountryCodeBilling(strtoupper($response['result']['merchantConfig']['country-code-billing']));
+        $configModel->setCountryCodeDelivery(strtoupper($response['result']['merchantConfig']['country-code-delivery']));
+        $configModel->setCurrency(strtoupper($response['result']['merchantConfig']['currency']));
+        $configModel->setCountry(strtoupper($country));
+        $configModel->setSandbox($response['sandbox'] == 1);
+        $configModel->setBackend($backend == 1);
+        $configModel->setShopId($shopId);
+
+        $activePayments[] = '"rpayratepayinvoice"';
+        $activePayments[] = '"rpayratepaydebit"';
+        $activePayments[] = '"rpayratepayrate"';
+        $activePayments[] = '"rpayratepayrate0"';
+        $activePayments[] = '"rpayratepayprepayment"';
+
+        $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(',', $activePayments) . ') AND `active` <> 0';
+
+        try {
+            $this->modelManager->persist($configModel);
+            $this->modelManager->flush($configModel);
+
+            if (count($activePayments) > 0) {
+                $this->db->query($updateSqlActivePaymentMethods);
             }
-        } else {
-            $configModel = new Config();
-            $configModel->setProfileId($response['result']['merchantConfig']['profile-id']);
-            $configModel->setInvoice($type['invoice']);
-            $configModel->setInstallment($type['installment']);
-            $configModel->setDebit($type['elv']);
-            $configModel->setInstallment0(0); // TODO why there is no value?
-            $configModel->setInstallmentDebit(0); // TODO why there is no value?
-            $configModel->setPrepayment($type['prepayment']);
-            $configModel->setCountryCodeBilling(strtoupper($response['result']['merchantConfig']['country-code-billing']));
-            $configModel->setCountryCodeDelivery(strtoupper($response['result']['merchantConfig']['country-code-delivery']));
-            $configModel->setCurrency(strtoupper($response['result']['merchantConfig']['currency']));
-            $configModel->setCountry(strtoupper($country));
-            $configModel->setSandbox($response['sandbox'] == 1);
-            $configModel->setBackend($backend == 1);
-            $configModel->setShopId($shopId);
 
-            $activePayments[] = '"rpayratepayinvoice"';
-            $activePayments[] = '"rpayratepaydebit"';
-            $activePayments[] = '"rpayratepayrate"';
-            $activePayments[] = '"rpayratepayrate0"';
-            $activePayments[] = '"rpayratepayprepayment"';
-
-            $updateSqlActivePaymentMethods = 'UPDATE `s_core_paymentmeans` SET `active` = 1 WHERE `name` in(' . implode(',', $activePayments) . ') AND `active` <> 0';
-
-            try {
-                $this->modelManager->persist($configModel);
-                $this->modelManager->flush($configModel);
-
-                if (count($activePayments) > 0) {
-                    $this->db->query($updateSqlActivePaymentMethods);
-                }
-
-                return true;
-            } catch (\Exception $exception) {
-                Logger::singleton()->error($exception->getMessage());
-                return false;
-            }
+            return true;
+        } catch (\Exception $exception) {
+            Logger::singleton()->error($exception->getMessage());
+            return false;
         }
     }
 }
