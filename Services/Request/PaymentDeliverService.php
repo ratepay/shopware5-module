@@ -72,8 +72,8 @@ class PaymentDeliverService extends AbstractModifyRequest
 
     protected function processSuccess()
     {
-        foreach ($this->items as $item) {
-            $position = $this->getOrderPosition($item->getProductNumber());
+        foreach ($this->items as $basketPosition) {
+            $position = $this->getOrderPosition($basketPosition);
 
             if ($this->_order->getAttribute()->getRatepayDirectDelivery() == false && $this->isRequestSkipped == false) {
                 /** @deprecated v6.2 */
@@ -83,15 +83,15 @@ class PaymentDeliverService extends AbstractModifyRequest
                 // do not decrease with the returned items, cause the returned items should be always zero
                 $position->setDelivered($position->getOrderedQuantity() - $position->getCancelled());
             } else {
-                $position->setDelivered($position->getDelivered() + $item->getQuantity());
+                $position->setDelivered($position->getDelivered() + $basketPosition->getQuantity());
             }
 
             $this->modelManager->flush($position);
 
             if ($this->isRequestSkipped === false) {
-                $this->historyLogger->logHistory($position, $item->getQuantity(), 'Artikel wurde versand.');
+                $this->historyLogger->logHistory($position, $basketPosition->getQuantity(), 'Artikel wurde versand.');
             } else {
-                $this->historyLogger->logHistory($position, $item->getQuantity(), 'Artikel wurde für den Versand vorbereitet.');
+                $this->historyLogger->logHistory($position, $basketPosition->getQuantity(), 'Artikel wurde für den Versand vorbereitet.');
             }
         }
         parent::processSuccess();

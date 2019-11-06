@@ -7,6 +7,7 @@ use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RuntimeException;
+use Shopware\Components\ContainerAwareEventManager;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
@@ -47,6 +48,10 @@ class BasketArrayBuilder
      * @var Order
      */
     private $order;
+    /**
+     * @var ContainerAwareEventManager
+     */
+    private $eventManager;
 
     /**
      * BasketArrayBuilder constructor.
@@ -58,6 +63,7 @@ class BasketArrayBuilder
     {
         $configService = Shopware()->Container()->get(ConfigService::class); //TODO
         $this->modelManager = Shopware()->Container()->get('models'); //TODO
+        $this->eventManager = Shopware()->Container()->get('events'); //TODO
 
         $this->basket = [];
 
@@ -92,6 +98,15 @@ class BasketArrayBuilder
      */
     public function addItem($item, $quantity = null)
     {
+        $orderDetail = null;
+
+        if($item !== 'shipping') {
+            if($item instanceof Detail === false || $item->getId() !== null) {
+                // in the following lines we will call THIS function recursively. Maybe the `$item` is just a DTO
+                // if so, we will skip cause the filter event has been already triggered
+                $item = $this->eventManager->filter('RatePAY_filter_order_items', $item, ['quantity' => $quantity]);
+            }
+        }
         if ($item === 'shipping') {
             $this->addShippingItem();
             return;
@@ -105,7 +120,7 @@ class BasketArrayBuilder
             $itemQuantity = $quantity ?: $item->getQuantity();
             $price = TaxHelper::getItemGrossPrice($item->getOrder(), $item);
             $taxRate = TaxHelper::getItemTaxRate($item->getOrder(), $item);
-
+            $orderDetail = $item->getId() ? $item : null;
         } else if ($item instanceof PositionStruct) {
             if (PositionHelper::isDiscount($item) && $this->useFallbackDiscount == false) {
                 $this->addDiscountItem($item);
@@ -142,7 +157,7 @@ class BasketArrayBuilder
                 'TaxRate' => $taxRate,
             ]
         ];
-        $this->simpleItems[$productNumber] = new BasketPosition($productNumber, $itemQuantity);
+        $this->simpleItems[$productNumber] = new BasketPosition($orderDetail ? $orderDetail : $productNumber, $itemQuantity);
     }
 
     public function addShippingItem()
@@ -177,7 +192,7 @@ class BasketArrayBuilder
                 'UnitPriceGross' => $shippingCost,
                 'TaxRate' => $shippingTax,
             ];
-            $this->simpleItems['shipping'] = 1;
+            $this->simpleItems['shipping'] = 1; // TODO WTF - whats that - it will be overridden by the next line?!
             $this->simpleItems[BasketPosition::SHIPPING_NUMBER] = new BasketPosition(BasketPosition::SHIPPING_NUMBER, 1);
         }
     }

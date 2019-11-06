@@ -4,6 +4,8 @@
 namespace RpayRatePay\DTO;
 
 
+use Shopware\Models\Order\Detail as OrderDetail;
+
 class BasketPosition
 {
 
@@ -17,11 +19,24 @@ class BasketPosition
      * @var int
      */
     private $quantity;
+    /**
+     * @var OrderDetail
+     */
+    private $orderDetail;
 
 
+    /**
+     * BasketPosition constructor.
+     * @param OrderDetail|$productNumber
+     * @param $quantity
+     */
     public function __construct($productNumber, $quantity)
     {
-        $this->productNumber = $productNumber;
+        if($productNumber instanceof OrderDetail) {
+            $this->orderDetail = $productNumber;
+        } else {
+            $this->productNumber = $productNumber;
+        }
         $this->quantity = $quantity;
     }
 
@@ -55,5 +70,21 @@ class BasketPosition
     public function setQuantity($quantity)
     {
         $this->quantity = $quantity;
+    }
+
+    /**
+     * @return OrderDetail
+     */
+    public function getOrderDetail()
+    {
+        return $this->orderDetail;
+    }
+
+    /**
+     * @param OrderDetail $orderDetail
+     */
+    public function setOrderDetail($orderDetail)
+    {
+        $this->orderDetail = $orderDetail;
     }
 }

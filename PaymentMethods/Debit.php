@@ -12,6 +12,23 @@ class Debit extends AbstractPaymentMethod
 
     protected $isBankDataRequired = true;
 
+    public function getCurrentPaymentDataAsArray($userId)
+    {
+        $data = parent::getCurrentPaymentDataAsArray($userId);
+        if ($this->isBankDataRequired === false) {
+            return $data;
+        }
+        $billingAddress = $this->sessionHelper->getBillingAddress();
+        $bankData = $this->sessionHelper->getBankData($billingAddress);
+
+        $data['ratepay']['bank_account'] = [
+            'account_holder' => $bankData && !empty($bankData->getAccountHolder()) ? $bankData->getAccountHolder() : $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
+            'iban' => $bankData ? ($bankData->getAccountNumber() ?: $bankData->getIban()) : null,
+            'bankCode' => $bankData ? $bankData->getBankCode() : null
+        ];
+        return $data;
+    }
+
     public function validate($paymentData)
     {
         $return = parent::validate($paymentData);
@@ -60,23 +77,6 @@ class Debit extends AbstractPaymentMethod
             $bankAccount['iban'],
             $bankAccount['bankCode']
         );
-    }
-
-    public function getCurrentPaymentDataAsArray($userId)
-    {
-        $data = parent::getCurrentPaymentDataAsArray($userId);
-        if ($this->isBankDataRequired === false) {
-            return $data;
-        }
-        $billingAddress = $this->sessionHelper->getBillingAddress();
-        $bankData = $this->sessionHelper->getBankData($billingAddress);
-
-        $data['ratepay']['bank_account'] = [
-            'account_holder' => $bankData && $bankData->getAccountHolder() ? $bankData->getAccountHolder() : $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
-            'iban' => $bankData ? ($bankData->getAccountNumber() ?: $bankData->getIban()) : null,
-            'bankCode' => $bankData ? $bankData->getBankCode() : null
-        ];
-        return $data;
     }
 
 }

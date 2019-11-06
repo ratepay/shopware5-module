@@ -26,14 +26,6 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
     }),
     initComponent: function () {
         var me = this;
-        var positionStore = Ext.create('Shopware.apps.RatepayOrder.store.Position');
-        /*var id = me.record.get('id');
-
-        me.store = positionStore.load({
-            params: {
-                'orderId': id
-            }
-        });*/
 
         me.columns = {
             items: me.getColumns(),
@@ -166,6 +158,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
             }
 
             item['id'] = row.articleID;
+            item['orderDetailId'] = row.orderDetailId;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
@@ -192,14 +185,21 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
                     items: Ext.encode(items),
                     articleStock: false
                 },
-                success: function () {
+                success: function (response) {
+                    response = Ext.decode(response.responseText);
+                    if(response.result && response.message){
+                        Shopware.Notification.createGrowlMessage('Success', response.message);
+                    }
+                    else if(response.result === false && response.message) {
+                        Shopware.Notification.createGrowlMessage('Error', response.message);
+                    }
+
                     var positionStore = Ext.create('Shopware.apps.RatepayOrder.store.Position');
                     me.store = positionStore.load({
                         params: {
                             'orderId': id
                         }
                     });
-
                     me.reconfigure(me.store);
                 }
             });
@@ -217,8 +217,15 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
             var item = new Object();
             var tax_rate = row.tax_rate;
 
-            if (row.quantityReturn > (row.quantity - row.returned) || row.delivered == 0) {
+            if (row.quantityReturn > (row.quantity - row.returned - row.cancelled)) {
                 error = true;
+            }
+            if (row.quantityReturn > row.delivered) {
+                error = true;
+            }
+
+            if (row.quantityReturn < 1) {
+                continue;
             }
 
             if (row.tax_rate == null) {
@@ -226,6 +233,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
             }
 
             item['id'] = row.articleID;
+            item['orderDetailId'] = row.orderDetailId;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
@@ -252,14 +260,21 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
                     items: Ext.encode(items),
                     articleStock: 1
                 },
-                success: function () {
+                success: function (response) {
+                    response = Ext.decode(response.responseText);
+                    if(response.result && response.message){
+                        Shopware.Notification.createGrowlMessage('Success', response.message);
+                    }
+                    else if(response.result === false && response.message) {
+                        Shopware.Notification.createGrowlMessage('Error', response.message);
+                    }
+
                     var positionStore = Ext.create('Shopware.apps.RatepayOrder.store.Position');
                     me.store = positionStore.load({
                         params: {
                             'orderId': id
                         }
                     });
-
                     me.reconfigure(me.store);
                 }
             });

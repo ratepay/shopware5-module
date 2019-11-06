@@ -6,6 +6,7 @@ use RpayRatePay\Component\History;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Services\Request\AbstractAddRequest;
 use RpayRatePay\Services\Request\PaymentCancelService;
 use RpayRatePay\Services\Request\PaymentCreditService;
 use RpayRatePay\Services\Request\PaymentDebitService;
@@ -149,6 +150,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         //TODO DQL/Models
         $sql = 'SELECT '
             . '`articleID`, '
+            . '`detail`.`id` AS `orderDetailId`, '
             . '`name`, '
             . '`articleordernumber`, '
             . '`price`, '
@@ -221,6 +223,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
     {
         //TODO DQL/Models
         $sql = 'SELECT '
+            . '`detail`.`id` AS `orderDetailId`, '
             . '`detail`.`price` AS `price`, '
             . '`detail`.`name` AS `name`, '
             . '(1 - `delivered` - `cancelled`) AS `quantityDeliver`, '
@@ -265,19 +268,26 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $items = [];
         foreach ($itemsParam as $item) {
             if ($item->deliveredItems > 0) {
-                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->deliveredItems);
+                $detail = $item->orderDetailId ? $this->modelManager->find(Detail::class, $item->orderDetailId) : null;
+                $items[$item->articlenumber] = new BasketPosition($detail ? : $item->articlenumber, $item->deliveredItems);
             }
         }
-        $isSuccess = true;
+        $isSuccess = false;
         if (count($items) > 0) {
 
-            $this->paymentDeliverService->setItems($items);
-            $this->paymentDeliverService->setOrder($order);
-            /** @var AbstractResponse $response */
-            $response = $this->paymentDeliverService->doRequest();
-            $isSuccess = $response === true || $response->isSuccessful();
-            if ($isSuccess === false) {
-                $this->View()->assign('message', $response->getReasonMessage());
+            try {
+                $this->paymentDeliverService->setItems($items);
+                $this->paymentDeliverService->setOrder($order);
+                /** @var AbstractResponse $response */
+                $response = $this->paymentDeliverService->doRequest();
+                $isSuccess = $response === true || $response->isSuccessful();
+                if ($isSuccess) {
+                    $this->View()->assign('message', 'Delivery was successful'); //TODO translation
+                } else {
+                    $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
+                }
+            } catch (\Exception $e) {
+                $this->View()->assign('message', $e->getMessage());
             }
         }
         $this->View()->assign([
@@ -297,7 +307,8 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $items = [];
         foreach ($itemsParam as $item) {
             if ($item->cancelledItems > 0) {
-                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->cancelledItems);
+                $detail = $item->orderDetailId ? $this->modelManager->find(Detail::class, $item->orderDetailId) : null;
+                $items[$item->articlenumber] = new BasketPosition($detail ? : $item->articlenumber, $item->cancelledItems);
             }
         }
 
@@ -309,8 +320,10 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             /** @var AbstractResponse $response */
             $response = $this->paymentCancelService->doRequest();
             $isSuccess = $response === true || $response->isSuccessful();
-            if ($isSuccess === false) {
-                $this->View()->assign('message', $response->getReasonMessage());
+            if ($isSuccess) {
+                $this->View()->assign('message', 'Cancellation was successful'); //TODO translation
+            } else {
+                $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
             }
         }
         $this->View()->assign([
@@ -330,7 +343,8 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $items = [];
         foreach ($itemsParam as $item) {
             if ($item->returnedItems > 0) {
-                $items[$item->articlenumber] = new BasketPosition($item->articlenumber, $item->returnedItems);
+                $detail = $item->orderDetailId ? $this->modelManager->find(Detail::class, $item->orderDetailId) : null;
+                $items[$item->articlenumber] = new BasketPosition($detail ? : $item->articlenumber, $item->returnedItems);
             }
         }
 
@@ -342,8 +356,10 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             /** @var AbstractResponse $response */
             $response = $this->paymentReturnService->doRequest();
             $isSuccess = $response === true || $response->isSuccessful();
-            if ($isSuccess == false) {
-                $this->View()->assign('message', $response->getReasonMessage());
+            if ($isSuccess) {
+                $this->View()->assign('message', 'Return was successful'); //TODO translation
+            } else {
+                $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
             }
         }
         $this->View()->assign([
@@ -358,14 +374,14 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
     public function addAction()
     {
         $orderId = $this->Request()->getParam('orderId');
-        $addedDetailIds = json_decode($this->Request()->getParam('insertedIds'));
-        $subOperation = $this->Request()->getParam('suboperation');
+        $addedDetailIds = json_decode($this->Request()->getParam('detailIds'));
+        $operationType = $this->Request()->getParam('operationType');
 
         $order = $this->modelManager->find(Order::class, $orderId);
 
         if (PaymentMethods::isInstallment($order->getPayment())) {
             $this->View()->assign([
-                'message' => 'Einer Bestellung mit der Zahlart Ratenzahlung/Finanzierung kann kein Artikel automatisch hinzugefügt werden.',
+                'message' => 'Einer Bestellung mit der Zahlart Ratenzahlung/Finanzierung kann kein Artikel automatisch hinzugefügt werden.', // TODO translation
                 'result' => false,
                 'success' => true
             ]);
@@ -383,7 +399,10 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
                 $basketArrayBuilder->addItem($detail);
             }
 
-            switch ($subOperation) {
+            /** @var AbstractAddRequest $service */
+            $service = null;
+
+            switch ($operationType) {
                 case 'debit':
                     $service = $this->paymentDebitService;
                     break;
@@ -399,10 +418,15 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             $response = $service->doRequest();
 
             $isSuccess = $response === true || $response->isSuccessful();
+            if ($isSuccess) {
+                $this->View()->assign('message', ucfirst($operationType).' was successful'); //TODO translation
+            } else {
+                $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
+            }
         }
         $this->View()->assign([
             'result' => $isSuccess,
-            'success' => true
+            'success' => $isSuccess
         ]);
     }
 }

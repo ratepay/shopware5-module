@@ -13,6 +13,7 @@
         <import resource="services/logging.xml"/>
         <import resource="services/requests.xml"/>
         <import resource="services/subscriber.xml"/>
+        <import resource="services/thirdparty_plugins.xml"/>
     </imports>
 
     <services>

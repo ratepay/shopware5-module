@@ -182,20 +182,20 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                         },
                                         success: function (payload) {
                                             var response = Ext.JSON.decode(payload.responseText);
+                                            if(response.success === false && response.message) {
+                                                Shopware.Notification.createGrowlMessage('Error', response.message);
+                                                return;
+                                            }
                                             var articleNumber = new Array();
-                                            var insertedIds = new Array();
+                                            var newDetailsId = [];
                                             var message;
                                             articleNumber.push(response.data.articleNumber);
-                                            insertedIds.push(response.data.id);
-                                            if (me.initPositions(articleNumber)) {
-                                                if (me.paymentChange(id, 'credit', insertedIds)) {
-                                                    message = '{s namespace="backend/ratepay" name=messagecreditsuccess}Nachlass wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
-                                                } else {
-                                                    me.deletePosition(insertedIds);
-                                                    message = '{s namespace="backend/ratepay" name=messagecreditfailrequest}Nachlass konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
-                                                }
+                                            newDetailsId.push(response.data.id);
+                                            if (me.initPositions(newDetailsId, 'credit')) {
+                                                message = '{s namespace="backend/ratepay" name=messagecreditsuccess}Nachlass wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
                                             } else {
-                                                message = '{s namespace="backend/ratepay" name=messagecreditfailposition}Nachlass konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
+                                                me.deletePosition(newDetailsId);
+                                                message = '{s namespace="backend/ratepay" name=messagecreditfailrequest}Nachlass konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
                                             }
                                             Ext.getCmp('creditWindow').close();
                                             Ext.Msg.alert('{s namespace="backend/ratepay" name=messagecredittitle}Nachlass hinzuf&uuml;gen{/s}', message);
@@ -266,19 +266,17 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                         },
                                         success: function (payload) {
                                             var response = Ext.JSON.decode(payload.responseText);
-                                            var articleNumber = new Array();
-                                            var insertedIds = new Array();
+                                            if(response.success === false && response.message) {
+                                                Shopware.Notification.createGrowlMessage('Error', response.message);
+                                                return;
+                                            }
+                                            var newDetailIds = [];
                                             var message;
-                                            articleNumber.push(response.data.articleNumber);
-                                            insertedIds.push(response.data.id);
-                                            if (me.initPositions(articleNumber)) {
-                                                if (me.paymentChange(id, 'debit', insertedIds)) {
-                                                    message = '{s namespace="backend/ratepay" name=messagedebituccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
-                                                } else {
-                                                    me.deletePosition(insertedIds);
-                                                    message = '{s namespace="backend/ratepay" name=messagedebitfailrequest}Nachbelastung konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
-                                                }
+                                            newDetailIds.push(response.data.id);
+                                            if (me.initPositions(newDetailIds, 'debit')) {
+                                                message = '{s namespace="backend/ratepay" name=messagedebituccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
                                             } else {
+                                                me.deletePosition(newDetailIds);
                                                 message = '{s namespace="backend/ratepay" name=messagedebitfailposition}Nachbelastung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
                                             }
                                             Ext.getCmp('debitWindow').close();
@@ -342,6 +340,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             }
 
             item['id'] = row.articleID;
+            item['orderDetailId'] = row.orderDetailId;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
@@ -371,10 +370,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 success: function (response) {
                     response = Ext.decode(response.responseText);
                     if(response.result && response.message){
-                        Shopware.Notification.createSuccessMessage('Success', response.message, false);
+                        Shopware.Notification.createGrowlMessage('Success', response.message);
                     }
                     else if(response.result === false && response.message) {
-                        Shopware.Notification.createErrorMessage('Error', response.message, false);
+                        Shopware.Notification.createGrowlMessage('Error', response.message);
                     }
 
                     me.reloadGrid();
@@ -407,6 +406,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             }
 
             item['id'] = row.articleID;
+            item['orderDetailId'] = row.orderDetailId;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
@@ -433,7 +433,14 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                     articleStock: false,
                     items: Ext.encode(items)
                 },
-                success: function () {
+                success: function (response) {
+                    response = Ext.decode(response.responseText);
+                    if(response.result && response.message){
+                        Shopware.Notification.createGrowlMessage('Success', response.message);
+                    }
+                    else if(response.result === false && response.message) {
+                        Shopware.Notification.createGrowlMessage('Error', response.message);
+                    }
                     me.reloadGrid();
                 }
             });
@@ -464,6 +471,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             }
 
             item['id'] = row.articleID;
+            item['orderDetailId'] = row.orderDetailId;
             item['articlenumber'] = row.articleordernumber;
             item['name'] = row.name;
             item['price'] = row.price;
@@ -489,7 +497,14 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                     articleStock: 1,
                     items: Ext.encode(items)
                 },
-                success: function () {
+                success: function (response) {
+                    response = Ext.decode(response.responseText);
+                    if(response.result && response.message){
+                        Shopware.Notification.createGrowlMessage('Success', response.message);
+                    }
+                    else if(response.result === false && response.message) {
+                        Shopware.Notification.createGrowlMessage('Error', response.message);
+                    }
                     me.reloadGrid();
                 }
             });
@@ -517,20 +532,27 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
         me.reconfigure(me.store);
     },
 
-    initPositions: function (articleNumber) {
+    initPositions: function (newDetailsId, operationType) {
         var me = this;
         var returnValue = false;
         var id = me.record.get('id');
         Ext.Ajax.request({
-            url: '{url controller=RatepayOrderDetail action=initPositions}',
+            url: '{url controller=RatepayOrderDetail action=add}',
             method: 'POST',
             async: false,
             params: {
                 orderId: id,
-                articleNumber: Ext.JSON.encode(articleNumber)
+                detailIds: newDetailsId,
+                operationType: operationType
             },
             success: function (payload) {
                 var response = Ext.JSON.decode(payload.responseText);
+                if(response.result && response.message){
+                    Shopware.Notification.createGrowlMessage('Success', response.message);
+                }
+                else if(response.result === false && response.message) {
+                    Shopware.Notification.createGrowlMessage('Error', response.message);
+                }
                 returnValue = response.success;
             }
         });

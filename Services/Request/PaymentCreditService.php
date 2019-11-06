@@ -4,7 +4,7 @@
 namespace RpayRatePay\Services\Request;
 
 
-class PaymentCreditService extends AbstractModifyRequest
+class PaymentCreditService extends AbstractAddRequest
 {
 
     protected $_subType = 'credit';
@@ -19,12 +19,12 @@ class PaymentCreditService extends AbstractModifyRequest
 
     protected function processSuccess()
     {
-        foreach ($this->items as $item) {
-            $position = $this->getOrderPosition($item->getProductNumber());
+        foreach ($this->items as $basketPosition) {
+            $position = $this->getOrderPosition($basketPosition);
             $position->setDelivered($position->getOrderedQuantity());
             $this->modelManager->flush($position);
 
-            $this->historyLogger->logHistory($position, $item->getQuantity(), 'Nachlass wurde hinzugefügt');
+            $this->historyLogger->logHistory($position, $basketPosition->getQuantity(), 'Nachlass wurde hinzugefügt');
         }
     }
 }

@@ -120,12 +120,20 @@ final class PaymentMethods extends Enum
         return $paymentMethod ? array_key_exists($paymentMethod, self::PAYMENTS) : false;
     }
 
+    /**
+     * @param string|Payment $paymentMethod
+     * @return boolean
+     */
     public static function isInstallment($paymentMethod)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
         return in_array($paymentMethod, [self::PAYMENT_INSTALLMENT0, self::PAYMENT_RATE]);
     }
 
+    /**
+     * @param string|Payment $paymentMethod
+     * @return boolean
+     */
     public static function isZeroPercentInstallment($paymentMethod)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;

@@ -131,7 +131,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 $uniqueId = $this->createPaymentUniqueId();
 
                 $statusId = $this->configService->getPaymentStatusAfterPayment($paymentRequestData->getMethod(), $paymentRequestData->getShop());
-                $orderNumber = $this->saveOrder($transactionId, $uniqueId, $statusId ? $statusId : 17);
+                $orderNumber = $this->saveOrder($transactionId, $uniqueId, $statusId ? $statusId : 17); //TODO no static id!
 
                 $order = Shopware()->Models()->getRepository(Order\Order::class)
                     ->findOneBy(['number' => $orderNumber]);

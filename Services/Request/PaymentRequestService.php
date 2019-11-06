@@ -242,7 +242,7 @@ class PaymentRequestService extends AbstractRequest
             throw new RuntimeException('please set paymentRequestData with function `setPaymentRequestData()`');
         }
         if ($this->isBackend === null) {
-            throw new RuntimeException('please set the backend variable to `true` if it is a backend call with function `setIsBackend()`');
+            throw new RuntimeException('please set the backend variable to `true` if it is a backend call with function `setIsBackend()`'); //TODO message is not a good english :D
         }
 
         $basketFactory = new BasketArrayBuilder($this->paymentRequestData);

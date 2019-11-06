@@ -4,6 +4,7 @@
 namespace RpayRatePay\Services\Request;
 
 
+use Doctrine\ORM\OptimisticLockException;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\DTO\BasketPosition;
@@ -99,6 +100,11 @@ abstract class AbstractModifyRequest extends AbstractRequest
             $this->items = $this->basketArrayBuilder->getSimpleItems();
         } else if (is_array($items)) {
             $this->basketArrayBuilder = null;
+            foreach($items as $basketPosition) {
+                if($basketPosition->getProductNumber() !== BasketPosition::SHIPPING_NUMBER && $basketPosition->getOrderDetail() instanceof OrderDetail === false) {
+                    throw new \Exception('You are doing a modify on a existing order. Please set the '.OrderDetail::class.' object to the '.BasketPosition::class.' instead of the productNumber!');
+                }
+            }
             $this->items = $items;
         } else {
             throw new RuntimeException('invalid argument');
@@ -139,11 +145,16 @@ abstract class AbstractModifyRequest extends AbstractRequest
 
         if ($this->basketArrayBuilder !== null) {
             $basketFactory = $this->basketArrayBuilder;
+            foreach($basketFactory->getSimpleItems() as $basketPosition) {
+                if($basketPosition->getProductNumber() !== BasketPosition::SHIPPING_NUMBER && $basketPosition->getOrderDetail() instanceof OrderDetail === false) {
+                    throw new \Exception('You are doing a modify on a existing order. Please set the '.OrderDetail::class.' object to the '.BasketPosition::class.' instead of the productNumber!');
+                }
+            }
         } else {
             $basketFactory = new BasketArrayBuilder($this->_order);
-            foreach ($this->items as $item) {
-                $detail = $this->getOrderDetailByNumber($item->getProductNumber());
-                $basketFactory->addItem($detail ? $detail : $item->getProductNumber(), $item->getQuantity());
+            foreach ($this->items as $basketPosition) {
+                $detail = $basketPosition->getOrderDetail();
+                $basketFactory->addItem($detail ? $detail : $basketPosition->getProductNumber(), $basketPosition->getQuantity());
             }
         }
         $requestContent = [];
@@ -167,15 +178,28 @@ abstract class AbstractModifyRequest extends AbstractRequest
         return null;
     }
 
-    protected function updateArticleStock($productNumber, $count)
+    /**
+     * @param BasketPosition $basketPosition
+     */
+    protected function updateArticleStock($basketPosition)
     {
-        $repository = $this->modelManager->getRepository(Detail::class);
-        $article = $repository->findOneBy(['number' => $productNumber]);
+        $detail = $basketPosition->getOrderDetail();
+        if($detail === null) {
+            // this is not a product/voucher. maybe shipping position.
+            return;
+        }
+        try {
+            $article = $detail->getArticleDetail();
+            $article->getInStock(); // lazy load call
+        } catch (\Exception $e) {
+            // entity does not exist anymore
+            return;
+        }
         if ($article) {
             // article still exist
-            $article->setInStock($article->getInStock() + $count);
+            $article->setInStock($article->getInStock() + $basketPosition->getQuantity());
             $this->modelManager->persist($article);
-            $this->modelManager->flush();
+            $this->modelManager->flush($article);
         }
     }
 
@@ -185,16 +209,15 @@ abstract class AbstractModifyRequest extends AbstractRequest
     }
 
     /**
-     * @param $productNumber
+     * @param BasketPosition $basketPosition
      * @return AbstractPosition
      */
-    protected function getOrderPosition($productNumber)
+    protected function getOrderPosition($basketPosition)
     {
-        if ($productNumber === BasketPosition::SHIPPING_NUMBER) {
+        if ($basketPosition->getProductNumber() === BasketPosition::SHIPPING_NUMBER) {
             return $this->positionHelper->getShippingPositionForOrder($this->_order);
         } else {
-            $detail = $this->getOrderDetailByNumber($productNumber);
-            return $this->positionHelper->getPositionForDetail($detail);
+            return $this->positionHelper->getPositionForDetail($basketPosition->getOrderDetail());
         }
     }
 }
