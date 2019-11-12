@@ -75,7 +75,7 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         $productNumber = $this->findProductNumber($item);
         $productName = $this->findProductName($item);
         $configuration = $this->findProductConfiguration($item);
-        if($configuration == null || count($configuration) === 0) {
+        if ($configuration == null || count($configuration) === 0) {
             return;
         }
         list($productNumber, $productName) = $this->addConfigurationToProductInfo([$productNumber, $productName], $configuration);
@@ -98,11 +98,12 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         return $data;
     }
 
-    protected function findProductNumber(&$item, $setValue = null) {
-        if(is_array($item)) {
+    protected function findProductNumber(&$item, $setValue = null)
+    {
+        if (is_array($item)) {
             return $this->findValueInArray($item, ['ordernumber'], $setValue);
-        } else if($item instanceof Detail) {
-            if($setValue) {
+        } else if ($item instanceof Detail) {
+            if ($setValue) {
                 $item->setArticleNumber($setValue);
                 return $setValue;
             } else {
@@ -111,11 +112,13 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         }
         return null;
     }
-    protected function findProductName(&$item, $setValue = null) {
-        if(is_array($item)) {
+
+    protected function findProductName(&$item, $setValue = null)
+    {
+        if (is_array($item)) {
             return $this->findValueInArray($item, ['articlename'], $setValue);
-        } else if($item instanceof Detail) {
-            if($setValue) {
+        } else if ($item instanceof Detail) {
+            if ($setValue) {
                 $item->setArticleName($setValue);
                 return $setValue;
             } else {
@@ -129,16 +132,20 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
      * @param $item
      * @return array|null
      */
-    protected function findProductConfiguration(&$item) {
+    protected function findProductConfiguration(&$item)
+    {
         $attribute = null;
-        if(is_array($item)) {
-            return json_decode($this->findValueInArray($item, ['ob_bogx_configurator']), true);
-        } else if($item instanceof Detail) {
+        if (is_array($item)) {
+            $configuration = $this->findValueInArray($item, ['ob_bogx_configurator']);
+            if ($configuration) {
+                return $configuration = json_decode($configuration, true);
+            } else {
+                $orderDetailId = $this->findValueInArray($item, ['orderDetailId']);
+                /** @var OrderDetailAttribute $orderDetailAttribute */
+                $attribute = $orderDetailId ? $this->modelManager->find(OrderDetailAttribute::class, $orderDetailId) : null;
+            }
+        } else if ($item instanceof Detail) {
             $attribute = $item->getAttribute();
-        } else {
-            $orderDetailId = $this->findValueInArray($item, ['orderDetailId']);
-            /** @var OrderDetailAttribute $orderDetailAttribute */
-            $attribute = $orderDetailId ? $this->modelManager->find(OrderDetailAttribute::class, $orderDetailId) : null;
         }
         if ($attribute && method_exists($attribute, 'getBogxProductconfigurator')) {
             $config = $attribute->getBogxProductconfigurator();
@@ -147,10 +154,11 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         return null;
     }
 
-    protected final function findValueInArray(&$data = [], $keys = [], $setValue = null) {
-        foreach($keys as $key) {
-            if(isset($data[$key])) {
-                if($setValue) {
+    protected final function findValueInArray(&$data = [], $keys = [], $setValue = null)
+    {
+        foreach ($keys as $key) {
+            if (isset($data[$key])) {
+                if ($setValue) {
                     return $data[$key] = $setValue;
                 } else {
                     return $data[$key];

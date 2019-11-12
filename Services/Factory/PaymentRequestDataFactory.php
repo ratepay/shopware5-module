@@ -8,7 +8,6 @@ use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Enum\PaymentSubType;
 use RpayRatePay\Helper\SessionHelper;
-use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\DfpService;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Address;
@@ -46,6 +45,7 @@ class PaymentRequestDataFactory
 
     public function createFromOrderStruct(OrderStruct $orderStruct, array $loadedEntities = [])
     {
+        $orderStruct = clone $orderStruct;
 
         //find entities related to the order
         $shop = isset($loadedEntities['shop']) ? $loadedEntities['paymentMethod'] : $this->modelManager->find(Shop::class, $orderStruct->getLanguageShopId());
@@ -54,15 +54,19 @@ class PaymentRequestDataFactory
         $billingAddress = isset($loadedEntities['billingAddress']) ? $loadedEntities['billingAddress'] : $this->modelManager->find(Address::class, $orderStruct->getBillingAddressId());
         $shippingAddress = isset($loadedEntities['shippingAddress']) ? $loadedEntities['shippingAddress'] : $this->modelManager->find(Address::class, $orderStruct->getShippingAddressId());
 
-        //TODO move to TaxHelper
+        $taxFree = $orderStruct->isTaxFree();
+        $items = $orderStruct->getPositions();
 
-        $shippingTaxRate = TaxHelper::getShippingTaxRate($orderStruct);
-        $shippingTax = $shippingTaxRate > 0 ? $orderStruct->getShippingCostsTaxRate() : 0;
-
-        //looks like vat is always a whole number, so I'll round --> wrong!! // 2019-05-04 TODO verify
-        //TODO move to TaxHelper
-        $shippingTax = round($shippingTax, 2);
-        $shippingCost = $orderStruct->getNetOrder() ? $orderStruct->getShippingCostsNet() : $orderStruct->getShippingCosts();
+        //the following lines will fix the tax rates
+        foreach ($items as $i => $item) {
+            $item = clone $item; // we clone it, so we can modify a few things without breaking the logic of shopware
+            $items[$i] = $item;
+            if ($orderStruct->getNetOrder()) {
+                $item->setPrice(round($item->getPrice() * (1 + ($item->getTaxRate() / 100)), 2));
+            } else if ($taxFree) {
+                $item->setTaxRate(0);
+            }
+        }
 
         $installmentDetails = null;
         $bankData = null;
@@ -80,14 +84,13 @@ class PaymentRequestDataFactory
             $customer,
             $billingAddress,
             $shippingAddress,
-            array_merge(['shipping'], $orderStruct->getPositions()),
-            $shippingCost,
-            $shippingTax,
+            array_merge(['shipping'], $items),
+            $orderStruct->getShippingCosts(),
+            $taxFree ? 0 : $orderStruct->getShippingCostsTaxRate(),
             $this->dfpService->getDfpId(true),
             $shop,
             $orderStruct->getTotal(),
             $orderStruct->getCurrencyId(),
-            //$orderStruct->getNetOrder(),
             $bankData,
             $installmentDetails
         );
@@ -102,16 +105,38 @@ class PaymentRequestDataFactory
         $shippingAddress = $this->sessionHelper->getShippingAddress($customer);
         $paymentMethod = $this->sessionHelper->getPaymentMethod($customer);
 
-        $content = Shopware()->Modules()->Basket()->sGetBasketData();
-
+        $content = Shopware()->Modules()->Basket()->sGetBasketData(); // TODO no static access
 
         //get total amount
         $user = $session->sOrderVariables['sUserData'];
-        $basket = $session->sOrderVariables['sBasket'];
+        $basket = (array)$session->sOrderVariables['sBasket']; //we clone it, so we can modify the array without modify the session
+        $basket['content'] = $content['content'];
+        unset($content); //prevent later use
+
         if (!empty($user['additional']['charge_vat'])) {
             $totalAmount = empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
         } else {
             $totalAmount = $basket['AmountNetNumeric'];
+        }
+
+
+        $taxFree = $this->sessionHelper->getSession()->get('taxFree');
+        $showNet = $customer->getGroup()->getTax() == false; // false == show prices included tax
+        //the following code block fix the taxes
+        foreach ($basket['content'] as &$item) {
+            if ($taxFree) {
+                $item['priceNumeric'] = $item['netprice'];
+                $item['tax_rate'] = 0;
+            } else if ($showNet) {
+                $item['priceNumeric'] = round($item['netprice'] * (1 + ($item['tax_rate'] / 100)), 2);
+            } else {
+                //$item['priceNumeric'] = $item['priceNumeric']; // no price change
+            }
+        }
+        $shippingCost = Shopware()->Modules()->Admin()->sGetPremiumShippingcosts();     //TODO no static access
+        if ($taxFree) {
+            $shippingCost['tax'] = 0;
+            $shippingCost['brutto'] = $shippingCost['netto'];
         }
 
         return new PaymentRequestData(
@@ -119,13 +144,13 @@ class PaymentRequestDataFactory
             $customer,
             $billingAddress,
             $shippingAddress,
-            array_merge(['shipping'], $content['content']),
-            $session->sOrderVariables['sBasket']['sShippingcosts'],
-            $session->sOrderVariables['sBasket']['sShippingcostsTax'],
+            array_merge(['shipping'], $basket['content']),
+            $shippingCost['brutto'],
+            $shippingCost['tax'],
             $this->dfpService->getDfpId(false),
-            Shopware()->Shop(),
+            Shopware()->Shop(),                                         //TODO no static access
             $totalAmount,
-            $session->sOrderVariables['sBasket']['sCurrencyId'],
+            $basket['sCurrencyId'],
             $this->sessionHelper->getBankData($billingAddress),
             $this->sessionHelper->getInstallmentDetails()
         );

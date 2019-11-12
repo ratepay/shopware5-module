@@ -100,8 +100,8 @@ class BasketArrayBuilder
     {
         $orderDetail = null;
 
-        if($item !== 'shipping') {
-            if($item instanceof Detail === false || $item->getId() !== null) {
+        if ($item !== 'shipping') {
+            if ($item instanceof Detail === false || $item->getId() !== null) {
                 // in the following lines we will call THIS function recursively. Maybe the `$item` is just a DTO
                 // if so, we will skip cause the filter event has been already triggered
                 $item = $this->eventManager->filter('RatePAY_filter_order_items', $item, ['quantity' => $quantity]);
@@ -118,8 +118,6 @@ class BasketArrayBuilder
             $name = $item->getArticleName();
             $productNumber = $item->getArticleNumber();
             $itemQuantity = $quantity ?: $item->getQuantity();
-            $price = TaxHelper::getItemGrossPrice($item->getOrder(), $item);
-            $taxRate = TaxHelper::getItemTaxRate($item->getOrder(), $item);
             $orderDetail = $item->getId() ? $item : null;
         } else if ($item instanceof PositionStruct) {
             if (PositionHelper::isDiscount($item) && $this->useFallbackDiscount == false) {
@@ -129,24 +127,25 @@ class BasketArrayBuilder
             $name = $item->getName();
             $productNumber = $item->getNumber();
             $itemQuantity = $quantity ?: $item->getQuantity();
-            $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $item);
-            $taxRate = TaxHelper::getItemTaxRate($this->paymentRequestData, $item);
+
         } else if (is_array($item)) {
             //frontend call
-            //TODO verify if it is necessary to calculate the tax info
             $detail = new Detail();
             $detail->setArticleNumber($item['ordernumber']);
             $detail->setNumber($item['ordernumber']);
-            $detail->setQuantity((int)$item['quantity']);
             $detail->setArticleName($item['articlename']);
+            $detail->setQuantity(intval($item['quantity']));
             $detail->setPrice(floatval($item['priceNumeric']));
-            $detail->setTaxRate($item['tax_rate']);
-            $detail->setMode($item['modus']);
+            $detail->setTaxRate(floatval($item['tax_rate']));
+            $detail->setMode(intval($item['modus']));
             $this->addItem($detail);
             return;
         } else {
             throw new RuntimeException('type ' . get_class($item) . ' is not supported');
         }
+
+        $price = TaxHelper::getItemGrossPrice($this->order ?: $this->paymentRequestData, $item);
+        $taxRate = TaxHelper::getItemTaxRate($this->order ?: $this->paymentRequestData, $item);
 
         $this->basket['Items'][] = [
             'Item' => [
@@ -176,7 +175,6 @@ class BasketArrayBuilder
         }
 
         if ($this->useFallbackShipping) {
-            //TODO verify if it is necessary to calculate the tax info
             $detail = new Detail();
             $detail->setNumber(BasketPosition::SHIPPING_NUMBER);
             $detail->setArticleNumber(BasketPosition::SHIPPING_NUMBER);
@@ -216,8 +214,8 @@ class BasketArrayBuilder
             } else if ($item instanceof PositionStruct) {
                 $name = $item->getName();
                 $productNumber = $item->getNumber();
-                $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $item, $item->getTotal());
-                $taxRate = TaxHelper::getItemTaxRate($this->paymentRequestData, $item, $item->getTotal());
+                $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $item);
+                $taxRate = TaxHelper::getItemTaxRate($this->paymentRequestData, $item);
             } else {
                 // should never occurs cause the function call `PositionHelper::isDiscount`
                 // already throw an exception if it is the wrong type

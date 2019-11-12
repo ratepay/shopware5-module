@@ -5,8 +5,7 @@ namespace RpayRatePay\Helper;
 
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
-use RuntimeException;
-use Shopware\Models\Order\Detail;
+use Shopware\Models\Order\Detail as OrderDetail;
 use Shopware\Models\Order\Order;
 use SwagBackendOrder\Components\Order\Struct\OrderStruct;
 use SwagBackendOrder\Components\Order\Struct\PositionStruct;
@@ -15,32 +14,42 @@ class TaxHelper
 {
     /**
      * @param Order|PaymentRequestData $order
-     * @param Detail|PositionStruct $item
+     * @param OrderDetail|PositionStruct $item
      * @return float
      */
-    public static function getItemGrossPrice($order, $item, $price = null)
+    public static function getItemGrossPrice($order, $item)
     {
-//TODO implement
-        return $price ? $price : $item->getPrice();
-        /*if($item instanceof Detail) {
-        }*/
+        if ($item instanceof PositionStruct) {
+            $price = $item->getTotal();
+        } else {
+            $price = $item->getPrice();
+        }
+        if ($order instanceof Order) {
+            if ($order->getTaxFree() == 1) {
+                // no tax got charged
+                return $price;
+            } else if ($order->getNet()) {
+                // show prices without tax, but tax is included
+                return round($price * (1 + ($item->getTaxRate() / 100)), 2);
+            } else {
+                // no change
+                return $price;
+            }
+        }
+        return $price;
     }
 
     /**
      * @param Order|PaymentRequestData $order
-     * @param Detail|PositionStruct $item
+     * @param OrderDetail|PositionStruct $item
      * @return float|int
      */
-    public static function getItemTaxRate($order, $item, $price = null)
+    public static function getItemTaxRate($order, $item)
     {
         if ($order instanceof Order) {
-            // TODO verify if this is correct
             return $order->getNet() == 1 && $order->getTaxFree() == 1 ? 0 : $item->getTaxRate();
         }
-//TODO implement
         return $item->getTaxRate();
-        /*if($item instanceof Detail) {
-        }*/
     }
 
     /**
@@ -52,11 +61,9 @@ class TaxHelper
         if ($order instanceof Order) {
             return $order->getInvoiceShipping();
         } else if ($order instanceof PaymentRequestData) {
-//TODO implement
             return $order->getShippingCost();
-        } else {
-            throw new RuntimeException('Invalid argument');
         }
+        return null;
     }
 
     /**
@@ -65,20 +72,15 @@ class TaxHelper
      */
     public static function getShippingTaxRate($order)
     {
-
         if ($order instanceof Order) {
-            // TODO verify if this is correct
             $calculatedShippingTaxRate = self::taxFromPrices($order->getInvoiceShippingNet(), $order->getInvoiceShipping());
             return $calculatedShippingTaxRate > 0 ? $order->getInvoiceShippingTaxRate() : 0;
-        } else if ($order instanceof PaymentRequestData) {
-//TODO implement
-            return $order->getShippingTax();
         } else if ($order instanceof OrderStruct) {
-//TODO implement
             return $order->getShippingCostsTaxRate();
-        } else {
-            throw new RuntimeException('Invalid argument');
+        } else if ($order instanceof PaymentRequestData) {
+            return $order->getShippingTax();
         }
+        return null;
     }
 
     /**
@@ -91,6 +93,5 @@ class TaxHelper
         $tax = ($grossPrice - $netPrice) / $netPrice;
         return $tax * 100;
     }
-
 
 }

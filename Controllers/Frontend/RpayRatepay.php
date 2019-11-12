@@ -157,22 +157,11 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                     ]
                 );
             } else {
-                $this->redirect(
-                    [
-                        'controller' => 'checkout',
-                        'action' => 'confirm',
-                        'rpay_message' => !empty($requestResponse->getCustomerMessage()) ? $requestResponse->getCustomerMessage() : $requestResponse->getReasonMessage()
-                    ]
-                );
+                $this->doError(!empty($requestResponse->getCustomerMessage()) ? $requestResponse->getCustomerMessage() : $requestResponse->getReasonMessage());
             }
         } catch (Exception $e) {
-            $this->redirect(
-                [
-                    'controller' => 'checkout',
-                    'action' => 'confirm',
-                    'rpay_message' => $e->getMessage()
-                ]
-            );
+            $this->doError($e->getMessage());
+
         }
     }
 
@@ -216,6 +205,17 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             'index',
             'calcRequest'
         ];
+    }
+
+    private function doError($message)
+    {
+        $this->sessionHelper->getSession()->offsetSet('RatePAYErrorMessage', $message);
+        $this->redirect(
+            [
+                'controller' => 'checkout',
+                'action' => 'confirm'
+            ]
+        );
     }
 
 }

@@ -115,6 +115,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
         $availableRatePayMethods = [];
         foreach ($configs as $payment => $config) {
+            //TODO https://ratepay.gitbook.io/payment-api/gateway-operations/checkout/payment-query
             $availableRatePayMethods[$payment] = false;
 
             /** @var ProfileConfig $profileConfig */

@@ -99,7 +99,7 @@ class CheckoutSubscriber implements SubscriberInterface
 
         if ($request->getActionName() === 'confirm') {
             $paymentMethod = $this->sessionHelper->getPaymentMethod();
-            if (PaymentMethods::isInstallment($paymentMethod) == false) {
+            if (PaymentMethods::exists($paymentMethod) == false) {
                 return;
             }
             $data = [];
@@ -123,9 +123,11 @@ class CheckoutSubscriber implements SubscriberInterface
             }
 
             $view->assign('ratepay', $data);
-            $error = $request->getParam('rpay_message');
-            if ($error) {
-                $view->assign('ratepayMessage', $error);
+
+            $errorMessage = $this->sessionHelper->getSession()->get('RatePAYErrorMessage');
+            if ($errorMessage) {
+                $this->sessionHelper->getSession()->offsetSet('RatePAYErrorMessage', null);
+                $view->assign('ratepayMessage', $errorMessage);
             }
         }
     }
