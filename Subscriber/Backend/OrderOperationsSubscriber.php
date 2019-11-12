@@ -148,9 +148,14 @@ class OrderOperationsSubscriber implements SubscriberInterface
     {
         /** @var Shopware_Controllers_Backend_Order $controller */
         $controller = $args->getSubject();
-        $orders = $controller->Request()->getParam('orders');
-        if (count($orders) < 1) {
+        $orders = $controller->Request()->getParam('orders', []);
+        $singleOrderId = $controller->Request()->getParam('id', null);
+        if (count($orders) < 1 && empty($singleOrderId)) {
             return;
+        }
+
+        if(count($orders) == 0) {
+            $orders = [['id' => $singleOrderId]];
         }
 
         foreach ($orders as $order) {
