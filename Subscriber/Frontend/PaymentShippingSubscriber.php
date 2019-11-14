@@ -82,6 +82,8 @@ class PaymentShippingSubscriber implements SubscriberInterface
             return;
         }
 
+        $billingAddress = $this->sessionHelper->getBillingAddress();
+
         $sUserData = $view->getAssign('sUserData');
         if (isset($sUserData['additional']['payment']['name'])) {
             // this is a little bit tricky. Shopware set another ID to the data object. To use this value is a
@@ -92,7 +94,6 @@ class PaymentShippingSubscriber implements SubscriberInterface
         }
 
         if (PaymentMethods::exists($paymentMethodName)) {
-            $billingAddress = $this->sessionHelper->getBillingAddress();
             $profileConfig = $this->profileConfigService->getProfileConfig(
                 $billingAddress->getCountry()->getIso(),
                 $this->context->getShop()->getId(),
@@ -130,6 +131,13 @@ class PaymentShippingSubscriber implements SubscriberInterface
                 );
             }
         }
+
+        // fix static form data
+        $viewParams = $view->getAssign();
+        if(isset($viewParams['sFormData']['ratepay'])) {
+            $viewParams['sFormData']['ratepay']['bank_account']['account_holder'] = $billingAddress->getFirstname() . ' '. $billingAddress->getLastname();
+        }
+        $view->assign($viewParams);
     }
 
 

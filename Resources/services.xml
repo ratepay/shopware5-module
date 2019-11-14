@@ -9,6 +9,7 @@
         <import resource="services/admin/subscriber.xml"/>
         <import resource="services/admin/backend_orders.xml"/>
         <import resource="services/frontend/subscriber.xml"/>
+        <import resource="services/cron.xml"/>
         <import resource="services/array_factories.xml"/>
         <import resource="services/logging.xml"/>
         <import resource="services/requests.xml"/>

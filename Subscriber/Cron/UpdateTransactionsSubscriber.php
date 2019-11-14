@@ -10,6 +10,7 @@ use Exception;
 use Monolog\Logger;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Services\Config\ConfigService;
+use RpayRatePay\Services\OrderStatusChangeService;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Order;
 use Shopware_Components_Cron_CronJob;
@@ -41,18 +42,24 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var OrderStatusChangeService
+     */
+    private $orderStatusChangeService;
 
 
     public function __construct(
         ModelManager $modelManager,
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         ConfigService $configService,
+        OrderStatusChangeService $orderStatusChangeService,
         Logger $logger
     )
     {
         $this->modelManager = $modelManager;
         $this->db = $db;
         $this->configService = $configService;
+        $this->orderStatusChangeService = $orderStatusChangeService;
         $this->logger = $logger;
     }
 
@@ -84,14 +91,12 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
         try {
             $orderIds = $this->findCandidateOrdersForUpdate();
             $totalOrders = count($orderIds);
-            //TODO service
-            $orderProcessor = new Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler();
             foreach ($orderIds as $key => $orderId) {
                 $order = $this->modelManager->find(Order::class, $orderId);
                 $this->logger->info(
                     sprintf(self::MSG_NOTIFY_UPDATES_TO_RATEPAY, ($key + 1), $totalOrders, $orderId)
                 );
-                $orderProcessor->informRatepayOfOrderStatusChange($order);
+                $this->orderStatusChangeService->informRatepayOfOrderStatusChange($order);
             }
         } catch (Exception $e) {
             $this->logger->error(
@@ -117,6 +122,12 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
             $this->configService->getBidirectionalOrderStatus('full_cancellation'),
             $this->configService->getBidirectionalOrderStatus('full_return'),
         ];
+        foreach($allowedOrderStates as $i => $allowedOrderState) {
+            if($allowedOrderState == null || empty($allowedOrderState) || is_numeric($allowedOrderState) == false) {
+                unset($allowedOrderStates[$i]);
+            }
+        }
+
         $changeDate = $this->getChangeDateLimit();
 
         $query = $this->db->select()
