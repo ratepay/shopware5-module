@@ -3,6 +3,7 @@
 namespace RpayRatePay\Bootstrap;
 
 use Exception;
+use RpayRatePay\Enum\OrderStatus as OrderStatusEnum;
 use Shopware\Models\Order\Status;
 
 class OrderStatus extends AbstractBootstrap
@@ -17,12 +18,9 @@ class OrderStatus extends AbstractBootstrap
         $this->install();
     }
 
-    /**
-     * @throws Exception
-     */
     public function install()
     {
-        foreach (\RpayRatePay\Enum\OrderStatus::STATUS as $type => $status) {
+        foreach (OrderStatusEnum::STATUS as $type => $status) {
             foreach ($status as $id => $options) {
                 $entity = $this->modelManager->getRepository(Status::class)->findOneBy(['name' => $options['name']]);
                 if ($entity) {

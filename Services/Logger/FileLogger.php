@@ -4,7 +4,7 @@
 namespace RpayRatePay\Services\Logger;
 
 
-use Monolog\Handler\StreamHandler;
+use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 
 /**
@@ -18,6 +18,6 @@ class FileLogger extends Logger
     public function __construct($logDir)
     {
         parent::__construct('ratepay', [], []);
-        $this->pushHandler(new StreamHandler($logDir . '/' . self::FILENAME, Logger::DEBUG));
+        $this->pushHandler(new RotatingFileHandler($logDir . '/' . self::FILENAME));
     }
 }

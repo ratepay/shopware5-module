@@ -54,11 +54,11 @@ class OrderAttribute extends AbstractBootstrap
 
     public function activate()
     {
-        // TODO: Implement activate() method.
+        // do nothing
     }
 
     public function deactivate()
     {
-        // TODO: Implement deactivate() method.
+        // do nothing
     }
 }

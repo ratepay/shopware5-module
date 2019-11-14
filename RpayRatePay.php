@@ -28,7 +28,6 @@ use RpayRatePay\Bootstrap\Database;
 use RpayRatePay\Bootstrap\OrderAttribute;
 use RpayRatePay\Bootstrap\OrderStatus;
 use RpayRatePay\Bootstrap\PaymentMeans;
-use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
