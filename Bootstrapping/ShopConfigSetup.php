@@ -59,11 +59,11 @@ class ShopConfigSetup extends Bootstrapper
             foreach ($countries as $country => $scopes) {
                 foreach ($scopes as $isBackend => $config) {
                     if ($this->findDefaultProfile($config['ProfileID'], $country, $isBackend == 1) === null) {
-                        $configWriter->writeRatepayConfig($config['ProfileID'], $config['SecurityCode'], $shopId, $country, $isBackend == 1);
+                        $configWriter->writeRatepayConfig($config['ProfileID'], $config['SecurityCode'], $shopId, $isBackend == 1);
                     }
                     if ($country == 'DE' || $country == 'AT') {
                         if ($this->findDefaultProfile($config['ProfileID'] . '_0RT', $country, $isBackend == 1) === null) {
-                            $configWriter->writeRatepayConfig($config['ProfileID'] . '_0RT', $config['SecurityCode'], $shopId, $country, $isBackend == 1);
+                            $configWriter->writeRatepayConfig($config['ProfileID'] . '_0RT', $config['SecurityCode'], $shopId, $isBackend == 1);
                         }
                     }
                 }
@@ -84,7 +84,7 @@ class ShopConfigSetup extends Bootstrapper
         $profileConfigRepo = Shopware()->Models()->getRepository(ProfileConfig::class);
         return $profileConfigRepo->findOneBy([
             'profileId' => $profileId,
-            'country' => $country,
+            'countryCodeBilling' => $country,
             'backend' => $isBackend == 1
         ]);
     }

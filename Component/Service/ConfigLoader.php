@@ -76,7 +76,9 @@ class ConfigLoader
                             ON rrci.`rpay_id` = rrc.`' . $paymentColumn . "`
                         WHERE rrc.`shopId` = '" . $shopId . "'
                              AND rrc.`profileId`= '" . $profileConfig->getProfileId() . "'
-                        AND rrc.backend=".($profileConfig->isBackend() ? 1 : 0);
+                             AND rrc.`country_code_billing`= '" . $profileConfig->getCountryCodeBilling() . "'
+                             AND rrc.`is_zero_percent_installment`= '" . ($paymentColumn == 'installment0' ? 1 : 0) . "'
+                             AND rrc.`backend` = ".($profileConfig->isBackend() ? 1 : 0);
 
         $result = Shopware()->Db()->fetchRow($qry);
 
