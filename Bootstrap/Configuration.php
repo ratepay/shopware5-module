@@ -20,6 +20,10 @@ class Configuration extends AbstractBootstrap
      * @var ProfileConfigService
      */
     protected $profileConfigService;
+    /**
+     * @var WriterService
+     */
+    protected $profileConfigWriter;
 
     public function setContainer($container)
     {
@@ -32,7 +36,7 @@ class Configuration extends AbstractBootstrap
             $this->installContext->getPlugin()->getName(),
             $this->updateContext ? $this->updateContext->getUpdateVersion() : $this->installContext->getPlugin()->getVersion()
         );
-        $configWriter = new WriterService( /// TODO uhhh - that's not soo beautiful
+        $this->profileConfigWriter = new WriterService( /// TODO uhhh - that's not soo beautiful
             $this->modelManager,
             new ProfileRequestService(
                 $db = $this->container->get('db'),
@@ -45,7 +49,16 @@ class Configuration extends AbstractBootstrap
             ),
             $this->logger
         );
-        $this->profileConfigService = new ProfileConfigService($this->modelManager, $configService, $configWriter, $this->logger);
+        $this->profileConfigService = new ProfileConfigService($this->modelManager, $configService, $this->profileConfigWriter, $this->logger);
+    }
+
+    public function preInstall()
+    {
+        $this->profileConfigWriter->truncateConfigTables();
+    }
+    public function preUpdate()
+    {
+        $this->preInstall();
     }
 
     public function install()

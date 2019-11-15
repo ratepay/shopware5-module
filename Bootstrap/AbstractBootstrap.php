@@ -65,6 +65,9 @@ abstract class AbstractBootstrap
 
     public abstract function deactivate();
 
+    /**
+     * @param ContainerInterface $container
+     */
     public function setContainer($container)
     {
         $this->container = $container;
@@ -88,6 +91,46 @@ abstract class AbstractBootstrap
     public function setLogger(Logger $logger)
     {
         $this->logger = $logger;
+    }
+
+    public function preInstall()
+    {
+    }
+
+    public function preUpdate()
+    {
+    }
+
+    public function preUninstall($keepUserData = false)
+    {
+    }
+
+    public function preActivate()
+    {
+    }
+
+    public function preDeactivate()
+    {
+    }
+
+    public function postActivate()
+    {
+    }
+
+    public function postDeactivate()
+    {
+    }
+
+    public function postUninstall()
+    {
+    }
+
+    public function postUpdate()
+    {
+    }
+
+    public function postInstall()
+    {
     }
 
 }

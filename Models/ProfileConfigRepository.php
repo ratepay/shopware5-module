@@ -20,24 +20,17 @@ class ProfileConfigRepository extends ModelRepository
         $qb = $this->createQueryBuilder('config');
         $qb->where(
             $qb->expr()->andX(
-                $qb->expr()->eq('config.country', ':country_code'),
+                $qb->expr()->eq('config.countryCodeBilling', ':country_code'),
                 $qb->expr()->eq('config.shopId', ':shop_id'),
-                $qb->expr()->eq('config.backend', ':backend')
+                $qb->expr()->eq('config.backend', ':backend'),
+                $qb->expr()->eq('config.isZeroPercentInstallment', ':is_zero_percent_installment')
             )
         );
         $qb->setParameter('country_code', $countryCode);
         $qb->setParameter('shop_id', $shopId);
         $qb->setParameter('backend', $isBackend);
+        $qb->setParameter('is_zero_percent_installment', $isZeroInstallment);
 
-        if($isZeroInstallment) {
-            $qb->andWhere(
-                $qb->expr()->isNotNull('config.installment0Config')
-            );
-        } else {
-            $qb->andWhere(
-                $qb->expr()->isNull('config.installment0Config')
-            );
-        }
         return $qb->getQuery()->getOneOrNullResult();
     }
 

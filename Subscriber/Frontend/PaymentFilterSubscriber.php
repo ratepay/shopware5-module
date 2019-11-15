@@ -103,7 +103,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
     public function filterPayments(Enlight_Event_EventArgs $arguments)
     {
         $return = $arguments->getReturn();
-        $currency = $this->config->get('currency'); // TODO i think this should be fetch from the session not the config ?!
+        $currency = $this->config->get('currency'); // TODO i think this should be fetched from the session not the config ?!
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $shippingAddress = $this->sessionHelper->getShippingAddress();
@@ -136,13 +136,10 @@ class PaymentFilterSubscriber implements SubscriberInterface
             }
 
             if ($this->modules->Basket()) {
-                $basket = $this->modules->Basket()->sGetAmount();
-                $basket = floatval($basket['totalAmount']); // TODO is this always brutto?
+                $totalAmount = $this->sessionHelper->getTotalAmount();
 
-                $this->logger->info('BasketAmount: ' . $basket);
                 $isB2b = ValidationService::isCompanySet($billingAddress);
-
-                if (!ValidationService::areAmountsValid($isB2b, $paymentConfig, $basket)) {
+                if (!ValidationService::areAmountsValid($isB2b, $paymentConfig, $totalAmount)) {
                     continue;
                 }
                 $availableRatePayMethods[$payment] = true;

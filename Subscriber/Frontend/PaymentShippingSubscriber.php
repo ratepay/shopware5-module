@@ -112,8 +112,7 @@ class PaymentShippingSubscriber implements SubscriberInterface
 
             if (PaymentMethods::isInstallment($paymentMethodName)) {
 
-                $totalAmount = floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']); //TODO
-
+                $totalAmount = $this->sessionHelper->getTotalAmount();
                 $htmlCalculator = $this->installmentService->getInstallmentCalculatorTemplate(
                     $billingAddress,
                     $this->context->getShop()->getId(),
@@ -134,8 +133,8 @@ class PaymentShippingSubscriber implements SubscriberInterface
 
         // fix static form data
         $viewParams = $view->getAssign();
-        if(isset($viewParams['sFormData']['ratepay'])) {
-            $viewParams['sFormData']['ratepay']['bank_account']['account_holder'] = $billingAddress->getFirstname() . ' '. $billingAddress->getLastname();
+        if (isset($viewParams['sFormData']['ratepay'])) {
+            $viewParams['sFormData']['ratepay']['bank_account']['account_holder'] = $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname();
         }
         $view->assign($viewParams);
     }

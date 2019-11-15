@@ -15,6 +15,8 @@ use RpayRatePay\Models\Position\Discount;
 use RpayRatePay\Models\Position\Product;
 use RpayRatePay\Models\Position\Shipping;
 use RpayRatePay\Models\ProfileConfig;
+use RpayRatePay\Services\Config\ProfileConfigService;
+use RpayRatePay\Services\Config\WriterService;
 
 class Database extends AbstractBootstrap
 {

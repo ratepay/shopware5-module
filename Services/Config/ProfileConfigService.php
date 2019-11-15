@@ -155,16 +155,16 @@ class ProfileConfigService
                         if (null !== $credentials['id'] && null !== $credentials['security_code']) {
 
                             $profileConfig = new ProfileConfig();
+                            $profileConfig->setShopId($shopId);
+                            $profileConfig->setBackend($scope == 'backend');
+                            $profileConfig->setZeroPercentInstallment($type == 'installment0');
                             $profileConfig->setProfileId($credentials['id']);
                             $profileConfig->setSecurityCode($credentials['security_code']);
-                            $profileConfig->setBackend($scope == 'backend');
-                            $profileConfig->setCountry($countryCode);
-                            $profileConfig->setShopId($shopId);
 
-                            $saveResponse = $this->configWriterService->writeRatepayConfig($profileConfig, $type == 'installment0');
+                            $saveResponse = $this->configWriterService->writeRatepayConfig($profileConfig);
 
                             if ($saveResponse) {
-                                $this->logger->addNotice('Ruleset for ' . strtoupper($countryCode) . ' successfully updated.');
+                                $this->logger->addNotice('Profile for ' . strtoupper($countryCode) . ' successfully updated.');
                             } else {
                                 $errors[] = strtoupper($countryCode) . ' Frontend';
                             }

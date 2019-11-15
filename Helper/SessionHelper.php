@@ -146,7 +146,7 @@ class SessionHelper
         if ($key === null) {
             $this->session->RatePay = [];
         } else {
-            if($value !== null) {
+            if ($value !== null) {
                 $this->session->RatePay[$key] = $value;
             } else {
                 unset($this->session->RatePay[$key]);
@@ -156,7 +156,7 @@ class SessionHelper
 
     public function setBankData($customerId, $accountNumber = null, $bankCode = null)
     {
-        if($accountNumber !== null) {
+        if ($accountNumber !== null) {
             $this->setData('bankData_c' . $customerId, [
                 'customerId' => $customerId,
                 'account' => $accountNumber,
@@ -261,5 +261,13 @@ class SessionHelper
     public function cleanUp()
     {
         $this->setData(null, null);
+    }
+
+    public function getTotalAmount()
+    {
+        if ($this->isFrontendSession === false) {
+            throw new Exception('not implemented');
+        }
+        return $this->getSession()->get('sOrderVariables')['sAmount'];
     }
 }

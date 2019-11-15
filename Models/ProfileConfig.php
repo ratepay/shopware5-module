@@ -21,20 +21,19 @@ class ProfileConfig extends ModelEntity
      */
     protected $shopId;
     /**
-     * @var int
-     * @ORM\Id()
-     * @ORM\Column(name="country", type="string", length=30, nullable=false)
-     */
-    protected $country;
-    /**
      * @var boolean
      * @ORM\Id()
      * @ORM\Column(name="backend", type="boolean", nullable=false)
      */
     protected $backend = false;
     /**
-     * @var string
+     * @var boolean
      * @ORM\Id()
+     * @ORM\Column(name="is_zero_percent_installment", type="boolean")
+     */
+    protected $isZeroPercentInstallment = false;
+    /**
+     * @var string
      * @ORM\Column(name="profileId", type="string", length=255, nullable=false)
      */
     protected $profileId;
@@ -82,7 +81,8 @@ class ProfileConfig extends ModelEntity
     protected $prepaymentConfig;
     /**
      * @var string
-     * @ORM\Column(name="country_code_billing", type="string", length=30, nullable=true)
+     * @ORM\Id()
+     * @ORM\Column(name="country_code_billing", type="string", length=2, nullable=true)
      */
     protected $countryCodeBilling;
     /**
@@ -121,22 +121,6 @@ class ProfileConfig extends ModelEntity
     public function setShopId($shopId)
     {
         $this->shopId = $shopId;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCountry()
-    {
-        return $this->country;
-    }
-
-    /**
-     * @param int $country
-     */
-    public function setCountry($country)
-    {
-        $this->country = $country;
     }
 
     /**
@@ -385,5 +369,21 @@ class ProfileConfig extends ModelEntity
             default:
                 throw new RuntimeException('the given payment method name does not exist: ' . $paymentMethodName);
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isZeroPercentInstallment()
+    {
+        return $this->isZeroPercentInstallment;
+    }
+
+    /**
+     * @param bool $isZeroPercentInstallment
+     */
+    public function setZeroPercentInstallment($isZeroPercentInstallment)
+    {
+        $this->isZeroPercentInstallment = $isZeroPercentInstallment;
     }
 }

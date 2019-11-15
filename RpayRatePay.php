@@ -65,7 +65,7 @@ class RpayRatePay extends Plugin
     protected function getBootstrapClasses(Plugin\Context\InstallContext $context)
     {
         /** @var AbstractBootstrap[] $bootstrapper */
-        $bootstrapper =  [
+        $bootstrapper = [
             new Database(),
             new OrderAttribute(),
             new PaymentMeans(),
@@ -74,7 +74,7 @@ class RpayRatePay extends Plugin
         ];
 
         $logger = new FileLogger($this->container->getParameter('kernel.logs_dir'));
-        foreach($bootstrapper as $bootstrap) {
+        foreach ($bootstrapper as $bootstrap) {
             $bootstrap->setContext($context);
             $bootstrap->setLogger($logger);
             $bootstrap->setContainer($this->container);
@@ -85,7 +85,13 @@ class RpayRatePay extends Plugin
     public function install(Plugin\Context\InstallContext $context)
     {
         foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preInstall();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->install();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postInstall();
         }
         parent::install($context);
         $context->scheduleClearCache($context::CACHE_LIST_ALL);
@@ -94,7 +100,13 @@ class RpayRatePay extends Plugin
     public function update(Plugin\Context\UpdateContext $context)
     {
         foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preUpdate();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->update();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postUpdate();
         }
         parent::update($context);
         $context->scheduleClearCache($context::CACHE_LIST_ALL);
@@ -103,7 +115,13 @@ class RpayRatePay extends Plugin
     public function uninstall(Plugin\Context\UninstallContext $context)
     {
         foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preUninstall();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->uninstall($context->keepUserData());
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postUninstall();
         }
         parent::uninstall($context);
         $context->scheduleClearCache($context::CACHE_LIST_ALL);
@@ -112,7 +130,13 @@ class RpayRatePay extends Plugin
     public function deactivate(Plugin\Context\DeactivateContext $context)
     {
         foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preDeactivate();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->deactivate();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postDeactivate();
         }
         parent::deactivate($context);
         $context->scheduleClearCache($context::CACHE_LIST_ALL);
@@ -121,13 +145,19 @@ class RpayRatePay extends Plugin
     public function activate(Plugin\Context\ActivateContext $context)
     {
         foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preActivate();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
             $bootstrap->activate();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postActivate();
         }
         parent::activate($context);
         $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
 }
 
-if(RpayRatePay::isPackage()) {
+if (RpayRatePay::isPackage()) {
     require_once RpayRatePay::getPackageVendorAutoload();
 }

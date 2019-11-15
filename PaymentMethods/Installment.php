@@ -81,7 +81,7 @@ class Installment extends Debit
         parent::saveRatePayPaymentData($userId, $request);
 
         $dto = new InstallmentRequest(
-            floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']),
+            $this->sessionHelper->getTotalAmount(),
             $installmentData['type'],
             $installmentData['value'],
             $installmentData['paymentType'],
