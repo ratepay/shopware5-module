@@ -24,13 +24,21 @@ class RatepayConfigWriter
      */
     public function truncateConfigTables()
     {
-        $configSql = 'TRUNCATE TABLE `rpay_ratepay_config`;';
-        $configPaymentSql = 'TRUNCATE TABLE `rpay_ratepay_config_payment`;';
-        $configInstallmentSql = 'TRUNCATE TABLE `rpay_ratepay_config_installment`;';
+        $schemaManager = $this->modelManager->getConnection()->getSchemaManager();
+
+        $tables = [
+            'rpay_ratepay_config',
+            'rpay_ratepay_config_payment',
+            'rpay_ratepay_config_installment'
+        ];
         try {
-            $this->db->query($configSql);
-            $this->db->query($configPaymentSql);
-            $this->db->query($configInstallmentSql);
+            $this->db->query("SET FOREIGN_KEY_CHECKS=0");
+            foreach($tables as $table) {
+                if($schemaManager->tablesExist([$table])) {
+                    $this->db->query('TRUNCATE TABLE `'.$table.'`;');
+                }
+            }
+            $this->db->query("SET FOREIGN_KEY_CHECKS=1");
         } catch (\Exception $exception) {
             Logger::singleton()->info($exception->getMessage());
             return false;
