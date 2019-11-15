@@ -6,6 +6,7 @@ namespace RpayRatePay\Bootstrapping\Database;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
+use RpayRatePay\Component\Service\RatepayConfigWriter;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Models\ConfigInstallment;
 use RpayRatePay\Models\ConfigPayment;
@@ -38,6 +39,10 @@ class InstallModels
     }
 
     public function install() {
+
+        $configWriter = new RatepayConfigWriter(Shopware()->Db());
+        $configWriter->truncateConfigTables();
+
         $this->renameOldColumns();
         $this->deleteOldColumns();
 
