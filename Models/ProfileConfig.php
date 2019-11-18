@@ -19,11 +19,6 @@ class ProfileConfig extends ModelEntity
      */
     protected $shopId;
     /**
-     * @var int
-     * @ORM\Column(name="country", type="string", length=30, nullable=false)
-     */
-    protected $country;
-    /**
      * @var boolean
      * @ORM\Id()
      * @ORM\Column(name="backend", type="boolean", nullable=false)
@@ -31,10 +26,16 @@ class ProfileConfig extends ModelEntity
     protected $backend = false;
     /**
      * @var string
-     * @ORM\Id()
      * @ORM\Column(name="profileId", type="string", length=255, nullable=false)
      */
     protected $profileId;
+
+    /**
+     * @var boolean
+     * @ORM\Id()
+     * @ORM\Column(name="is_zero_percent_installment", type="boolean")
+     */
+    protected $isZeroPercentInstallment = false;
 
     /**
      * @var string
@@ -73,7 +74,8 @@ class ProfileConfig extends ModelEntity
     protected $prepayment;
     /**
      * @var string
-     * @ORM\Column(name="country_code_billing", type="string", length=30, nullable=true)
+     * @ORM\Id()
+     * @ORM\Column(name="country_code_billing", type="string", length=2, nullable=true)
      */
     protected $countryCodeBilling;
     /**
@@ -112,22 +114,6 @@ class ProfileConfig extends ModelEntity
     public function setShopId($shopId)
     {
         $this->shopId = $shopId;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCountry()
-    {
-        return $this->country;
-    }
-
-    /**
-     * @param int $country
-     */
-    public function setCountry($country)
-    {
-        $this->country = $country;
     }
 
     /**
@@ -352,5 +338,21 @@ class ProfileConfig extends ModelEntity
     public function setSecurityCode($securityCode)
     {
         $this->securityCode = $securityCode;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isZeroPercentInstallment()
+    {
+        return $this->isZeroPercentInstallment;
+    }
+
+    /**
+     * @param boolean $isZeroPercentInstallment
+     */
+    public function setIsZeroPercentInstallment($isZeroPercentInstallment)
+    {
+        $this->isZeroPercentInstallment = $isZeroPercentInstallment;
     }
 }
