@@ -22,7 +22,7 @@ class OrderStatus extends AbstractBootstrap
     {
         foreach (OrderStatusEnum::STATUS as $type => $status) {
             foreach ($status as $id => $options) {
-                $entity = $this->modelManager->getRepository(Status::class)->findOneBy(['name' => $options['name']]);
+                $entity = $this->modelManager->getRepository(Status::class)->find($id);
                 if ($entity) {
                     continue;
                 }

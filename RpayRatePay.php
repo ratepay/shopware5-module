@@ -78,6 +78,7 @@ class RpayRatePay extends Plugin
             $bootstrap->setContext($context);
             $bootstrap->setLogger($logger);
             $bootstrap->setContainer($this->container);
+            $bootstrap->setPluginDir($this->getPath());
         }
         return $bootstrapper;
     }

@@ -51,6 +51,8 @@ abstract class AbstractBootstrap
      */
     protected $logger;
 
+    protected $pluginDir;
+
     public final function __construct()
     {
     }
@@ -74,7 +76,7 @@ abstract class AbstractBootstrap
         $this->modelManager = $this->container->get('models');
     }
 
-    public function setContext(InstallContext $context)
+    public final function setContext(InstallContext $context)
     {
         if ($context instanceof UpdateContext) {
             $this->updateContext = $context;
@@ -88,9 +90,24 @@ abstract class AbstractBootstrap
         $this->installContext = $context;
     }
 
-    public function setLogger(Logger $logger)
+    public final function setLogger(Logger $logger)
     {
         $this->logger = $logger;
+    }
+
+    /**
+     * @param mixed $pluginDir
+     */
+    public final function setPluginDir($pluginDir)
+    {
+        $this->pluginDir = $pluginDir;
+    }
+
+    protected final function getOldVersion() {
+        return $this->installContext->getCurrentVersion();
+    }
+    protected final function getNewVersion() {
+        return $this->installContext->getPlugin()->getUpdateVersion();
     }
 
     public function preInstall()

@@ -424,5 +424,37 @@
             <value>ratepay</value>
         </element>
 
+        <!-- old fields - got renamed in plugin install/update -->
+        <element><name>RatePayProfileIDDE</name><label>RatePayProfileIDDE</label></element>
+        <element><name>RatePaySecurityCodeDE</name><label>RatePaySecurityCodeDE</label></element>
+        <element><name>RatePayProfileIDDEBackend</name><label>RatePayProfileIDDEBackend</label></element>
+        <element><name>RatePaySecurityCodeDEBackend</name><label>RatePaySecurityCodeDEBackend</label></element>
+        <element><name>RatePayProfileIDAT</name><label>RatePayProfileIDAT</label></element>
+        <element><name>RatePaySecurityCodeAT</name><label>RatePaySecurityCodeAT</label></element>
+        <element><name>RatePayProfileIDATBackend</name><label>RatePayProfileIDATBackend</label></element>
+        <element><name>RatePaySecurityCodeATBackend</name><label>RatePaySecurityCodeATBackend</label></element>
+        <element><name>RatePayProfileIDCH</name><label>RatePayProfileIDCH</label></element>
+        <element><name>RatePaySecurityCodeCH</name><label>RatePaySecurityCodeCH</label></element>
+        <element><name>RatePayProfileIDCHBackend</name><label>RatePayProfileIDCHBackend</label></element>
+        <element><name>RatePaySecurityCodeCHBackend</name><label>RatePaySecurityCodeCHBackend</label></element>
+        <element><name>RatePayProfileIDBE</name><label>RatePayProfileIDBE</label></element>
+        <element><name>RatePaySecurityCodeBE</name><label>RatePaySecurityCodeBE</label></element>
+        <element><name>RatePayProfileIDBEBackend</name><label>RatePayProfileIDBEBackend</label></element>
+        <element><name>RatePaySecurityCodeBEBackend</name><label>RatePaySecurityCodeBEBackend</label></element>
+        <element><name>RatePayProfileIDNL</name><label>RatePayProfileIDNL</label></element>
+        <element><name>RatePaySecurityCodeNL</name><label>RatePaySecurityCodeNL</label></element>
+        <element><name>RatePayProfileIDNLBackend</name><label>RatePayProfileIDNLBackend</label></element>
+        <element><name>RatePaySecurityCodeNLBackend</name><label>RatePaySecurityCodeNLBackend</label></element>
+        <element><name>RatePayBidirectional</name><label>RatePayBidirectional</label></element>
+        <element><name>RatePayFullDelivery</name><label>RatePayFullDelivery</label></element>
+        <element><name>RatePayFullCancellation</name><label>RatePayFullCancellation</label></element>
+        <element><name>RatePayFullReturn</name><label>RatePayFullReturn</label></element>
+        <element><name>RatePayUseFallbackShippingItem</name><label>RatePayUseFallbackShippingItem</label></element>
+        <element><name>RatePayUseFallbackDiscountItem</name><label>RatePayUseFallbackDiscountItem</label></element>
+        <element><name>RatePayInvoicePaymentStatus</name><label>RatePayInvoicePaymentStatus</label></element>
+        <element><name>RatePayDebitPaymentStatus</name><label>RatePayDebitPaymentStatus</label></element>
+        <element><name>RatePayInstallmentPaymentStatus</name><label>RatePayInstallmentPaymentStatus</label></element>
+        <element><name>RatePayInstallment0PaymentStatus</name><label>RatePayInstallment0PaymentStatus</label></element>
+        <element><name>RatePayPrepaidPaymentStatus</name><label>RatePayPrepaidPaymentStatus</label></element>
     </elements>
 </config>

@@ -17,6 +17,7 @@ use RpayRatePay\Models\Position\Shipping;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\Config\WriterService;
+use Shopware\Components\Migrations\AbstractMigration;
 
 class Database extends AbstractBootstrap
 {
@@ -36,11 +37,13 @@ class Database extends AbstractBootstrap
 
     public function update()
     {
+        $this->applyMigrations(AbstractMigration::MODUS_UPDATE);
         $this->install();
     }
 
     public function install()
     {
+        $this->applyMigrations(AbstractMigration::MODUS_INSTALL);
         $this->renameOldColumns();
 
         $install = [];
@@ -156,5 +159,33 @@ class Database extends AbstractBootstrap
     public function deactivate()
     {
         // do nothing
+    }
+
+    private function applyMigrations(string $mode)
+    {
+        if(true || $this->installContext->assertMinimumVersion("5.6") === false) {
+            /** @var \PDO $connection */
+            $connection = $this->container->get('db_connection');
+            $migrationPath = $this->pluginDir.'/Resources/migrations/';
+            $directoryIterator = new \DirectoryIterator($migrationPath);
+            $regex = new \RegexIterator($directoryIterator, '/^([0-9]*)-.+\.php$/i', \RecursiveRegexIterator::GET_MATCH);
+
+            foreach ($regex as $result) {
+                $migrationVersion = $result[1];
+                if ($migrationVersion <= $this->getOldVersion()) {
+                    continue;
+                }
+                require_once $migrationPath.$result[0];
+                $className = "\RpayRatePay\Migrations\Migration".$migrationVersion;
+                /** @var AbstractMigration $migrationClass */
+                $migrationClass = new $className($connection);
+                $migrationClass->up($mode);
+
+                foreach($migrationClass->getSql() as $sql) {
+                    $connection->exec($sql);
+                }
+            }
+
+        }
     }
 }
