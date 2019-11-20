@@ -87,28 +87,35 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
     public function getInstallmentInfoAction()
     {
         //TODO: add try/catch block
-        $params = $this->Request()->getParams();
+        try {
+            $params = $this->Request()->getParams();
 
-        $shopId = $params['shopId'];
-        $billingId = $params['billingId'];
-        //TODO: change array key to paymentMeansName
-        $paymentMeansName = $params['paymentTypeName'];
-        $totalAmount = $params['totalAmount'];
+            $shopId = $params['shopId'];
+            $billingId = $params['billingId'];
+            //TODO: change array key to paymentMeansName
+            $paymentMeansName = $params['paymentTypeName'];
+            $totalAmount = $params['totalAmount'];
 
-        $customerAddress = $this->modelManager->find(Address::class, $billingId);
+            $customerAddress = $this->modelManager->find(Address::class, $billingId);
 
-        $result = $this->installmentService->getInstallmentCalculator(
-            $customerAddress->getCountry()->getIso(),
-            $shopId,
-            $paymentMeansName,
-            true,
-            $totalAmount
-        );
+            $result = $this->installmentService->getInstallmentCalculator(
+                $customerAddress,
+                $shopId,
+                $paymentMeansName,
+                true,
+                $totalAmount
+            );
 
-        $this->view->assign([
-            'success' => true,
-            'termInfo' => $result
-        ]);
+            $this->view->assign([
+                'success' => true,
+                'termInfo' => $result
+            ]);
+        } catch (\Exception $e) {
+            $this->view->assign([
+                'success' => false,
+                'messages' => ['An error occurred while loading the calculator (Exception: ' . $e->getMessage() . ')']
+            ]);
+        }
     }
 
     /**

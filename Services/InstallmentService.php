@@ -163,9 +163,9 @@ class InstallmentService
             $templateName;
     }
 
-    public function getInstallmentCalculator($countryCode, $shopId, $paymentMethodName, $isBackend, $totalAmount)
+    public function getInstallmentCalculator(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount)
     {
-        $installmentBuilder = $this->getInstallmentBuilder($countryCode, $shopId, $paymentMethodName, $isBackend);
+        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
         $result = $installmentBuilder->getInstallmentCalculatorAsJson($totalAmount);
         return json_decode($result, true);
     }
