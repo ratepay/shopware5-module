@@ -320,14 +320,14 @@
             <!-- TODO old field: RatePayUseFallbackShippingItem -->
             <name>ratepay/advanced/use_fallback_shipping_item</name>
             <label lang="en">Send shipping costs as basket item</label>
-            <label lang="de">Use fallback shipping item</label>
+            <label lang="de">Übertrage Versandkosten als Warenkorbposition</label>
             <value>0</value>
         </element>
         <element required="true" type="boolean">
             <!-- TODO old field: RatePayUseFallbackDiscountItem -->
             <name>ratepay/advanced/use_fallback_discount_item</name>
             <label lang="en">Send discount as basket item</label>
-            <label lang="de">Use fallback discount item</label>
+            <label lang="de">Übertrage Versandkosten als Warenkorbposition</label>
             <value>0</value>
         </element>
         <element required="true" type="boolean">
@@ -348,13 +348,13 @@
 
         <element type="button">
             <name>ratepay/buttons/button8</name>
-            <!--label lang="en"></label-->                                                      <!-- TODO translation -->
+            <label lang="en">Order states after ordering</label>
             <label lang="de">Bestellstatus nach der Bestellung</label>
         </element>
         <element required="true" type="combo">
             <!-- TODO old field: RatePayInvoicePaymentStatus -->
             <name>ratepay/status/rpayratepayinvoice</name>
-            <!--label lang="en"></label-->                                                      <!-- TODO translation -->
+            <label lang="en">Order state after invoice payment</label>
             <label lang="de">Status nach Zahlung mit Kauf auf Rechnung</label>
             <store>base.OrderStatus</store>
             <options>
@@ -366,7 +366,7 @@
         <element required="true" type="combo">
             <!-- TODO old field: RatePayDebitPaymentStatus -->
             <name>ratepay/status/rpayratepaydebit</name>
-            <!--label lang="en"></label-->                                                      <!-- TODO translation -->
+            <label lang="en">Order state after direct debit payment</label>
             <label lang="de">Status nach Zahlung mit Lastschrift</label>
             <store>base.OrderStatus</store>
             <options>
@@ -378,7 +378,7 @@
         <element required="true" type="combo">
             <!-- TODO old field: RatePayInstallmentPaymentStatus -->
             <name>ratepay/status/rpayratepayrate</name>
-            <!--label lang="en"></label-->                                                      <!-- TODO translation -->
+            <label lang="en">Order state after installment payment</label>
             <label lang="de">Status nach Zahlung mit Ratezahlung</label>
             <store>base.OrderStatus</store>
             <options>
@@ -390,7 +390,7 @@
         <element required="true" type="combo">
             <!-- TODO old field: RatePayInstallment0PaymentStatus -->
             <name>ratepay/status/rpayratepayrate0</name>
-            <!--label lang="en"></label-->                                                      <!-- TODO translation -->
+            <label lang="en">Order state after zero percent installment payment</label>
             <label lang="de">Status nach Zahlung mit Nullprozent-Finanzierung</label>
             <store>base.OrderStatus</store>
             <options>
@@ -402,7 +402,7 @@
         <element required="true" type="combo">
             <!-- TODO old field: RatePayPrepaidPaymentStatus -->
             <name>ratepay/status/rpayratepayprepayment</name>
-            <!--label lang="en"></label-->                                                      <!-- TODO translation -->
+            <label lang="en">Order state after pre-payment</label>
             <label lang="de">Status nach Zahlung mit Vorauskasse</label>
             <store>base.OrderStatus</store>
             <options>
