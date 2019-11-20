@@ -421,6 +421,7 @@
             <name>ratepay/dfp/snippet_id</name>
             <label lang="en">Snippet ID</label>
             <label lang="de">Snippet ID</label>
+            <value>ratepay</value>
         </element>
 
     </elements>
