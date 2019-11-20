@@ -1,4 +1,3 @@
-{debug}
 {block name='ratepay_frontend_accountholder'}
     <div class="form-group row bank-account-input">
         <label class="col-sm-2 col-form-label">
