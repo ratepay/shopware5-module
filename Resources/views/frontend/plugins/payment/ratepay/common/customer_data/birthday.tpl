@@ -60,13 +60,10 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-xs-12">
+                    <small>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um per {$sPayment.description} bezahlen zu können.{/s}</small>
+                </div>
             </div>
-        </div>
-        <div class="register--birthdate">
-
-            <p>
-                <small>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um per {$sPayment.description} bezahlen zu können.{/s}</small>
-            </p>
         </div>
     {/block}
 {/if}
