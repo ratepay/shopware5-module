@@ -40,10 +40,15 @@ class SessionHelper
     private $loadedShippingAddress;
     /** @var PaymentMeans */
     private $loadedPaymentMethod;
+    /**
+     * @var ContainerInterface
+     */
+    private $container;
 
     public function __construct(ModelManager $entityManager, ContainerInterface $container)
     {
         $this->entityManager = $entityManager;
+        $this->container = $container;
         if ($container->has('shop')) {
             //frontend request
             $this->session = $container->get('session');
@@ -253,11 +258,6 @@ class SessionHelper
         return $dto;
     }
 
-    public function getSession()
-    {
-        return $this->session;
-    }
-
     public function cleanUp()
     {
         $this->setData(null, null);
@@ -268,6 +268,18 @@ class SessionHelper
         if ($this->isFrontendSession === false) {
             throw new Exception('not implemented');
         }
-        return $this->getSession()->get('sOrderVariables')['sAmount'];
+        $sOrderVariables = $this->getSession()->get('sOrderVariables');
+        if ($sOrderVariables && isset($sOrderVariables['sAmount'])) {
+            return $sOrderVariables['sAmount'];
+        } else {
+            // fallback. This value does not contains the discounts and shipping costs.
+            // may occurs if the has not visit the confirm page & has not selected shipping.
+            return floatval($this->container->get('modules')->Basket()->sGetAmount()['totalAmount']);
+        }
+    }
+
+    public function getSession()
+    {
+        return $this->session;
     }
 }
