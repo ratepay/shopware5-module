@@ -163,7 +163,7 @@ class Database extends AbstractBootstrap
 
     private function applyMigrations(string $mode)
     {
-        if(true || $this->installContext->assertMinimumVersion("5.6") === false) {
+        if($this->installContext->assertMinimumVersion("5.6") === false) {
             /** @var \PDO $connection */
             $connection = $this->container->get('db_connection');
             $migrationPath = $this->pluginDir.'/Resources/migrations/';
