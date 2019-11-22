@@ -1,15 +1,12 @@
 <?php
 
-
-namespace Shopware\Plugins\Community\Frontend\RpayRatePay\Services;
-
+namespace RpayRatePay\Services;
 
 use RpayRatePay\Models\ProfileConfig;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Models\ConfigRepository;
+use RpayRatePay\Models\ConfigRepository;
 
 class ProfileConfigService
 {
-
     /**
      * @param string$countryCode
      * @param int $shopId
@@ -17,11 +14,11 @@ class ProfileConfigService
      * @param boolean $isBackend
      * @return ProfileConfig|null
      */
-    public static function getProfileConfig($countryCode, $shopId, $isZeroPercentInstallment, $isBackend) {
+    public static function getProfileConfig($countryCode, $shopId, $isZeroPercentInstallment, $isBackend)
+    {
 
         /** @var ConfigRepository $repo */
         $repo = Shopware()->Models()->getRepository(ProfileConfig::class);
         return $repo->findConfiguration($shopId, $countryCode, $isZeroPercentInstallment, $isBackend);
     }
-
 }
