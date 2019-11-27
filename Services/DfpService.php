@@ -3,10 +3,9 @@
 
 namespace RpayRatePay\Services;
 
-
-use BadMethodCallException;
+use Enlight_Components_Session_Namespace;
 use RatePAY\Service\DeviceFingerprint;
-use Shopware\Components\DependencyInjection\Container;
+use RpayRatePay\Helper\SessionHelper;
 
 /**
  * ServiceClass for device fingerprinting
@@ -18,69 +17,56 @@ class DfpService
 
     const SESSION_VAR_NAME = 'dfpToken';
 
-    /** @var Container */
-    protected $container;
+    /**
+     * @var SessionHelper
+     */
+    private $sessionHelper;
 
-    public function __construct()
+    public function __construct(SessionHelper $sessionHelper)
     {
-        $this->container = Shopware()->Container(); //TODO - das muss doch irgendwie via DI reinkommen können... oder?
+        $this->sessionHelper = $sessionHelper;
     }
 
     public function getDfpId($backend = false)
     {
-        if ($backend) {
-            return null; //TODO currently it is not supported
-        }
-
-        $isStoreFront = $this->container->has('shop');
-        if ($isStoreFront) {
-            if ($this->isDfpIdAlreadyGenerated()) {
-                return $this->getRatePaySession(self::SESSION_VAR_NAME);
-            }
+        if ($backend === false) {
             // storefront request
-            $sessionId = $this->getSession()->get('sessionId');
+            $sessionValue = $this->sessionHelper->getData(self::SESSION_VAR_NAME);
+            if ($sessionValue) {
+                return $sessionValue;
+            }
+            $sessionId = $this->sessionHelper->getSession()->get('sessionId');
         } else {
-            //admin or console request
+            // admin or console request
             $sessionId = rand();
         }
 
         $token = DeviceFingerprint::createDeviceIdentToken($sessionId);
 
-        if ($isStoreFront) {
+        if ($backend === false) {
             // if it is a storefront request we will safe the token to the session for later access
             // in the admin we only need it once
-            $this->setRatePaySession(self::SESSION_VAR_NAME, $token);
+            $this->sessionHelper->setData(self::SESSION_VAR_NAME, $token);
         }
         return $token;
     }
 
     public function isDfpIdAlreadyGenerated()
     {
-        return $this->getRatePaySession(self::SESSION_VAR_NAME) !== null;
-    }
-
-    protected function getRatePaySession($key)
-    {
-        $session = $this->getSession()->get('RatePAY');
-        return isset($session[$key]) ? $session[$key] : null;
-    }
-
-    protected function getSession()
-    {
-        if ($this->container->has('shop')) {
-            return $this->container->get('session');
-        }
-        throw new BadMethodCallException('this call is not allowed if you do not have a storefront session');
-    }
-
-    protected function setRatePaySession($key, $value)
-    {
-        return $this->getSession()->RatePAY[$key] = $value;
+        return $this->sessionHelper->getData(self::SESSION_VAR_NAME) !== null;
     }
 
     public function deleteDfpId()
     {
-        $this->setRatePaySession(self::SESSION_VAR_NAME, null);
+        $this->sessionHelper->setData(self::SESSION_VAR_NAME, null);
+    }
+
+    /**
+     * @return Enlight_Components_Session_Namespace
+     */
+    protected function getSession()
+    {
+        return $this->sessionHelper->getSession();
     }
 
 }

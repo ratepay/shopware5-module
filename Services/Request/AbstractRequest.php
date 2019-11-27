@@ -68,6 +68,9 @@ abstract class AbstractRequest
         }
         $content = $content ?: $this->getRequestContent();
         $profileConfig = $this->getProfileConfig();
+        if ($profileConfig == null) {
+            throw new \Exception('Transaction can not performed, cause no profile was found.');
+        }
 
         $mbHead = new ModelBuilder('head');
         $mbHead->setArray($this->getRequestHead($profileConfig));

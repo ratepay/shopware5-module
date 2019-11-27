@@ -28,7 +28,9 @@
             <argument>%rpay_rate_pay.plugin_name%</argument>
         </service>
 
-        <service id="RpayRatePay\Services\DfpService"/>
+        <service id="RpayRatePay\Services\DfpService">
+            <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
+        </service>
 
         <service id="RpayRatePay\Services\Config\ProfileConfigService">
             <argument id="models" type="service"/>
