@@ -113,11 +113,7 @@ class PaymentRequestDataFactory
         $basket['content'] = $content['content'];
         unset($content); //prevent later use
 
-        if (!empty($user['additional']['charge_vat'])) {
-            $totalAmount = empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
-        } else {
-            $totalAmount = $basket['AmountNetNumeric'];
-        }
+        $totalAmount = $this->sessionHelper->getTotalAmount();
 
 
         $taxFree = $this->sessionHelper->getSession()->get('taxFree');

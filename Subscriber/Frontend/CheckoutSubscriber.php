@@ -11,6 +11,7 @@ use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\InstallmentService;
+use sBasket;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware\Components\Model\ModelManager;
@@ -41,45 +42,30 @@ class CheckoutSubscriber implements SubscriberInterface
      * @var SessionHelper
      */
     private $sessionHelper;
-    /**
-     * @var ProfileConfigService
-     */
-    private $profileConfigService;
-    private $pluginDir;
-    /**
-     * @var InstallmentService
-     */
-    private $installmentService;
 
     public function __construct(
         ModelManager $modelManager,
         SessionHelper $sessionHelper,
-        ContextService $contextService,
         ConfigService $configService,
-        ProfileConfigService $profileConfigService,
-        InstallmentService $installmentService,
-        DfpService $dfpService,
-        $pluginDir
+        ContextService $contextService,
+        DfpService $dfpService
     )
     {
         $this->modelManager = $modelManager;
         $this->context = $contextService->getContext();
-        $this->configService = $configService;
         $this->dfpService = $dfpService;
         $this->sessionHelper = $sessionHelper;
-        $this->profileConfigService = $profileConfigService;
-        $this->pluginDir = $pluginDir;
-        $this->installmentService = $installmentService;
+        $this->configService = $configService;
     }
 
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PostDispatch_Frontend_Checkout' => 'extendTemplates',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'extendTemplates',
         ];
     }
 
-    public function extendTemplates(Enlight_Event_EventArgs $args)
+    public function extendTemplates(\Enlight_Controller_ActionEventArgs $args)
     {
         /** @var Shopware_Controllers_Frontend_Checkout $controller */
         $controller = $args->getSubject();
@@ -87,13 +73,7 @@ class CheckoutSubscriber implements SubscriberInterface
         $response = $controller->Response();
         $view = $controller->View();
 
-        if (//!$request->isDispatched() ||
-            $response->isException() ||
-            !$view->hasTemplate() ||
-            $request->getModuleName() != 'frontend' ||
-            $request->getControllerName() != 'checkout' ||
-            $view->getAssign('sPayment') == null
-        ) {
+        if ($response->isException() || !$view->hasTemplate()) {
             return;
         }
 
@@ -109,25 +89,7 @@ class CheckoutSubscriber implements SubscriberInterface
                 $data['dfp'] = str_replace('\\"', '"', $dfpHelper->getDeviceIdentSnippet($this->dfpService->getDfpId()));
             }
 
-            if (PaymentMethods::isInstallment($paymentMethod)) {
-                $billingAddress = $this->sessionHelper->getBillingAddress();
-                $installmentPlanHtml = $this->installmentService->getInstallmentPlanTemplate(
-                    $billingAddress,
-                    Shopware()->Shop()->getId(),
-                    $paymentMethod,
-                    false,
-                    $this->sessionHelper->getInstallmentRequestDTO()
-                );
-                $data['installmentPlan'] = $installmentPlanHtml;
-            }
-
             $view->assign('ratepay', $data);
-
-            $errorMessage = $this->sessionHelper->getSession()->get('RatePAYErrorMessage');
-            if ($errorMessage) {
-                $this->sessionHelper->getSession()->offsetSet('RatePAYErrorMessage', null);
-                $view->assign('ratepayMessage', $errorMessage);
-            }
         }
     }
 }

@@ -30,6 +30,7 @@ use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
 use RpayRatePay\Services\InstallmentService;
+use RpayRatePay\Services\MessageManager;
 use RpayRatePay\Services\Request\PaymentConfirmService;
 use RpayRatePay\Services\Request\PaymentRequestService;
 use Shopware\Components\CSRFWhitelistAware;
@@ -73,6 +74,10 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      * @var object|ProfileConfigService
      */
     private $profileConfigService;
+    /**
+     * @var object|MessageManager
+     */
+    private $messageManager;
 
     public function setContainer(Container $container = null)
     {
@@ -87,6 +92,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $this->configService = $this->container->get(ConfigService::class);
         $this->profileConfigService = $this->container->get(ProfileConfigService::class);
         $this->sessionHelper = $this->container->get(SessionHelper::class);
+        $this->messageManager = $this->container->get(MessageManager::class);
     }
 
     /**
@@ -144,7 +150,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
                 // Clear RatePAY session after call for authorization
                 $this->sessionHelper->cleanUp();
-                $this->dfpService->deleteDfpId();
 
                 /*
                  * redirect to success page
@@ -162,7 +167,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             }
         } catch (Exception $e) {
             $this->doError($e->getMessage());
-
         }
     }
 
@@ -210,7 +214,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
     private function doError($message)
     {
-        $this->sessionHelper->getSession()->offsetSet('RatePAYErrorMessage', $message);
+        $this->messageManager->addErrorMessage($message);
         $this->redirect(
             [
                 'controller' => 'checkout',

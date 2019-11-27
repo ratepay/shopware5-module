@@ -33,7 +33,8 @@ class PaymentArrayFactory
         if (PaymentMethods::isInstallment($paymentRequestData->getMethod())) {
             $installment = $paymentRequestData->getInstallmentDetails();
 
-            if ($installment->getAmount() != $paymentRequestData->getAmount()) {
+            // i don't know why, but if we compare these two float values, the result is always false
+            if (($installment->getAmount() * 100) != ($paymentRequestData->getAmount() * 100)) {
                 throw new Exception(
                     'Attempt to create order with wrong amount in installment calculator.' .
                     'Expected ' . $paymentRequestData->getAmount() . ' Got ' . $installment->getAmount()

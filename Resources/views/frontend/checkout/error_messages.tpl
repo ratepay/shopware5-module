@@ -2,7 +2,7 @@
 
 {* RatePay informations *}
 {block name='frontend_checkout_error_messages_basket_error'}
-    {if $ratepayMessage}
-        {include file="frontend/_includes/messages.tpl" type="error" content=$ratepayMessage}
-    {/if}
+    {foreach from=$ratePayMessages item=message}
+        {include file="frontend/_includes/messages.tpl" type=$message.type content=$message.message}
+    {/foreach}
 {/block}

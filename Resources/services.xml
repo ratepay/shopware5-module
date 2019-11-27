@@ -78,5 +78,14 @@
         </service>
 
 
+
+
+        <service id="RpayRatePay\Services\MessageManager">
+            <argument id="snippets" type="service"/>
+            <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
+        </service>
+
+
+
     </services>
 </container>

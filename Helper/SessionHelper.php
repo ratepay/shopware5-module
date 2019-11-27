@@ -250,6 +250,12 @@ class SessionHelper
         $this->setData('ratenrechner', $data);
     }
 
+    public function unsetInstallmentDetails()
+    {
+        $this->setData('ratenrechner', null);
+        $this->setData('installment_calculator_input', null);
+    }
+
     public function getInstallmentRequestDTO()
     {
         $data = $this->getData('installment_calculator_input') ?: [];
@@ -263,23 +269,47 @@ class SessionHelper
         $this->setData(null, null);
     }
 
+    /**
+     * be careful if you use this function!
+     * Shopware has a bug, that the sOrderVariables got not cleaned after the order was successful
+     * the next problem is, that if the customer got to the payment/shipping page, this array (and its values) may not set.
+     * @return mixed
+     * @throws Exception
+     */
     public function getTotalAmount()
     {
         if ($this->isFrontendSession === false) {
             throw new Exception('not implemented');
         }
-        $sOrderVariables = $this->getSession()->get('sOrderVariables');
-        if ($sOrderVariables && isset($sOrderVariables['sAmount'])) {
-            return $sOrderVariables['sAmount'];
+        
+        $user = $this->session->sOrderVariables['sUserData'];
+        $basket = (array) $this->session->sOrderVariables['sBasket'];
+        if (!empty($user['additional']['charge_vat'])) {
+            return empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
         } else {
-            // fallback. This value does not contains the discounts and shipping costs.
-            // may occurs if the has not visit the confirm page & has not selected shipping.
-            return floatval($this->container->get('modules')->Basket()->sGetAmount()['totalAmount']);
+            return $basket['AmountNetNumeric'];
         }
     }
 
     public function getSession()
     {
         return $this->session;
+    }
+
+    /**
+     * this functions add a value to a array in the session.
+     * if the key does not exist in the session, the function will create a new array.
+     * if the key already exist in the session and the value is not a array, the existing value will added to a new array.
+     * @param $key
+     * @param $value
+     */
+    public function addData($key, $value)
+    {
+        $data = $this->getData($key, []);
+        if (is_array($data) == false) {
+            $data = [$data];
+        }
+        $data[] = $value;
+        $this->setData($key, $data);
     }
 }

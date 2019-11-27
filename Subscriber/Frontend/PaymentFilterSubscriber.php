@@ -132,7 +132,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
             }
 
             if ($this->modules->Basket()) {
-                $totalAmount = $this->sessionHelper->getTotalAmount();
+                $totalAmount = floatval($this->modules->Basket()->sGetAmount()['totalAmount']);
 
                 $isB2b = ValidationService::isCompanySet($billingAddress);
                 if (!ValidationService::areAmountsValid($isB2b, $paymentConfig, $totalAmount)) {

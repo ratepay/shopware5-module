@@ -47,7 +47,6 @@ class Installment extends Debit
 
         $return = parent::validate($paymentData);
 
-
         if ($installmentData == null ||
             !isset(
                 $installmentData['type'],
@@ -69,6 +68,8 @@ class Installment extends Debit
             }
         }
 
+
+
         return $return;
     }
 
@@ -81,7 +82,7 @@ class Installment extends Debit
         parent::saveRatePayPaymentData($userId, $request);
 
         $dto = new InstallmentRequest(
-            $this->sessionHelper->getTotalAmount(),
+            floatval($request->getParam('rp-calculation-amount')),
             $installmentData['type'],
             $installmentData['value'],
             $installmentData['paymentType'],
@@ -98,4 +99,5 @@ class Installment extends Debit
             $dto
         );
     }
+
 }

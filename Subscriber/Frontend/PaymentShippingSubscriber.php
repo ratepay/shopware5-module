@@ -105,30 +105,7 @@ class PaymentShippingSubscriber implements SubscriberInterface
                 'sandbox' => $profileConfig->isSandbox(),
             ];
 
-            if ($view->getAssign('ratepay')) {
-                $data = array_merge($view->getAssign('ratepay'), $data);
-            }
-            $view->assign('ratepay', $data);
-
-            if (PaymentMethods::isInstallment($paymentMethodName)) {
-
-                $totalAmount = $this->sessionHelper->getTotalAmount();
-                $htmlCalculator = $this->installmentService->getInstallmentCalculatorTemplate(
-                    $billingAddress,
-                    $this->context->getShop()->getId(),
-                    $paymentMethodName,
-                    false,
-                    $totalAmount
-                );
-
-
-                $view->assign('installmentCalculator',
-                    [
-                        'html' => $htmlCalculator,
-                        'totalAmount' => $totalAmount,
-                    ]
-                );
-            }
+            $view->assign('ratepay', array_merge($view->getAssign('ratepay') ? : [], $data));
         }
 
         // fix static form data
