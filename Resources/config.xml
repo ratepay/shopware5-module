@@ -9,13 +9,11 @@
             <label lang="de">Zugangsdaten für Deutschland:</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDDE -->
             <name>ratepay/profile/de/frontend/id</name>
             <label lang="en">Profile-ID for Germany</label>
             <label lang="de">Deutschland Profile-ID</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeDE -->
             <name>ratepay/profile/de/frontend/security_code</name>
             <label lang="en">Security Code for Germany</label>
             <label lang="de">Deutschland Security Code</label>
@@ -31,13 +29,11 @@
             <label lang="de">Deutschland Security Code(0% Finanzierung)</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDDEBackend -->
             <name>ratepay/profile/de/backend/id</name>
             <label lang="en">Profile-ID for Germany (Backend)</label>
             <label lang="de">Deutschland Profile-ID (Backend)</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeDEBackend -->
             <name>ratepay/profile/de/backend/security_code</name>
             <label lang="en">Security Code for Germany (Backend)</label>
             <label lang="de">Deutschland Security Code (Backend)</label>
@@ -60,13 +56,11 @@
             <label lang="de">Zugangsdaten für Österreich:</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDAT -->
             <name>ratepay/profile/at/frontend/id</name>
             <label lang="en">Profile-ID for Austria</label>
             <label lang="de">Österreich Profile-ID</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeAT -->
             <name>ratepay/profile/at/frontend/security_code</name>
             <label lang="en">Security Code for Austria</label>
             <label lang="de">Österreich Security Code</label>
@@ -82,13 +76,11 @@
             <label lang="de">Österreich Security Code (0% Finanzierung)</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDATBackend -->
             <name>ratepay/profile/at/backend/id</name>
             <label lang="en">Profile-ID for Austria (Backend)</label>
             <label lang="de">Österreich Profile-ID (Backend)</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeATBackend -->
             <name>ratepay/profile/at/backend/security_code</name>
             <label lang="en">Security Code for Austria (Backend)</label>
             <label lang="de">Österreich Security Code (Backend)</label>
@@ -110,13 +102,11 @@
             <label lang="de">Zugangsdaten für die Schweiz:</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDCH -->
             <name>ratepay/profile/ch/frontend/id</name>
             <label lang="en">Profile-ID for Switzerland</label>
             <label lang="de">Schweiz Profile-ID</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeCH -->
             <name>ratepay/profile/ch/frontend/security_code</name>
             <label lang="en">Security Code for Switzerland</label>
             <label lang="de">Schweiz Security Code</label>
@@ -132,13 +122,11 @@
             <label lang="de">Schweiz Security Code (0% Finanzierung)</label>
         </element-->
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDCHBackend -->
             <name>ratepay/profile/ch/backend/id</name>
             <label lang="en">Profile-ID for Switzerland (Backend)</label>
             <label lang="de">Schweiz Profile-ID (Backend)</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeCHBackend -->
             <name>ratepay/profile/ch/backend/security_code</name>
             <label lang="en">Security Code for Switzerland (Backend)</label>
             <label lang="de">Schweiz Security Code (Backend)</label>
@@ -161,13 +149,11 @@
             <label lang="de">Zugangsdaten für Belgien:</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDBE -->
             <name>ratepay/profile/be/frontend/id</name>
             <label lang="en">Profile-ID for Belgium</label>
             <label lang="de">Belgien Profile-ID</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeBE -->
             <name>ratepay/profile/be/frontend/security_code</name>
             <label lang="en">Security Code for Belgium</label>
             <label lang="de">Belgien Security Code</label>
@@ -183,13 +169,11 @@
             <label lang="de">Belgien Security Code (0% Finanzierung)</label>
         </element-->
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDBEBackend -->
             <name>ratepay/profile/be/backend/id</name>
             <label lang="en">Profile-ID for Belgium (Backend)</label>
             <label lang="de">Belgien Profile-ID (Backend)</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeBEBackend -->
             <name>ratepay/profile/be/backend/security_code</name>
             <label lang="en">Security Code for Belgium (Backend)</label>
             <label lang="de">Belgien Security Code (Backend)</label>
@@ -212,13 +196,11 @@
             <label lang="de">Zugangsdaten für die Niederlande:</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDNL -->
             <name>ratepay/profile/nl/frontend/id</name>
             <label lang="en">Profile-ID for the Netherlands</label>
             <label lang="de">Niederlande Profile-ID</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeNL -->
             <name>ratepay/profile/nl/frontend/security_code</name>
             <label lang="en">Security Code for the Netherlands</label>
             <label lang="de">Niederlande Security Code</label>
@@ -234,13 +216,11 @@
             <label lang="de">Niederlande Security (0% Finanzierung)</label>
         </element-->
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePayProfileIDNLBackend -->
             <name>ratepay/profile/nl/backend/id</name>
             <label lang="en">Profile-ID for the Netherlands (Backend)</label>
             <label lang="de">Niederlande Profile-ID (Backend)</label>
         </element>
         <element type="text" scope="shop">
-            <!-- TODO old field: RatePaySecurityCodeNLBackend -->
             <name>ratepay/profile/nl/backend/security_code</name>
             <label lang="en">Security Code for the Netherlands (Backend)</label>
             <label lang="de">Niederlande Security Code (Backend)</label>
@@ -263,7 +243,6 @@
             <label lang="de">Bidirektionalität RatePAY-Bestellungen:</label>
         </element>
         <element required="true" type="boolean">
-            <!-- TODO old field: RatePayBidirectional -->
             <name>ratepay/bidirectional/enable</name>
             <label lang="en">Activate bidirectional sync</label>
             <label lang="de">Bidirektionalität aktivieren</label>
@@ -275,37 +254,34 @@
             </description>
         </element>
         <element required="true" type="combo">
-            <!-- TODO old field: RatePayFullDelivery -->
             <name>ratepay/bidirectional/status/full_delivery</name>
             <label lang="en">Status for `delivery completed`</label>
             <label lang="de">Status für Volllieferung</label>
+            <value>7</value>
             <store>base.OrderStatus</store>
             <options>
-                <value>7</value>
                 <valueField>id</valueField>
                 <displayField>description</displayField>
             </options>
         </element>
         <element required="true" type="combo">
-            <!-- TODO old field: RatePayFullCancellation -->
             <name>ratepay/bidirectional/status/full_cancellation</name>
             <label lang="en">Status for `cancelled`</label>
             <label lang="de">Status für Vollstornierung</label>
+            <value>4</value>
             <store>base.OrderStatus</store>
             <options>
-                <value>4</value>
                 <valueField>id</valueField>
                 <displayField>description</displayField>
             </options>
         </element>
         <element required="true" type="combo">
-            <!-- TODO old field: RatePayFullReturn -->
             <name>ratepay/bidirectional/status/full_return</name>
             <label lang="en">Status for `returned`</label>
             <label lang="de">Status für Vollretournierung</label>
+            <value>4</value>
             <store>base.OrderStatus</store>
             <options>
-                <value>4</value>
                 <valueField>id</valueField>
                 <displayField>description</displayField>
             </options>
@@ -317,14 +293,12 @@
             <label lang="de">Erweiterte Einstellungen</label>
         </element>
         <element required="true" type="boolean">
-            <!-- TODO old field: RatePayUseFallbackShippingItem -->
             <name>ratepay/advanced/use_fallback_shipping_item</name>
             <label lang="en">Send shipping costs as basket item</label>
             <label lang="de">Übertrage Versandkosten als Warenkorbposition</label>
             <value>0</value>
         </element>
         <element required="true" type="boolean">
-            <!-- TODO old field: RatePayUseFallbackDiscountItem -->
             <name>ratepay/advanced/use_fallback_discount_item</name>
             <label lang="en">Send discount as basket item</label>
             <label lang="de">Übertrage Versandkosten als Warenkorbposition</label>
@@ -349,64 +323,59 @@
         <element type="button">
             <name>ratepay/buttons/button8</name>
             <label lang="en">Order states after ordering</label>
-            <label lang="de">Bestellstatus nach der Bestellung</label>
+            <label lang="de">Zahlstatus nach der Bestellung</label>
         </element>
         <element required="true" type="combo">
-            <!-- TODO old field: RatePayInvoicePaymentStatus -->
             <name>ratepay/status/rpayratepayinvoice</name>
-            <label lang="en">Order state after invoice payment</label>
-            <label lang="de">Status nach Zahlung mit Kauf auf Rechnung</label>
-            <store>base.OrderStatus</store>
+            <label lang="en">Paymentstate after invoice payment</label>
+            <label lang="de">Zahlstatus nach Zahlung mit Kauf auf Rechnung</label>
+            <value>12</value>
+            <store>base.PaymentStatus</store>
             <options>
-                <value>12</value>
                 <valueField>id</valueField>
                 <displayField>description</displayField>
             </options>
         </element>
         <element required="true" type="combo">
-            <!-- TODO old field: RatePayDebitPaymentStatus -->
             <name>ratepay/status/rpayratepaydebit</name>
-            <label lang="en">Order state after direct debit payment</label>
-            <label lang="de">Status nach Zahlung mit Lastschrift</label>
-            <store>base.OrderStatus</store>
+            <label lang="en">Paymentstate after direct debit payment</label>
+            <label lang="de">Zahlstatus nach Zahlung mit Lastschrift</label>
+            <value>12</value>
+            <store>base.PaymentStatus</store>
             <options>
-                <value>12</value>
                 <valueField>id</valueField>
                 <displayField>description</displayField>
             </options>
         </element>
         <element required="true" type="combo">
-            <!-- TODO old field: RatePayInstallmentPaymentStatus -->
             <name>ratepay/status/rpayratepayrate</name>
-            <label lang="en">Order state after installment payment</label>
+            <label lang="en">Paymentstate after installment payment</label>
             <label lang="de">Status nach Zahlung mit Ratezahlung</label>
-            <store>base.OrderStatus</store>
+            <value>12</value>
+            <store>base.PaymentStatus</store>
             <options>
-                <value>12</value>
                 <valueField>id</valueField>
                 <displayField>description</displayField>
             </options>
         </element>
         <element required="true" type="combo">
-            <!-- TODO old field: RatePayInstallment0PaymentStatus -->
             <name>ratepay/status/rpayratepayrate0</name>
-            <label lang="en">Order state after zero percent installment payment</label>
-            <label lang="de">Status nach Zahlung mit Nullprozent-Finanzierung</label>
-            <store>base.OrderStatus</store>
+            <label lang="en">Paymentstate after zero percent installment payment</label>
+            <label lang="de">Zahlstatus nach Zahlung mit Nullprozent-Finanzierung</label>
+            <value>12</value>
+            <store>base.PaymentStatus</store>
             <options>
-                <value>12</value>
                 <valueField>id</valueField>
                 <displayField>description</displayField>
             </options>
         </element>
         <element required="true" type="combo">
-            <!-- TODO old field: RatePayPrepaidPaymentStatus -->
             <name>ratepay/status/rpayratepayprepayment</name>
-            <label lang="en">Order state after pre-payment</label>
-            <label lang="de">Status nach Zahlung mit Vorauskasse</label>
-            <store>base.OrderStatus</store>
+            <label lang="en">Paymentstate after pre-payment</label>
+            <label lang="de">Zahlstatus nach Zahlung mit Vorauskasse</label>
+            <value>12</value>
+            <store>base.PaymentStatus</store>
             <options>
-                <value>12</value>
                 <valueField>id</valueField>
                 <displayField>description</displayField>
             </options>
@@ -424,7 +393,7 @@
             <value>ratepay</value>
         </element>
 
-        <!-- old fields - got renamed in plugin install/update -->
+        <!-- old fields - got renamed/removed in plugin install/update -->
         <element><name>RatePayProfileIDDE</name><label>RatePayProfileIDDE</label></element>
         <element><name>RatePaySecurityCodeDE</name><label>RatePaySecurityCodeDE</label></element>
         <element><name>RatePayProfileIDDEBackend</name><label>RatePayProfileIDDEBackend</label></element>
