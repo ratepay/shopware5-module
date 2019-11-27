@@ -8,7 +8,8 @@ use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Service\Logger;
 use Shopware\Models\Order\Order;
 use RpayRatePay\Component\Service\ConfigLoader;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
+use RpayRatePay\Services\DfpService;
+use SwagBackendOrder\Components\Order\Struct\OrderStruct;
 
 class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInterface
 {

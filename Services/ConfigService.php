@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Shopware\Plugins\Community\Frontend\RpayRatePay\Services;
+namespace RpayRatePay\Services;
 
 
 class ConfigService
