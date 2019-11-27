@@ -108,7 +108,6 @@ class CheckoutSubscriber implements SubscriberInterface
                 $dfpHelper = new DeviceFingerprint($this->configService->getDfpSnippetId(Shopware()->Shop()));
                 $data['dfp'] = str_replace('\\"', '"', $dfpHelper->getDeviceIdentSnippet($this->dfpService->getDfpId()));
             }
-            $this->dfpService->deleteDfpId();
 
             if (PaymentMethods::isInstallment($paymentMethod)) {
                 $billingAddress = $this->sessionHelper->getBillingAddress();
