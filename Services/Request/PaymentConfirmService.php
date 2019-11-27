@@ -54,8 +54,7 @@ class PaymentConfirmService extends AbstractRequest
     {
         $data = parent::getRequestHead($profileConfig);
         $data['External'] = [
-            'OrderId' => /*$this->order->getNumber()*/
-                null, //TODO currently not transmitted
+            'OrderId' => $this->order->getNumber(),
             'MerchantConsumerId' => $this->order->getCustomer()->getNumber()
         ];
         $data['TransactionId'] = $this->order->getTransactionId();
