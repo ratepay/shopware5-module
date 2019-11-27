@@ -21,14 +21,8 @@ class ConfigPayment extends ModelEntity
     protected $rpayId;
 
     /**
-     * @var string
-     * @ORM\Column(name="status", type="string", length=255, nullable=false)
-     */
-    protected $status;
-
-    /**
-     * @var int
-     * @ORM\Column(name="b2b", type="integer", length=2, nullable=false)
+     * @var boolean
+     * @ORM\Column(name="b2b", type="boolean")
      */
     protected $b2b;
     /**
@@ -47,10 +41,10 @@ class ConfigPayment extends ModelEntity
      */
     protected $limitMaxB2b;
     /**
-     * @var int
-     * @ORM\Column(name="address", type="integer", length=2, nullable=true)
+     * @var boolean
+     * @ORM\Column(name="allow_different_addresses", type="boolean")
      */
-    protected $address;
+    protected $allowDifferentAddresses;
 
     /**
      * @return int
@@ -69,31 +63,15 @@ class ConfigPayment extends ModelEntity
     }
 
     /**
-     * @return string
+     * @return boolean
      */
-    public function getStatus()
-    {
-        return $this->status;
-    }
-
-    /**
-     * @param string $status
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-    }
-
-    /**
-     * @return int
-     */
-    public function getB2b()
+    public function isB2b()
     {
         return $this->b2b;
     }
 
     /**
-     * @param int $b2b
+     * @param boolean $b2b
      */
     public function setB2b($b2b)
     {
@@ -162,5 +140,21 @@ class ConfigPayment extends ModelEntity
     public function setAddress($address)
     {
         $this->address = $address;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAllowDifferentAddresses()
+    {
+        return $this->allowDifferentAddresses;
+    }
+
+    /**
+     * @param bool $allowDifferentAddresses
+     */
+    public function setAllowDifferentAddresses($allowDifferentAddresses)
+    {
+        $this->allowDifferentAddresses = $allowDifferentAddresses;
     }
 }

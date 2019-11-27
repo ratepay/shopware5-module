@@ -98,7 +98,7 @@ class ValidationLib
         }
 
         if ($b2b) {
-            if ($config->getB2b() != 1) {
+            if ($config->isB2b() === false) {
                 return false;
             }
 

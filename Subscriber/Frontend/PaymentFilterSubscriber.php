@@ -123,14 +123,10 @@ class PaymentFilterSubscriber implements SubscriberInterface
             /** @var ConfigPayment $paymentConfig */
             $paymentConfig = $config['paymentConfig'];
 
-            if ((int)$paymentConfig->getStatus() !== 2) { //TODO change type of `status` to int
-                continue;
-            }
-
             if (!ValidationService::isCurrencyValid($profileConfig->getCurrency(), $currency) ||
                 !ValidationService::isCountryValid($profileConfig->getCountryCodeBilling(), $billingAddress->getCountry()) ||
                 !ValidationService::isCountryValid($profileConfig->getCountryCodeDelivery(), $shippingAddress ? $shippingAddress->getCountry() : $billingAddress->getCountry()) ||
-                (!ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress) && !$paymentConfig->getAddress())
+                (!ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress) && !$paymentConfig->isAllowDifferentAddresses())
             ) {
                 continue;
             }
