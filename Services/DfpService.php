@@ -9,7 +9,7 @@ use Shopware\Components\DependencyInjection\Container;
 /**
  * ServiceClass for device fingerprinting
  * Class DfpService
- * @package Shopware\Plugins\Community\Frontend\RpayRatePay\Services
+ * @package RpayRatePay\Services
  */
 class DfpService
 {
