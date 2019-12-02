@@ -1,7 +1,7 @@
 {namespace name="frontend/register/personal_fieldset"}
 {* Birthday *}
-<input type="hidden" name="ratepay[customer_data][birthday_required]" value="{$form_data.ratepay.customer_data.birthday_required}">
-{if $form_data.ratepay.customer_data.birthday_required !== false}
+<input type="hidden" name="ratepay[customer_data][birthday_required]" value="{if $form_data.ratepay.customer_data.birthday_required}1{else}0{/if}">
+{if $form_data.ratepay.customer_data.birthday_required != false}
     {block name='ratepay_frontend_birthday'}
         <div class="form-group row birthday-input-group">
             <label class="col-sm-2 col-form-label">
