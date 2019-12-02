@@ -19,6 +19,7 @@
  */
 
 use Monolog\Logger;
+use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -73,15 +74,22 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
     {
         $params = $this->Request()->getParams();
 
-        $accountNumber = trim($params['accountNumber']) ?: trim($params['iban']);
-        $bankCode = trim($params['bankCode']);
+        $accountNumber = trim($params['iban']);
         $customerId = intval($params['customerId']);
 
-        $this->sessionHelper->setBankData($customerId, $accountNumber, $bankCode);
+        if(ValidationLib::isIbanValid($params['iban'])) {
+            $this->sessionHelper->setBankData($customerId, $accountNumber, null);
+            $this->view->assign([
+                'success' => true,
+            ]);
+        } else {
+            $this->view->assign([
+                'success' => false,
+                'messages' => [$this->getSnippet('backend/ratepay', 'InvalidIban', null)]
+            ]);
+        }
 
-        $this->view->assign([
-            'success' => true,
-        ]);
+
     }
 
     public function getInstallmentInfoAction()

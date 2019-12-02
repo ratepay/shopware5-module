@@ -16,8 +16,6 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             installmentAmount: '{s name="LabelInstallmentAmount"}{/s}',
             term: '{s name="LabelTerm"}{/s}',
             iban: '{s name="LabelIban"}{/s}',
-            bankAccountNumber: '{s name="LabelBankAccountNumber"}{/s}',
-            bankAccountSwift: '{s name="LabelBankAccountSwift"}{/s}',
 
             //calculator labels
             basePrice: '{s name="LabelBasePrice"}{/s}',
@@ -77,9 +75,6 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         me.paymentComboBox.on('change', changePaymentTypeHandler);
 
     },
-    iban: null,
-    accountNumber: null,
-    bankCode: null,
     fail: function(combobox, message) {
         Shopware.Notification.createGrowlMessage('', message);
         combobox.setValue('');
@@ -106,7 +101,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         } else {
 
             if (me.customerId === -1) {
-                me.fail(combobox, me.snippetsLocal.messages.loadCustomerFirst);
+                me.fail(combobox, me.snippetsLocal.messages.chooseCustomerFirst);
                 return;
             }
 
@@ -224,38 +219,6 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                 }
             }
         });
-    },
-    handleBankDataBlur: function() {
-        var me = this;
-
-        var customerId = me.getCustomerId();
-        if (!customerId) {
-            return;
-        }
-
-        //very minimalistic validation
-        if(me.iban || (me.bankCode && me.iban)) {
-            Ext.Ajax.request({
-                url: '{url controller="RatepayBackendOrder" action="setBankData"}',
-                params: {
-                    customerId: customerId,
-                    iban: me.iban,
-                    accountNumber: me.accountNumber,
-                    bankCode: me.bankCode
-                },
-                success: function (response) {
-                    var responseObj = Ext.decode(response.responseText);
-
-                    if (responseObj.success === false) {
-                        responseObj.messages.forEach(function (message) {
-                            Shopware.Notification.createGrowlMessage('', message);
-                        });
-                    } else {
-                        Shopware.Notification.createGrowlMessage('', me.message.bankDataRefreshed);
-                    }
-                }
-            });
-        }
     },
     handleCalculatorInput: function(value = null, type = null) {
         var me = this;
@@ -398,32 +361,31 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                     maxLengthText: 255,
                     listeners: {
                         blur: function (field) {
-                            me.iban = field.getValue();
-                            me.handleBankDataBlur();
-                        }
-                    }
-                }),
-                Ext.create('Ext.form.TextField', {
-                    name: 'ktoNrTxtBox',
-                    width: 230,
-                    fieldLabel: me.snippetsLocal.labels.bankAccountNumber,
-                    maxLengthText: 255,
-                    listeners: {
-                        blur: function (field) {
-                            me.accountNumber = field.getValue();
-                            me.handleBankDataBlur();
-                        }
-                    }
-                }),
-                Ext.create('Ext.form.TextField', {
-                    name: 'blzTxtBox',
-                    width: 230,
-                    fieldLabel: me.snippetsLocal.labels.bankAccountSwift,
-                    maxLengthText: 255,
-                    listeners: {
-                        blur: function (field) {
-                            me.bankCode = field.getValue();
-                            me.handleBankDataBlur();
+                            var customerId = me.getCustomerId();
+                            if (!customerId) {
+                                Shopware.Notification.createGrowlMessage('', me.snippetsLocal.messages.chooseCustomerFirst);
+                                return;
+                            }
+
+                            // validate and save the iban number
+                            Ext.Ajax.request({
+                                url: '{url controller="RatepayBackendOrder" action="setBankData"}',
+                                params: {
+                                    customerId: customerId,
+                                    iban: field.getValue()
+                                },
+                                success: function (response) {
+                                    var responseObj = Ext.decode(response.responseText);
+
+                                    if (responseObj.success === false) {
+                                        responseObj.messages.forEach(function (message) {
+                                            Shopware.Notification.createGrowlMessage('', message);
+                                        });
+                                    } else {
+                                        Shopware.Notification.createGrowlMessage('', me.snippetsLocal.messages.bankDataRefreshed);
+                                    }
+                                }
+                            });
                         }
                     }
                 })
