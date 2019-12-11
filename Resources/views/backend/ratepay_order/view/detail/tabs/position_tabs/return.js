@@ -123,7 +123,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
             },
             {
                 iconCls: 'sprite-minus-circle-frame',
-                text: '{s namespace="backend/ratepay" name=returnStock}Auswahl retournieren, Inventar aktuallisieren{/s}',
+                text: '{s namespace="backend/ratepay" name=returnStock}Auswahl retournieren, Inventar aktualisieren{/s}',
                 handler: function () {
                     me.toolbarReturnStock();
                 }
@@ -141,6 +141,13 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
             var row = me.store.data.items[i].data;
             var item = new Object();
             var tax_rate = row.tax_rate;
+
+            // we must work with numbers. ExtJs collects the data of the row as strings. So we will convert them to integers
+            row.quantityReturn = parseInt(row.quantityReturn);
+            row.quantityDeliver = parseInt(row.quantityDeliver);
+            row.quantity = parseInt(row.quantity);
+            row.returned = parseInt(row.returned);
+            row.cancelled = parseInt(row.cancelled);
 
             if (row.quantityReturn > (row.quantity - row.returned - row.cancelled)) {
                 error = true;
@@ -216,6 +223,13 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
             var row = me.store.data.items[i].data;
             var item = new Object();
             var tax_rate = row.tax_rate;
+
+            // we must work with numbers. ExtJs collects the data of the row as strings. So we will convert them to integers
+            row.quantityReturn = parseInt(row.quantityReturn);
+            row.quantityDeliver = parseInt(row.quantityDeliver);
+            row.quantity = parseInt(row.quantity);
+            row.returned = parseInt(row.returned);
+            row.cancelled = parseInt(row.cancelled);
 
             if (row.quantityReturn > (row.quantity - row.returned - row.cancelled)) {
                 error = true;

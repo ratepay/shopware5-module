@@ -47,7 +47,7 @@ class PaymentMeans extends AbstractBootstrap
                     $options['additionalDescription']
                 );
             }
-            $this->paymentInstaller->createOrUpdate($this->installContext->getPlugin(), $options);
+            $this->paymentInstaller->createOrUpdate($this->installContext->getPlugin()->getName(), $options);
         }
         $this->paymentMethodsService->enableMethods();
     }

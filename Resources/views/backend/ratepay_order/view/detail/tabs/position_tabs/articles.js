@@ -332,6 +332,13 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             var item = new Object();
             var tax_rate = row.tax_rate;
 
+            // we must work with numbers. ExtJs collects the data of the row as strings. So we will convert them to integers
+            row.quantityReturn = parseInt(row.quantityReturn);
+            row.quantityDeliver = parseInt(row.quantityDeliver);
+            row.quantity = parseInt(row.quantity);
+            row.returned = parseInt(row.returned);
+            row.cancelled = parseInt(row.cancelled);
+
             if (row.quantityDeliver > (row.quantity - row.delivered - row.cancelled)) {
                 error = true;
             }
