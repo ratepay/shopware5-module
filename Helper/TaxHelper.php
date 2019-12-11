@@ -20,7 +20,7 @@ class TaxHelper
     public static function getItemGrossPrice($order, $item)
     {
         if ($item instanceof PositionStruct) {
-            $price = $item->getTotal();
+            $price = $item->getPrice();
         } else {
             $price = $item->getPrice();
         }

@@ -43,58 +43,61 @@ class ProfileConfig extends ModelEntity
      * @ORM\Column(name="security_code", type="string", length=255, nullable=false)
      */
     protected $securityCode;
+
     /**
      * @var ConfigPayment
      * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
      * @ORM\JoinColumn(name="config_invoice_id", referencedColumnName="rpay_id")
      */
     protected $invoiceConfig;
+
     /**
      * @var ConfigPayment
      * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
      * @ORM\JoinColumn(name="config_debit_id", referencedColumnName="rpay_id")
      */
     protected $debitConfig;
+
     /**
      * @var ConfigPayment
      * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
      * @ORM\JoinColumn(name="config_installment_id", referencedColumnName="rpay_id")
      */
     protected $installmentConfig;
-    /**
-     * @var ConfigPayment
-     * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
-     * @ORM\JoinColumn(name="config_installment0_id", referencedColumnName="rpay_id")
-     */
-    protected $installment0Config;
+
     /**
      * @var ConfigPayment
      * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
      * @ORM\JoinColumn(name="config_installmentdebit_id", referencedColumnName="rpay_id")
      */
     protected $installmentDebitConfig;
+
     /**
      * @var ConfigPayment
      * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
      * @ORM\JoinColumn(name="config_prepayment_id", referencedColumnName="rpay_id")
      */
     protected $prepaymentConfig;
+
     /**
      * @var string
      * @ORM\Id()
      * @ORM\Column(name="country_code_billing", type="string", length=2, nullable=true)
      */
     protected $countryCodeBilling;
+
     /**
      * @var string
      * @ORM\Column(name="country_code_delivery", type="string", length=30, nullable=true)
      */
     protected $countryCodeDelivery;
+
     /**
      * @var string
      * @ORM\Column(name="currency", type="string", length=30, nullable=true)
      */
     protected $currency;
+
     /**
      * @var string
      * @ORM\Column(name="error_default", type="text", length=30, nullable=true, options={"default":"Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href='http://www.ratepay.com/legal' target='_blank'>RatePAY-Datenschutzerklärung</a>"})
@@ -217,22 +220,6 @@ class ProfileConfig extends ModelEntity
     public function setInstallmentConfig($installmentConfig)
     {
         $this->installmentConfig = $installmentConfig;
-    }
-
-    /**
-     * @return ConfigPayment
-     */
-    public function getInstallment0Config()
-    {
-        return $this->installment0Config;
-    }
-
-    /**
-     * @param ConfigPayment $installment0Config
-     */
-    public function setInstallment0Config($installment0Config)
-    {
-        $this->installment0Config = $installment0Config;
     }
 
     /**

@@ -36,6 +36,8 @@ class WriterService
         $this->modelManager = $modelManager;
         $this->profileRequestService = $profileRequestService;
         $this->logger = $logger;
+
+        $this->count = 0;
     }
 
     /**
@@ -121,16 +123,35 @@ class WriterService
 
             $entitiesToFlush = [];
             //INSERT INTO rpay_ratepay_config_payment AND sets $type[]
-            foreach (array_keys(PaymentMethods::PAYMENTS) as $methodCode) {
-                $ratepayMethodCode = strtolower(PaymentMethods::getRatepayPaymentMethod($methodCode));
-                if ($profileConfig->isZeroPercentInstallment()) {
-                    if ($ratepayMethodCode !== 'installment') {
-                        continue;
-                    }
+            foreach (PaymentMethods::getNames() as $methodCode) {
+                $saveAsMethodCode = $methodCode;
+                if (PaymentMethods::isInstallment($methodCode)) {
+                    // we save all installment types to the installment fields
+                    // (also the zero percent installment, cause it is also an installment)
+                    $saveAsMethodCode = PaymentMethods::PAYMENT_RATE;
                 }
 
-                //just save the method it is enabled
+                if (isset($paymentMethodsConfigs[$saveAsMethodCode])) {
+                    // has been already created
+                    continue;
+                }
+
+                // we set always a null value, so we will not get a "undefined index"-warning
+                // (while setting the paymentConfigs to the ratepay config table)
+                $paymentMethodsConfigs[$methodCode] = null;
+
+                // gets the ratepay internal payment method code
+                $ratepayMethodCode = strtolower(PaymentMethods::getRatepayPaymentMethod($methodCode));
+
+                if ($profileConfig->isZeroPercentInstallment() &&
+                    PaymentMethods::isZeroPercentInstallment($methodCode) == false) {
+                    // the current payment method is a zero percent installment, but we have not requested a zero percent method
+                    continue;
+                }
+
+                //just save the method if it is enabled
                 if ($responseResult['merchantConfig']['activation-status-' . $ratepayMethodCode] == 2) {
+                    $this->count++;
                     $merchantConfig = $responseResult['merchantConfig'];
                     $configPaymentModel = new ConfigPayment();
                     $configPaymentModel->setB2b($merchantConfig['b2b-' . $ratepayMethodCode] == 'yes');
@@ -139,49 +160,36 @@ class WriterService
                     $configPaymentModel->setLimitMaxB2b($merchantConfig['tx-limit-' . $ratepayMethodCode . '-max-b2b']);
                     $configPaymentModel->setAllowDifferentAddresses($merchantConfig['delivery-address-' . $ratepayMethodCode] == 'yes');
 
+                    $paymentMethodsConfigs[$saveAsMethodCode] = $configPaymentModel;
                     $this->modelManager->persist($configPaymentModel);
-                    $entitiesToFlush[] = $configPaymentModel;
-                    $paymentMethodsConfigs[$methodCode] = $configPaymentModel;
+                    $this->modelManager->flush();
+
+                    if (PaymentMethods::isInstallment($methodCode)) {
+                        $configInstallmentModel = new ConfigInstallment();
+                        $configInstallmentModel->setPaymentConfig($configPaymentModel);
+                        $configInstallmentModel->setMonthAllowed($responseResult['installmentConfig']['month-allowed']);
+                        $configInstallmentModel->setPaymentFirstDay($responseResult['installmentConfig']['valid-payment-firstdays']);
+                        $configInstallmentModel->setRateMinNormal($responseResult['installmentConfig']['rate-min-normal']);
+                        $configInstallmentModel->setInterestRateDateDefault($responseResult['installmentConfig']['interestrate-default']);
+
+                        $this->modelManager->persist($configInstallmentModel);
+                        $this->modelManager->flush();
+                    }
+
                 }
             }
 
-            if (count($paymentMethodsConfigs) > 0) {
-                $this->modelManager->flush(array_values($paymentMethodsConfigs));
-            }
 
-            //performs insert into the 'config installment' table
-            if (isset($paymentMethodsConfigs[PaymentMethods::PAYMENT_INSTALLMENT0]) ||
-                isset($paymentMethodsConfigs[PaymentMethods::PAYMENT_RATE])) {
-                $configInstallmentModel = new ConfigInstallment();
-                if (isset($paymentMethodsConfigs[PaymentMethods::PAYMENT_INSTALLMENT0])) {
-                    $configInstallmentModel->setPaymentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_INSTALLMENT0]);
-                }
-                if (isset($paymentMethodsConfigs[PaymentMethods::PAYMENT_RATE])) {
-                    $configInstallmentModel->setPaymentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_RATE]);
-                }
-                $configInstallmentModel->setMonthAllowed($responseResult['installmentConfig']['month-allowed']);
-                $configInstallmentModel->setPaymentFirstDay($responseResult['installmentConfig']['valid-payment-firstdays']);
-                $configInstallmentModel->setRateMinNormal($responseResult['installmentConfig']['rate-min-normal']);
-                $configInstallmentModel->setInterestRateDateDefault($responseResult['installmentConfig']['interestrate-default']);
-
-                $this->modelManager->persist($configInstallmentModel);
-                $entitiesToFlush[] = $configInstallmentModel;
-            }
-            $this->modelManager->flush($entitiesToFlush);
             $entitiesToFlush = [];
 
             $configModel = new ProfileConfig();
             $configModel->setProfileId($responseResult['merchantConfig']['profile-id']);
             $configModel->setSecurityCode($profileConfig->getSecurityCode());
-            if ($profileConfig->isZeroPercentInstallment()) {
-                $configModel->setInstallment0Config($paymentMethodsConfigs[PaymentMethods::PAYMENT_INSTALLMENT0]);
-            } else {
-                $configModel->setInvoiceConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_INVOICE]);
-                $configModel->setInstallmentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_RATE]);
-                $configModel->setDebitConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_DEBIT]);
-                $configModel->setInstallmentDebitConfig(null); // TODO why is there no value?
-                $configModel->setPrepaymentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_PREPAYMENT]);
-            }
+            $configModel->setInvoiceConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_INVOICE]);
+            $configModel->setInstallmentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_RATE]);
+            $configModel->setDebitConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_DEBIT]);
+            $configModel->setInstallmentDebitConfig(null); // TODO why is there no value?
+            $configModel->setPrepaymentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_PREPAYMENT]);
             $configModel->setCountryCodeBilling(strtoupper($country));
             $configModel->setCountryCodeDelivery(strtoupper($responseResult['merchantConfig']['country-code-delivery']));
             $configModel->setCurrency(strtoupper($responseResult['merchantConfig']['currency']));

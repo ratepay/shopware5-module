@@ -100,10 +100,9 @@ class ProfileConfigService
         switch ($paymentMethod) {
             case PaymentMethods::PAYMENT_DEBIT:
                 return $profileConfig->getDebitConfig();
-            case PaymentMethods::PAYMENT_INSTALLMENT0:
-                return $profileConfig->getInstallment0Config();
             case PaymentMethods::PAYMENT_INVOICE:
                 return $profileConfig->getInvoiceConfig();
+            case PaymentMethods::PAYMENT_INSTALLMENT0:
             case PaymentMethods::PAYMENT_RATE:
                 return $profileConfig->getInstallmentConfig();
             case PaymentMethods::PAYMENT_PREPAYMENT:

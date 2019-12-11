@@ -77,7 +77,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $accountNumber = trim($params['iban']);
         $customerId = intval($params['customerId']);
 
-        if(ValidationLib::isIbanValid($params['iban'])) {
+        if (ValidationLib::isIbanValid($params['iban'])) {
             $this->sessionHelper->setBankData($customerId, $accountNumber, null);
             $this->view->assign([
                 'success' => true,
@@ -118,7 +118,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
                 'success' => true,
                 'termInfo' => $result
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->view->assign([
                 'success' => false,
                 'messages' => ['An error occurred while loading the calculator (Exception: ' . $e->getMessage() . ')']
@@ -140,6 +140,13 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $customerAddress = $this->modelManager->find(Address::class, $billingId);
 
         $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMeansName, $shopId, $customerAddress->getCountry()->getIso(), true);
+        if ($installmentConfig == null) {
+            $this->view->assign([
+                'success' => false,
+                'messages' => [$this->getSnippet('backend/ratepay', 'ErrorCantFindProfile', null)]
+            ]);
+            return;
+        }
 
         $optionsString = $installmentConfig->getPaymentFirstDay();
         $optionsArray = explode(',', $optionsString);

@@ -156,32 +156,38 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             },
             success: function (response) {
                 var responseObj = Ext.decode(response.responseText);
-                var options = responseObj.options;
-                var TRANSFER = 28;
+                if(responseObj.success) {
+                    var options = responseObj.options;
+                    var TRANSFER = 28;
 
-                if (options.length === 1) {
-                    me.installmentPaymentType = options[0];
-                    me.directDebitCheckbox.setVisible(false);
-                } else {
-                    me.installmentPaymentType = TRANSFER;
-                    //show switch for bank data
-                    me.directDebitCheckbox.setValue(false);
-                    me.directDebitCheckbox.setVisible(true);
-                }
+                    if (options.length === 1) {
+                        me.installmentPaymentType = options[0];
+                        me.directDebitCheckbox.setVisible(false);
+                    } else {
+                        me.installmentPaymentType = TRANSFER;
+                        //show switch for bank data
+                        me.directDebitCheckbox.setValue(false);
+                        me.directDebitCheckbox.setVisible(true);
+                    }
 
-                if(paymentMeansName === 'rpayratepayrate0') {
-                    //load directly fo 0%, since there are no variable terms
-                    me.handleCalculatorInput();
-                } else {
-                    me.calculatorContainer.setVisible(true);
+                    if (paymentMeansName === 'rpayratepayrate0') {
+                        //load directly fo 0%, since there are no variable terms
+                        me.handleCalculatorInput();
+                    } else {
+                        me.calculatorContainer.setVisible(true);
 
-                    me.requestInstallmentCalculator(
-                        me.getShopId(),
-                        billingId,
-                        paymentMeansName,
-                        totalAmount,
-                        options
-                    );
+                        me.requestInstallmentCalculator(
+                            me.getShopId(),
+                            billingId,
+                            paymentMeansName,
+                            totalAmount,
+                            options
+                        );
+                    }
+                } else if(responseObj.messages) {
+                    responseObj.messages.forEach(function (message) {
+                        Shopware.Notification.createGrowlMessage('', message);
+                    });
                 }
             }
         });
