@@ -35,8 +35,6 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
      */
     private $snippetManager;
 
-    protected abstract function saveRatePayPaymentData($userId, Enlight_Controller_Request_Request $request);
-
     public function __construct()
     {
         $this->container = Shopware()->Container();
@@ -64,7 +62,9 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
                 'year' => $birthday ? $birthday->format('Y') : null,
                 'month' => $birthday ? $birthday->format('m') : null,
                 'day' => $birthday ? $birthday->format('d') : null
-            ]
+            ],
+            'vatId_required' => ValidationLib::isCompanySet($billingAddress) == true,
+            'vatId' => $billingAddress->getVatId()
         ];
         return $data;
     }
@@ -81,6 +81,17 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
                 $dateTime->setDate($ratepayData['birthday']['year'], $ratepayData['birthday']['month'], $ratepayData['birthday']['day']);
                 if (ValidationLib::isOldEnough($dateTime) == false) {
                     $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidBirthday'), 18); //TODO config?
+                }
+            }
+        }
+
+        $billingAddress = $this->sessionHelper->getBillingAddress();
+        if (!isset($ratepayData['vatId_required']) || $ratepayData['vatId_required'] == 1) {
+            if (!isset($ratepayData['vatId'])) {
+                $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingVatId');
+            } else {
+                if ($billingAddress && ValidationLib::isVatIdValid($billingAddress->getCountry()->getIso(), $ratepayData['vatId']) === false) {
+                    $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidVatId'), $billingAddress->getCountry()->getIso());
                 }
             }
         }
@@ -115,16 +126,30 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
         );
         $customer = $this->sessionHelper->getCustomer();
         $billingAddress = $this->sessionHelper->getBillingAddress();
+
         //if($customer->getBirthday() == null) {
-        $customer->setBirthday($birthday); //  -- maybe it would be better to save the value in a attribute, to not override the real customer data.
+        // maybe it would be better to save the value in a attribute, to not override the real customer data.
+        $customer->setBirthday($birthday);
         //}
+
         //if($billingAddress->getPhone() == null) {
-        $billingAddress->setPhone(trim($ratepayData['phone'])); //  -- maybe it would be better to save the value in a attribute, to not override the real customer data.
+        // maybe it would be better to save the value in a attribute, to not override the real customer data.
+        $billingAddress->setPhone(trim($ratepayData['phone']));
+        //}
+
+        //if($billingAddress->getVatId() == null) {
+        if (isset($ratepayData['vatId']) && !empty($ratepayData['vatId'])) {
+            // maybe it would be better to save the value in a attribute, to not override the real customer data.
+            $ratepayData['vatId'] = trim($ratepayData['vatId']);
+            $billingAddress->setVatId($ratepayData['vatId']);
+        }
         //}
 
         $this->modelManager->flush([$customer, $billingAddress]);
         $this->saveRatePayPaymentData($userId, $request);
     }
+
+    protected abstract function saveRatePayPaymentData($userId, Enlight_Controller_Request_Request $request);
 
     protected function getPaymentMethodFromRequest(Enlight_Controller_Request_Request $request)
     {
