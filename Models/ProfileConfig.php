@@ -68,13 +68,6 @@ class ProfileConfig extends ModelEntity
     /**
      * @var ConfigPayment
      * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
-     * @ORM\JoinColumn(name="config_installmentdebit_id", referencedColumnName="rpay_id")
-     */
-    protected $installmentDebitConfig;
-
-    /**
-     * @var ConfigPayment
-     * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
      * @ORM\JoinColumn(name="config_prepayment_id", referencedColumnName="rpay_id")
      */
     protected $prepaymentConfig;
@@ -225,22 +218,6 @@ class ProfileConfig extends ModelEntity
     /**
      * @return ConfigPayment
      */
-    public function getInstallmentDebitConfig()
-    {
-        return $this->installmentDebitConfig;
-    }
-
-    /**
-     * @param ConfigPayment $installmentDebitConfig
-     */
-    public function setInstallmentDebitConfig($installmentDebitConfig)
-    {
-        $this->installmentDebitConfig = $installmentDebitConfig;
-    }
-
-    /**
-     * @return ConfigPayment
-     */
     public function getPrepaymentConfig()
     {
         return $this->prepaymentConfig;
@@ -345,8 +322,6 @@ class ProfileConfig extends ModelEntity
         switch ($paymentMethodName) {
             case PaymentMethods::PAYMENT_PREPAYMENT:
                 return $this->prepaymentConfig;
-            case PaymentMethods::PAYMENT_INSTALLMENT0:
-                return $this->installment0Config;
             case PaymentMethods::PAYMENT_RATE:
                 return $this->installmentConfig;
             case PaymentMethods::PAYMENT_DEBIT:

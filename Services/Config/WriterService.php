@@ -188,7 +188,6 @@ class WriterService
             $configModel->setInvoiceConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_INVOICE]);
             $configModel->setInstallmentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_RATE]);
             $configModel->setDebitConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_DEBIT]);
-            $configModel->setInstallmentDebitConfig(null); // TODO why is there no value?
             $configModel->setPrepaymentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_PREPAYMENT]);
             $configModel->setCountryCodeBilling(strtoupper($country));
             $configModel->setCountryCodeDelivery(strtoupper($responseResult['merchantConfig']['country-code-delivery']));

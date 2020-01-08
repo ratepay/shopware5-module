@@ -28,6 +28,7 @@ use RpayRatePay\Bootstrap\Database;
 use RpayRatePay\Bootstrap\OrderAttribute;
 use RpayRatePay\Bootstrap\OrderStatus;
 use RpayRatePay\Bootstrap\PaymentMeans;
+use RpayRatePay\Bootstrap\ProfileConfig;
 use RpayRatePay\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -67,6 +68,7 @@ class RpayRatePay extends Plugin
         /** @var AbstractBootstrap[] $bootstrapper */
         $bootstrapper = [
             new Database(),
+            new ProfileConfig(),
             new OrderAttribute(),
             new PaymentMeans(),
             new OrderStatus(),
