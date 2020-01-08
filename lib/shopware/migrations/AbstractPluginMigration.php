@@ -3,9 +3,9 @@
 namespace Shopware\Components\Migrations;
 if(class_exists(AbstractPluginMigration::class) === false) {
 
-    abstract class xxAbstractPluginMigration extends AbstractMigration
+    abstract class AbstractPluginMigration extends AbstractMigration
     {
-        public const MODUS_UNINSTALL = 'uninstall';
+        const MODUS_UNINSTALL = 'uninstall';
 
         abstract public function down($keepUserData);
     }

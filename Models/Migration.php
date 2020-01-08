@@ -42,7 +42,7 @@ class Migration extends ModelEntity
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $errorMsg;
 
@@ -65,7 +65,7 @@ class Migration extends ModelEntity
     /**
      * @return DateTime
      */
-    public function getStartDate(): DateTime
+    public function getStartDate()
     {
         return $this->startDate;
     }
@@ -81,7 +81,7 @@ class Migration extends ModelEntity
     /**
      * @return DateTime
      */
-    public function getCompleteDate(): DateTime
+    public function getCompleteDate()
     {
         return $this->completeDate;
     }

@@ -6,39 +6,41 @@ use Shopware\Components\Migrations\AbstractPluginMigration;
 
 class Migration600 extends AbstractPluginMigration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function up($mode)
     {
         if (self::MODUS_UPDATE === $mode) {
+
             $this->addSql("
-            
-            ALTER TABLE rpay_ratepay_order_discount
-                CHANGE s_order_detail_id s_order_details_id INT NOT NULL,
-                DROP s_order_id,
-                DROP PRIMARY KEY
-            ;
-            
-            ALTER TABLE rpay_ratepay_order_discount
-                ADD PRIMARY KEY (s_order_details_id);
-                
-            
-            ALTER TABLE rpay_ratepay_order_history
-                CHANGE event event VARCHAR(100) DEFAULT NULL,
-                CHANGE articlename articlename VARCHAR(100) DEFAULT NULL,
-                CHANGE articlenumber articlenumber VARCHAR(50) DEFAULT NULL,
-                CHANGE quantity quantity VARCHAR(50) DEFAULT NULL;
-            
-            ALTER TABLE rpay_ratepay_logging
-                CHANGE version version VARCHAR(10) DEFAULT 'N/A' NOT NULL,
-                CHANGE operation operation VARCHAR(255) DEFAULT 'N/A' NOT NULL,
-                CHANGE suboperation suboperation VARCHAR(255) DEFAULT 'N/A' NOT NULL,
-                CHANGE transactionid transactionid VARCHAR(255) DEFAULT 'N/A' NOT NULL,
-                CHANGE firstname firstname VARCHAR(255) DEFAULT 'N/A' NOT NULL,
-                CHANGE lastname lastname VARCHAR(255) DEFAULT 'N/A' NOT NULL
-            
+                ALTER TABLE rpay_ratepay_order_discount
+                    CHANGE s_order_detail_id s_order_details_id INT NOT NULL,
+                    DROP INDEX s_order_id,
+                    DROP s_order_id
+                ;
             ");
+
+            $this->addSql("
+                ALTER TABLE rpay_ratepay_order_discount
+                    ADD PRIMARY KEY (s_order_details_id);
+            ");
+
+            $this->addSql("    
+                ALTER TABLE rpay_ratepay_order_history
+                    CHANGE event event VARCHAR(100) DEFAULT NULL,
+                    CHANGE articlename articlename VARCHAR(100) DEFAULT NULL,
+                    CHANGE articlenumber articlenumber VARCHAR(50) DEFAULT NULL,
+                    CHANGE quantity quantity VARCHAR(50) DEFAULT NULL;
+            ");
+
+            $this->addSql("
+                ALTER TABLE rpay_ratepay_logging
+                    CHANGE version version VARCHAR(10) DEFAULT 'N/A' NOT NULL,
+                    CHANGE operation operation VARCHAR(255) DEFAULT 'N/A' NOT NULL,
+                    CHANGE suboperation suboperation VARCHAR(255) DEFAULT 'N/A' NOT NULL,
+                    CHANGE transactionid transactionid VARCHAR(255) DEFAULT 'N/A' NOT NULL,
+                    CHANGE firstname firstname VARCHAR(255) DEFAULT 'N/A' NOT NULL,
+                    CHANGE lastname lastname VARCHAR(255) DEFAULT 'N/A' NOT NULL
+            ");
+
         } else if ($mode == self::MODUS_INSTALL) {
             $this->addSql("
             

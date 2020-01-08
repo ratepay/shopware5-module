@@ -65,13 +65,13 @@ class RequestLogger
         $operation = $operationMatches[1];
 
         preg_match('/<operation subtype=\"(.*)">(.*)<\/operation>/', $requestXml, $operationSubtypeMatches);
-        $operationSubtype = $operationSubtypeMatches[1] ?: 'N/A';
+        $operationSubtype = isset($operationSubtypeMatches[1]) ? $operationSubtypeMatches[1] : 'N/A';
 
         preg_match("/<transaction-id>(.*)<\/transaction-id>/", $requestXml, $transactionMatches);
-        $transactionId = $transactionMatches[1] ?: 'N/A';
+        $transactionId = isset($transactionMatches[1]) ? $transactionMatches[1] : 'N/A';
 
         preg_match("/<transaction-id>(.*)<\/transaction-id>/", $responseXml, $transactionMatchesResponse);
-        $transactionId = $transactionId == 'N/A' && $transactionMatchesResponse[1] ? $transactionMatchesResponse[1] : $transactionId;
+        $transactionId = $transactionId == 'N/A' && isset($transactionMatchesResponse[1]) ? $transactionMatchesResponse[1] : $transactionId;
 
         $requestXml = preg_replace("/<owner>(.*)<\/owner>/", '<owner>xxxxxxxx</owner>', $requestXml);
         $requestXml = preg_replace("/<bank-account-number>(.*)<\/bank-account-number>/", '<bank-account-number>xxxxxxxx</bank-account-number>', $requestXml);

@@ -136,7 +136,7 @@ class Configuration extends AbstractBootstrap
         foreach($oldFields as $oldField) {
             /** @var Element $newField */
             $newField = $elementRepo->findOneBy(['name' => $fieldNames[$oldField->getName()]]);
-            if($newField) {
+            if($newField && $oldField->getValues()) {
                 /** @var Value $value */
                 foreach($oldField->getValues() as $value) {
                     if(!empty($value->getValue())) {

@@ -45,7 +45,7 @@ class Database extends AbstractBootstrap
             require_once $this->pluginDir . '/lib/shopware/migrations/AbstractPluginMigration.php';
 
             $migrationTable = $this->modelManager->getClassMetadata(Migration::class);
-            if ($this->schemaManager->tablesExist([$migrationTable]) === false) {
+            if ($this->schemaManager->tablesExist([$migrationTable->getTableName()]) === false) {
                 $this->schemaTool->createSchema([$migrationTable]);
             }
             /** @var MigrationRepository $migrationRepo */
@@ -58,7 +58,6 @@ class Database extends AbstractBootstrap
             $directoryIterator = new DirectoryIterator($migrationPath);
             $regex = new RegexIterator($directoryIterator, '/^([0-9]*)-(.*)\.php$/i', RecursiveRegexIterator::GET_MATCH);
 
-            $connection->beginTransaction();
             foreach ($regex as $result) {
                 $migrationVersion = $result[1];
                 $migrationName = $result[2];
@@ -76,6 +75,7 @@ class Database extends AbstractBootstrap
                     $migrationClass = new $className($connection);
                     $migrationClass->up($mode);
 
+                    $exception = null;
                     try {
                         foreach ($migrationClass->getSql() as $sql) {
                             $connection->exec($sql);
@@ -83,16 +83,16 @@ class Database extends AbstractBootstrap
                     } catch (Exception $e) {
                         $connection->rollBack();
                         $migration->setErrorMsg($e->getMessage());
+                        $exception = $e;
                     }
                     $migration->setCompleteDate(new DateTime());
                     $this->modelManager->persist($migration);
                     $this->modelManager->flush($migration);
-                    if ($migration->getErrorMsg() !== null) {
-                        break;
+                    if ($exception) {
+                        throw $exception;
                     }
                 }
             }
-            $connection->commit();
         }
     }
 
