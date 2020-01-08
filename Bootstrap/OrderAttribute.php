@@ -2,7 +2,12 @@
 
 namespace RpayRatePay\Bootstrap;
 
+use Doctrine\ORM\Query\Expr\Join;
+use RpayRatePay\Enum\PaymentMethods;
 use Shopware\Bundle\AttributeBundle\Service\CrudService;
+use Shopware\Models\Attribute\Order as OrderAttributeModel;
+use Shopware\Models\Order\Order;
+use Shopware\Models\Payment\Payment;
 
 class OrderAttribute extends AbstractBootstrap
 {
@@ -28,7 +33,19 @@ class OrderAttribute extends AbstractBootstrap
         $this->crudService->update('s_order_attributes', 'ratepay_fallback_shipping', 'boolean', [], null, null, false);
         $this->crudService->update('s_order_attributes', 'ratepay_fallback_discount', 'boolean', [], null, null, false);
         $this->crudService->update('s_order_attributes', 'ratepay_backend', 'boolean');
-        $this->crudService->update('s_order_attributes', 'ratepay_direct_delivery', 'boolean', [], null, null, false);
+        $addDirectDeliveryAttribute = $this->crudService->get('s_order_attributes', 'ratepay_direct_delivery') == null;
+        $this->crudService->update('s_order_attributes', 'ratepay_direct_delivery', 'boolean', [], null, null, 1);
+
+        if($addDirectDeliveryAttribute) {
+            $this->modelManager->getConnection()->exec("
+                UPDATE s_order_attributes attr
+                    INNER JOIN s_order s_order ON (s_order.id = attr.id)
+                    INNER JOIN s_core_paymentmeans payment ON (s_order.paymentID = payment.id)
+                    set attr.ratepay_direct_delivery = 0 
+                    WHERE payment.name IN ('".PaymentMethods::PAYMENT_RATE."', '".PaymentMethods::PAYMENT_INSTALLMENT0."')
+            ");
+        }
+
 
         $this->cleanUp();
     }

@@ -45,7 +45,7 @@ class PaymentDeliverService extends AbstractModifyRequest
     protected function isSkipRequest()
     {
         /** @deprecated v6.2 */
-        if ($this->_order->getAttribute()->getRatepayDirectDelivery() == false) {
+        if ($this->_order->getAttribute()->getRatepayDirectDelivery() != true) {
             if ($this->positionHelper->doesOrderHasOpenPositions($this->_order, $this->items)) {
                 return true;
             } else {
