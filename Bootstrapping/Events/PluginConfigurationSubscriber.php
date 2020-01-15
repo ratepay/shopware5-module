@@ -81,27 +81,27 @@ class PluginConfigurationSubscriber implements \Enlight\Event\SubscriberInterfac
             foreach ($this->_countries as $country) {
                 if (null !== $credentials[$country]['profileID'] &&
                     null !== $credentials[$country]['securityCode']) {
-                    if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileID'], $credentials[$country]['securityCode'], $shopId, $country)) {
+                    if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileID'], $credentials[$country]['securityCode'], $shopId)) {
                         Logger::singleton()->addNotice('Ruleset for ' . strtoupper($country) . ' successfully updated.');
                     } else {
                         $errors[] = strtoupper($country) . ' Frontend';
                     }
 
                     if ($country == 'de') {
-                        if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileID'] . '_0RT', $credentials[$country]['securityCode'], $shopId, $country)) {
+                        if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileID'] . '_0RT', $credentials[$country]['securityCode'], $shopId)) {
                             Logger::singleton()->addNotice('Ruleset 0RT for ' . strtoupper($country) . ' successfully updated.');
                         }
                     }
                 }
                 if (null !== $credentials[$country]['profileIDBackend'] &&
                     null !== $credentials[$country]['securityCodeBackend']) {
-                    if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileIDBackend'], $credentials[$country]['securityCodeBackend'], $shopId, $country, true)) {
+                    if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileIDBackend'], $credentials[$country]['securityCodeBackend'], $shopId, true)) {
                         Logger::singleton()->addNotice('Ruleset BACKEND for ' . strtoupper($country) . ' successfully updated.');
                     } else {
                         $errors[] = strtoupper($country) . ' Backend';
                     }
                     if ($country == 'de') {
-                        if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileIDBackend'] . '_0RT', $credentials[$country]['securityCodeBackend'], $shopId, $country, true)) {
+                        if ($rpayConfigWriter->writeRatepayConfig($credentials[$country]['profileIDBackend'] . '_0RT', $credentials[$country]['securityCodeBackend'], $shopId, true)) {
                             Logger::singleton()->addNotice('Ruleset BACKEND 0RT for ' . strtoupper($country) . ' successfully updated.');
                         }
                     }
