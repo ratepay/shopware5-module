@@ -146,7 +146,8 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $year = $parameters['ratepay_birthyear'];
 
             if (checkdate($month, $day, $year)) {
-                $date = DateTime::createFromFormat('Y-m-d' , "$year-$month-$day");
+                $date = new DateTime();
+                $date->setDate(trim($year), trim($month), trim($day));
                 $qualifiedParameters['ratepay_dob'] = $date->format('Y-m-d');
             }
         }
