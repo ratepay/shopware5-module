@@ -8,7 +8,7 @@ use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\Logger;
 use RpayRatePay\Component\Service\ShopwareUtil;
 use RpayRatePay\Component\Service\ConfigLoader;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
+use RpayRatePay\Services\ProfileConfigService;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of

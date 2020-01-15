@@ -6,12 +6,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Shopware\Components\Model\ModelEntity;
 
 /**
- * @ORM\Entity(repositoryClass="Shopware\Plugins\Community\Frontend\RpayRatePay\Models\ConfigRepository")
+ * @ORM\Entity(repositoryClass="RpayRatePay\Models\ConfigRepository")
  * @ORM\Table(name="rpay_ratepay_config")
  */
 class ProfileConfig extends ModelEntity
 {
-
     /**
      * @var int
      * @ORM\Id()

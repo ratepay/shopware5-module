@@ -12,15 +12,14 @@
 
     //do i need a require here?
     use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
-use RpayRatePay\Models\ProfileConfig;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
+    use RpayRatePay\Models\ProfileConfig;
+    use RpayRatePay\Services\ProfileConfigService;
 
-/**
+    /**
      * Developer needs to specify how the Calculator gets the Data
      */
     class PiRatepayRateCalcData implements PiRatepayRateCalcDataInterface
     {
-
         /**
          * @return ProfileConfig
          */
@@ -225,5 +224,4 @@ use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigServic
         {
             return Shopware()->Front()->Request()->getPost($var, '');
         }
-
     }

@@ -1,15 +1,12 @@
 <?php
 
-
-namespace Shopware\Plugins\Community\Frontend\RpayRatePay\Models;
-
+namespace RpayRatePay\Models;
 
 use RpayRatePay\Models\ProfileConfig;
 use Shopware\Components\Model\ModelRepository;
 
 class ConfigRepository extends ModelRepository
 {
-
     /**
      * @param int $shopId
      * @param string $countryCode
@@ -34,5 +31,4 @@ class ConfigRepository extends ModelRepository
 
         return $qb->getQuery()->getOneOrNullResult();
     }
-
 }

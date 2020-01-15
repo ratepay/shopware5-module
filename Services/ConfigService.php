@@ -1,8 +1,6 @@
 <?php
 
-
-namespace Shopware\Plugins\Community\Frontend\RpayRatePay\Services;
-
+namespace RpayRatePay\Services;
 
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\CachedConfigReader;
@@ -11,7 +9,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ConfigService
 {
-
     //TODO remove if plugin is moved to SW5.2 plugin engine
     private static $instance = null;
     /**
@@ -23,7 +20,8 @@ class ConfigService
      */
     protected $modelManager;
 
-    public static function getInstance(){
+    public static function getInstance()
+    {
         return self::$instance = (self::$instance ? : new self(Shopware()->Container()));
     }
 
@@ -37,7 +35,8 @@ class ConfigService
      * @param Shop|int $shop
      * @return |null
      */
-    public function getDfpSnippetId($shop) {
+    public function getDfpSnippetId($shop)
+    {
         return $this->getConfig('ratepay/dfp/snippet_id', 'ratepay', $shop);
     }
 
@@ -76,7 +75,8 @@ class ConfigService
      * @param Shop|int $shop
      * @return |null
      */
-    public function getConfig($configKey, $default = null, $shop = null) {
+    public function getConfig($configKey, $default = null, $shop = null)
+    {
 
         $config = $this->getAllConfig($shop);
         return isset($config[$configKey]) ? $config[$configKey] : $default;

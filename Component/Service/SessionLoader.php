@@ -6,7 +6,7 @@ use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\BankData;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
+use RpayRatePay\Services\DfpService;
 
 class SessionLoader
 {

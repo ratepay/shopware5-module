@@ -4,7 +4,7 @@ namespace RpayRatePay\Component\Service;
 
 use RpayRatePay\Models\ProfileConfig;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
+use RpayRatePay\Services\ProfileConfigService;
 
 class RatepayConfigWriter
 {

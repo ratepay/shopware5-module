@@ -3,8 +3,8 @@
 namespace RpayRatePay\Bootstrapping\Events;
 
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ConfigService;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
+use RpayRatePay\Services\ConfigService;
+use RpayRatePay\Services\DfpService;
 
 class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
 {
