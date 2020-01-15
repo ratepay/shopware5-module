@@ -79,30 +79,3 @@
     </div>
     {/if}
 {/block}
-
-{* Table actions *}
-{block name='frontend_checkout_confirm_confirm_table_actions'}
-    <div class="table--actions actions--bottom">
-        <div class="main--actions">
-            {if !$sLaststock.hideBasket}
-
-                {block name='frontend_checkout_confirm_submit'}
-                    {* Submit order button *}
-                    {if $sPayment.embediframe || $sPayment.action}
-                        <button type="submit" class="btn is--primary is--large right is--icon-right" form="confirm--form" data-preloader-button="false">
-                            {s namespace=frontend/checkout/confirm name=ConfirmActionSubmit}Zahlungspflichtig bestellen{/s}<i class="icon--arrow-right"></i>
-                        </button>
-                    {else}
-                        <button type="submit" class="btn is--primary is--large right is--icon-right" form="confirm--form" data-preloader-button="false">
-                            {s namespace=frontend/checkout/confirm name=ConfirmActionSubmit}Zahlungspflichtig bestellen{/s}<i class="icon--arrow-right"></i>
-                        </button>
-                    {/if}
-                {/block}
-            {else}
-                {block name='frontend_checkout_confirm_stockinfo'}
-                    {include file="frontend/_includes/messages.tpl" type="error" content="{s name='ConfirmErrorStock'}{/s}"}
-                {/block}
-            {/if}
-        </div>
-    </div>
-{/block}

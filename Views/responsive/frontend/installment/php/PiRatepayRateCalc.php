@@ -157,7 +157,7 @@ require_once 'PiRatepayRateCalcBase.php';
             $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
             $netPrices = ! $customer->getGroup()->getTax();
 
-            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
+            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices, Shopware()->Shop()->getId());
 
             $user = Shopware()->Session()->sOrderVariables['sUserData'];
             if (!empty($user['additional']['payment']['name'])) {

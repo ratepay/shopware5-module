@@ -11,14 +11,6 @@
     interface PiRatepayRateCalcDataInterface
     {
 
-        public function getProfileId();
-
-        public function getSecurityCode();
-
-        public function isLive();
-
-        public function getSecurityCodeHashed();
-
         public function getTransactionId();
 
         public function getTransactionShortId();

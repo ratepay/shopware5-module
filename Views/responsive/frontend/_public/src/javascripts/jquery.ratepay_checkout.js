@@ -129,6 +129,14 @@
          */
         onCheckoutButtonClick: function (event) {
             var me = this;
+            var $submitButton = $(event.currentTarget);
+            var preLoaderPlugin = $submitButton.data('plugin_swPreloaderButton');
+
+
+            var $form = $('#'+$submitButton.attr('form'));
+            if (!$form.length || !$form[0].checkValidity()) {
+                return;
+            }
 
             /* returns correct YYYY-MM-dd dob */
             Date.prototype.yyyymmdd = function () {
@@ -168,7 +176,7 @@
                     } else {
                         requestParams += '&' + $(this).attr('id') + '=' + $(this).val();
                     }
-                    if ($(this).val() == '') {
+                    if ($(this).val() === '' && $(this).prop('required')) {
                         hasErrors = true;
                         userUpdate = false;
                     }
@@ -226,15 +234,6 @@
                     }
                 }
 
-                /* phone number validation */
-                if ($('#ratepay_phone').length) { /* only do the check if phone form exists */
-                    if ($('#ratepay_phone').val().length < 6) {
-                        hasErrors = true;
-                        userUpdate = false;
-                        errorMessage = errorMessageValidPhone;
-                    }
-                }
-
                 /* check for address editor, only shopware >=5.2.0 */
                 if($(".btn[data-address-editor]").length) {
                     if($(".btn[data-sessionkey='checkoutBillingAddressId,checkoutShippingAddressId']").length) {
@@ -265,44 +264,46 @@
                     }
                 }
 
-                /* error handler */
-                if (hasErrors) {
-                    /** hide the modal window */
+                if (hasErrors === false) {
+                    /* update user */
+                    if (userUpdate) {
+                        $.ajax({
+                            type: 'POST',
+                            async: false,
+                            url: ratepayUrl,
+                            data: requestParams
+                        }).done(function (msg) {
+                            if (msg == 'OK') {
+                                console.log(messageConsoleLogOk);
+                                me.notify('', true);
+                            } else {
+                                hasErrors = true;
+                                errorMessage = msg;
+                                console.log(messageConsoleLogError + msg);
+                            }
+                        });
+                    }
+                }
+
+                if(hasErrors) {
                     $('div.ratepay-overlay').hide();
-
                     me.notify(errorMessage);
-
                     if (event.preventDefault) {
                         event.preventDefault();
                     }
 
+                    event.preventDefault();
                     event.stopPropagation();
                     event.returnValue = false;
-                    event.stop();
-
+                    if (preLoaderPlugin) {
+                        setTimeout(function() {
+                            preLoaderPlugin.reset();
+                        }, 1000);
+                    }
                     return false;
-                } else {
-                    me.notify('', true);
-                }
-
-                /* update user */
-                if (userUpdate) {
-                    $.ajax({
-                        type: 'POST',
-                        async: false,
-                        url: ratepayUrl,
-                        data: requestParams
-                    }).done(function (msg) {
-                        if (msg == 'OK') {
-                            console.log(messageConsoleLogOk);
-                        } else {
-                            console.log(messageConsoleLogError + msg);
-                        }
-                    });
                 }
 
             }
-
 
         },
 
