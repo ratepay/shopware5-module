@@ -245,6 +245,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $checkoutAddressShipping = $paymentRequestData->getShippingAddress();
         $company = $checkoutAddressBilling->getCompany();
 
+        $dateOfBirth = null;
         if (empty($company)) {
             $dateOfBirth = $paymentRequestData->getBirthday();
         }
@@ -305,6 +306,17 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         $lang = $paymentRequestData->getLang();
 
+        if(!empty($checkoutAddressBilling->getPhone())) {
+            $phoneData = [
+                'DirectDial' => $checkoutAddressBilling->getPhone()
+            ];
+        } else {
+            $phoneData = [
+                'AreaCode' => '030',
+                'DirectDial' => '33988560'
+            ];
+        }
+
         $mbContent = new \RatePAY\ModelBuilder('Content');
         $contentArr = [
             'Customer' => [
@@ -324,9 +336,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
                 ],
                 'Contacts' => [
                     'Email' => $customer->getEmail(),
-                    'Phone' => [
-                        'DirectDial' => $checkoutAddressBilling->getPhone()
-                    ],
+                    'Phone' => $phoneData,
                 ],
             ],
             'ShoppingBasket' => $shoppingBasket,
