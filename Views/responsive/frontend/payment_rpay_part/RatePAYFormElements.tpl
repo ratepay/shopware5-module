@@ -66,9 +66,9 @@
 {* Phone *}
 {block name='ratepay_frontend_phone'}
     <div class="rp-birthday field--select">
-        <label for="ratepay_phone" class="birthday--label">{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderPhone}Telefonnummer{/s}* </label>
+        <label for="ratepay_phone" class="birthday--label">{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderPhone}Telefonnummer{/s} </label>
         <br />
-        <input id="ratepay_phone" name="ratepay_phone" class="register--field is--required" type="text" required="required" aria-required="true" placeholder="{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderPhone}Telefonnummer{/s}*" value="{if $ratepayPhone}{$ratepayPhone}{else}{$sUserData.billingaddress.phone|escape}{/if}">
+        <input id="ratepay_phone" name="ratepay_phone" class="register--field is--required" type="text" placeholder="{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderPhone}Telefonnummer{/s}" value="{if $ratepayPhone}{$ratepayPhone}{else}{$sUserData.billingaddress.phone|escape}{/if}">
     </div>
 {/block}
 <br style="clear: both"><br/>

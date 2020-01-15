@@ -1,6 +1,7 @@
 <?php
 
 use RpayRatePay\Component\Service\Logger;
+use Shopware\Models\Order\Order;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -39,12 +40,13 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
         //set correct subshop for backend processes
         $orderId = $this->Request()->getParam('orderId');
         if (null !== $orderId) {
+            /** @var Order $order */
             $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $orderId);
 
             $attributes = $order->getAttribute();
             $backend = (bool)($attributes->getRatepayBackend());
             $netPrices = $order->getNet() === 1;
-            $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config, $backend, $netPrices);
+            $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory($this->_config, $backend, $netPrices, $order->getShop()->getId());
         } else {
             throw new \Exception('RatepayOrderDetail controller requires parameter orderId');
             //$this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory();

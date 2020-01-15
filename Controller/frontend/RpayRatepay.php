@@ -26,6 +26,7 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\Logger;
 use \RpayRatePay\Component\Service\ConfigLoader;
 use \Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
 
 class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
 {
@@ -35,6 +36,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      * @var Shopware\Models\Customer\Billing
      */
     private $_config;
+    /** @var Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory */
     private $_modelFactory;
     private $_logging;
     private $_customerMessage;
@@ -72,7 +74,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $netPrices = ShopwareUtil::customerCreatesNetOrders($customer);
 
         $this->_config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
-        $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices);
+        $this->_modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, false, $netPrices, Shopware()->Shop()->getId());
         $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
         $this->_configLoader = new ConfigLoader(Shopware()->Container()->get('db'));
         $this->dfpService = DfpService::getInstance();
@@ -142,9 +144,10 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $day = $parameters['ratepay_birthday'];
             $month = $parameters['ratepay_birthmonth'];
             $year = $parameters['ratepay_birthyear'];
-            
+
             if (checkdate($month, $day, $year)) {
-                $date = DateTime::createFromFormat('Y-m-d' , "$year-$month-$day");
+                $date = new DateTime();
+                $date->setDate(trim($year), trim($month), trim($day));
                 $qualifiedParameters['ratepay_dob'] = $date->format('Y-m-d');
             }
         }
@@ -339,38 +342,8 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $this->View()->assign('rpCustomerMsg', $customerMessage);
         } else {
             Shopware()->Session()->RatePAY['hidePayment'] = true;
-
-            $shopId = Shopware()->Shop()->getId();
-            $customerModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Customer');
-            $userModel = $customerModel->findOneBy(['id' => Shopware()->Session()->sUserId]);
-            $userModelWrapped = new ShopwareCustomerWrapper($userModel, Shopware()->Models());
-            $countryBilling = $userModelWrapped->getBillingCountry();
-            $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling);
-
-            $this->View()->assign('rpCustomerMsg', $config['error_default']);
+            $this->View()->assign('rpCustomerMsg', Shopware()->Snippets()->getNamespace('RatePAY')->get('UnknownError', 'Unbekannter Fehler'));
         }
-    }
-
-    /**
-     * Get ratepay plugin config from rpay_ratepay_config table
-     *
-     * @param $shopId
-     * @param $country
-     * @return array
-     */
-    private function getRatePayPluginConfigByCountry($shopId, $country, $backend = false)
-    {
-        //fetch correct config for current shop based on user country
-        $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get('RatePayProfileID' . $country->getIso());
-
-        //get ratepay config based on shopId and profileId
-        return Shopware()->Db()->fetchRow('
-            SELECT *
-            FROM `rpay_ratepay_config`
-            WHERE `shopId` =?
-            AND `profileId`=?
-            AND backend=?
-        ', [$shopId, $profileId, $backend]);
     }
 
     /**
