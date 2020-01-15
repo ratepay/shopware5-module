@@ -22,9 +22,17 @@ use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\Logger;
+use RpayRatePay\Models\ProfileConfig;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Models\ConfigRepository;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ConfigService;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
 {
+    /**
+     * @var ConfigService
+     */
+    protected $configService;
+
     /**
      * @param string $namespace
      * @param string $name
@@ -35,6 +43,12 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
     {
         $ns = Shopware()->Snippets()->getNamespace($namespace);
         return $ns->get($name, $default);
+    }
+
+    public function setContainer(\Shopware\Components\DependencyInjection\Container $loader = null)
+    {
+        parent::setContainer($loader);
+        $this->configService = ConfigService::getInstance();
     }
 
     /**
@@ -65,16 +79,14 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
     }
 
     /**
-     * @param bool $isSandbox
-     * @param string $profileId
-     * @param string $securityCode
+     * @param ProfileConfig $profileConfig
      * @return \RatePAY\Frontend\InstallmentBuilder
      */
-    private function getInstallmentBuilder($isSandbox, $profileId, $securityCode)
+    private function getInstallmentBuilder(ProfileConfig $profileConfig)
     {
-        $installmentBuilder = new RatePAY\Frontend\InstallmentBuilder($isSandbox);
-        $installmentBuilder->setProfileId($profileId);
-        $installmentBuilder->setSecurityCode($securityCode);
+        $installmentBuilder = new RatePAY\Frontend\InstallmentBuilder($profileConfig->isSandbox());
+        $installmentBuilder->setProfileId($profileConfig->getProfileId());
+        $installmentBuilder->setSecurityCode($profileConfig->getSecurityCode());
         return $installmentBuilder;
     }
 
@@ -86,23 +98,16 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
      */
     private function getInstallmentBuilderFromConfig($paymentMeansName, $addressObj, $shopId)
     {
-        $config = $this->getConfig($paymentMeansName, $addressObj, $shopId);
-
-        //TODO handle if not exists
-        $isSandbox = ((int)($config['sandbox']) === 1);
-
         $countryIso = PaymentRequestData::findCountryISO($addressObj);
-
-        $configLoader = new ConfigLoader(Shopware()->Db());
 
         //TODO: put magic strings in consts
         $nullPercent = $paymentMeansName === 'rpayratepayrate0';
-        $profileId = $configLoader->getProfileId($countryIso, $shopId, $nullPercent, true);
 
-        $securityCodeKey = ConfigLoader::getSecurityCodeKey($countryIso, true);
-        $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get($securityCodeKey);
+        /** @var ConfigRepository $repo */
+        $repo = Shopware()->Models()->getRepository(ProfileConfig::class);
+        $profileConfig = $repo->findConfiguration($shopId, $countryIso, $nullPercent, true);
 
-        $installmentBuilder = $this->getInstallmentBuilder($isSandbox, $profileId, $securityCode);
+        $installmentBuilder = $this->getInstallmentBuilder($profileConfig);
         return $installmentBuilder;
     }
 

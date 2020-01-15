@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.3.x` - `5.4.6`
-|Version | `5.3.13`
+|Version | `5.3.14`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,11 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.14 - Released 2020-01-15
+* RATEPLUG-67: set phone number as not required field and apply static phonenumber if no phone number is provided
+* RATEPLUG-24: add support for different stores/subshops
+* fix a few bugs with zero percent installment
 
 ### Version 5.3.13 - Released 2019-10-01
 * RATEPLUG-16: logging: add pagination
