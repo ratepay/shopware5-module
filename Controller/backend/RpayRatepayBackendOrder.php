@@ -23,8 +23,8 @@ use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\Logger;
 use RpayRatePay\Models\ProfileConfig;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Models\ConfigRepository;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ConfigService;
+use RpayRatePay\Models\ConfigRepository;
+use RpayRatePay\Services\ConfigService;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
 {

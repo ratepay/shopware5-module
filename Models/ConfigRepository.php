@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Shopware\Plugins\Community\Frontend\RpayRatePay\Models;
+namespace RpayRatePay\Models;
 
 
 use RpayRatePay\Models\ProfileConfig;

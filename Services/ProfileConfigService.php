@@ -1,11 +1,11 @@
 <?php
 
 
-namespace Shopware\Plugins\Community\Frontend\RpayRatePay\Services;
+namespace RpayRatePay\Services;
 
 
 use RpayRatePay\Models\ProfileConfig;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Models\ConfigRepository;
+use RpayRatePay\Models\ConfigRepository;
 
 class ProfileConfigService
 {

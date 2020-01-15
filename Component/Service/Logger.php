@@ -1,6 +1,6 @@
 <?php
 
-namespace  RpayRatePay\Component\Service;
+namespace RpayRatePay\Component\Service;
 
 class Logger
 {

@@ -2,8 +2,8 @@
 
 namespace RpayRatePay\Component\Service;
 
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ConfigService;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
+use RpayRatePay\Services\ConfigService;
+use RpayRatePay\Services\ProfileConfigService;
 
 class ConfigLoader
 {
