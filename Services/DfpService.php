@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Shopware\Plugins\Community\Frontend\RpayRatePay\Services;
+namespace RpayRatePay\Services;
 
 
 use Shopware\Components\DependencyInjection\Container;
@@ -9,7 +9,7 @@ use Shopware\Components\DependencyInjection\Container;
 /**
  * ServiceClass for device fingerprinting
  * Class DfpService
- * @package Shopware\Plugins\Community\Frontend\RpayRatePay\Services
+ * @package RpayRatePay\Services
  */
 class DfpService
 {
