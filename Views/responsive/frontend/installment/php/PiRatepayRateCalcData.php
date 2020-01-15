@@ -13,7 +13,7 @@
     //do i need a require here?
     use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Models\ProfileConfig;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
+use RpayRatePay\Services\ProfileConfigService;
 
 /**
      * Developer needs to specify how the Calculator gets the Data
