@@ -24,9 +24,8 @@ use Shopware\Components\CSRFWhitelistAware;
 use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\Logger;
-use \RpayRatePay\Component\Service\ConfigLoader;
-use \Shopware\Plugins\Community\Frontend\RpayRatePay\Services\DfpService;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
+use RpayRatePay\Component\Service\ConfigLoader;
+use RpayRatePay\Services\DfpService;
 
 class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
 {
@@ -146,7 +145,8 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $year = $parameters['ratepay_birthyear'];
 
             if (checkdate($month, $day, $year)) {
-                $date = DateTime::createFromFormat('Y-m-d' , "$year-$month-$day");
+                $date = new DateTime();
+                $date->setDate(trim($year), trim($month), trim($day));
                 $qualifiedParameters['ratepay_dob'] = $date->format('Y-m-d');
             }
         }
