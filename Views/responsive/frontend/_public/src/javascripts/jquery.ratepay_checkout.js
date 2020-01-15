@@ -168,7 +168,7 @@
                     } else {
                         requestParams += '&' + $(this).attr('id') + '=' + $(this).val();
                     }
-                    if ($(this).val() == '') {
+                    if ($(this).val() === '' && $(this).prop('required')) {
                         hasErrors = true;
                         userUpdate = false;
                     }
@@ -223,15 +223,6 @@
                         hasErrors = true;
                         userUpdate = false;
                         errorMessage = errorMessageDobNotValid;
-                    }
-                }
-
-                /* phone number validation */
-                if ($('#ratepay_phone').length) { /* only do the check if phone form exists */
-                    if ($('#ratepay_phone').val().length < 6) {
-                        hasErrors = true;
-                        userUpdate = false;
-                        errorMessage = errorMessageValidPhone;
                     }
                 }
 
