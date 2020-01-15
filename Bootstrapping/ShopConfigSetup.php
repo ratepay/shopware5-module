@@ -5,7 +5,7 @@ namespace RpayRatePay\Bootstrapping;
 use RpayRatePay\Component\Service\RatepayConfigWriter;
 use RpayRatePay\Models\ProfileConfig;
 use Shopware\Models\Shop\Shop;
-use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ConfigService;
+use RpayRatePay\Services\ConfigService;
 
 class ShopConfigSetup extends Bootstrapper
 {
