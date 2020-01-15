@@ -25,8 +25,9 @@
 ## Changelog
 
 ### Version 5.3.14 - Released 2020-01-15
-* RATEPLUG-67: set phone number as not required field and apply static phonenumber if no phone number is provided
 * RATEPLUG-24: add support for different stores/subshops
+* RATEPLUG-28: fix double click on "order now"-button
+* RATEPLUG-67: set phone number as not required field and apply static phonenumber if no phone number is provided
 * fix a few bugs with zero percent installment
 
 ### Version 5.3.13 - Released 2019-10-01

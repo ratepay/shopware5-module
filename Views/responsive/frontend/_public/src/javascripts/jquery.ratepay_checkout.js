@@ -129,6 +129,14 @@
          */
         onCheckoutButtonClick: function (event) {
             var me = this;
+            var $submitButton = $(event.currentTarget);
+            var preLoaderPlugin = $submitButton.data('plugin_swPreloaderButton');
+
+
+            var $form = $('#'+$submitButton.attr('form'));
+            if (!$form.length || !$form[0].checkValidity()) {
+                return;
+            }
 
             /* returns correct YYYY-MM-dd dob */
             Date.prototype.yyyymmdd = function () {
@@ -256,44 +264,46 @@
                     }
                 }
 
-                /* error handler */
-                if (hasErrors) {
-                    /** hide the modal window */
+                if (hasErrors === false) {
+                    /* update user */
+                    if (userUpdate) {
+                        $.ajax({
+                            type: 'POST',
+                            async: false,
+                            url: ratepayUrl,
+                            data: requestParams
+                        }).done(function (msg) {
+                            if (msg == 'OK') {
+                                console.log(messageConsoleLogOk);
+                                me.notify('', true);
+                            } else {
+                                hasErrors = true;
+                                errorMessage = msg;
+                                console.log(messageConsoleLogError + msg);
+                            }
+                        });
+                    }
+                }
+
+                if(hasErrors) {
                     $('div.ratepay-overlay').hide();
-
                     me.notify(errorMessage);
-
                     if (event.preventDefault) {
                         event.preventDefault();
                     }
 
+                    event.preventDefault();
                     event.stopPropagation();
                     event.returnValue = false;
-                    event.stop();
-
+                    if (preLoaderPlugin) {
+                        setTimeout(function() {
+                            preLoaderPlugin.reset();
+                        }, 1000);
+                    }
                     return false;
-                } else {
-                    me.notify('', true);
-                }
-
-                /* update user */
-                if (userUpdate) {
-                    $.ajax({
-                        type: 'POST',
-                        async: false,
-                        url: ratepayUrl,
-                        data: requestParams
-                    }).done(function (msg) {
-                        if (msg == 'OK') {
-                            console.log(messageConsoleLogOk);
-                        } else {
-                            console.log(messageConsoleLogError + msg);
-                        }
-                    });
                 }
 
             }
-
 
         },
 
