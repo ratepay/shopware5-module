@@ -2,13 +2,13 @@
 
 use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
-use RpayRatePay\Component\Mapper\BankData;
 use RatePAY\Service\Util;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\Logger;
 use RpayRatePay\Component\Service\ShopwareUtil;
 use RpayRatePay\Component\Service\ConfigLoader;
+use Shopware\Plugins\Community\Frontend\RpayRatePay\Services\ProfileConfigService;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -52,8 +52,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
     /** @var ConfigLoader  */
     protected $_configLoader;
+    /** @var int */
+    protected $shopId;
 
-    public function __construct($config = null, $backend = false, $netItemPrices = false)
+    public function __construct($config = null, $backend = false, $netItemPrices = false, $shopId)
     {
         $this->_logging = new Shopware_Plugins_Frontend_RpayRatePay_Component_Logging();
         $this->_config = $config;
@@ -61,6 +63,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $this->netItemPrices = $netItemPrices;
         $this->db = Shopware()->Container()->get('db');
         $this->_configLoader = new ConfigLoader(Shopware()->Container()->get('db'));
+        $this->shopId = $shopId;
     }
 
     public function setOrderId($orderId)
@@ -163,16 +166,17 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      * @return \RatePAY\ModelBuilder
      * @throws \RatePAY\Exception\ModelException
      */
-    private function getHead($countryCode = false)
+    private function getHead($countryCode = null)
     {
         $systemId = $this->getSystemId();
         $bootstrap = new \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
 
+        $profileConfig = $this->getProfileConfig($countryCode);
         $head = [
             'SystemId' => $systemId,
             'Credential' => [
-                'ProfileId' => $this->getProfileId($countryCode),
-                'Securitycode' => $this->getSecurityCode($countryCode)
+                'ProfileId' => $profileConfig->getProfileId(),
+                'Securitycode' => $profileConfig->getSecurityCode()
             ],
             'Meta' => [
                 'Systems' => [
@@ -190,7 +194,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         }
 
         //side effect
-        $this->_sandboxMode = $this->getSandboxMode($countryCode);
+        $this->_sandboxMode = $profileConfig->isSandbox();
 
         $mbHead = new \RatePAY\ModelBuilder('head');
         $mbHead->setArray($head);
@@ -201,25 +205,6 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         }
 
         return $mbHead;
-    }
-
-    /**
-     * get sandbox mode
-     *
-     * @param $countryCode
-     * @return int
-     */
-    public function getSandboxMode($countryCode)
-    {
-        $profileId = $this->getProfileId($countryCode);
-        if (strstr($profileId, '_0RT') !== false) {
-            $profileId = substr($profileId, 0, -4);
-        }
-
-        $qry = 'SELECT sandbox FROM rpay_ratepay_config WHERE profileId = "' . $profileId . '"';
-        $sandbox = Shopware()->Db()->fetchOne($qry);
-
-        return $sandbox;
     }
 
     /**
@@ -260,6 +245,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $checkoutAddressShipping = $paymentRequestData->getShippingAddress();
         $company = $checkoutAddressBilling->getCompany();
 
+        $dateOfBirth = null;
         if (empty($company)) {
             $dateOfBirth = $paymentRequestData->getBirthday();
         }
@@ -320,6 +306,17 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         $lang = $paymentRequestData->getLang();
 
+        if(!empty($checkoutAddressBilling->getPhone())) {
+            $phoneData = [
+                'DirectDial' => $checkoutAddressBilling->getPhone()
+            ];
+        } else {
+            $phoneData = [
+                'AreaCode' => '030',
+                'DirectDial' => '33988560'
+            ];
+        }
+
         $mbContent = new \RatePAY\ModelBuilder('Content');
         $contentArr = [
             'Customer' => [
@@ -339,9 +336,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
                 ],
                 'Contacts' => [
                     'Email' => $customer->getEmail(),
-                    'Phone' => [
-                        'DirectDial' => $checkoutAddressBilling->getPhone()
-                    ],
+                    'Phone' => $phoneData,
                 ],
             ],
             'ShoppingBasket' => $shoppingBasket,
@@ -764,71 +759,21 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         return $address;
     }
 
-    /**
-     * get profile id
-     *
-     * @param bool $countryCode
-     * @return mixed
-     * TODO: USE ConfigLoader->getProfileId
-     */
-    public function getProfileId($countryCode = false)
-    {
-        if (!$countryCode) {
+    public function getProfileConfig($countryCode = null, $shopId = null) {
+        if ($countryCode === null) {
             $countryCode = $this->_getCountryCodesByBillingAddress();
         }
 
-        $configKey = RpayRatePay\Component\Service\ConfigLoader::getProfileIdKey($countryCode, $this->backend);
-        if (null !== $this->_config) {
-            $profileId = $this->_config->get($configKey);
-        } else {
-            if (!empty($this->_transactionId)) {
-                $shopId = Shopware()->Db()->fetchOne(
-                    "SELECT `subshopID` FROM `s_order` WHERE `transactionID`= '" . $this->_transactionId . "'"
-                );
+        if ($shopId == null) {
+            if(empty($this->_transactionId) && empty($this->shopId) ) {
+                throw new \InvalidArgumentException('please provide a shop id or set the transaction-id/shop-id to the class');
             }
-            $profileId = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get($configKey, $shopId);
+            $shopId = $this->shopId ? $this->shopId : Shopware()->Db()->fetchOne(
+                "SELECT `subshopID` FROM `s_order` WHERE `transactionID`= '" . $this->_transactionId . "'"
+            );
         }
 
-        if ($this->_zPercent == true) {
-            $profileId = $profileId . '_0RT';
-        }
-
-        if (empty($profileId)) {
-            throw new \Exception('Profile id not found: key ' . $configKey);
-        }
-
-        return $profileId;
-    }
-
-    /**
-     * get security code
-     *
-     * @param bool $countryCode
-     * @return mixed
-     */
-    public function getSecurityCode($countryCode = false)
-    {
-        if (!$countryCode) {
-            $countryCode = $this->_getCountryCodesByBillingAddress();
-        }
-        $configKey = RpayRatePay\Component\Service\ConfigLoader::getSecurityCodeKey($countryCode, $this->backend);
-
-        if (null !== $this->_config) {
-            $securityCode = $this->_config->get($configKey);
-        } else {
-            if (!empty($this->_transactionId)) {
-                $shopId = Shopware()->Db()->fetchOne(
-                    "SELECT `subshopID` FROM `s_order` WHERE `transactionID`= '" . $this->_transactionId . "'"
-                );
-            }
-            $securityCode = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config()->get($configKey);
-        }
-
-        if (empty($securityCode)) {
-            throw new \Exception('Security code not found: key ' . $configKey);
-        }
-
-        return $securityCode;
+        return ProfileConfigService::getProfileConfig($countryCode, $shopId, $this->_zPercent, $this->backend);
     }
 
     /**

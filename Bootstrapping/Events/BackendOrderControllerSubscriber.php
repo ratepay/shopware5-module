@@ -6,6 +6,7 @@ use RatePAY\Service\Math;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Component\Service\PaymentProcessor;
 use RpayRatePay\Component\Service\Logger;
+use Shopware\Models\Customer\Customer;
 use Shopware\Models\Order\Order;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Services\DfpService;
@@ -68,10 +69,12 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             /** @var OrderHydrator $orderHydrator */
             $orderHydrator = Shopware()->Container()->get('swag_backend_order.order.order_hydrator');
 
+            /** @var OrderStruct $orderStruct */
             $orderStruct = $orderHydrator->hydrateFromRequest($request);
 
             //first find out if it's a ratepay order
             $paymentType = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $orderStruct->getPaymentId());
+            /** @var Customer $customer */
             $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $orderStruct->getCustomerId());
             $validation = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Validation($customer, $paymentType);
 
@@ -91,7 +94,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             $method = \RpayRatePay\Component\Service\ShopwareUtil::getPaymentMethod($paymentType->getName());
 
             $netItemPrices = \RpayRatePay\Component\Service\ShopwareUtil::customerCreatesNetOrders($customer);
-            $paymentRequester = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true, $netItemPrices);
+            $paymentRequester = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true, $netItemPrices, $customer->getShop()->getId());
 
             $answer = $paymentRequester->callPaymentRequest($paymentRequestData);
 

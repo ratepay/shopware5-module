@@ -72,14 +72,15 @@
             require_once 'PiRatepayRateCalcData.php';
             $this->picalcdata = new PiRatepayRateCalcData();
 
-            $this->request_profile_id = $this->picalcdata->getProfileId();
+            $profileConfig = $this->picalcdata->getProfileConfig();
+            $this->request_profile_id = $profileConfig->getProfileId();
+            $this->request_security_code = $profileConfig->getSecurityCode();
 
-            if ($this->picalcdata->getSecurityCode() == '') {
-                $this->request_security_code = $this->picalcdata->getSecurityCodeHashed();
+            /*if ($this->picalcdata->getSecurityCode() == '') {
             }
             else {
-                $this->request_security_code = md5($this->picalcdata->getSecurityCode());
-            }
+                $this->request_security_code = md5($profileConfig->getSecurityCode());
+            }*/
 
             $this->request_transaction_id = $this->picalcdata->getTransactionId();
             $this->request_transaction_short_id = $this->picalcdata->getTransactionShortId();
@@ -87,7 +88,7 @@
             $this->request_merchant_consumer_id = $this->picalcdata->getMerchantConsumerId();
             $this->request_merchant_consumer_classification = $this->picalcdata->getMerchantConsumerClassification();
             $this->request_amount = $this->picalcdata->getAmount();
-            $this->request_live = $this->picalcdata->isLive();
+            $this->request_live = $profileConfig->isSandbox();
 
             $this->language = $this->picalcdata->getLanguage();
 
