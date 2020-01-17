@@ -96,12 +96,13 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
             }
         }
 
-        if (!isset($ratepayData['phone'])) {
+        // RATEPLUG-67: the phone number is not required anymore
+        /*if (!isset($ratepayData['phone'])) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingPhone');
         }
         if ((strlen(trim($ratepayData['phone'])) > 6) === false) {
             $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidPhone'), 6); //TODO config?
-        }
+        }*/
         return $return;
     }
 
@@ -132,9 +133,12 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
         $customer->setBirthday($birthday);
         //}
 
+        $ratepayData['phone'] = trim($ratepayData['phone']);
         //if($billingAddress->getPhone() == null) {
         // maybe it would be better to save the value in a attribute, to not override the real customer data.
-        $billingAddress->setPhone(trim($ratepayData['phone']));
+        if(!empty($ratepayData['phone'])) {
+            $billingAddress->setPhone($ratepayData['phone']);
+        }
         //}
 
         //if($billingAddress->getVatId() == null) {

@@ -46,11 +46,20 @@ class CustomerArrayFactory
             ],
             'Contacts' => [
                 'Email' => $customer->getEmail(),
-                'Phone' => [
-                    'DirectDial' => $billingAddress->getPhone()
-                ],
             ],
         ];
+
+        if ($billingAddress->getPhone()) {
+            $data['Contacts']['Phone'] = [
+                'DirectDial' => $billingAddress->getPhone()
+            ];
+        } else {
+            // RATEPLUG-67
+            $data['Contacts']['Phone'] = [
+                'AreaCode' => '030',
+                'DirectDial' => '33988560'
+            ];
+        }
 
         if ($billingAddress->getCompany()) {
             $data['CompanyName'] = $billingAddress->getCompany();
