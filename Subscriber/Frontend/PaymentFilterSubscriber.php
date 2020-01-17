@@ -15,6 +15,7 @@ use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Models\ConfigPayment;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ProfileConfigService;
+use RpayRatePay\Services\PaymentMethodsService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware\Components\Model\ModelManager;
@@ -57,6 +58,10 @@ class PaymentFilterSubscriber implements SubscriberInterface
      * @var SessionHelper
      */
     private $sessionHelper;
+    /**
+     * @var PaymentMethodsService
+     */
+    private $paymentMethodsService;
 
     public function __construct(
         ModelManager $modelManager,
@@ -66,6 +71,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         Shopware_Components_Modules $modules,
         ProfileConfigService $profileConfig,
         SessionHelper $sessionHelper,
+        PaymentMethodsService $paymentMethodsService,
         Logger $logger
     )
     {
@@ -77,6 +83,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         $this->profileConfig = $profileConfig;
         $this->logger = $logger;
         $this->sessionHelper = $sessionHelper;
+        $this->paymentMethodsService = $paymentMethodsService;
     }
 
     public static function getSubscribedEvents()
@@ -105,6 +112,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         $return = $arguments->getReturn();
         $currency = $this->config->get('currency'); // TODO i think this should be fetched from the session not the config ?!
 
+        $customer = $this->sessionHelper->getCustomer();
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $shippingAddress = $this->sessionHelper->getShippingAddress();
         if ($billingAddress == null) {
@@ -117,6 +125,11 @@ class PaymentFilterSubscriber implements SubscriberInterface
         foreach ($configs as $payment => $config) {
             //TODO https://ratepay.gitbook.io/payment-api/gateway-operations/checkout/payment-query
             $availableRatePayMethods[$payment] = false;
+
+            if($this->paymentMethodsService->isPaymentMethodLockedForCustomer($customer, $payment)) {
+                // the payment method is locked for the customer
+                continue;
+            }
 
             /** @var ProfileConfig $profileConfig */
             $profileConfig = $config['profileConfig'];

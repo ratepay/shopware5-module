@@ -29,6 +29,7 @@ use RpayRatePay\Bootstrap\OrderAttribute;
 use RpayRatePay\Bootstrap\OrderStatus;
 use RpayRatePay\Bootstrap\PaymentMeans;
 use RpayRatePay\Bootstrap\ProfileConfig;
+use RpayRatePay\Bootstrap\UserAttribute;
 use RpayRatePay\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -72,7 +73,8 @@ class RpayRatePay extends Plugin
             new OrderAttribute(),
             new PaymentMeans(),
             new OrderStatus(),
-            new Configuration()
+            new Configuration(),
+            new UserAttribute()
         ];
 
         $logger = new FileLogger($this->container->getParameter('kernel.logs_dir'));

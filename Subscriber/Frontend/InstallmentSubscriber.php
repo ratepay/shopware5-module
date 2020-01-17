@@ -55,7 +55,8 @@ class InstallmentSubscriber implements SubscriberInterface
         $response = $controller->Response();
         $view = $controller->View();
 
-        if ($response->isException()) {
+        if ($response->isException() || $this->sessionHelper->getCustomer() === null) {
+            // an exception occurred or the session has been expired
             return;
         }
         $sUserData = $view->getAssign('sUserData');

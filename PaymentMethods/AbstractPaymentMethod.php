@@ -72,6 +72,11 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
     public function validate($paymentData)
     {
         $return = [];
+        if($this->sessionHelper->getCustomer() == null) {
+            // customer is not logged in - maybe session has been expired
+            $return['sErrorMessages'][] = 'Please login';
+            return $return;
+        }
         $ratepayData = $paymentData['ratepay']['customer_data'];
         if (!isset($ratepayData['birthday_required']) || $ratepayData['birthday_required'] == 1) {
             if (!isset($ratepayData['birthday'])) {

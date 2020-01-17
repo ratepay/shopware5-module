@@ -7,6 +7,7 @@ namespace RpayRatePay\Services\Request;
 use DateTime;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use Monolog\Logger;
+use RatePAY\Model\Response\AbstractResponse;
 use RatePAY\Model\Response\PaymentRequest as PaymentResponse;
 use RatePAY\RequestBuilder;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
@@ -23,6 +24,7 @@ use RpayRatePay\Services\Factory\BasketArrayFactory;
 use RpayRatePay\Services\Factory\CustomerArrayFactory;
 use RpayRatePay\Services\Factory\PaymentArrayFactory;
 use RpayRatePay\Services\Logger\RequestLogger;
+use RpayRatePay\Services\PaymentMethodsService;
 use RuntimeException;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Attribute\Order as OrderAttribute;
@@ -69,6 +71,10 @@ class PaymentRequestService extends AbstractRequest
      * @var ProfileConfigService
      */
     private $profileConfigService;
+    /**
+     * @var PaymentMethodsService
+     */
+    private $paymentMethodsService;
 
 
     public function __construct(
@@ -80,6 +86,7 @@ class PaymentRequestService extends AbstractRequest
         PaymentArrayFactory $paymentArrayFactory,
         ModelManager $modelManager,
         Shopware_Components_Modules $moduleManager,
+        PaymentMethodsService $paymentMethodsService,
         Logger $logger
     )
     {
@@ -90,6 +97,7 @@ class PaymentRequestService extends AbstractRequest
         $this->moduleManager = $moduleManager;
         $this->logger = $logger;
         $this->profileConfigService = $profileConfigService;
+        $this->paymentMethodsService = $paymentMethodsService;
     }
 
     /**
@@ -270,5 +278,12 @@ class PaymentRequestService extends AbstractRequest
     protected function processSuccess()
     {
         // TODO: Implement processSuccess() method.
+    }
+
+    protected function processFailed(AbstractResponse $response)
+    {
+        if($response->getReasonCode() === 703) {
+            $this->paymentMethodsService->lockPaymentMethodForCustomer($this->paymentRequestData->getCustomer(), $this->paymentRequestData->getMethod());
+        }
     }
 }

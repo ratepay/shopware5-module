@@ -14,6 +14,7 @@
             <argument id="modules" type="service"/>
             <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
             <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
+            <argument id="RpayRatePay\Services\PaymentMethodsService" type="service"/>
             <argument id="rpay_rate_pay.logger" type="service"/>
             <tag name="shopware.event_subscriber"/>
         </service>

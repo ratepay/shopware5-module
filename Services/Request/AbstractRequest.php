@@ -56,6 +56,8 @@ abstract class AbstractRequest
         $response = $this->call(null, false);
         if ($response === true || $response->isSuccessful()) {
             $this->processSuccess();
+        } else {
+            $this->processFailed($response);
         }
         return $response;
     }
@@ -149,5 +151,10 @@ abstract class AbstractRequest
     abstract protected function getCallName();
 
     abstract protected function processSuccess();
+
+    protected function processFailed(AbstractResponse $response)
+    {
+        // do nothing
+    }
 
 }

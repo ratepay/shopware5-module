@@ -15,6 +15,7 @@
             <argument id="RpayRatePay\Services\Factory\PaymentArrayFactory" type="service"/>
             <argument id="models" type="service"/>
             <argument id="modules" type="service"/>
+            <argument id="RpayRatePay\Services\PaymentMethodsService" type="service"/>
             <argument id="rpay_rate_pay.logger" type="service"/>
         </service>
 

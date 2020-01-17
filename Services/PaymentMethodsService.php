@@ -5,6 +5,7 @@ namespace RpayRatePay\Services;
 
 
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Customer\Customer;
 use Shopware\Models\Payment\Payment;
 use Shopware\Models\Plugin\Plugin;
 
@@ -61,6 +62,36 @@ class PaymentMethodsService
             $payment->setActive(true);
         }
         $this->modelManager->flush($payments);
+    }
+
+    protected function getLockedPaymentMethodsForCustomer(Customer $customer)
+    {
+        $lockedMethods = $customer->getAttribute()->getRatepayLockedPaymentMethods();
+        if($lockedMethods) {
+            return json_decode($lockedMethods, true) ?: [];
+        } else {
+            return [];
+        }
+    }
+
+    public function isPaymentMethodLockedForCustomer(Customer $customer, $paymentMethod)
+    {
+        $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
+        $locked = $this->getLockedPaymentMethodsForCustomer($customer);
+        return isset($locked[$paymentMethod]) && time() < $locked[$paymentMethod];
+    }
+
+    public function lockPaymentMethodForCustomer(Customer $customer, $paymentMethod, \DateTime $dateTime = null)
+    {
+        $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
+        if ($dateTime == null) {
+            $dateTime = new \DateTime();
+            $dateTime->modify('+2 days');
+        }
+        $locked = $this->getLockedPaymentMethodsForCustomer($customer);
+        $locked[$paymentMethod] = $dateTime->getTimestamp();
+        $customer->getAttribute()->setRatepayLockedPaymentMethods(json_encode($locked));
+        $this->modelManager->flush($customer->getAttribute());
     }
 
 }
