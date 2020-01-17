@@ -103,6 +103,7 @@ class PaymentShippingSubscriber implements SubscriberInterface
 
             $data = [
                 'sandbox' => $profileConfig->isSandbox(),
+                'agb' => 'https://www.ratepay.com/legal'
             ];
 
             $view->assign('ratepay', array_merge($view->getAssign('ratepay') ? : [], $data));
