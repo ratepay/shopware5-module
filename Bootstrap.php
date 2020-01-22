@@ -137,6 +137,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             new \RpayRatePay\Bootstrapping\DeliveryStatusesSetup($this),
             new \RpayRatePay\Bootstrapping\CronjobSetup($this),
             new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
+            new \RpayRatePay\Bootstrapping\UserAttributeSetup($this)
         ];
 
         Logger::singleton()->info('RatePAY: bootstrap routines');
@@ -185,6 +186,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             new \RpayRatePay\Bootstrapping\ShopConfigSetup($this),
             new \RpayRatePay\Bootstrapping\CronjobSetup($this),
             new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
+            new \RpayRatePay\Bootstrapping\UserAttributeSetup($this)
         ];
 
         $this->_dropOrderAdditionalAttributes();
@@ -227,6 +229,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
         Logger::singleton()->info('UNINSTALL Plugin Bootstrap ');
         $queue = [
             new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
+            new \RpayRatePay\Bootstrapping\UserAttributeSetup($this)
         ];
 
         $this->disable();
