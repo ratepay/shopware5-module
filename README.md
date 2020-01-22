@@ -24,6 +24,9 @@
 
 ## Changelog
 
+### Version 5.3.15 - WIP
+* RATEPLUG-31: lock payment methods for customer if reason code 703
+
 ### Version 5.3.14 - Released 2020-01-15
 * RATEPLUG-19: birthday input: also allow whitespaces instead of zeros
 * RATEPLUG-24: add support for different stores/subshops
