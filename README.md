@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.3.x` - `5.4.6`
-|Version | `5.3.15`
+|Version | `5.3.14`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -25,6 +25,7 @@
 ## Changelog
 
 ### Version 5.3.15 - WIP
+* RATEPLUG-66: credit/debit fix gateway requests
 * RATEPLUG-71: fix billingaddress update
 
 ### Version 5.3.14 - Released 2020-01-15
