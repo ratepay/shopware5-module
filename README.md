@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.5.x` - `5.6.x`
-|Version | `5.4.7`
+|Version | `5.4.8`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -24,6 +24,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.4.8 - WIP
+* RATEPLUG-66: credit/debit fix gateway requests
 
 ### Version 5.4.7 - Released 2020-01-15
 * RATEPLUG-33: fix namespaces
