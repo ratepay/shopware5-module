@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.3.x` - `5.4.6`
-|Version | `5.3.14`
+|Version | `5.3.15`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -26,6 +26,7 @@
 
 ### Version 5.3.15 - WIP
 * RATEPLUG-31: lock payment methods for customer if reason code 703
+* RATEPLUG-66: credit/debit fix gateway requests
 
 ### Version 5.3.14 - Released 2020-01-15
 * RATEPLUG-19: birthday input: also allow whitespaces instead of zeros
