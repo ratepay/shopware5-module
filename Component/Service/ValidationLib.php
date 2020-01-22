@@ -161,7 +161,7 @@ class ValidationLib
             "AT" => "ATU[0-9]{8}",
             "BE" => "BE0[0-9]{9}",
             "BG" => "BG[0-9]{9,10}",
-            "CH" => "CHE[\.-\s]{0,1}[0-9]{3}[\.-\s]{0,1}[0-9]{3}[\.-\s]{0,1}[0-9]{3}",
+            "CH" => "CHE[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}",
             "CY" => "CY[0-9]{8}L",
             "CZ" => "CZ[0-9]{8,10}",
             "DE" => "DE[0-9]{9}",
@@ -188,6 +188,6 @@ class ValidationLib
             "SI" => "SI[0-9]{8}",
             "SK" => "SK[0-9]{10}",
         ];
-        return isset($regexArray[$countryCode]) && preg_match('/^' . $regexArray[$countryCode] . '$/', $vatId) === 1;
+        return isset($regexArray[$countryCode]) ? preg_match('/^' . $regexArray[$countryCode] . '$/', $vatId) === 1 : true;
     }
 }
