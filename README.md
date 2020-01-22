@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.5.x` - `5.6.x`
-|Version | `5.4.7`
+|Version | `5.4.8`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -24,6 +24,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.4.8
+* RATEPLUG-13: checkout: store the entered values into localstorage so that the values got not lost, if the site got reloaded
 
 ### Version 5.4.7 - Released 2020-01-15
 * RATEPLUG-33: fix namespaces

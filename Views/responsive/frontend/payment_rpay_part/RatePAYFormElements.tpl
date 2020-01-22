@@ -23,6 +23,7 @@
                     placeholder="Tag"
                     required="required"
                     aria-required="true"
+                    data-rp-local-storage="true"
                     value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday|date_format:'%d'}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday|date_format:'%d'}{/if}"/>
             </div>
 
@@ -39,6 +40,7 @@
                     placeholder="Monat"
                     required="required"
                     aria-required="true"
+                    data-rp-local-storage="true"
                     value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday|date_format:'%m'}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday|date_format:'%m'}{/if}"/>
             </div>
 
@@ -55,6 +57,7 @@
                     placeholder="Jahr"
                     required="required"
                     aria-required="true"
+                    data-rp-local-storage="true"
                     value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday|date_format:'%Y'}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday|date_format:'%Y'}{/if}"/>
             </div>
             <br style="clear: both">
@@ -68,7 +71,14 @@
     <div class="rp-birthday field--select">
         <label for="ratepay_phone" class="birthday--label">{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderPhone}Telefonnummer{/s} </label>
         <br />
-        <input id="ratepay_phone" name="ratepay_phone" class="register--field is--required" type="text" placeholder="{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderPhone}Telefonnummer{/s}" value="{if $ratepayPhone}{$ratepayPhone}{else}{$sUserData.billingaddress.phone|escape}{/if}">
+        <input id="ratepay_phone"
+               name="ratepay_phone"
+               class="register--field is--required"
+               type="text"
+               placeholder="{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderPhone}Telefonnummer{/s}"
+               data-rp-local-storage="true"
+               value="{if $ratepayPhone}{$ratepayPhone}{else}{$sUserData.billingaddress.phone|escape}{/if}"
+        >
     </div>
 {/block}
 <br style="clear: both"><br/>
