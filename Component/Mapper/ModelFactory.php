@@ -642,27 +642,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         $mbHead = $this->getHead($countryCode);
 
-        if ($operationData['subtype'] == 'credit') {
-            if ($operationData['items']['price'] > 0) {
-                $shoppingItems['Items'] = ['Item' => $item = [
-                    'ArticleNumber' => $operationData['items']['articleordernumber'],
-                    'Quantity' => 1,
-                    'Description' => $operationData['items']['name'],
-                    'UnitPriceGross' => $operationData['items']['price'],
-                    'TaxRate' => $operationData['items']['tax_rate'],
-                ]];
-            } else {
-                $shoppingItems = ['Discount' => $item = [
-                    'Description' => $operationData['items']['name'],
-                    'UnitPriceGross' => $operationData['items']['price'],
-                    'TaxRate' => $operationData['items']['tax_rate']
-                ]];
-            }
-            $shoppingItems['Currency'] = $order->getCurrency();
-        } else {
-            $shoppingItems = $this->createBasketArray($order->getCurrency(), $operationData['items'], $operationData['subtype'], $operationData['orderId']);
-        }
-
+        $shoppingItems = $this->createBasketArray($order->getCurrency(), $operationData['items'], $operationData['subtype'], $operationData['orderId']);
         $shoppingBasket = [
             'ShoppingBasket' => $shoppingItems,
         ];
