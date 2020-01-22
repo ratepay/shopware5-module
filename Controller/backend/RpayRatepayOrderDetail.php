@@ -1,10 +1,11 @@
 <?php
 
 use Doctrine\ORM\Query\Expr\Join;
+use RatePAY\Model\Response\AbstractResponse;
 use RpayRatePay\Component\Service\Logger;
-use Shopware\Models\Order\Order;
 use Shopware\Models\Article\Detail;
 use Shopware\Models\Order\Detail as OrderDetail;
+use Shopware\Models\Order\Order;
 
 /**
  * This program is free software; you can redistribute it and/or modify it under the terms of
@@ -345,85 +346,72 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
      */
     public function addAction()
     {
-        $onlyDebit = true;
         $orderId = $this->Request()->getParam('orderId');
         $insertedIds = json_decode($this->Request()->getParam('insertedIds'));
         $subOperation = $this->Request()->getParam('suboperation');
-        $order = Shopware()->Db()->fetchRow('SELECT * FROM `s_order` WHERE `id`=?', [$orderId]);
-        $orderItems = Shopware()->Db()->fetchAll('SELECT *, (`quantity` - `delivered` - `cancelled`) AS `quantityDeliver` FROM `s_order_details` '
-                                                 . 'INNER JOIN `rpay_ratepay_order_positions` ON `s_order_details`.`id` = `rpay_ratepay_order_positions`.`s_order_details_id` '
-                                                 . 'WHERE `orderID`=?', [$orderId]);
+        $order = $this->getModelManager()->find(Order::class, $orderId);
 
-        $items = null;
-        foreach ($orderItems as $row) {
-            if ($row['quantityDeliver'] == 0) {
-                continue;
-            }
+        $qb = $this->getModelManager()->getRepository(\Shopware\Models\Order\Detail::class)->createQueryBuilder('detail');
+        $qb->andWhere($qb->expr()->in('detail.id', $insertedIds));
+        $addedDetails = $qb->getQuery()->getResult();
 
-            if ((substr($row['articleordernumber'], 0, 5) == 'Debit')
-                || (substr($row['articleordernumber'], 0, 6) == 'Credit')
-            ) {
-                $onlyDebit = false;
-            }
-
-            $items = $row;
+        $items = [];
+        /** @var \Shopware\Models\Order\Detail $item */
+        foreach ($addedDetails as $item) {
+            $items[] = [
+                'articlename' => $item->getArticleName(),
+                'ordernumber' => $item->getArticleNumber(),
+                'quantity' => $item->getQuantity(),
+                'priceNumeric' => $item->getPrice(),
+                'tax_rate' => $order->getNet() ? $item->getTaxRate() : 0,
+            ];
         }
 
-        $shippingRow = $this->getShippingFromDBAsItem($orderId);
-        if (!is_null($shippingRow) && $shippingRow['quantityDeliver'] != 0) {
-            $items = $shippingRow;
-        }
-
-        if ($onlyDebit === false) {
-            $this->_modelFactory->setTransactionId($order['transactionID']);
-            $operationData['orderId'] = $orderId;
+        $result = false;
+        if(count($items)) {
+            $this->_modelFactory->setTransactionId($order->getTransactionId());
+            $operationData['orderId'] = $order->getId();
             $operationData['items'] = $items;
-            $operationData['items']['tax_rate'] = 0;
-            $operationData['subtype'] = 'credit';
-            $this->_modelFactory->setOrderId($order['ordernumber']);
+            $operationData['subtype'] = 'credit'; //suboperation is always "credit" - also on a debit
+            $this->_modelFactory->setOrderId($order->getNumber());
 
-            $rpRate = Shopware()->Db()->fetchRow('SELECT id FROM `s_core_paymentmeans` WHERE `name`=?', ['rpayratepayrate']);
-            $rpRate0 = Shopware()->Db()->fetchRow('SELECT id FROM `s_core_paymentmeans` WHERE `name`=?', ['rpayratepayrate0']);
-
-            if (
-                $subOperation === 'debit' &&
-                ($order['paymentID'] == $rpRate['id'] || $order['paymentID'] == $rpRate0['id'])
-            ) {
+            if ($subOperation === 'debit' && (in_array($order->getPayment()->getName(), ['rpayratepayrate', 'rpayratepayrate0']))) {
+                //credit/debit is not allowed for installments
                 $result = false;
             } else {
                 $result = $this->_modelFactory->callPaymentChange($operationData);
-            }
-
-            if ($result === true) {
+                $bind = null;
+                $event = 'Artikel wurde hinzugefügt';
                 if ($subOperation === 'credit' || $subOperation === 'debit') {
-                    if ($row['price'] > 0) {
-                        $event = 'Nachbelastung wurde hinzugefügt';
-                    } else {
-                        $event = 'Nachlass wurde hinzugefügt';
+                    switch ($subOperation) {
+                        case 'credit':
+                            $event = 'Nachlass wurde hinzugefügt';
+                            break;
+                        case 'debit':
+                            $event = 'Nachbelastung wurde hinzugefügt';
                     }
                     $bind = ['delivered' => 1, 'tax_rate' => 0];
-                } else {
-                    $event = 'Artikel wurde hinzugefügt';
                 }
 
                 foreach ($insertedIds as $id) {
                     $newItems = Shopware()->Db()->fetchRow('SELECT * FROM `s_order_details` WHERE `id`=?', [$id]);
-                    $this->updateItem($orderId, $newItems['id'], $bind);
-
+                    if ($bind) {
+                        $this->updateItem($orderId, $newItems['id'], $bind);
+                    }
                     if ($newItems['quantity'] <= 0) {
                         continue;
                     }
                     $this->_history->logHistory($orderId, $event, $newItems['name'], $newItems['articleordernumber'], $newItems['quantity']);
                 }
+
+                $this->setNewOrderState($orderId);
             }
         }
-
-        $this->setNewOrderState($orderId);
 
         $this->View()->assign(
             [
                 'result' => $result,
-                'success' => true
+                'success' => $result
             ]
         );
     }
