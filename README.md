@@ -25,7 +25,7 @@
 
 ## Changelog
 
-### Version 5.4.8
+### Version 5.4.8 - WIP
 * RATEPLUG-13: checkout: store the entered values into localstorage so that the values got not lost, if the site got reloaded
 
 ### Version 5.4.7 - Released 2020-01-15
