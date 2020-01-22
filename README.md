@@ -25,7 +25,6 @@
 ## Changelog
 
 ### Version 5.3.15 - WIP
-<<<<<<< HEAD
 * RATEPLUG-13: checkout: store the entered values into localstorage so that the values got not lost, if the site got reloaded
 * RATEPLUG-31: lock payment methods for customer if reason code 703
 * RATEPLUG-66: credit/debit fix gateway requests
