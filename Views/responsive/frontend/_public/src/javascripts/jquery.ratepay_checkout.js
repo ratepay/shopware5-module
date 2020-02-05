@@ -13,14 +13,6 @@
             me.$checkoutButton = $('button[form=confirm--form]');
             me.registerEvents();
 
-            jQuery('[data-rp-local-storage="true"]').each(function (i, e) {
-                var $el = jQuery(e);
-                var value = me.getLocalValue($el.prop('name'));
-                if (value) {
-                    $el.val(value);
-                }
-            });
-
             /* exception if user age is not valid*/
             if(ratepayAgeNotValid == true) {
                 me.notify(errorMessageAgeNotValid);
@@ -128,20 +120,7 @@
         registerEvents: function () {
             var me = this;
             me._on(me.$checkoutButton, 'click', $.proxy(me.onCheckoutButtonClick, me));
-
-            jQuery(document).on('blur', '[data-rp-local-storage="true"]', function (event) {
-                var $el = jQuery(event.currentTarget);
-                me.setLocalValue($el.prop('name'), $el.val());
-            });
         },
-
-        getLocalValue: function (fieldName) {
-            return window.localStorage.getItem('_rp_' + fieldName);
-        },
-        setLocalValue: function (fieldName, value) {
-            window.localStorage.setItem('_rp_' + fieldName, value);
-        },
-
 
         /**
          * This method is called when the user click on checkout button in registration page
