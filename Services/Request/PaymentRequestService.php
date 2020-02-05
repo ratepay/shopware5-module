@@ -280,8 +280,9 @@ class PaymentRequestService extends AbstractRequest
         // TODO: Implement processSuccess() method.
     }
 
-    protected function processFailed(AbstractResponse $response)
+    protected function processFailed(RequestBuilder $response)
     {
+        /** @var $response AbstractResponse */
         if($response->getReasonCode() === 703) {
             $this->paymentMethodsService->lockPaymentMethodForCustomer($this->paymentRequestData->getCustomer(), $this->paymentRequestData->getMethod());
         }

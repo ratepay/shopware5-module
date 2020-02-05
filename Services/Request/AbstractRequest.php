@@ -152,7 +152,11 @@ abstract class AbstractRequest
 
     abstract protected function processSuccess();
 
-    protected function processFailed(AbstractResponse $response)
+    /**
+     * The response object is included in the RequestBuilder.
+     * @param RequestBuilder $requestBuilder
+     */
+    protected function processFailed(RequestBuilder $requestBuilder)
     {
         // do nothing
     }
