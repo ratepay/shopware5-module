@@ -99,7 +99,7 @@ class RpayRatePay extends Plugin
             $bootstrap->postInstall();
         }
         parent::install($context);
-        $context->scheduleClearCache($context::CACHE_LIST_ALL);
+        //$context->scheduleClearCache($context::CACHE_LIST_ALL); // RATEPLUG-70: prevent cache-popups
     }
 
     public function update(Plugin\Context\UpdateContext $context)
