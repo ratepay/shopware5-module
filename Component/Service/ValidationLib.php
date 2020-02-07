@@ -18,7 +18,7 @@ class ValidationLib
         "AT" => ['prefix' => ['ATU'], 'regex' => "ATU[0-9]{8}"],
         "BE" => ['prefix' => ['BE'], 'regex' => "BE[0-9]{9}"],
         "BG" => ['prefix' => ['BG'], 'regex' => "BG[0-9]{9,10}"],
-        "CH" => ['prefix' => ['CHE', 'CH'], 'regex' => "CHE{0,1}[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}"],
+        "CH" => ['prefix' => ['CHE', 'CH'], 'regex' => "CHE{0,1}[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}( MWST){0,1}"],
         "CY" => ['prefix' => ['CY'], 'regex' => "CY[0-9]{8}L"],
         "CZ" => ['prefix' => ['CZ'], 'regex' => "CZ[0-9]{8,10}"],
         "DE" => ['prefix' => ['DE'], 'regex' => "DE[0-9]{9}"],
@@ -190,6 +190,6 @@ class ValidationLib
 
     public static function isVatIdValid($countryCode, $vatId)
     {
-        return isset(self::VAT_REGEX[$countryCode]) ? preg_match('/^' . self::VAT_REGEX[$countryCode]['regex'] . '$/', $vatId) === 1 : true;
+        return isset(self::VAT_REGEX[$countryCode]) ? preg_match('/^' . self::VAT_REGEX[$countryCode]['regex'] . '$/i', $vatId) === 1 : true;
     }
 }
