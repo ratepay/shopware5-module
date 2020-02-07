@@ -13,6 +13,39 @@ use Shopware\Models\Order\Shipping as ShippingAddress;
 
 class ValidationLib
 {
+
+    const VAT_REGEX = [
+        "AT" => ['prefix' => ['ATU'], 'regex' => "ATU[0-9]{8}"],
+        "BE" => ['prefix' => ['BE'], 'regex' => "BE[0-9]{9}"],
+        "BG" => ['prefix' => ['BG'], 'regex' => "BG[0-9]{9,10}"],
+        "CH" => ['prefix' => ['CHE', 'CH'], 'regex' => "CHE{0,1}[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}"],
+        "CY" => ['prefix' => ['CY'], 'regex' => "CY[0-9]{8}L"],
+        "CZ" => ['prefix' => ['CZ'], 'regex' => "CZ[0-9]{8,10}"],
+        "DE" => ['prefix' => ['DE'], 'regex' => "DE[0-9]{9}"],
+        "DK" => ['prefix' => ['DK'], 'regex' => "DK[0-9]{8}"],
+        "EE" => ['prefix' => ['EE'], 'regex' => "EE[0-9]{9}"],
+        "EL" => ['prefix' => ['EL', 'GR'], 'regex' => "(EL|GR)[0-9]{9}"],
+        "GR" => ['prefix' => ['EL', 'GR'], 'regex' => "(EL|GR)[0-9]{9}"],
+        "ES" => ['prefix' => ['ES'], 'regex' => "ES[0-9A-Z][0-9]{7}[0-9A-Z]"],
+        "FI" => ['prefix' => ['FI'], 'regex' => "FI[0-9]{8}"],
+        "FR" => ['prefix' => ['FR'], 'regex' => "FR[0-9A-Z]{2}[0-9]{9}"],
+        "GB" => ['prefix' => ['GB'], 'regex' => "GB([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})"],
+        "HU" => ['prefix' => ['HU'], 'regex' => "HU[0-9]{8}"],
+        "IE" => ['prefix' => ['IE'], 'regex' => "IE[0-9]S[0-9]{5}L"],
+        "IT" => ['prefix' => ['IT'], 'regex' => "IT[0-9]{11}"],
+        "LT" => ['prefix' => ['LT'], 'regex' => "LT([0-9]{9}|[0-9]{12})"],
+        "LU" => ['prefix' => ['LU'], 'regex' => "LU[0-9]{8}"],
+        "LV" => ['prefix' => ['LV'], 'regex' => "LV[0-9]{11}"],
+        "MT" => ['prefix' => ['MT'], 'regex' => "MT[0-9]{8}"],
+        "NL" => ['prefix' => ['NL'], 'regex' => "NL[0-9]{9}B[0-9]{2}"],
+        "PL" => ['prefix' => ['PL'], 'regex' => "PL[0-9]{10}"],
+        "PT" => ['prefix' => ['PT'], 'regex' => "PT[0-9]{9}"],
+        "RO" => ['prefix' => ['RO'], 'regex' => "RO[0-9]{2,10}"],
+        "SE" => ['prefix' => ['SE'], 'regex' => "SE[0-9]{12}"],
+        "SI" => ['prefix' => ['SI'], 'regex' => "SI[0-9]{8}"],
+        "SK" => ['prefix' => ['SK'], 'regex' => "SK[0-9]{10}"],
+    ];
+
     /**
      * @param Customer $customer
      * @param Address $billingAddress
@@ -157,37 +190,6 @@ class ValidationLib
 
     public static function isVatIdValid($countryCode, $vatId)
     {
-        $regexArray = [
-            "AT" => "ATU[0-9]{8}",
-            "BE" => "BE0[0-9]{9}",
-            "BG" => "BG[0-9]{9,10}",
-            "CH" => "CHE[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}[\.\-\s]{0,1}[0-9]{3}",
-            "CY" => "CY[0-9]{8}L",
-            "CZ" => "CZ[0-9]{8,10}",
-            "DE" => "DE[0-9]{9}",
-            "DK" => "DK[0-9]{8}",
-            "EE" => "EE[0-9]{9}",
-            "EL" => "(EL|GR)[0-9]{9}",
-            "GR" => "(EL|GR)[0-9]{9}",
-            "ES" => "ES[0-9A-Z][0-9]{7}[0-9A-Z]",
-            "FI" => "FI[0-9]{8}",
-            "FR" => "FR[0-9A-Z]{2}[0-9]{9}",
-            "GB" => "GB([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})",
-            "HU" => "HU[0-9]{8}",
-            "IE" => "IE[0-9]S[0-9]{5}L",
-            "IT" => "IT[0-9]{11}",
-            "LT" => "LT([0-9]{9}|[0-9]{12})",
-            "LU" => "LU[0-9]{8}",
-            "LV" => "LV[0-9]{11}",
-            "MT" => "MT[0-9]{8}",
-            "NL" => "NL[0-9]{9}B[0-9]{2}",
-            "PL" => "PL[0-9]{10}",
-            "PT" => "PT[0-9]{9}",
-            "RO" => "RO[0-9]{2,10}",
-            "SE" => "SE[0-9]{12}",
-            "SI" => "SI[0-9]{8}",
-            "SK" => "SK[0-9]{10}",
-        ];
-        return isset($regexArray[$countryCode]) ? preg_match('/^' . $regexArray[$countryCode] . '$/', $vatId) === 1 : true;
+        return isset(self::VAT_REGEX[$countryCode]) ? preg_match('/^' . self::VAT_REGEX[$countryCode]['regex'] . '$/', $vatId) === 1 : true;
     }
 }

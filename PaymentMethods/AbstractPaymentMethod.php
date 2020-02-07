@@ -72,7 +72,7 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
     public function validate($paymentData)
     {
         $return = [];
-        if($this->sessionHelper->getCustomer() == null) {
+        if ($this->sessionHelper->getCustomer() == null) {
             // customer is not logged in - maybe session has been expired
             $return['sErrorMessages'][] = 'Please login';
             return $return;
@@ -96,7 +96,15 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
                 $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingVatId');
             } else {
                 if ($billingAddress && ValidationLib::isVatIdValid($billingAddress->getCountry()->getIso(), $ratepayData['vatId']) === false) {
-                    $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidVatId'), $billingAddress->getCountry()->getIso());
+                    $vatPrefix = ValidationLib::VAT_REGEX[$billingAddress->getCountry()->getIso()]['prefix'];
+                    if (count($vatPrefix) > 1) {
+                        $textOr = $this->snippetManager->getNamespace('frontend/ratepay')->get('or');
+                        $lastIndex = count($vatPrefix) - 1;
+                        $lastItem = $vatPrefix[$lastIndex];
+                        unset($vatPrefix[$lastIndex]);
+                        $vatPrefix[$lastIndex - 1] .= ' ' . $textOr . ' ' . $lastItem;
+                    }
+                    $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidVatId'), implode(', ', $vatPrefix));
                 }
             }
         }
@@ -141,7 +149,7 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
         $ratepayData['phone'] = trim($ratepayData['phone']);
         //if($billingAddress->getPhone() == null) {
         // maybe it would be better to save the value in a attribute, to not override the real customer data.
-        if(!empty($ratepayData['phone'])) {
+        if (!empty($ratepayData['phone'])) {
             $billingAddress->setPhone($ratepayData['phone']);
         }
         //}
