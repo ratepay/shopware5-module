@@ -27,6 +27,7 @@
 ### Version 5.3.15 - WIP
 * RATEPLUG-31: lock payment methods for customer if reason code 703
 * RATEPLUG-66: credit/debit fix gateway requests
+* RATEPLUG-71: fix billingaddress update
 
 ### Version 5.3.14 - Released 2020-01-15
 * RATEPLUG-19: birthday input: also allow whitespaces instead of zeros

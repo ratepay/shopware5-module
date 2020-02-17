@@ -28,6 +28,8 @@ use RpayRatePay\Component\Service\Logger;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Services\DfpService;
 
+use Shopware\Models\Customer\Address;
+
 class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Frontend_Payment implements CSRFWhitelistAware
 {
     /**
@@ -189,62 +191,26 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $userModel = $customerModel->findOneBy(['id' => Shopware()->Session()->sUserId]);
         $userWrapped = new ShopwareCustomerWrapper($userModel, Shopware()->Models());
 
-        if (isset($Parameter['checkoutBillingAddressId']) && !is_null($Parameter['checkoutBillingAddressId'])) { // From Shopware 5.2 current billing address is sent by parameter
-            $addressModel = Shopware()->Models()->getRepository('Shopware\Models\Customer\Address');
-            $customerAddressBilling = $addressModel->findOneBy(['id' => $Parameter['checkoutBillingAddressId']]);
-            Shopware()->Session()->RatePAY['checkoutBillingAddressId'] = $Parameter['checkoutBillingAddressId'];
-            if (isset($Parameter['checkoutShippingAddressId']) && !is_null($Parameter['checkoutShippingAddressId'])) {
-                Shopware()->Session()->RatePAY['checkoutShippingAddressId'] = $Parameter['checkoutShippingAddressId'];
-            } else {
-                unset(Shopware()->Session()->RatePAY['checkoutShippingAddressId']);
-            }
-        } else {
-            $customerAddressBilling = $userWrapped->getBilling();
-        }
-
+        /** @var Address $billingAddress */
+        $billingAddress = $userWrapped->getBilling();
 
         $return = 'OK';
-        $updateUserData = [];
-        $updateAddressData = [];
 
-        if (!is_null($customerAddressBilling)) {
-            //shopware before 5.2 ... we could try changing order of if and ifelse
-            if (method_exists($customerAddressBilling, 'getBirthday')) {
-                $updateAddressData['phone'] = $Parameter['ratepay_phone'] ?: $customerAddressBilling->getPhone();
-                if ($customerAddressBilling->getCompany() !== '') {
-                    $updateAddressData['company'] = $Parameter['ratepay_company'] ?: $customerAddressBilling->getCompany();
-                } else {
-                    $updateAddressData['birthday'] = $Parameter['ratepay_dob'] ?: $customerAddressBilling->getBirthday()->format('Y-m-d');
-                }
-
-                try {
-                    Shopware()->Db()->update('s_user_billingaddress', $updateAddressData, 'userID=' . $Parameter['userid']); // TODO: Parameterize or make otherwise safe
-                    Logger::singleton()->info('Customer data was updated');
-                } catch (\Exception $exception) {
-                    Logger::singleton()->error('RatePAY was unable to update customer data: ' . $exception->getMessage());
-                    $return = 'NOK';
-                }
-            } elseif (method_exists($userModel, 'getBirthday')) { // From Shopware 5.2 birthday is moved to customer object
-                $updateAddressData['phone'] = $Parameter['ratepay_phone'] ?: $customerAddressBilling->getPhone();
-                if (!is_null($customerAddressBilling->getCompany())) {
-                    $updateAddressData['company'] = $Parameter['ratepay_company'] ?: $customerAddressBilling->getCompany();
-                } else {
-                    $updateUserData['birthday'] = $Parameter['ratepay_dob'] ?: $userModel->getBirthday()->format('Y-m-d');
-                }
-
-                try {
-                    if (count($updateUserData) > 0) {
-                        Shopware()->Db()->update('s_user', $updateUserData, 'id=' . $Parameter['userid']); // ToDo: Why parameter?
-                    }
-                    if (count($updateAddressData) > 0) {
-                        Shopware()->Db()->update('s_user_addresses', $updateAddressData, 'id=' . $Parameter['checkoutBillingAddressId']);
-                    }
-                    Logger::singleton()->info('Customer data was updated');
-                } catch (\Exception $exception) {
-                    Logger::singleton()->error('RatePAY was unable to update customer data: ' . $exception->getMessage());
-                    $return = 'NOK';
-                }
+        if (!is_null($billingAddress)) {
+            if(isset($Parameter['ratepay_phone']) && !empty($Parameter['ratepay_phone'])) {
+                $billingAddress->setPhone($Parameter['ratepay_phone']);
+            }
+            if(isset($Parameter['ratepay_company']) && !empty($Parameter['ratepay_company'])) {
+                $billingAddress->setCompany($Parameter['ratepay_company']);
             } else {
+                $userModel->setBirthday($Parameter['ratepay_dob'] ?: $userModel->getBirthday()->format('Y-m-d'));
+            }
+
+            try {
+                $this->getModelManager()->flush([$userModel, $billingAddress]);
+                Logger::singleton()->info('Customer data has been updated');
+            } catch (\Exception $exception) {
+                Logger::singleton()->error('RatePAY was unable to update customer data: ' . $exception->getMessage());
                 $return = 'NOK';
             }
         }
