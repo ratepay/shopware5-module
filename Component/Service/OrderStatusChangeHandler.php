@@ -1,7 +1,14 @@
 <?php
 
-use RpayRatePay\Component\Service\RatepayHelper as Helper;
 use RpayRatePay\Component\Service\Logger;
+use RpayRatePay\Component\Service\RatepayHelper as Helper;
+use RpayRatePay\Models\IPosition;
+use RpayRatePay\Models\OrderDiscount;
+use RpayRatePay\Models\OrderPositions;
+use RpayRatePay\Models\OrderShipping;
+use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Order\Detail;
+use Shopware\Models\Order\Order;
 
 class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler
 {
@@ -15,190 +22,151 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
     const MSG_FULL_RETURN_REJECTED = 'Full return request was rejected for order: %d. %s';
     const MSG_FULL_CANCELLATION_REJECTED = 'Full cancellation request was rejected for order: %d. %s';
 
+    const CHANGE_DELIVERY = 'CHANGE_DELIVERY';
+    const CHANGE_RETURN = 'CHANGE_RETURN';
+    const CHANGE_CANCEL = 'CHANGE_CANCEL';
     /**
-     * @param \Shopware\Models\Order\Order $order
-     * @param $config
-     * @return bool
+     * @var ModelManager
      */
-    private function canSendFullDelivery(\Shopware\Models\Order\Order $order, $config)
-    {
-        if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullDelivery'])
-            || !Helper::isRatePayPayment($order->getPayment()->getName())) {
-            return false;
-        }
-
-        $query = Shopware()->Db()->select()
-            ->from(['position' => 'rpay_ratepay_order_positions'], ['total' => 'COUNT(*)'])
-            ->joinLeft(['detail' => 's_order_details'], 'position.s_order_details_id = detail.id', null)
-            ->where('detail.orderID = :orderId')
-            ->where('(position.delivered + position.cancelled + position.returned) > 0');
-
-        $count = (int)Shopware()->Db()->fetchOne($query, [':orderId' => $order->getId()]);
-        if ($count > 0) {
-            Logger::singleton()->warning(
-                sprintf('-> Order [%d] has %d "not deliverable" positions', $order->getId(), $count)
-            );
-        }
-
-
-        return $count === 0;
-    }
-
+    private $modelManager;
     /**
-     * @param \Shopware\Models\Order\Order $order
-     * @param $config
-     * @return bool
+     * @var Enlight_Components_Db_Adapter_Pdo_Mysql
      */
-    private function canSendFullCancellation(\Shopware\Models\Order\Order $order, $config)
+    private $db;
+
+    public function __construct()
     {
-        if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullCancellation'])
-            || !Helper::isRatePayPayment($order->getPayment()->getName())) {
-            return false;
-        }
-
-        $query = Shopware()->Db()->select()
-            ->from(['position' => 'rpay_ratepay_order_positions'], ['total' => 'COUNT(*)'])
-            ->joinLeft(['detail' => 's_order_details'], 'position.s_order_details_id = detail.id', null)
-            ->where('detail.orderID = :orderId')
-            ->where('(position.delivered + position.cancelled + position.returned) > 0');
-
-        $count = (int)Shopware()->Db()->fetchOne($query, [':orderId' => $order->getId()]);
-        if ($count > 0) {
-            Logger::singleton()->warning(
-                sprintf('-> Order [%d] has %d "not cancellable" positions', $order->getId(), $count)
-            );
-        }
-
-        return $count === 0;
-    }
-
-    /**
-     * @param \Shopware\Models\Order\Order $order
-     * @param $config
-     * @return bool
-     */
-    private function canSendFullReturn(\Shopware\Models\Order\Order $order, $config)
-    {
-        if ($order->getOrderStatus()->getId() !== (int)($config['RatePayFullReturn'])
-            || !Helper::isRatePayPayment($order->getPayment()->getName())) {
-            return false;
-        }
-
-        $query = Shopware()->Db()->select()
-            ->from(['position' => 'rpay_ratepay_order_positions'], ['total' => 'COUNT(*)'])
-            ->joinLeft(['detail' => 's_order_details'], 'position.s_order_details_id = detail.id', null)
-            ->where('detail.orderID = :orderId')
-            ->where('position.delivered != detail.quantity');
-
-        $count = (int)Shopware()->Db()->fetchOne($query, [':orderId' => $order->getId()]);
-        if ($count > 0) {
-            Logger::singleton()->warning(
-                sprintf('-> Order [%d] has %d "not returnable" positions', $order->getId(), $count)
-            );
-        }
-
-        return $count === 0;
+        $this->modelManager = Shopware()->Models();
+        $this->db = Shopware()->Db();
     }
 
     /**
      * Sends Ratepay notification of order status change when new status meets criteria.
      *
-     * @param \Shopware\Models\Order\Order $order
+     * @param Order $order
      * @throws \Zend_Db_Adapter_Exception
      */
-    public function informRatepayOfOrderStatusChange(\Shopware\Models\Order\Order $order)
+    public function informRatepayOfOrderStatusChange(Order $order)
     {
+        if (!Helper::isRatePayPayment($order->getPayment()->getName())) {
+            return;
+        }
+
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
-        $attributes = $order->getAttribute();
-        $backend = (bool)($attributes->getRatepayBackend());
+        $roundTrips = [
+            self::CHANGE_DELIVERY => $config['RatePayFullDelivery'],
+            self::CHANGE_RETURN => $config['RatePayFullReturn'],
+            self::CHANGE_CANCEL => $config['RatePayFullCancellation'],
+        ];
 
-        $netPrices = $order->getNet() === 1;
-        $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices, $order->getShop());
+        foreach ($roundTrips as $changeType => $statusId) {
+            if ($order->getOrderStatus()->getId() !== $statusId) {
+                continue;
+            }
 
-        $shippingCosts = $order->getInvoiceShipping();
+            $attributes = $order->getAttribute();
+            $backend = (bool)($attributes->getRatepayBackend());
 
-        $items = [];
-        foreach ($order->getDetails() as $item) {
-            $items[] = $this->getItemForOrderDetails($item);
-        }
+            $netPrices = $order->getNet() === 1;
+            $modelFactory = new Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices, $order->getShop());
 
-        if (!empty($shippingCosts)) {
-            $items['Shipping'] = [
-                'articlename' => 'Shipping',
-                'orderDetailId' => 'shipping',
-                'ordernumber' => 'shipping',
-                'quantity' => 1,
-                'priceNumeric' => $shippingCosts,
+            $shippingCosts = $order->getInvoiceShipping();
 
-                // Shopware does have a bug - so getTaxRate will not work properly
-                // Issue: https://issues.shopware.com/issues/SW-24119
-                // we can not simple calculate the shipping tax cause the values in the database are not properly rounded.
-                // So we do not get the correct shipping tax rate if we calculate it.
-                'tax_rate' => \RatePAY\Service\Math::taxFromPrices($order->getInvoiceShippingNet(), $order->getInvoiceShipping()) > 0 ? $order->getInvoiceShippingTaxRate() : 0
-            ];
-        }
+            $items = [];
+            foreach ($order->getDetails() as $item) {
+                $item = $this->getItemForOrderDetails($item, $changeType);
+                if ($item) {
+                    $items[] = $item;
+                }
+            }
 
-        if ($this->canSendFullDelivery($order, $config)) {
-            $this->performFullDeliveryRequest($order, $modelFactory, $items);
-        }
+            $shippingPosition = $this->modelManager->find(OrderShipping::class, $order->getId());
 
-        if ($this->canSendFullCancellation($order, $config)) {
-            $this->performFullCancellationRequest($order, $modelFactory, $items);
-        }
+            if ($shippingPosition && !empty($shippingCosts)) {
+                $quantity = $this->getQuantity($shippingPosition, 1, $changeType);
+                if ($quantity) {
+                    $items['Shipping'] = [
+                        'articlename' => 'Shipping',
+                        'ordernumber' => 'shipping',
+                        'quantity' => $quantity,
+                        'priceNumeric' => $shippingCosts,
+                        // Shopware does have a bug - so getTaxRate will not work properly
+                        // Issue: https://issues.shopware.com/issues/SW-24119
+                        // we can not simple calculate the shipping tax cause the values in the database are not properly rounded.
+                        // So we do not get the correct shipping tax rate if we calculate it.
+                        'tax_rate' => \RatePAY\Service\Math::taxFromPrices($order->getInvoiceShippingNet(), $order->getInvoiceShipping()) > 0 ? $order->getInvoiceShippingTaxRate() : 0,
+                        'positionObject' => $shippingPosition
+                    ];
+                }
+            }
 
-        if ($this->canSendFullReturn($order, $config)) {
-            $this->performFullReturnRequest($order, $modelFactory, $items);
+            switch ($changeType) {
+                case self::CHANGE_DELIVERY:
+                    $this->performFullDeliveryRequest($order, $modelFactory, $items);
+                    break;
+                case self::CHANGE_CANCEL:
+                    $this->performFullCancellationRequest($order, $modelFactory, $items);
+                    break;
+                case self::CHANGE_RETURN:
+                    $this->performFullReturnRequest($order, $modelFactory, $items);
+                    break;
+            }
         }
     }
 
-    /**
-     * Updates the given binding for the given article
-     *
-     * @param $orderID
-     * @param $articleOrderNumberOrId
-     * @param $bind
-     * @throws \Zend_Db_Adapter_Exception
-     */
-    private function updateItem($orderID, $articleOrderNumberOrId, $bind)
+    protected function getQuantity(IPosition $position, $orderedQuantity, $changeType)
     {
-        if ($articleOrderNumberOrId === 'shipping') {
-            Shopware()->Db()->update('rpay_ratepay_order_shipping', $bind, '`s_order_id`=' . $orderID);
-        } else if ($articleOrderNumberOrId === 'discount') {
-            Shopware()->Db()->update('rpay_ratepay_order_discount', $bind, '`s_order_id`=' . $orderID);
-        } else {
-            Shopware()->Db()->update('rpay_ratepay_order_positions', $bind, '`s_order_details_id`=' . $articleOrderNumberOrId);
+        switch ($changeType) {
+            case self::CHANGE_DELIVERY:
+            case self::CHANGE_CANCEL:
+                return $orderedQuantity - $position->getDelivered() - $position->getCancelled();
+                break;
+            case self::CHANGE_RETURN:
+                return $position->getDelivered() - $position->getReturned();
+                break;
+            default:
+                return 0;
         }
     }
 
-    /**
-     * @param \Shopware\Models\Order\Detail $item
-     * @return array
-     */
-    private function getItemForOrderDetails($item)
+    private function getItemForOrderDetails(Detail $item, $changeType)
     {
-        $data = [
+        $position = $this->modelManager->find(OrderPositions::class, $item->getId());
+        if ($position === null) {
+            $position = $this->modelManager->find(OrderDiscount::class, [
+                'sOrderId' => $item->getOrder()->getId(),
+                'sOrderDetailId' => $item->getId()
+            ]);
+        }
+        if ($position === null) {
+            return null;
+        }
+        $quantity = $this->getQuantity($position, $item->getQuantity(), $changeType);
+        $data = $quantity > 0 ? [
             'articlename' => $item->getArticlename(),
             'orderDetailId' => $item->getId(),
             'ordernumber' => $item->getArticlenumber(),
-            'quantity' => $item->getQuantity(),
+            'quantity' => $quantity,
             'priceNumeric' => $item->getPrice(),
             // Shopware does have a bug - so getTaxRate will not work properly
             // Issue: https://issues.shopware.com/issues/SW-24119
-            'tax_rate' => $item->getTax() == null ? 0 : $item->getTaxRate()
-        ];
-        return Shopware()->Events()->filter('RatePAY_filter_order_items', $data);
+            'tax_rate' => $item->getTax() == null ? 0 : $item->getTaxRate(),
+            'modus' => $item->getMode(),
+            'positionObject' => $position
+        ] : null;
+        return $data ? Shopware()->Events()->filter('RatePAY_filter_order_items', $data) : null;
     }
 
     /**
-     * @param \Shopware\Models\Order\Order $order
+     * @param Order $order
      * @param $state
      * @param $items
      * @param $history
      * @param $historyMsg
      * @throws Zend_Db_Adapter_Exception
      */
-    private function updateItemStates(\Shopware\Models\Order\Order $order, $state, $items, $history, $historyMsg)
+    private function updateItemStates(Order $order, $state, $items, $history, $historyMsg)
     {
         if (!in_array($state, ['delivered', 'returned', 'cancelled'])) {
             Logger::singleton()->error('Incorrect item state "' . $state . '" was given.');
@@ -206,13 +174,25 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         }
 
         foreach ($items as $item) {
-            $bind = [
-                $state => $item['quantity']
-            ];
 
-            $this->updateItem($order->getId(), $item['orderDetailId'], $bind);
-            if ($item['quantity'] <= 0) {
+            /** @var IPosition $position */
+            $position = isset($item['positionObject']) ? $item['positionObject'] : null;
+            if ($position == null || $item['quantity'] <= 0) {
                 continue;
+            }
+
+            switch ($state) {
+                case 'delivered':
+                    $position->setDelivered($position->getDelivered() + $item['quantity']);
+                    break;
+                case 'returned':
+                    $position->setReturned($position->getReturned() + $item['quantity']);
+                    break;
+                case 'cancelled':
+                    $position->setCancelled($position->getCancelled() + $item['quantity']);
+                    break;
+                default:
+                    continue;
             }
 
             $history->logHistory(
@@ -223,16 +203,18 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 $item['quantity']
             );
         }
+        $this->modelManager->flush(array_map(function ($item) {
+            return $item['positionObject'];
+        }, $items));
     }
 
     /**
-     * @param \Shopware\Models\Order\Order $order
+     * @param Order $order
      * @param $modelFactory
      * @param $items
      */
-    private function performFullReturnRequest(\Shopware\Models\Order\Order $order, $modelFactory, $items)
+    private function performFullReturnRequest(Order $order, $modelFactory, $items)
     {
-        Logger::singleton()->debug('--> canSendFullReturn');
         $history = new Shopware_Plugins_Frontend_RpayRatePay_Component_History();
         $operationData = [
             'orderId' => $order->getId(),
@@ -257,9 +239,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
         }
     }
 
-    private function performFullCancellationRequest(\Shopware\Models\Order\Order $order, $modelFactory, $items)
+    private function performFullCancellationRequest(Order $order, $modelFactory, $items)
     {
-        Logger::singleton()->debug('--> canSendFullCancellation');
         $history = new \Shopware_Plugins_Frontend_RpayRatePay_Component_History();
         $operationData = [
             'orderId' => $order->getId(),
@@ -285,13 +266,12 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
     }
 
     /**
-     * @param \Shopware\Models\Order\Order $order
+     * @param Order $order
      * @param $modelFactory
      * @param $items
      */
-    private function performFullDeliveryRequest(\Shopware\Models\Order\Order $order, $modelFactory, $items)
+    private function performFullDeliveryRequest(Order $order, $modelFactory, $items)
     {
-        Logger::singleton()->debug('--> canSendFullDelivery');
         $history = new \Shopware_Plugins_Frontend_RpayRatePay_Component_History();
         $operationData = [
             'orderId' => $order->getId(),
