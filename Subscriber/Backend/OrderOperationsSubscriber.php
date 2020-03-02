@@ -79,7 +79,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
             'Shopware_Controllers_Backend_Order::saveAction::after' => 'onBidirectionalSendOrderOperation',
             'Shopware_Controllers_Backend_Order::batchProcessAction::after' => 'afterOrderBatchProcess',
             'Shopware_Controllers_Backend_Order::deletePositionAction::before' => 'beforeDeleteOrderPosition',
-            'Shopware_Controllers_Backend_Order::deleteAction::before' => 'beforeDeleteOrder',
+            'Shopware_Controllers_Backend_Order::deleteAction::replace' => 'replaceDeleteOrder',
         ];
     }
 
@@ -193,12 +193,11 @@ class OrderOperationsSubscriber implements SubscriberInterface
      * Stops Order deletion, when any article has been send
      *
      * @param Enlight_Hook_HookArgs $args
-     * @return bool
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws TransactionRequiredException
      */
-    public function beforeDeleteOrder(Enlight_Hook_HookArgs $args)
+    public function replaceDeleteOrder(Enlight_Hook_HookArgs $args)
     {
         /** @var Shopware_Controllers_Backend_Order $controller */
         $controller = $args->getSubject();
@@ -208,7 +207,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
 
         if (PaymentMethods::exists($order->getPayment()) === false) {
             //payment is not a ratepay order
-            return false;
+            return;
         }
         $sql = 'SELECT COUNT(*) FROM `s_order_details` AS `detail` '
             . 'INNER JOIN `rpay_ratepay_order_positions` AS `position` '
@@ -217,8 +216,9 @@ class OrderOperationsSubscriber implements SubscriberInterface
             . '(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)';
         $count = $this->db->fetchOne($sql, [$order->getId()]);
         if ($count > 0) {
-            $this->logger->warning('RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.');
-            $args->stop();
+            $message = 'RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.';
+            $controller->View()->assign(['success' => false, 'message' => $message]);
+            $this->logger->warning($message);
         } else {
 
             $basketBuilder = new BasketArrayBuilder($order, $order->getDetails());
@@ -228,10 +228,14 @@ class OrderOperationsSubscriber implements SubscriberInterface
             $this->paymentCancelService->setOrder($order);
             $response = $this->paymentCancelService->doRequest();
 
-            if ($response->isSuccessful() !== true) {
-                $this->logger->warning('Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');
-                $args->stop();
+            if ($response->isSuccessful()) {
+                $args->getSubject()->executeParent($args->getMethod(), $args->getArgs());
+            } else {
+                $message = 'Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.';
+                $controller->View()->assign(['success' => false, 'message' => $message]);
+                $this->logger->warning($message);
             }
+
         }
     }
 }
