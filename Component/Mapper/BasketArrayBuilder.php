@@ -329,8 +329,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
     public function isDiscountItem($item)
     {
         if(is_array($item)) {
+            $price = isset($item['price']) ? $item['price'] : $item['priceNumeric'];
             if (isset($item['modus'])) {
-                return $item['modus'] != 0 && ($item['modus'] != 4 || $item['price'] < 0);
+                return $item['modus'] != 0 && ($item['modus'] != 4 || $price < 0);
             } else if(isset($item['articlenumber'])) {
                 return 'discount' === $item['articlenumber'];
             }
