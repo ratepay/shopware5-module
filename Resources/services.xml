@@ -85,6 +85,9 @@
             <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
         </service>
 
+        <service id="RpayRatePay\Services\StaticTextService">
+            <argument>%rpay_rate_pay.plugin_dir%</argument>
+        </service>
 
 
     </services>

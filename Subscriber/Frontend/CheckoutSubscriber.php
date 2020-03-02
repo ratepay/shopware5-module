@@ -11,6 +11,7 @@ use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\InstallmentService;
+use RpayRatePay\Services\StaticTextService;
 use sBasket;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
@@ -42,13 +43,18 @@ class CheckoutSubscriber implements SubscriberInterface
      * @var SessionHelper
      */
     private $sessionHelper;
+    /**
+     * @var StaticTextService
+     */
+    private $staticTextService;
 
     public function __construct(
         ModelManager $modelManager,
         SessionHelper $sessionHelper,
         ConfigService $configService,
         ContextService $contextService,
-        DfpService $dfpService
+        DfpService $dfpService,
+        StaticTextService $staticTextService
     )
     {
         $this->modelManager = $modelManager;
@@ -56,6 +62,7 @@ class CheckoutSubscriber implements SubscriberInterface
         $this->dfpService = $dfpService;
         $this->sessionHelper = $sessionHelper;
         $this->configService = $configService;
+        $this->staticTextService = $staticTextService;
     }
 
     public static function getSubscribedEvents()
@@ -89,6 +96,10 @@ class CheckoutSubscriber implements SubscriberInterface
                 $data['dfp'] = str_replace('\\"', '"', $dfpHelper->getDeviceIdentSnippet($this->dfpService->getDfpId()));
             }
 
+            $view->assign('ratepay', $data);
+        } else if ($request->getActionName() === 'shippingPayment') {
+            $data = $view->getAssign('ratepay') ? : [];
+            $data['legalText'] = $this->staticTextService->getText('LegalText');
             $view->assign('ratepay', $data);
         }
     }
