@@ -9,7 +9,7 @@ use Shopware\Components\Model\ModelEntity;
  * @ORM\Entity()
  * @ORM\Table(name="rpay_ratepay_order_shipping")
  */
-class OrderShipping extends ModelEntity
+class OrderShipping extends ModelEntity implements IPosition
 {
     /**
      * @var integer
