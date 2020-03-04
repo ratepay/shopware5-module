@@ -101,6 +101,10 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeH
                 }
             }
 
+            if(count($items) === 0) {
+                continue;
+            }
+
             switch ($changeType) {
                 case self::CHANGE_DELIVERY:
                     $this->performFullDeliveryRequest($order, $modelFactory, $items);
