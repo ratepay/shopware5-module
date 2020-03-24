@@ -170,11 +170,9 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         if (!is_null($shipping)) {
             $data[] = $shipping;
         }
-        $discount = $this->getDiscountFromDBAsItem($orderId);
-        if (!is_null($discount)) {
-            $data[] = $discount;
+        if($discounts = $this->getDiscountFromDBAsItem($orderId)) {
+            $data = array_merge($data, $discounts);
         }
-
         return $data;
     }
 
@@ -226,6 +224,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             . '`detail`.`id` AS `orderDetailId`, '
             . '`detail`.`price` AS `price`, '
             . '`detail`.`name` AS `name`, '
+            . '`detail`.`quantity` AS `quantity`,'
             . '(1 - `delivered` - `cancelled`) AS `quantityDeliver`, '
             . '(`delivered` - `returned`) AS `quantityReturn`, '
             . '`detail`.`articleordernumber` as `articleordernumber`, '
@@ -236,21 +235,11 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             . 'INNER JOIN `rpay_ratepay_order_discount` as position ON `position`.`s_order_details_id` = `detail`.`id` '
             . 'WHERE `detail`.`orderID` = ?';
         $rows = Shopware()->Db()->fetchAll($sql, [$orderId]);
-        $item = [
-            'quantity' => 1,
-            'articleID' => 0,
-            //'articleordernumber' => 'discount',
-            'price' => 0
-        ];
         if (count($rows) == 0) {
             return null;
         }
 
-        foreach ($rows as $row) {
-            $item['price'] += floatval($row['price']);
-            $item['name'] .= (isset($item['name']) ? ' & ' : null) . $row['name'];
-        }
-        return array_merge($rows[0], $item); // cause any position does have the same delivery, canceled and returned values, we can pick the first row
+        return $rows;
     }
 
     /**

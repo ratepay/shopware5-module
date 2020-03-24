@@ -227,15 +227,10 @@ class BasketArrayBuilder
                 throw new RuntimeException('the object must be a type of ' . Detail::class . ' or ' . PositionStruct::class);
             }
 
-            if (isset($this->basket['Discount'])) {
-                throw new RuntimeException('ratepay does not support more than one discount element');
-            } else {
-                $this->basket['Discount'] = [
-                    'Description' => $name,
-                    'UnitPriceGross' => $price,
-                    'TaxRate' => $taxRate,
-                ];
-            }
+            $this->basket['Discount']['Description'] = 'Rabatt'; // TODO translation
+            $this->basket['Discount']['UnitPriceGross'] = isset($this->basket['Discount']['UnitPriceGross']) ? $this->basket['Discount']['UnitPriceGross'] + $price : $price;
+            $this->basket['Discount']['TaxRate'] = $taxRate;
+
             $position = new BasketPosition($productNumber, 1);
             if ($item instanceof Detail) {
                 $position->setOrderDetail($item);
