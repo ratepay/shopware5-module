@@ -2,20 +2,16 @@
 
 namespace RpayRatePay\Services;
 
-use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\Query\Expr\Join;
 use Exception;
 use Monolog\Logger;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
-use RpayRatePay\Models\Position\Product as ProductPosition;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Request\PaymentCancelService;
 use RpayRatePay\Services\Request\PaymentDeliverService;
 use RpayRatePay\Services\Request\PaymentReturnService;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Order\Detail as OrderDetail;
 use Shopware\Models\Order\Order;
 
 class OrderStatusChangeService
@@ -26,6 +22,11 @@ class OrderStatusChangeService
     const MSG_FULL_DELIVERY_REJECTED = 'Full delivery request was rejected for order: %d. %s';
     const MSG_FULL_RETURN_REJECTED = 'Full return request was rejected for order: %d. %s';
     const MSG_FULL_CANCELLATION_REJECTED = 'Full cancellation request was rejected for order: %d. %s';
+
+
+    const CHANGE_DELIVERY = 'CHANGE_DELIVERY';
+    const CHANGE_RETURN = 'CHANGE_RETURN';
+    const CHANGE_CANCEL = 'CHANGE_CANCEL';
 
     /**
      * @var Logger
@@ -91,63 +92,42 @@ class OrderStatusChangeService
             return;
         }
 
+        $roundTrips = [
+            self::CHANGE_DELIVERY => $this->pluginConfig->getBidirectionalOrderStatus('full_delivery'),
+            self::CHANGE_RETURN => $this->pluginConfig->getBidirectionalOrderStatus('full_return'),
+            self::CHANGE_CANCEL => $this->pluginConfig->getBidirectionalOrderStatus('full_cancellation'),
+        ];
 
-        if ($this->canSendFullDelivery($order)) {
-            $this->performFullDeliveryRequest($order);
+        foreach ($roundTrips as $changeType => $statusId) {
+            if ($order->getOrderStatus()->getId() !== $statusId) {
+                continue;
+            }
+
+            switch ($changeType) {
+                case self::CHANGE_DELIVERY:
+                    $this->performFullDeliveryRequest($order);
+                    break;
+                case self::CHANGE_RETURN:
+                    $this->performFullReturnRequest($order);
+                    break;
+                case self::CHANGE_CANCEL:
+                    $this->performFullCancellationRequest($order);
+                    break;
+            }
         }
-
-        if ($this->canSendFullCancellation($order)) {
-            $this->performFullCancellationRequest($order);
-        }
-
-        if ($this->canSendFullReturn($order)) {
-            $this->performFullReturnRequest($order);
-        }
-    }
-
-    /**
-     * @param Order $order
-     * @return bool
-     */
-    private function canSendFullDelivery(Order $order)
-    {
-        if ($order->getOrderStatus()->getId() !== $this->pluginConfig->getBidirectionalOrderStatus('full_delivery')) {
-            return false;
-        }
-
-        $qb = $this->getCountQueryBuilder($order);
-        $qb->andWhere($qb->expr()->gt('(detail.quantity - position.delivered - position.cancelled)', '0'));
-
-        try {
-            return intval($qb->getQuery()->getSingleScalarResult()) > 0;
-        } catch (NoResultException $e) {
-            return false;
-        }
-
-    }
-
-    protected function getCountQueryBuilder(Order $order)
-    {
-        $qb = $this->modelManager->createQueryBuilder();
-        return $qb->select('count(detail.id)')                                          //TODO add discount & shipping
-        ->from(ProductPosition::class, 'position')
-            ->innerJoin(OrderDetail::class, 'detail', Join::WITH, 'position.orderDetail = detail.id')
-            ->andWhere($qb->expr()->eq('detail.order', ':order_id'))
-            ->andWhere($qb->expr()->in('detail.mode', PositionHelper::MODE_SW_PRODUCT)) //TODO add discount & shipping
-            ->setParameter('order_id', $order->getId());
     }
 
     private function performFullDeliveryRequest(Order $order)
     {
-        $this->logger->debug('--> canSendFullDelivery');
-
         try {
+            $sendToGateway = false;
             $basketArrayBuilder = new BasketArrayBuilder($order);
             foreach ($order->getDetails() as $detail) {
                 $position = $this->positionHelper->getPositionForDetail($detail);
                 if ($position->getOpenQuantity() > 0) {
                     //just deliver not delivered or canceled items
                     $basketArrayBuilder->addItem($detail, $position->getOpenQuantity());
+                    $sendToGateway = true;
                 }
             }
             $shippingPosition = $this->positionHelper->getShippingPositionForOrder($order);
@@ -155,7 +135,11 @@ class OrderStatusChangeService
                 //just deliver not delivered or canceled items
                 if ($shippingPosition->getOpenQuantity() === 1) {
                     $basketArrayBuilder->addShippingItem();
+                    $sendToGateway = true;
                 }
+            }
+            if ($sendToGateway == false) {
+                return;
             }
 
             $this->paymentDeliverService->setItems($basketArrayBuilder);
@@ -173,38 +157,19 @@ class OrderStatusChangeService
         }
     }
 
-    /**
-     * @param Order $order
-     * @return bool
-     */
-    private function canSendFullCancellation(Order $order)
-    {
-        if ($order->getOrderStatus()->getId() !== $this->pluginConfig->getBidirectionalOrderStatus('full_cancellation')) {
-            return false;
-        }
-
-        $qb = $this->getCountQueryBuilder($order);
-        //only if no product has been shipped/canceled/returned.
-        $qb->andWhere($qb->expr()->eq('position.delivered + position.cancelled + position.returned', 0));
-
-        try {
-            return intval($qb->getQuery()->getSingleScalarResult()) > 0;
-        } catch (NoResultException $e) {
-            return false;
-        }
-    }
-
     private function performFullCancellationRequest(Order $order)
     {
-        $this->logger->debug('--> canSendFullCancellation');
-
         try {
+            $sendToGateway = false;
             $basketArrayBuilder = new BasketArrayBuilder($order);
             foreach ($order->getDetails() as $detail) {
                 $position = $this->positionHelper->getPositionForDetail($detail);
                 // openQuantity should be the orderedQuantity.
                 // To prevent unexpected errors we will only submit the openQuantity
-                $basketArrayBuilder->addItem($detail, $position->getOpenQuantity());
+                if ($position->getOpenQuantity() > 0) {
+                    $basketArrayBuilder->addItem($detail, $position->getOpenQuantity());
+                    $sendToGateway = true;
+                }
             }
             $shippingPosition = $this->positionHelper->getShippingPositionForOrder($order);
             if ($shippingPosition) {
@@ -212,7 +177,12 @@ class OrderStatusChangeService
                 // To prevent unexpected errors we will only submit the openQuantity
                 if ($shippingPosition->getOpenQuantity() === 1) {
                     $basketArrayBuilder->addShippingItem();
+                    $sendToGateway = true;
                 }
+            }
+
+            if ($sendToGateway == false) {
+                return;
             }
 
             $this->paymentCancelService->setItems($basketArrayBuilder);
@@ -229,42 +199,30 @@ class OrderStatusChangeService
         }
     }
 
-    /**
-     * @param Order $order
-     * @return bool
-     */
-    private function canSendFullReturn(Order $order)
-    {
-        if ($order->getOrderStatus()->getId() !== $this->pluginConfig->getBidirectionalOrderStatus('full_return')) {
-            return false;
-        }
-
-        $qb = $this->getCountQueryBuilder($order);
-        $qb->andWhere($qb->expr()->eq('position.delivered', 'detail.quantity'));
-
-        try {
-            return intval($qb->getQuery()->getSingleScalarResult()) > 0;
-        } catch (NoResultException $e) {
-            return false;
-        }
-    }
-
     private function performFullReturnRequest(Order $order)
     {
-        $this->logger->debug('--> canSendFullReturn');
         try {
+            $sendToGateway = false;
             $basketArrayBuilder = new BasketArrayBuilder($order);
             foreach ($order->getDetails() as $detail) {
                 $position = $this->positionHelper->getPositionForDetail($detail);
                 //to prevent unexpected errors, we will only return the delivered items
-                $basketArrayBuilder->addItem($detail, $position->getDelivered());
+                if ($position->getDelivered() - $position->getReturned()) {
+                    $basketArrayBuilder->addItem($detail, $position->getDelivered() - $position->getReturned());
+                    $sendToGateway = true;
+                }
             }
             $shippingPosition = $this->positionHelper->getShippingPositionForOrder($order);
             if ($shippingPosition) {
                 if ($shippingPosition->getOpenQuantity() === 0) { // shipping has been delivered so we can return it
                     $basketArrayBuilder->addShippingItem();
+                    $sendToGateway = true;
                 }
             }
+            if ($sendToGateway == false) {
+                return;
+            }
+
             $this->paymentReturnService->setItems($basketArrayBuilder);
             $this->paymentReturnService->setOrder($order);
             $result = $this->paymentReturnService->doRequest();

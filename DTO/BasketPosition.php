@@ -27,16 +27,12 @@ class BasketPosition
 
     /**
      * BasketPosition constructor.
-     * @param OrderDetail|$productNumber
+     * @param string $productNumber
      * @param $quantity
      */
     public function __construct($productNumber, $quantity)
     {
-        if($productNumber instanceof OrderDetail) {
-            $this->orderDetail = $productNumber;
-        } else {
-            $this->productNumber = $productNumber;
-        }
+        $this->productNumber = $productNumber;
         $this->quantity = $quantity;
     }
 

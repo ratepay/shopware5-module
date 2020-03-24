@@ -156,7 +156,11 @@ class BasketArrayBuilder
                 'TaxRate' => $taxRate,
             ]
         ];
-        $this->simpleItems[$productNumber] = new BasketPosition($orderDetail ? $orderDetail : $productNumber, $itemQuantity);
+        $position = new BasketPosition($productNumber, $itemQuantity);
+        if ($orderDetail) {
+            $position->setOrderDetail($orderDetail);
+        }
+        $this->simpleItems[$position->getProductNumber()] = $position;
     }
 
     public function addShippingItem()
@@ -190,8 +194,8 @@ class BasketArrayBuilder
                 'UnitPriceGross' => $shippingCost,
                 'TaxRate' => $shippingTax,
             ];
-            $this->simpleItems['shipping'] = 1; // TODO WTF - whats that - it will be overridden by the next line?!
-            $this->simpleItems[BasketPosition::SHIPPING_NUMBER] = new BasketPosition(BasketPosition::SHIPPING_NUMBER, 1);
+            $position = new BasketPosition(BasketPosition::SHIPPING_NUMBER, 1);
+            $this->simpleItems[$position->getProductNumber()] = $position;
         }
     }
 
@@ -205,6 +209,7 @@ class BasketArrayBuilder
         }
         if ($this->useFallbackDiscount) {
             $this->addItem($item);
+            return;
         } else {
             if ($item instanceof Detail) {
                 $name = $item->getArticleName();
@@ -231,7 +236,11 @@ class BasketArrayBuilder
                     'TaxRate' => $taxRate,
                 ];
             }
-            $this->simpleItems[$productNumber] = new BasketPosition($productNumber, 1);
+            $position = new BasketPosition($productNumber, 1);
+            if ($item instanceof Detail) {
+                $position->setOrderDetail($item);
+            }
+            $this->simpleItems[$productNumber] = $position;
         }
     }
 

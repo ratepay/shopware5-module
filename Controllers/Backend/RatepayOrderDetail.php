@@ -268,8 +268,12 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $items = [];
         foreach ($itemsParam as $item) {
             if ($item->deliveredItems > 0) {
+                $position = new BasketPosition($item->articlenumber, $item->deliveredItems);
                 $detail = $item->orderDetailId ? $this->modelManager->find(Detail::class, $item->orderDetailId) : null;
-                $items[$item->articlenumber] = new BasketPosition($detail ? : $item->articlenumber, $item->deliveredItems);
+                if ($detail) {
+                    $position->setOrderDetail($detail);
+                }
+                $items[$position->getProductNumber()] = $position;
             }
         }
         $isSuccess = false;
@@ -286,7 +290,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
                 } else {
                     $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->View()->assign('message', $e->getMessage());
             }
         }
@@ -307,8 +311,12 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $items = [];
         foreach ($itemsParam as $item) {
             if ($item->cancelledItems > 0) {
+                $position = new BasketPosition($item->articlenumber, $item->cancelledItems);
                 $detail = $item->orderDetailId ? $this->modelManager->find(Detail::class, $item->orderDetailId) : null;
-                $items[$item->articlenumber] = new BasketPosition($detail ? : $item->articlenumber, $item->cancelledItems);
+                if ($detail) {
+                    $position->setOrderDetail($detail);
+                }
+                $items[$position->getProductNumber()] = $position;
             }
         }
 
@@ -343,8 +351,12 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $items = [];
         foreach ($itemsParam as $item) {
             if ($item->returnedItems > 0) {
+                $position = new BasketPosition($item->articlenumber, $item->returnedItems);
                 $detail = $item->orderDetailId ? $this->modelManager->find(Detail::class, $item->orderDetailId) : null;
-                $items[$item->articlenumber] = new BasketPosition($detail ? : $item->articlenumber, $item->returnedItems);
+                if ($detail) {
+                    $position->setOrderDetail($detail);
+                }
+                $items[$position->getProductNumber()] = $position;
             }
         }
 
@@ -419,7 +431,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
 
             $isSuccess = $response === true || $response->isSuccessful();
             if ($isSuccess) {
-                $this->View()->assign('message', ucfirst($operationType).' was successful'); //TODO translation
+                $this->View()->assign('message', ucfirst($operationType) . ' was successful'); //TODO translation
             } else {
                 $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
             }
