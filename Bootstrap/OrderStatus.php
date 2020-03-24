@@ -24,6 +24,12 @@ class OrderStatus extends AbstractBootstrap
             foreach ($status as $id => $options) {
                 $entity = $this->modelManager->getRepository(Status::class)->find($id);
                 if ($entity) {
+                    if($entity->getName() == null) {
+                        // issue RATEPLUG-73: in further versions the name was not set, so the status wasn't displayed
+                        // correctly in the admin
+                        $entity->setName($options['name']);
+                        $this->modelManager->flush($entity);
+                    }
                     continue;
                 }
                 $this->modelManager->getConnection()->insert(
