@@ -25,7 +25,6 @@ require_once __DIR__ . '/Component/CSRFWhitelistAware.php';
 
 class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Components_Plugin_Bootstrap
 {
-    private $str;
 
     public static function getPaymentMethods()
     {
@@ -186,6 +185,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             new \RpayRatePay\Bootstrapping\ShopConfigSetup($this),
             new \RpayRatePay\Bootstrapping\CronjobSetup($this),
             new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
+            new \RpayRatePay\Bootstrapping\PaymentStatusesSetup($this),
+            new \RpayRatePay\Bootstrapping\DeliveryStatusesSetup($this),
             new \RpayRatePay\Bootstrapping\UserAttributeSetup($this)
         ];
 
