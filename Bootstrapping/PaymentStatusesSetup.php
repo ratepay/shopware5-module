@@ -29,7 +29,7 @@ class PaymentStatusesSetup extends Bootstrapper
         $sql = 'INSERT IGNORE INTO `s_core_states` SET `id` =?, `description` =?, `position` =?, `group` =?, `mail`=?, `name`=?';
         try {
             Shopware()->Db()->query($sql, [
-                155, 'Zahlungsabwicklung durch RatePAY', 155, 'payment', 0, 'rp_payment'
+                155, 'Zahlungsabwicklung durch RatePAY', 155, 'payment', 0, 'ratepay_payment_via_ratepay'
             ]);
         } catch (Exception $exception) {
             Logger::singleton()->addNotice($exception->getMessage());
@@ -46,7 +46,7 @@ class PaymentStatusesSetup extends Bootstrapper
         /** @var Status $status */
         $status = $this->modelManager->find(Status::class, 155);
         if ($status) {
-            $status->setName('rp_payment');
+            $status->setName('ratepay_payment_via_ratepay');
             $flush[] = $status;
         }
         if (count($flush)) {

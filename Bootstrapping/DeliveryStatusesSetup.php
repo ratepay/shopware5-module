@@ -29,14 +29,14 @@ class DeliveryStatusesSetup extends Bootstrapper
         $sql = 'INSERT IGNORE INTO `s_core_states` SET `id` =?, `description` =?, `position` =?, `group` =?, `mail`=?, `name`=?';
         try {
             Shopware()->Db()->query($sql, [
-                255, 'Teil-(Retoure)', 255, 'state', 0, 'rp_partly_return'
+                255, 'Teil-(Retoure)', 255, 'state', 0, 'ratepay_partly_return'
             ]);
         } catch (Exception $exception) {
             Logger::singleton()->addNotice($exception->getMessage());
         }
         try {
             Shopware()->Db()->query($sql, [
-                265, 'Teil-(Storno)', 265, 'state', 0, 'rp_partly_cancel'
+                265, 'Teil-(Storno)', 265, 'state', 0, 'ratepay_partly_cancel'
             ]);
         } catch (Exception $exception) {
             Logger::singleton()->addNotice($exception->getMessage());
@@ -53,14 +53,14 @@ class DeliveryStatusesSetup extends Bootstrapper
         /** @var Status $status */
         $status = $this->modelManager->find(Status::class, 255);
         if ($status) {
-            $status->setName('rp_partly_return');
+            $status->setName('ratepay_partly_return');
             $flush[] = $status;
         }
 
         /** @var Status $status */
         $status = $this->modelManager->find(Status::class, 265);
         if ($status) {
-            $status->setName('rp_partly_cancel');
+            $status->setName('ratepay_partly_cancel');
             $flush[] = $status;
         }
 
