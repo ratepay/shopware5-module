@@ -7,6 +7,7 @@
     <services>
 
         <service id="RpayRatePay\Services\Factory\CustomerArrayFactory"/>
+        <service id="RpayRatePay\Services\Factory\ExternalArrayFactory" />
 
         <service id="RpayRatePay\Services\Factory\PaymentArrayFactory">
             <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>

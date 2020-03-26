@@ -35,6 +35,7 @@
             <argument id="models" type="service"/>
             <argument id="RpayRatePay\Helper\PositionHelper" type="service"/>
             <argument id="RpayRatePay\Services\Factory\InvoiceArrayFactory" type="service"/>
+            <argument id="RpayRatePay\Services\Factory\ExternalArrayFactory" type="service"/>
         </service>
 
         <service id="RpayRatePay\Services\Request\PaymentCancelService">

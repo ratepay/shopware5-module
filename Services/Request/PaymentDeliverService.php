@@ -7,8 +7,10 @@ namespace RpayRatePay\Services\Request;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Helper\PositionHelper;
+use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
+use RpayRatePay\Services\Factory\ExternalArrayFactory;
 use RpayRatePay\Services\Factory\InvoiceArrayFactory;
 use RpayRatePay\Services\Logger\HistoryLogger;
 use RpayRatePay\Services\Logger\RequestLogger;
@@ -21,6 +23,10 @@ class PaymentDeliverService extends AbstractModifyRequest
      * @var InvoiceArrayFactory
      */
     protected $invoiceArrayFactory;
+    /**
+     * @var ExternalArrayFactory
+     */
+    private $externalArrayFactory;
 
     public function __construct(
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
@@ -30,11 +36,13 @@ class PaymentDeliverService extends AbstractModifyRequest
         HistoryLogger $historyLogger,
         ModelManager $modelManager,
         PositionHelper $positionHelper,
-        InvoiceArrayFactory $invoiceArrayFactory
+        InvoiceArrayFactory $invoiceArrayFactory,
+        ExternalArrayFactory $externalArrayFactory
     )
     {
         parent::__construct($db, $configService, $requestLogger, $profileConfigService, $historyLogger, $modelManager, $positionHelper);
         $this->invoiceArrayFactory = $invoiceArrayFactory;
+        $this->externalArrayFactory = $externalArrayFactory;
     }
 
     protected function getCallName()
@@ -59,6 +67,16 @@ class PaymentDeliverService extends AbstractModifyRequest
         return false;
     }
 
+    protected function getRequestHead(ProfileConfig $profileConfig)
+    {
+        $head = parent::getRequestHead($profileConfig);
+        $externalData = $this->externalArrayFactory->getData($this->_order);
+        if ($externalData) {
+            $head[ExternalArrayFactory::ARRAY_KEY] = $externalData;
+        }
+        return $head;
+    }
+
     protected function getRequestContent()
     {
         $requestContent = parent::getRequestContent();
@@ -67,6 +85,7 @@ class PaymentDeliverService extends AbstractModifyRequest
         if ($invoiceData) {
             $requestContent[InvoiceArrayFactory::ARRAY_KEY] = $invoiceData;
         }
+
         return $requestContent;
     }
 

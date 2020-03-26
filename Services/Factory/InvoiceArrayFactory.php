@@ -11,7 +11,7 @@ use Shopware\Models\Order\Order;
 
 class InvoiceArrayFactory
 {
-    const ARRAY_KEY = 'Invoice';
+    const ARRAY_KEY = 'Invoicing';
     /**
      * @var ModelManager
      */
