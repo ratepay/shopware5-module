@@ -11,7 +11,7 @@
         },
         selectors: {
             calculatorSelector: '.rp-container-calculator',
-            runTimeButtonsSelector: '.rp-btn-runtime',
+            runTimeButtonsSelector: '#rp-btn-runtime',
             fixAmountButtonSelector: '.rp-btn-rate',
             fixAmountInputSelector: '#rp-rate-value',
             ibanInputSelector: '#rp-iban-account-number',
@@ -28,7 +28,7 @@
                 return;
             }
 
-            me._on(me.selectors.runTimeButtonsSelector, 'click', $.proxy(me.selectRuntime, me));
+            me._on(me.selectors.runTimeButtonsSelector, 'change', $.proxy(me.selectRuntime, me));
             me._on(me.selectors.fixAmountButtonSelector, 'click', $.proxy(me.selectFixAmount, me));
             me._on(me.selectors.fixAmountInputSelector, 'keyup', $.proxy(me.keyupFixedAmount, me));
             me._on(me.selectors.ibanInputSelector, 'keyup', $.proxy(me.switchBankCodeInput, me));
@@ -51,14 +51,13 @@
             } else {
                 // if direct debit is not allowed 'BANK_TRANSFER' is set by default
                 me.$el.find('#rp-payment-type').val("BANK-TRANSFER");
-            }
+            } 
 
-            if (me.$el.find(me.selectors.runTimeButtonsSelector).length > 1) {
+            var $runTimeSelect = me.$el.find(me.selectors.runTimeButtonsSelector);
+            if ($runTimeSelect.children().filter(function(){return $(this).prop('value') !== ''}).length > 1) {
                 me.$el.find(me.selectors.calculatorSelector).show();
             }
-            if (me.$el.find(me.selectors.runTimeButtonsSelector).length === 1) {
-                me.$el.find(me.selectors.runTimeButtonsSelector).trigger('click');
-            } else if (me.$el.find('#rp-calculation-type').val().length && me.$el.find('#rp-calculation-value').val().length) {
+            if (me.$el.find('#rp-calculation-type').val().length && me.$el.find('#rp-calculation-value').val().length) {
                 me.callInstallmentPlan(me.$el.find('#rp-calculation-type').val(), me.$el.find('#rp-calculation-value').val());
             }
         },
@@ -66,13 +65,11 @@
         selectRuntime: function (event) {
             var me = this;
             event.preventDefault();
-            var $button = jQuery(event.currentTarget);
-            me.callInstallmentPlan('time', $button.data('bind'));
-            // marking and de-marking of buttons
-            jQuery(me.selectors.runTimeButtonsSelector).removeClass('btn-info');
-            me.$el.find('.rp-btn-rate').removeClass('btn-info');
-            me.$el.find('#rp-rate-value').val("");
-            $button.addClass('btn-info');
+            var $select = jQuery(event.currentTarget);
+            if ($select.val().length !== 0) {
+                me.callInstallmentPlan('time', $select.val());
+                me.$el.find('#rp-rate-value').val("");
+            }
         },
         selectFixAmount: function (event) {
             var me = this;

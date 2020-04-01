@@ -28,12 +28,13 @@
                         </div>
 
                         <div class="panel-body">
-                            <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                                @loop
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button class="btn btn-default rp-btn-runtime" role="button" data-bind="{{ rp_allowedMonths }}">{{ rp_allowedMonths }}</button>
-                                </div>
-                                @endloop
+                            <div class="form-group">
+                                <select id="rp-btn-runtime">
+                                    <option></option>
+                                    @loop
+                                        <option value="{{ rp_allowedMonths }}">{{ rp_allowedMonths }} {{ rp_monthly_installment_pl }}</option>
+                                    @endloop
+                                </select>
                             </div>
                         </div>
                     </div>
