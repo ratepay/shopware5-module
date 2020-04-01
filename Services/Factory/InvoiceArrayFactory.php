@@ -4,7 +4,7 @@
 namespace RpayRatePay\Services\Factory;
 
 
-use DateTime;
+use DateTimeInterface;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Document\Document;
 use Shopware\Models\Order\Order;
@@ -29,16 +29,15 @@ class InvoiceArrayFactory
         $documentModel = $this->modelManager->getRepository(Document::class); //TODO DI
         $document = $documentModel->findOneBy(['orderId' => $order->getId(), 'type' => 1]);
         if ($document !== null) {
-            $dateObject = new DateTime();
+            /** @var DateTimeInterface $dateObject */
+            $dateObject = $document->getDate();
             $currentDate = $dateObject->format('Y-m-d');
-            $currentTime = $dateObject->format('H:m:s');
+            $currentTime = $dateObject->format('H:i:s');
             $currentDateTime = $currentDate . 'T' . $currentTime;
 
             return [
                 'InvoiceId' => $document->getDocumentId(),
-                'InvoiceDate' => $currentDateTime,
-                'DeliveryDate' => $currentDateTime,
-                //'DueDate' => date('Y-m-d\Th:m:s'),
+                'InvoiceDate' => $currentDateTime
             ];
         }
         return null;
