@@ -4,27 +4,31 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9f08237b09aa3b894d743d95a878437a",
+    "content-hash": "f5e7302a329cd5b529617bec24e1fb8f",
     "packages": [
         {
             "name": "ratepay/php-library",
-            "version": "dev-master",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ratepay/php-library.git",
-                "reference": "10b510f657d40eaa4fd8e60e640cf1980aa76df2"
+                "reference": "4ce1e43f70e70c8af2918190ccbf8dd3a66f34fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ratepay/php-library/zipball/10b510f657d40eaa4fd8e60e640cf1980aa76df2",
-                "reference": "10b510f657d40eaa4fd8e60e640cf1980aa76df2",
+                "url": "https://api.github.com/repos/ratepay/php-library/zipball/4ce1e43f70e70c8af2918190ccbf8dd3a66f34fc",
+                "reference": "4ce1e43f70e70c8af2918190ccbf8dd3a66f34fc",
                 "shasum": ""
             },
             "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-simplexml": "*",
                 "php": ">=5.4"
             },
             "require-dev": {
                 "donatj/mock-webserver": "v2.1.0",
+                "friendsofphp/php-cs-fixer": "^2.17@dev",
                 "phpunit/phpunit": "5.7.*"
             },
             "type": "library",
@@ -39,21 +43,19 @@
             ],
             "authors": [
                 {
-                    "name": "Aarne Welschlau",
-                    "email": "aarne.welschlau@ratepay.com"
+                    "name": "Eduardo Iriarte",
+                    "email": "eduardo.iriarte-mendez@ratepay.com"
                 }
             ],
             "description": "RatePAY API PHP Library",
             "homepage": "https://ratepay.gitbook.io/docs/",
-            "time": "2020-02-24T08:59:44+00:00"
+            "time": "2020-04-01T15:33:36+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "ratepay/php-library": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

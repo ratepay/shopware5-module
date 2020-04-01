@@ -1,5 +1,5 @@
 {
     "require": {
-        "ratepay/php-library": "dev-master"
+        "ratepay/php-library": "^1.0"
     }
 }
