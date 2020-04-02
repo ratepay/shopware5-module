@@ -51,14 +51,18 @@
             } else {
                 // if direct debit is not allowed 'BANK_TRANSFER' is set by default
                 me.$el.find('#rp-payment-type').val("BANK-TRANSFER");
-            } 
+            }
 
             var $runTimeSelect = me.$el.find(me.selectors.runTimeButtonsSelector);
-            if ($runTimeSelect.children().filter(function(){return $(this).prop('value') !== ''}).length > 1) {
+            var $runTimeSelectAbleOptions = $runTimeSelect.children().filter(function(){return $(this).prop('value') !== ''});
+            if ($runTimeSelectAbleOptions.length > 1) {
                 me.$el.find(me.selectors.calculatorSelector).show();
             }
             if (me.$el.find('#rp-calculation-type').val().length && me.$el.find('#rp-calculation-value').val().length) {
                 me.callInstallmentPlan(me.$el.find('#rp-calculation-type').val(), me.$el.find('#rp-calculation-value').val());
+            } else {
+                $runTimeSelect.val($runTimeSelectAbleOptions.first().val());
+                $runTimeSelect.trigger('change');
             }
         },
 
