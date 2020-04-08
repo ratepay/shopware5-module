@@ -34,9 +34,6 @@ class Installment extends Debit
         $data = parent::getCurrentPaymentDataAsArray($userId);
         $data['ratepay'][$this->formDataKey] = $installmentData->toArray();
 
-        // this is just a fix, cause we will not save this value. But if the payment data got validated,
-        // we will validate against this field.
-        $data['ratepay'][$this->formDataKey]['sepa_agreement'] = true;
         return $data;
     }
 
@@ -61,14 +58,6 @@ class Installment extends Debit
         ) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidCalculator');
         }
-
-        if ($this->isBankDataRequired) {
-            if (!isset($installmentData['sepa_agreement']) || empty($installmentData['sepa_agreement'])) {
-                $return['sErrorMessages'][] = $this->getTranslatedMessage('AcceptSepaAgreement');
-            }
-        }
-
-
 
         return $return;
     }

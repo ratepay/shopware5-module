@@ -24,8 +24,12 @@ class Debit extends AbstractPaymentMethod
         $data['ratepay']['bank_account'] = [
             'account_holder' => $bankData && !empty($bankData->getAccountHolder()) ? $bankData->getAccountHolder() : $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
             'iban' => $bankData ? ($bankData->getAccountNumber() ?: $bankData->getIban()) : null,
-            'bankCode' => $bankData ? $bankData->getBankCode() : null
+            'bankCode' => $bankData ? $bankData->getBankCode() : null,
         ];
+
+        // this is just a fix, cause we will not save this value. But if the payment data got validated,
+        // we will validate against this field.
+        $data['ratepay']['sepa_agreement'] = true;
         return $data;
     }
 
@@ -34,6 +38,8 @@ class Debit extends AbstractPaymentMethod
         $return = parent::validate($paymentData);
         if ($this->isBankDataRequired === false) {
             return $return;
+        } else if (!isset($paymentData['ratepay']['sepa_agreement'])) {
+            $return['sErrorMessages'][] = $this->getTranslatedMessage('AcceptSepaAgreement');
         }
         $bankAccount = $paymentData['ratepay']['bank_account'];
 

@@ -1,3 +1,9 @@
+{block name="ratepay_legal_text_1"}
+    <div class="legal-text">
+        <p>{s namespace="frontend/plugins/payment/ratepay" name="sepaLegalText"}{/s}</p>
+    </div>
+{/block}
+
 {block name='ratepay_frontend_accountholder'}
     <div class="form-group row bank-account-input">
         <label class="col-sm-2 col-form-label">
@@ -51,6 +57,15 @@
     </div>
 {/block}
 
+{block name="ratepay_legal_text_2"}
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input type="checkbox" name="ratepay[sepa_agreement]" id="rp-sepa-aggreement" required="required" />
+            <label for="rp-sepa-aggreement" class="rp-label-sepa-agreement">{s namespace="frontend/plugins/payment/ratepay" name="sepaAuthorize"}{/s}</label>
+        </div>
+    </div>
+{/block}
 
 
 
