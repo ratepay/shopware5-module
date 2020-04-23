@@ -65,6 +65,10 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
      * @var PaymentCreditService
      */
     private $paymentCreditService;
+    /**
+     * @var Shopware_Components_Snippet_Manager
+     */
+    private $snippetManager;
 
 
     public function setContainer(Container $loader = null)
@@ -77,6 +81,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $this->paymentDebitService = $this->container->get(PaymentDebitService::class);
         $this->paymentCreditService = $this->container->get(PaymentCreditService::class);
         $this->logger = $this->container->get('rpay_rate_pay.logger');
+        $this->snippetManager = $this->container->get('snippets');
     }
 
     public function preDispatch()
@@ -275,9 +280,9 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
                 $response = $this->paymentDeliverService->doRequest();
                 $isSuccess = $response === true || $response->isSuccessful();
                 if ($isSuccess) {
-                    $this->View()->assign('message', 'Delivery was successful'); //TODO translation
+                    $this->View()->assign('message', $this->getSnippet('backend/ratepay/messages', 'DeliverySuccessful'));
                 } else {
-                    $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
+                    $this->View()->assign('message', $response->getReasonMessage());
                 }
             } catch (Exception $e) {
                 $this->View()->assign('message', $e->getMessage());
@@ -318,9 +323,9 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             $response = $this->paymentCancelService->doRequest();
             $isSuccess = $response === true || $response->isSuccessful();
             if ($isSuccess) {
-                $this->View()->assign('message', 'Cancellation was successful'); //TODO translation
+                $this->View()->assign('message', $this->getSnippet('backend/ratepay/messages', 'CancelSuccessful'));
             } else {
-                $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
+                $this->View()->assign('message', $response->getReasonMessage());
             }
         }
         $this->View()->assign([
@@ -358,9 +363,9 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             $response = $this->paymentReturnService->doRequest();
             $isSuccess = $response === true || $response->isSuccessful();
             if ($isSuccess) {
-                $this->View()->assign('message', 'Return was successful'); //TODO translation
+                $this->View()->assign('message', $this->getSnippet('backend/ratepay/messages', 'ReturnSuccessful'));
             } else {
-                $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
+                $this->View()->assign('message', $response->getReasonMessage());
             }
         }
         $this->View()->assign([
@@ -382,7 +387,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
 
         if (PaymentMethods::isInstallment($order->getPayment())) {
             $this->View()->assign([
-                'message' => 'Einer Bestellung mit der Zahlart Ratenzahlung/Finanzierung kann kein Artikel automatisch hinzugefügt werden.', // TODO translation
+                'message' => $this->getSnippet('backend/ratepay/messages', 'CannotAddProductToRatePayment'),
                 'result' => false,
                 'success' => true
             ]);
@@ -411,7 +416,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
                     $service = $this->paymentCreditService;
                     break;
                 default:
-                    throw new RuntimeException('unknown operation');
+                    throw new RuntimeException($this->getSnippet('backend/ratepay/messages', 'UnknownOperation'));
             }
 
             $service->setOrder($order);
@@ -420,14 +425,19 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
 
             $isSuccess = $response === true || $response->isSuccessful();
             if ($isSuccess) {
-                $this->View()->assign('message', ucfirst($operationType) . ' was successful'); //TODO translation
+                $this->View()->assign('message', $this->getSnippet('backend/ratepay/messages', ucfirst($operationType).'Successful'));
             } else {
-                $this->View()->assign('message', $response->getReasonMessage()); //TODO translation
+                $this->View()->assign('message', $response->getReasonMessage());
             }
         }
         $this->View()->assign([
             'result' => $isSuccess,
             'success' => $isSuccess
         ]);
+    }
+
+    protected function getSnippet($namespace, $key)
+    {
+        return $this->snippetManager->getNamespace($namespace)->get($key);
     }
 }
