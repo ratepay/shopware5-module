@@ -37,7 +37,8 @@ class InvoiceArrayFactory
 
             return [
                 'InvoiceId' => $document->getDocumentId(),
-                'InvoiceDate' => $currentDateTime
+                'InvoiceDate' => $currentDateTime,
+                'DeliveryDate' => $currentDateTime
             ];
         }
         return null;
