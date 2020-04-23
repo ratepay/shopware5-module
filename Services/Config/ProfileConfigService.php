@@ -66,7 +66,7 @@ class ProfileConfigService
     {
         // TODO naming is similar to `getPaymentConfig`, but do other stuffs
         $config = $this->getPaymentConfig($paymentMethodName, $shopId, $countryIso, $backend);
-        return $this->modelManager->find(ConfigInstallment::class, $config->getRpayId());
+        return $config ? $this->modelManager->find(ConfigInstallment::class, $config->getRpayId()) : null;
     }
 
     /**
@@ -74,7 +74,7 @@ class ProfileConfigService
      * @param $shopId int
      * @param $countryIso
      * @param $backend
-     * @return ConfigPayment
+     * @return ConfigPayment|null
      */
     protected function getPaymentConfig($paymentMethod, $shopId, $countryIso = null, $backend = null)
     {
@@ -85,7 +85,7 @@ class ProfileConfigService
             $backend,
             $paymentMethod == PaymentMethods::PAYMENT_INSTALLMENT0
         );
-        return $this->getPaymentConfigForProfileAndMethod($profileConfig, $paymentMethod);
+        return $profileConfig ? $this->getPaymentConfigForProfileAndMethod($profileConfig, $paymentMethod) : null;
     }
 
     public function getProfileConfig($countryIso, $shopId, $backend = false, $zeroPercentInstallment = false)

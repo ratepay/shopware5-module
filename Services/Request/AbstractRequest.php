@@ -8,6 +8,7 @@ use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use RatePAY\Model\Response\AbstractResponse;
 use RatePAY\ModelBuilder;
 use RatePAY\RequestBuilder;
+use RpayRatePay\Exception\NoProfileFoundException;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Logger\RequestLogger;
@@ -68,11 +69,11 @@ abstract class AbstractRequest
             $this->isRequestSkipped = true;
             return true;
         }
-        $content = $content ?: $this->getRequestContent();
         $profileConfig = $this->getProfileConfig();
         if ($profileConfig == null) {
-            throw new \Exception('Transaction can not performed, cause no profile was found.');
+            throw new NoProfileFoundException();
         }
+        $content = $content ?: $this->getRequestContent();
 
         $mbHead = new ModelBuilder('head');
         $mbHead->setArray($this->getRequestHead($profileConfig));

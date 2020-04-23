@@ -21,6 +21,7 @@
 use Monolog\Logger;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\Exception\NoProfileFoundException;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
@@ -137,25 +138,28 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $billingId = $params['billingId'];
         $paymentMeansName = $params['paymentMeansName'];
 
-        $customerAddress = $this->modelManager->find(Address::class, $billingId);
+        try {
+            $customerAddress = $this->modelManager->find(Address::class, $billingId);
 
-        $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMeansName, $shopId, $customerAddress->getCountry()->getIso(), true);
-        if ($installmentConfig == null) {
+            $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMeansName, $shopId, $customerAddress->getCountry()->getIso(), true);
+            if ($installmentConfig == null) {
+                throw new NoProfileFoundException();
+            }
+
+            $optionsString = $installmentConfig->getPaymentFirstDay();
+            $optionsArray = explode(',', $optionsString);
+            $optionsIntArray = array_map('intval', $optionsArray);
+            $this->view->assign([
+                'success' => true,
+                'options' => $optionsIntArray
+            ]);
+        } catch (\Exception $e) {
             $this->view->assign([
                 'success' => false,
-                'messages' => [$this->getSnippet('backend/ratepay', 'ErrorCantFindProfile', null)]
+                'messages' => [$e->getMessage()]
             ]);
             return;
         }
-
-        $optionsString = $installmentConfig->getPaymentFirstDay();
-        $optionsArray = explode(',', $optionsString);
-        $optionsIntArray = array_map('intval', $optionsArray);
-
-        $this->view->assign([
-            'success' => true,
-            'options' => $optionsIntArray
-        ]);
     }
 
     public function getInstallmentPlanAction()

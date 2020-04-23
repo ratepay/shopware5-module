@@ -9,6 +9,7 @@ use RatePAY\Frontend\InstallmentBuilder;
 use RatePAY\Service\Util;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Exception\NoProfileFoundException;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
