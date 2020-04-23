@@ -33,9 +33,9 @@ class Debit extends AbstractPaymentMethod
         return $data;
     }
 
-    public function validate($paymentData)
+    protected function _validate($paymentData)
     {
-        $return = parent::validate($paymentData);
+        $return = parent::_validate($paymentData);
         if ($this->isBankDataRequired === false) {
             return $return;
         } else if (!isset($paymentData['ratepay']['sepa_agreement'])) {

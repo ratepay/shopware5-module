@@ -69,7 +69,7 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
         return $data;
     }
 
-    public function validate($paymentData)
+    protected function _validate($paymentData)
     {
         $return = [];
         if ($this->sessionHelper->getCustomer() == null) {
@@ -119,6 +119,14 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
         return $return;
     }
 
+    public final function validate($paymentData)
+    {
+        if(Shopware()->Front()->Request()->getControllerName() == 'checkout') {
+            return $this->_validate($paymentData);
+        }
+        return [];
+    }
+
     protected function getTranslatedMessage($snippetName)
     {
         return $this->snippetManager->getNamespace('frontend/ratepay/messages')->get($snippetName);
@@ -126,44 +134,46 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
 
     public final function savePaymentData($userId, Enlight_Controller_Request_Request $request)
     {
-        // firstly delete all previous saved data. maybe the customer has canceled
-        // a payment and now switched to another payment method.
-        $this->sessionHelper->cleanUp();
+        if(Shopware()->Front()->Request()->getControllerName() == 'checkout') {
+            // firstly delete all previous saved data. maybe the customer has canceled
+            // a payment and now switched to another payment method.
+            $this->sessionHelper->cleanUp();
 
-        $ratepayData = $request->getParam('ratepay')['customer_data'];
+            $ratepayData = $request->getParam('ratepay')['customer_data'];
 
-        $birthday = new DateTime();
-        $birthday->setDate(
-            trim($ratepayData['birthday']['year']),
-            trim($ratepayData['birthday']['month']),
-            trim($ratepayData['birthday']['day'])
-        );
-        $customer = $this->sessionHelper->getCustomer();
-        $billingAddress = $this->sessionHelper->getBillingAddress();
+            $birthday = new DateTime();
+            $birthday->setDate(
+                trim($ratepayData['birthday']['year']),
+                trim($ratepayData['birthday']['month']),
+                trim($ratepayData['birthday']['day'])
+            );
+            $customer = $this->sessionHelper->getCustomer();
+            $billingAddress = $this->sessionHelper->getBillingAddress();
 
-        //if($customer->getBirthday() == null) {
-        // maybe it would be better to save the value in a attribute, to not override the real customer data.
-        $customer->setBirthday($birthday);
-        //}
-
-        $ratepayData['phone'] = trim($ratepayData['phone']);
-        //if($billingAddress->getPhone() == null) {
-        // maybe it would be better to save the value in a attribute, to not override the real customer data.
-        if (!empty($ratepayData['phone'])) {
-            $billingAddress->setPhone($ratepayData['phone']);
-        }
-        //}
-
-        //if($billingAddress->getVatId() == null) {
-        if (isset($ratepayData['vatId']) && !empty($ratepayData['vatId'])) {
+            //if($customer->getBirthday() == null) {
             // maybe it would be better to save the value in a attribute, to not override the real customer data.
-            $ratepayData['vatId'] = trim($ratepayData['vatId']);
-            $billingAddress->setVatId($ratepayData['vatId']);
-        }
-        //}
+            $customer->setBirthday($birthday);
+            //}
 
-        $this->modelManager->flush([$customer, $billingAddress]);
-        $this->saveRatePayPaymentData($userId, $request);
+            $ratepayData['phone'] = trim($ratepayData['phone']);
+            //if($billingAddress->getPhone() == null) {
+            // maybe it would be better to save the value in a attribute, to not override the real customer data.
+            if (!empty($ratepayData['phone'])) {
+                $billingAddress->setPhone($ratepayData['phone']);
+            }
+            //}
+
+            //if($billingAddress->getVatId() == null) {
+            if (isset($ratepayData['vatId']) && !empty($ratepayData['vatId'])) {
+                // maybe it would be better to save the value in a attribute, to not override the real customer data.
+                $ratepayData['vatId'] = trim($ratepayData['vatId']);
+                $billingAddress->setVatId($ratepayData['vatId']);
+            }
+            //}
+
+            $this->modelManager->flush([$customer, $billingAddress]);
+            $this->saveRatePayPaymentData($userId, $request);
+        }
     }
 
     protected abstract function saveRatePayPaymentData($userId, Enlight_Controller_Request_Request $request);

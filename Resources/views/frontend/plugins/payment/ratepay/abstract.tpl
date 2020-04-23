@@ -1,6 +1,5 @@
 {namespace name="frontend/ratepay"}
-
-{if $payment_mean.id == $form_data.payment}
+{if $sPayments && $payment_mean.id == $form_data.payment}
     <div class="ratepay-payment-method">
         {if $ratepay.sandbox}
             <div class="test-mode-notice" style="">

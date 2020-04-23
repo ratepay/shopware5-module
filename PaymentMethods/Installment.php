@@ -37,12 +37,12 @@ class Installment extends Debit
         return $data;
     }
 
-    public function validate($paymentData)
+    protected function _validate($paymentData)
     {
         $installmentData = isset($paymentData['ratepay'][$this->formDataKey]) ? $paymentData['ratepay'][$this->formDataKey] : [];
         $this->isBankDataRequired = $installmentData['paymentType'] !== PaymentSubType::PAY_TYPE_BANK_TRANSFER;
 
-        $return = parent::validate($paymentData);
+        $return = parent::_validate($paymentData);
 
         if ($installmentData == null ||
             !isset(
