@@ -12,6 +12,7 @@
             <argument id="session" type="service"/>
             <argument id="config" type="service"/>
             <argument id="modules" type="service"/>
+            <argument id="front" type="service"/>
             <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
             <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
             <argument id="RpayRatePay\Services\PaymentMethodsService" type="service"/>

@@ -5,6 +5,7 @@ namespace RpayRatePay\PaymentMethods;
 
 
 use DateTime;
+use Enlight_Controller_Front;
 use Enlight_Controller_Request_Request;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Helper\SessionHelper;
@@ -34,6 +35,10 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
      * @var Shopware_Components_Snippet_Manager
      */
     private $snippetManager;
+    /**
+     * @var Enlight_Controller_Front
+     */
+    private $front;
 
     public function __construct()
     {
@@ -41,6 +46,12 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
         $this->sessionHelper = $this->container->get(SessionHelper::class);
         $this->modelManager = $this->container->get('models');
         $this->snippetManager = $this->container->get('snippets');
+        $this->front = $this->container->get('front');
+    }
+
+    protected function isRequestInCheckoutProcess()
+    {
+        return $this->front->Request()->getControllerName() === 'checkout';
     }
 
     public function getCurrentPaymentDataAsArray($userId)
@@ -121,7 +132,7 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
 
     public final function validate($paymentData)
     {
-        if(Shopware()->Front()->Request()->getControllerName() == 'checkout') {
+        if ($this->isRequestInCheckoutProcess()) {
             return $this->_validate($paymentData);
         }
         return [];
@@ -134,7 +145,7 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
 
     public final function savePaymentData($userId, Enlight_Controller_Request_Request $request)
     {
-        if(Shopware()->Front()->Request()->getControllerName() == 'checkout') {
+        if ($this->isRequestInCheckoutProcess()) {
             // firstly delete all previous saved data. maybe the customer has canceled
             // a payment and now switched to another payment method.
             $this->sessionHelper->cleanUp();

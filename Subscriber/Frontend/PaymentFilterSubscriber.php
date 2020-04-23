@@ -7,6 +7,7 @@ use Doctrine\ORM\ORMException;
 use Doctrine\ORM\TransactionRequiredException;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace;
+use Enlight_Controller_Front;
 use Enlight_Event_EventArgs;
 use Monolog\Logger;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
@@ -62,6 +63,10 @@ class PaymentFilterSubscriber implements SubscriberInterface
      * @var PaymentMethodsService
      */
     private $paymentMethodsService;
+    /**
+     * @var Enlight_Controller_Front
+     */
+    private $front;
 
     public function __construct(
         ModelManager $modelManager,
@@ -69,6 +74,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         Enlight_Components_Session_Namespace $session,
         Shopware_Components_Config $config,
         Shopware_Components_Modules $modules,
+        Enlight_Controller_Front $front,
         ProfileConfigService $profileConfig,
         SessionHelper $sessionHelper,
         PaymentMethodsService $paymentMethodsService,
@@ -84,6 +90,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         $this->logger = $logger;
         $this->sessionHelper = $sessionHelper;
         $this->paymentMethodsService = $paymentMethodsService;
+        $this->front = $front;
     }
 
     public static function getSubscribedEvents()
@@ -109,6 +116,10 @@ class PaymentFilterSubscriber implements SubscriberInterface
      */
     public function filterPayments(Enlight_Event_EventArgs $arguments)
     {
+        if ($this->front->Request()->getControllerName() !== 'checkout') {
+            // only filter the payments if the customer is in the checkout process
+            return;
+        }
         $return = $arguments->getReturn();
         $currency = $this->config->get('currency'); // TODO i think this should be fetched from the session not the config ?!
 
@@ -126,7 +137,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
             //TODO https://ratepay.gitbook.io/payment-api/gateway-operations/checkout/payment-query
             $availableRatePayMethods[$payment] = false;
 
-            if($this->paymentMethodsService->isPaymentMethodLockedForCustomer($customer, $payment)) {
+            if ($this->paymentMethodsService->isPaymentMethodLockedForCustomer($customer, $payment)) {
                 // the payment method is locked for the customer
                 continue;
             }
