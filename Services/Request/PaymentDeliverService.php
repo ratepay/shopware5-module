@@ -19,6 +19,8 @@ use Shopware\Components\Model\ModelManager;
 class PaymentDeliverService extends AbstractModifyRequest
 {
 
+    use FullActionTrait;
+
     /**
      * @var InvoiceArrayFactory
      */

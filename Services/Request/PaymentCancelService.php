@@ -6,6 +6,8 @@ namespace RpayRatePay\Services\Request;
 
 class PaymentCancelService extends AbstractModifyRequest
 {
+    use FullActionTrait;
+
     protected $_subType = 'cancellation';
 
     protected $updateStock = false;

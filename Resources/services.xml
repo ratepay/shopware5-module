@@ -15,6 +15,7 @@
         <import resource="services/requests.xml"/>
         <import resource="services/subscriber.xml"/>
         <import resource="services/thirdparty_plugins.xml"/>
+        <import resource="services/commands.xml"/>
     </imports>
 
     <services>

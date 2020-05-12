@@ -84,8 +84,10 @@ class BasketArrayBuilder
             throw new RuntimeException('$data must by type of ' . Order::class . ' or ' . PaymentRequestData::class . '. ' . ($data ? get_class($data) : 'null') . ' given');
         }
 
-        foreach ($items as $item) {
-            $this->addItem($item);
+        if($items) {
+            foreach ($items as $item) {
+                $this->addItem($item);
+            }
         }
     }
 

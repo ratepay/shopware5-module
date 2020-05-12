@@ -4,8 +4,11 @@
 namespace RpayRatePay\Services\Request;
 
 
+use RpayRatePay\Models\Position\AbstractPosition;
+
 class PaymentReturnService extends AbstractModifyRequest
 {
+    use FullActionTrait;
 
     protected $_subType = 'return';
     /**
@@ -37,4 +40,10 @@ class PaymentReturnService extends AbstractModifyRequest
         }
         parent::processSuccess();
     }
+
+    protected function getOpenQuantityForFullAction(AbstractPosition $position)
+    {
+        return $position->getDelivered() - $position->getReturned();
+    }
+
 }

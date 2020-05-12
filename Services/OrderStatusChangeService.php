@@ -2,9 +2,7 @@
 
 namespace RpayRatePay\Services;
 
-use Exception;
 use Monolog\Logger;
-use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -105,136 +103,15 @@ class OrderStatusChangeService
 
             switch ($changeType) {
                 case self::CHANGE_DELIVERY:
-                    $this->performFullDeliveryRequest($order);
+                    $this->paymentDeliverService->doFullAction($order);
                     break;
                 case self::CHANGE_RETURN:
-                    $this->performFullReturnRequest($order);
+                    $this->paymentReturnService->doFullAction($order);
                     break;
                 case self::CHANGE_CANCEL:
-                    $this->performFullCancellationRequest($order);
+                    $this->paymentCancelService->doFullAction($order);
                     break;
             }
-        }
-    }
-
-    private function performFullDeliveryRequest(Order $order)
-    {
-        try {
-            $sendToGateway = false;
-            $basketArrayBuilder = new BasketArrayBuilder($order);
-            foreach ($order->getDetails() as $detail) {
-                $position = $this->positionHelper->getPositionForDetail($detail);
-                if ($position->getOpenQuantity() > 0) {
-                    //just deliver not delivered or canceled items
-                    $basketArrayBuilder->addItem($detail, $position->getOpenQuantity());
-                    $sendToGateway = true;
-                }
-            }
-            $shippingPosition = $this->positionHelper->getShippingPositionForOrder($order);
-            if ($shippingPosition) {
-                //just deliver not delivered or canceled items
-                if ($shippingPosition->getOpenQuantity() === 1) {
-                    $basketArrayBuilder->addShippingItem();
-                    $sendToGateway = true;
-                }
-            }
-            if ($sendToGateway == false) {
-                return;
-            }
-
-            $this->paymentDeliverService->setItems($basketArrayBuilder);
-            $this->paymentDeliverService->setOrder($order);
-            $result = $this->paymentDeliverService->doRequest();
-
-            if ($result->isSuccessful() === false) {
-                $this->logger->warning(sprintf(self::MSG_FULL_DELIVERY_REJECTED, $order->getId()));
-            }
-
-        } catch (Exception $e) {
-            $this->logger->error(
-                sprintf(self::MSG_FAILED_SENDING_FULL_DELIVERY, $order->getId(), $e->getMessage())
-            );
-        }
-    }
-
-    private function performFullCancellationRequest(Order $order)
-    {
-        try {
-            $sendToGateway = false;
-            $basketArrayBuilder = new BasketArrayBuilder($order);
-            foreach ($order->getDetails() as $detail) {
-                $position = $this->positionHelper->getPositionForDetail($detail);
-                // openQuantity should be the orderedQuantity.
-                // To prevent unexpected errors we will only submit the openQuantity
-                if ($position->getOpenQuantity() > 0) {
-                    $basketArrayBuilder->addItem($detail, $position->getOpenQuantity());
-                    $sendToGateway = true;
-                }
-            }
-            $shippingPosition = $this->positionHelper->getShippingPositionForOrder($order);
-            if ($shippingPosition) {
-                // openQuantity should be the orderedQuantity.
-                // To prevent unexpected errors we will only submit the openQuantity
-                if ($shippingPosition->getOpenQuantity() === 1) {
-                    $basketArrayBuilder->addShippingItem();
-                    $sendToGateway = true;
-                }
-            }
-
-            if ($sendToGateway == false) {
-                return;
-            }
-
-            $this->paymentCancelService->setItems($basketArrayBuilder);
-            $this->paymentCancelService->setOrder($order);
-            $result = $this->paymentCancelService->doRequest();
-
-            if ($result->isSuccessful() === false) {
-                $this->logger->warning(sprintf(self::MSG_FULL_CANCELLATION_REJECTED, $order->getId()));
-            }
-        } catch (Exception $e) {
-            $this->logger->error(
-                sprintf(self::MSG_FAILED_SENDING_FULL_CANCELLATION, $order->getId(), $e->getMessage())
-            );
-        }
-    }
-
-    private function performFullReturnRequest(Order $order)
-    {
-        try {
-            $sendToGateway = false;
-            $basketArrayBuilder = new BasketArrayBuilder($order);
-            foreach ($order->getDetails() as $detail) {
-                $position = $this->positionHelper->getPositionForDetail($detail);
-                //to prevent unexpected errors, we will only return the delivered items
-                if ($position->getDelivered() - $position->getReturned()) {
-                    $basketArrayBuilder->addItem($detail, $position->getDelivered() - $position->getReturned());
-                    $sendToGateway = true;
-                }
-            }
-            $shippingPosition = $this->positionHelper->getShippingPositionForOrder($order);
-            if ($shippingPosition) {
-                if ($shippingPosition->getOpenQuantity() === 0) { // shipping has been delivered so we can return it
-                    $basketArrayBuilder->addShippingItem();
-                    $sendToGateway = true;
-                }
-            }
-            if ($sendToGateway == false) {
-                return;
-            }
-
-            $this->paymentReturnService->setItems($basketArrayBuilder);
-            $this->paymentReturnService->setOrder($order);
-            $result = $this->paymentReturnService->doRequest();
-
-            if ($result->isSuccessful() === false) {
-                $this->logger->warning(sprintf(self::MSG_FULL_RETURN_REJECTED, $order->getId()));
-            }
-
-        } catch (Exception $e) {
-            $this->logger->error(
-                sprintf(self::MSG_FAILED_SENDING_FULL_RETURN, $order->getId(), $e->getMessage())
-            );
         }
     }
 }

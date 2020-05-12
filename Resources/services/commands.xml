@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="RpayRatePay\Commands\DeliverCommand">
+            <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Services\Request\PaymentDeliverService" type="service"/>
+            <argument>ratepay:deliver</argument>
+            <tag name="console.command" command="ratepay:deliver"/>
+        </service>
+
+        <service id="RpayRatePay\Commands\ReturnCommand" >
+            <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Services\Request\PaymentReturnService" type="service"/>
+            <argument>ratepay:return</argument>
+            <tag name="console.command" command="ratepay:return"/>
+        </service>
+
+        <service id="RpayRatePay\Commands\CancelCommand">
+            <argument id="models" type="service"/>
+            <argument id="RpayRatePay\Services\Request\PaymentCancelService" type="service"/>
+            <argument>ratepay:cancel</argument>
+            <tag name="console.command" command="ratepay:cancel"/>
+        </service>
+
+    </services>
+</container>

@@ -25,6 +25,7 @@ use Shopware\Models\Order\Order;
 
 abstract class AbstractModifyRequest extends AbstractRequest
 {
+
     /**
      * @var Order
      */
