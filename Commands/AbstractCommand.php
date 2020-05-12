@@ -103,7 +103,7 @@ abstract class AbstractCommand extends ShopwareCommand
             $requestService->setOrder($order);
             $response = $requestService->doRequest();
         } else if (method_exists($requestService, 'doFullAction')) {
-            $response = $requestService->doFullAction();
+            $response = $requestService->doFullAction($order);
         } else {
             $output->writeln('nothing to do. full action is not possible for this operation');
             return 0;
