@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.5.x` - `5.6.x`
-|Version | `5.4.8`
+|Version | `5.4.7`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -32,6 +32,7 @@
 * RATEPLUG-71: fix billingaddress update
 * RATEPLUG-73: fix bidirectionality
 * RATEPLUG-73: fix the installation of payment/order status
+* RATEPLUG-76: fix dfp in firefox (wrong variable declaration)
 
 ### Version 5.4.7 - Released 2020-01-15
 * RATEPLUG-33: fix namespaces
