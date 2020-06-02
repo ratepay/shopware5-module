@@ -1,5 +1,10 @@
 <?php
-
+/**
+ * Copyright (c) 2020 RatePAY GmbH
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace RpayRatePay\Helper;
 
@@ -281,7 +286,7 @@ class SessionHelper
         if ($this->isFrontendSession === false) {
             throw new Exception('not implemented');
         }
-        
+
         $user = $this->session->sOrderVariables['sUserData'];
         $basket = (array) $this->session->sOrderVariables['sBasket'];
         if (!empty($user['additional']['charge_vat'])) {
