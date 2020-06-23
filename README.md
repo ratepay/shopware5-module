@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.3.x` - `5.4.6`
-|Version | `5.3.14`
+|Version | `5.3.15`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.15 - WIP
+* RATEPLUG-71: fix billingaddress update
 
 ### Version 5.3.14 - Released 2020-01-15
 * RATEPLUG-19: birthday input: also allow whitespaces instead of zeros
