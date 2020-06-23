@@ -291,7 +291,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             );
         } else {
             /** @var $resultRequest RatePAY\Model\Response\PaymentRequest */
-            if($resultRequest->getReasonCode() === 703) {
+            if(in_array($resultRequest->getReasonCode(), [703, 720, 721], false)) {
                 PaymentMethodsService::getInstance()->lockPaymentMethodForCustomer($paymentRequestData->getCustomer(), strtolower($paymentRequestData->getMethod()));
             }
             $this->_customerMessage = $resultRequest->getCustomerMessage();
