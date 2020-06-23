@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.5.x` - `5.6.x`
-|Version | `5.4.8`
+|Version | `5.4.7`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -26,6 +26,7 @@
 ## Changelog
 
 ### Version 5.4.8 - WIP
+* RATEPLUG-31: lock payment methods for customer if reason code 703
 * RATEPLUG-66: credit/debit fix gateway requests
 * RATEPLUG-71: fix billingaddress update
 
