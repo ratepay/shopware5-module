@@ -25,11 +25,13 @@
 ## Changelog
 
 ### Version 5.3.15 - WIP
+* RATEPLUG-14: prevent delete order in admin if the order has been already shipped/canceled/returned
 * RATEPLUG-31: lock payment methods for customer if reason code 703
 * RATEPLUG-66: credit/debit fix gateway requests
+* RATEPLUG-68: add static legal texts
 * RATEPLUG-71: fix billingaddress update
-* RATEPLUG-73: fix bidirectionality
-* RATEPLUG-19: birthday input: also allow whitespaces instead of zeros
+* RATEPLUG-73: fix bidirectionally
+* RATEPLUG-76: fix dfp in firefox (wrong variable declaration)
 
 ### Version 5.3.14 - Released 2020-01-15
 * RATEPLUG-19: birthday input: also allow whitespaces instead of zeros
