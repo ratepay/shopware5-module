@@ -7,6 +7,8 @@ use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 use RpayRatePay\Component\Service\Logger;
 use RpayRatePay\Services\PaymentMethodsService;
+use RpayRatePay\Services\StaticTextService;
+use Shopware_Controllers_Frontend_Checkout;
 
 class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -19,7 +21,17 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
     {
         return [
             'Shopware_Modules_Admin_GetPaymentMeans_DataFilter' => 'filterPayments',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'addLegalText'
         ];
+    }
+
+    public function addLegalText(\Enlight_Event_EventArgs $args)
+    {
+        /** @var Shopware_Controllers_Frontend_Checkout $subject */
+        $subject = $args->getSubject();
+        $ratepay = $subject->View()->getAssign('ratepay') ? : [];
+        $ratepay['legalText'] = StaticTextService::getInstance()->getText('LegalText');
+        $subject->View()->assign('ratepay', $ratepay);
     }
 
     /**
