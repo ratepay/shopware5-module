@@ -11,14 +11,16 @@
 |Full Documentation | https://ratepay.gitbook.io/shopware/
 
 ## Installation
-1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `engine/Shopware/Plugins/Community/Frontend`
-2. Integrieren Sie den Inhalt in `engine/Shopware/Plugins/Community/Frontend/RpayRatePay`
+1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `custom/plugins/`
+2. Integrieren Sie den Inhalt in `custom/plugins/RpayRatePay`
+2b. gegebenenfalls composer install ausführen in dem Verzeichnis `custom/plugins/RpayRatePay` ausführen
 3. Loggen Sie sich in ihr Shopware-Backend ein
 4. Installieren & konfigurieren Sie das Modul
 
 ## Install
-1. Create Directory `RpayRatePay` in `engine/Shopware/Plugins/Community/Frontend`
-2. Merge the content into `engine/Shopware/Plugins/Community/Frontend/RpayRatePay`
+1. Create Directory `RpayRatePay` in `custom/plugins/`
+2. Merge the content into  in the folder `custom/plugins/RpayRatePay`
+2b execute the command composer install in the folder `custom/plugins/RpayRatePay`
 3. Log into your Shopware-backend
 4. Install & configure the module
 
