@@ -57,6 +57,9 @@ class ConfigLoader
      */
     public function getPluginConfigForPaymentType($shopId, $countryISO, $paymentColumn, $backend = false)
     {
+        $paymentColumn = strtolower($paymentColumn);
+        $paymentColumn = $paymentColumn === 'elv' ? 'debit' : $paymentColumn;
+
         $profileConfig = ProfileConfigService::getProfileConfig(
             $countryISO,
             $shopId,
