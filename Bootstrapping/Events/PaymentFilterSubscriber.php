@@ -6,6 +6,7 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 use RpayRatePay\Component\Service\Logger;
+use RpayRatePay\Services\PaymentMethodsService;
 
 class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 {
@@ -44,7 +45,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
             return;
         }
 
-        /** @var Shopware\Models\Customer\Customer $user */
+        /** @var \Shopware\Models\Customer\Customer $user */
         $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
         $wrappedUser = new ShopwareCustomerWrapper($user, Shopware()->Models());
 
@@ -78,6 +79,12 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         foreach ($config as $payment => $data) {
             $show[$payment] = $data['status'] == 2 ? true : false;
 
+            if(PaymentMethodsService::getInstance()->isPaymentMethodLockedForCustomer($user, $payment)) {
+                // the payment method is locked for the customer
+                $show[$payment] = false;
+                continue;
+            }
+
             $validation = $this->getValidator($user);
 
             $validation->setAllowedCurrencies($data['currency']);
@@ -106,7 +113,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 
             if (!$validation->isBillingAddressSameLikeShippingAddress()) {
                 if (!$data['address']) {
-                    $shop[$payment] = false;
+                    $show[$payment] = false;
                     continue;
                 }
             }
