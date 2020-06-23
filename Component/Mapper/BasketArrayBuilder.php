@@ -228,29 +228,19 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_BasketArrayBuilder
      */
     private function addItemForCreditItem($item)
     {
-        if ($this->withRetry || $item->price > 0) {
-            $item = [
-                'ArticleNumber' => $item->articlenumber,
-                'Quantity' => 1 , // $item->quantity,
-                'Description' => $item->articlenumber,
-                'UnitPriceGross' => $item->price,
-                'TaxRate' => $item->taxRate,
-            ];
-            $this->basket['Items'][] = ['Item' => $item];
-        } else {
-            $discount = [
-                'Description' => $item->articlenumber,
-                'UnitPriceGross' => floatval($item->price),
-                'TaxRate' => $item->taxRate,
-            ];
-
-            if (isset($this->basket['Discount'], $this->basket['Discount']['UnitPriceGross'])) {
-                $discount['UnitPriceGross'] = $this->basket['Discount']['UnitPriceGross'] + floatval($item->price);
-                $discount['Description'] = $this->basket['Discount']['Description'] . ', ' . $item->articlenumber;
-            }
-
-            $this->basket['Discount'] = $discount;
+        $quantity = $this->getQuantityForRequest($item);
+        if($quantity <= 0) {
+            return;
         }
+
+        $item = [
+            'ArticleNumber' => $item->articlenumber,
+            'Quantity' => $quantity,
+            'Description' => $item->articlenumber,
+            'UnitPriceGross' => $item->price,
+            'TaxRate' => $item->taxRate,
+        ];
+        $this->basket['Items'][] = ['Item' => $item];
     }
 
     /**
