@@ -13,16 +13,16 @@
 ## Installation
 1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `custom/plugins/`
 2. Integrieren Sie den Inhalt in `custom/plugins/RpayRatePay`
-2b. gegebenenfalls composer install ausführen in dem Verzeichnis `custom/plugins/RpayRatePay` ausführen
-3. Loggen Sie sich in ihr Shopware-Backend ein
-4. Installieren & konfigurieren Sie das Modul
+3. gegebenenfalls composer install ausführen in dem Verzeichnis `custom/plugins/RpayRatePay` ausführen
+4. Loggen Sie sich in ihr Shopware-Backend ein
+5. Installieren & konfigurieren Sie das Modul
 
 ## Install
 1. Create Directory `RpayRatePay` in `custom/plugins/`
 2. Merge the content into  in the folder `custom/plugins/RpayRatePay`
-2b execute the command composer install in the folder `custom/plugins/RpayRatePay`
-3. Log into your Shopware-backend
-4. Install & configure the module
+3. execute the command composer install in the folder `custom/plugins/RpayRatePay`
+4. Log into your Shopware-backend
+5. Install & configure the module
 
 ## Changelog
 Siehe plugin.xml
