@@ -6,7 +6,7 @@
     {block name="frontend_ratepay_devicefingerprint"}
         {if $token && $snippetId }
             <script type="text/javascript">
-                let di = {
+                window.di = {
                     t: '{$token}',
                     v: '{$snippetId}',
                     l:'Checkout'
