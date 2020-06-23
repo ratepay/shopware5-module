@@ -24,7 +24,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
             'Shopware_Controllers_Backend_Order::saveAction::after' => 'onBidirectionalSendOrderOperation',
             'Shopware_Controllers_Backend_Order::batchProcessAction::after' => 'afterOrderBatchProcess',
             'Shopware_Controllers_Backend_Order::deletePositionAction::before' => 'beforeDeleteOrderPosition',
-            'Shopware_Controllers_Backend_Order::deleteAction::before' => 'beforeDeleteOrder',
+            'Shopware_Controllers_Backend_Order::deleteAction::replace' => 'replaceDeleteOrder',
         ];
     }
 
@@ -144,73 +144,77 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
     /**
      * Stops Order deletion, when any article has been send
      *
-     * @param Enlight_Hook_HookArgs $arguments
-     * @return bool
+     * @param \Enlight_Hook_HookArgs $arguments
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function beforeDeleteOrder(\Enlight_Hook_HookArgs $arguments)
+    public function replaceDeleteOrder(\Enlight_Hook_HookArgs $arguments)
     {
+        $controller = $arguments->getSubject();
         $request = $arguments->getSubject()->Request();
         $parameter = $request->getParams();
         $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
-        if (!in_array($parameter['payment'][0]['name'], $paymentMethods)) {
-            return false;
+        if (in_array($parameter['payment'][0]['name'], $paymentMethods)) {
+            $sql = 'SELECT COUNT(*) FROM `s_order_details` AS `detail` '
+                . 'INNER JOIN `rpay_ratepay_order_positions` AS `position` '
+                . 'ON `position`.`s_order_details_id` = `detail`.`id` '
+                . 'WHERE `detail`.`orderID`=? AND '
+                . '(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)';
+            $count = Shopware()->Db()->fetchOne($sql, [$parameter['id']]);
+            if ($count > 0) {
+                $message = 'RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.';
+                $controller->View()->assign(['success' => false, 'message' => $message]);
+                Logger::singleton()->warning($message);
+                return;
+            } else {
+                /** @var Order $order */
+                $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
+
+                $sqlShipping = 'SELECT invoice_shipping FROM s_order WHERE id = ?';
+                $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, [$parameter['id']]);
+
+                $items = [];
+                $i = 0;
+                foreach ($order->getDetails() as $item) {
+                    $items[$i]['articlename'] = $item->getArticlename();
+                    $items[$i]['ordernumber'] = $item->getArticlenumber();
+                    $items[$i]['quantity'] = $item->getQuantity();
+                    $items[$i]['priceNumeric'] = $item->getPrice();
+                    $items[$i]['tax_rate'] = $item->getTaxRate();
+                    $taxRate = $item->getTaxRate();
+                    $i++;
+                }
+                if (!empty($shippingCosts)) {
+                    $items['Shipping']['articlename'] = 'Shipping';
+                    $items['Shipping']['ordernumber'] = 'shipping';
+                    $items['Shipping']['quantity'] = 1;
+                    $items['Shipping']['priceNumeric'] = $shippingCosts;
+                    $items['Shipping']['tax_rate'] = $taxRate;
+                }
+
+                $attributes = $order->getAttribute();
+                $backend = (bool)($attributes->getRatepayBackend());
+
+                $netPrices = $order->getNet() === 1;
+
+                $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices, $order->getShop());
+                $modelFactory->setTransactionId($parameter['transactionId']);
+                $modelFactory->setTransactionId($order->getTransactionID());
+                $operationData['orderId'] = $order->getId();
+                $operationData['items'] = $items;
+                $operationData['subtype'] = 'cancellation';
+                $result = $modelFactory->callPaymentChange($operationData);
+
+                if ($result !== true) {
+                    $message = 'Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.';
+                    $controller->View()->assign(['success' => false, 'message' => $message]);
+                    Logger::singleton()->warning($message);
+                    return;
+                }
+            }
         }
-        $sql = 'SELECT COUNT(*) FROM `s_order_details` AS `detail` '
-            . 'INNER JOIN `rpay_ratepay_order_positions` AS `position` '
-            . 'ON `position`.`s_order_details_id` = `detail`.`id` '
-            . 'WHERE `detail`.`orderID`=? AND '
-            . '(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)';
-        $count = Shopware()->Db()->fetchOne($sql, [$parameter['id']]);
-        if ($count > 0) {
-            Logger::singleton()->warning('RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.');
-            $arguments->stop();
-        } else {
-            /** @var Order $order */
-            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['id']);
-
-            $sqlShipping = 'SELECT invoice_shipping FROM s_order WHERE id = ?';
-            $shippingCosts = Shopware()->Db()->fetchOne($sqlShipping, [$parameter['id']]);
-
-            $items = [];
-            $i = 0;
-            foreach ($order->getDetails() as $item) {
-                $items[$i]['articlename'] = $item->getArticlename();
-                $items[$i]['ordernumber'] = $item->getArticlenumber();
-                $items[$i]['quantity'] = $item->getQuantity();
-                $items[$i]['priceNumeric'] = $item->getPrice();
-                $items[$i]['tax_rate'] = $item->getTaxRate();
-                $taxRate = $item->getTaxRate();
-                $i++;
-            }
-            if (!empty($shippingCosts)) {
-                $items['Shipping']['articlename'] = 'Shipping';
-                $items['Shipping']['ordernumber'] = 'shipping';
-                $items['Shipping']['quantity'] = 1;
-                $items['Shipping']['priceNumeric'] = $shippingCosts;
-                $items['Shipping']['tax_rate'] = $taxRate;
-            }
-
-            $attributes = $order->getAttribute();
-            $backend = (bool)($attributes->getRatepayBackend());
-
-            $netPrices = $order->getNet() === 1;
-
-            $modelFactory = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, $backend, $netPrices, $order->getShop());
-            $modelFactory->setTransactionId($parameter['transactionId']);
-            $modelFactory->setTransactionId($order->getTransactionID());
-            $operationData['orderId'] = $order->getId();
-            $operationData['items'] = $items;
-            $operationData['subtype'] = 'cancellation';
-            $result = $modelFactory->callPaymentChange($operationData);
-
-            if ($result !== true) {
-                Logger::singleton()->warning('Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.');
-                $arguments->stop();
-            }
-        }
+        $arguments->getSubject()->executeParent($arguments->getMethod(), $arguments->getArgs());
     }
 
     /**
