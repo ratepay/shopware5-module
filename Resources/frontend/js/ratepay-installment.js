@@ -115,15 +115,19 @@
         },
 
         switchPaymentType: function (paymentType) {
-            var me = this;
+            var me = this,
+                $sepaForm = me.$el.find('.rp-sepa-form'),
+                $fields = $sepaForm.find('input').not('#rp-iban-account-holder');
             if (paymentType === me.paymentTypes.bankTransfer) {
-                me.$el.find('.rp-sepa-form').hide();
+                $sepaForm.hide();
+                $fields.prop('disabled', true).prop('required', false).val('');
                 me.$el.find('#rp-switch-payment-type-bank-transfer').hide();
                 me.$el.find('#rp-switch-payment-type-direct-debit').show();
                 me.$el.find("#rp-payment-type").val("BANK-TRANSFER");
                 me.$el.find("#rp-payment-firstday").val(window.rpBankTransferFirstday);
             } else if (paymentType === me.paymentTypes.directDebit) {
-                me.$el.find('.rp-sepa-form').show();
+                $sepaForm.show();
+                $fields.not('').prop('disabled', false).prop('required', true).val('');
                 //jQuery('#rp-sepa-agreement').hide();
                 me.$el.find('#rp-switch-payment-type-direct-debit').hide();
                 me.$el.find('#rp-switch-payment-type-bank-transfer').show();

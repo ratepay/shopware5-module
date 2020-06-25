@@ -105,7 +105,7 @@
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label">{{ rp_account_holder }}</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control disabled" value="{{ customer_name }}" disabled /><!-- Show account holder name = billing address firstname and lastname -->
+                        <input type="text" id="rp-iban-account-holder" class="form-control disabled" value="{{ customer_name }}" disabled /><!-- Show account holder name = billing address firstname and lastname -->
                     </div>
                 </div>
                 <!-- Account number is only allowed for customers with german billing address. IBAN must be used for all others -->
@@ -115,7 +115,7 @@
                         <input type="text" class="form-control required" id="rp-iban-account-number" name="ratepay[bank_account][iban]" value="{{ bank_data_iban }}" />
                     </div>
                 </div>
-                <!-- Bank code is only necesarry if account number (no iban) is set -->
+                <!-- Bank code is only necessary if account number (no iban) is set -->
                 <div class="form-group row" id="rp-form-bank-code">
                     <label class="col-sm-2 col-form-label" for="rp-bank-code">{{ rp_bank_code }}</label>
                     <div class="col-sm-10">
