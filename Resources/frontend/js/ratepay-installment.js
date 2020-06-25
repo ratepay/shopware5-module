@@ -157,7 +157,7 @@
 
             me.$el.find(me.selectors.ibanInputSelector).trigger('change');
 
-            if (this.hasBeenInit === false && oldValue !== paymentType) {
+            if (this.hasBeenInit === true && oldValue !== paymentType) {
                 // After changing payment type, re-call of installment plan because of changed firstday
                 me.callInstallmentPlan(me.$el.find('#rp-calculation-type').val(), me.$el.find('#rp-calculation-value').val());
             }
