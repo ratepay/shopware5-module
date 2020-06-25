@@ -25,6 +25,7 @@
             paymentSwitchDirectDebitSelector: '#rp-switch-payment-type-direct-debit a',
             paymentSwitchBankTransferSelector: '#rp-switch-payment-type-bank-transfer a',
         },
+        hasBeenInit: false,
 
         init: function () {
             var me = this;
@@ -39,6 +40,7 @@
             me._on(me.selectors.fixAmountButtonSelector, 'click', $.proxy(me.selectFixAmount, me));
             me._on(me.selectors.fixAmountInputSelector, 'keyup', $.proxy(me.keyupFixedAmount, me));
             me._on(me.selectors.ibanInputSelector, 'keyup', $.proxy(me.switchBankCodeInput, me));
+            me._on(me.selectors.ibanInputSelector, 'change', $.proxy(me.switchBankCodeInput, me));
             me._on(me.selectors.paymentSwitchDirectDebitSelector, 'click', $.proxy(function () {
                 me.switchPaymentType(this.paymentTypes.directDebit);
             }, me));
@@ -47,21 +49,18 @@
             }, me));
 
             me.initCalculator();
+            me.hasBeenInit = true;
         },
 
         initCalculator: function () {
             var me = this;
 
-            me.$el.find("#rp-payment-firstday").val(window.rpDirectDebitAllowed ? rpDirectDebitFirstday : rpBankTransferFirstday);
-            if (window.rpDirectDebitAllowed) {
-                me.$el.find('#rp-payment-type').val("DIRECT-DEBIT");
-            } else {
-                // if direct debit is not allowed 'BANK_TRANSFER' is set by default
-                me.$el.find('#rp-payment-type').val("BANK-TRANSFER");
-            }
+            me.initSepaFields();
 
             var $runTimeSelect = me.$el.find(me.selectors.runTimeButtonsSelector);
-            var $runTimeSelectAbleOptions = $runTimeSelect.children().filter(function(){return $(this).prop('value') !== ''});
+            var $runTimeSelectAbleOptions = $runTimeSelect.children().filter(function () {
+                return $(this).prop('value') !== ''
+            });
             if ($runTimeSelectAbleOptions.length > 1) {
                 me.$el.find(me.selectors.calculatorSelector).show();
             }
@@ -70,6 +69,25 @@
             } else {
                 $runTimeSelect.val($runTimeSelectAbleOptions.first().val());
                 $runTimeSelect.trigger('change');
+            }
+        },
+
+        initSepaFields: function () {
+            var me = this;
+
+            if (window.rpBankTransferAllowed === false || window.rpDirectDebitAllowed === false) {
+                me.$el.find('.rp-payment-type-switch').remove();
+            }
+            if (window.rpDirectDebitAllowed === false) {
+                me.$el.find('.rp-sepa-form').remove();
+            }
+
+            me.$el.find("#rp-payment-firstday").val(window.rpDirectDebitAllowed ? rpDirectDebitFirstday : rpBankTransferFirstday);
+            if (window.rpDirectDebitAllowed) {
+                me.switchPaymentType(this.paymentTypes.directDebit);
+            } else {
+                // if direct debit is not allowed 'BANK_TRANSFER' is set by default
+                me.switchPaymentType(this.paymentTypes.bankTransfer);
             }
         },
 
@@ -117,25 +135,32 @@
         switchPaymentType: function (paymentType) {
             var me = this,
                 $sepaForm = me.$el.find('.rp-sepa-form'),
-                $fields = $sepaForm.find('input').not('#rp-iban-account-holder');
+                $fields = $sepaForm.find('input').not('#rp-iban-account-holder'),
+                oldValue = me.$el.find("#rp-payment-type").val();
+
             if (paymentType === me.paymentTypes.bankTransfer) {
                 $sepaForm.hide();
-                $fields.prop('disabled', true).prop('required', false).val('');
+                $fields.prop('disabled', true).prop('required', false);
                 me.$el.find('#rp-switch-payment-type-bank-transfer').hide();
                 me.$el.find('#rp-switch-payment-type-direct-debit').show();
-                me.$el.find("#rp-payment-type").val("BANK-TRANSFER");
+                me.$el.find("#rp-payment-type").val(paymentType);
                 me.$el.find("#rp-payment-firstday").val(window.rpBankTransferFirstday);
             } else if (paymentType === me.paymentTypes.directDebit) {
                 $sepaForm.show();
-                $fields.not('').prop('disabled', false).prop('required', true).val('');
+                $fields.prop('disabled', false).prop('required', true);
                 //jQuery('#rp-sepa-agreement').hide();
                 me.$el.find('#rp-switch-payment-type-direct-debit').hide();
                 me.$el.find('#rp-switch-payment-type-bank-transfer').show();
-                me.$el.find("#rp-payment-type").val("DIRECT-DEBIT");
+                me.$el.find("#rp-payment-type").val(paymentType);
                 me.$el.find("#rp-payment-firstday").val(window.rpDirectDebitFirstday);
             }
-            // After changing payment type, re-call of installment plan because of changed firstday
-            me.callInstallmentPlan(me.$el.find('#rp-calculation-type').val(), me.$el.find('#rp-calculation-value').val());
+
+            me.$el.find(me.selectors.ibanInputSelector).trigger('change');
+
+            if (this.hasBeenInit === false && oldValue !== paymentType) {
+                // After changing payment type, re-call of installment plan because of changed firstday
+                me.callInstallmentPlan(me.$el.find('#rp-calculation-type').val(), me.$el.find('#rp-calculation-value').val());
+            }
         },
 
         callInstallmentPlan: function (calcType, calcValue) {
@@ -154,20 +179,6 @@
                 .done(function (result) {
                     // show filled calculation plan template
                     me.$el.find('#rpResultContainer').html(result);
-
-                    if (window.rpDirectDebitAllowed && me.$el.find("#rp-payment-type").val() === "DIRECT-DEBIT") {
-                        me.$el.find('.rp-sepa-form').show();
-                    }
-
-                    me.$el.find('.rp-payment-type-switch').hide();
-                    // if payment type bank transfer is allowed show switch
-                    if (window.rpBankTransferAllowed) {
-                        if (me.$el.find("#rp-payment-type").val() === "DIRECT-DEBIT") {
-                            me.$el.find('#rp-switch-payment-type-bank-transfer').show();
-                        } else if (window.rpDirectDebitAllowed) {
-                            me.$el.find('#rp-switch-payment-type-direct-debit').show();
-                        }
-                    }
 
                     me.$el.find('#rp-calculation-type').val(calcType);
                     me.$el.find('#rp-calculation-value').val(calcValue);
