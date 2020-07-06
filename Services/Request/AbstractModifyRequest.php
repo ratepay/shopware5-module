@@ -132,10 +132,7 @@ abstract class AbstractModifyRequest extends AbstractRequest
     protected function getRequestHead(ProfileConfig $profileConfig)
     {
         $data = parent::getRequestHead($profileConfig);
-        if (!empty($orderId)) {
-            $data['External']['OrderId'] = $this->_order->getId();
-        }
-
+        $data['External']['OrderId'] = $this->_order->getNumber();
         $data['TransactionId'] = $this->_order->getTransactionId();
         return $data;
     }
