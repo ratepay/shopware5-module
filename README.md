@@ -53,11 +53,11 @@ $order = [ instance of \Shopware\Models\Order ]
 
 $basketPosition = new BasketPosition($productNumber, $qty);
 $basketPosition->setOrderDetail($orderDetail);
-$basketPositions[] = $basketPosition
+$basketPositions[] = $basketPosition;
 
 $basketPosition = new BasketPosition($productNumber, $qty);
 $basketPosition->setOrderDetail($orderDetail);
-$basketPositions[] = $basketPosition
+$basketPositions[] = $basketPosition;
 
 [...]
 
