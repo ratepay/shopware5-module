@@ -380,7 +380,7 @@
             <name>ratepay/status/rpayratepayprepayment</name>
             <label lang="en">Paymentstate after pre-payment</label>
             <label lang="de">Zahlstatus nach Zahlung mit Vorauskasse</label>
-            <value>12</value>
+            <value>17</value>
             <store>base.PaymentStatus</store>
             <options>
                 <valueField>id</valueField>
