@@ -246,18 +246,18 @@
 
         <element type="button">
             <name>ratepay/buttons/button6</name>
-            <label lang="en">Bidirectional Sync for RatePAY Orders</label>
-            <label lang="de">Bidirektionalität RatePAY-Bestellungen:</label>
+            <label lang="en">Bidirectional Sync for Ratepay Orders</label>
+            <label lang="de">Bidirektionalität Ratepay-Bestellungen:</label>
         </element>
         <element required="true" type="boolean">
             <name>ratepay/bidirectional/enable</name>
             <label lang="en">Activate bidirectional sync</label>
             <label lang="de">Bidirektionalität aktivieren</label>
-            <description lang="en">Updates will be automatically sent to RatePAY, whenever order status has been
+            <description lang="en">Updates will be automatically sent to Ratepay, whenever order status has been
                 changed.
             </description>
             <description lang="de">Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer
-                RatePAY-Bestellung ändert
+                Ratepay-Bestellung ändert
             </description>
         </element>
         <element required="true" type="combo">
@@ -288,6 +288,55 @@
             <label lang="de">Status für Vollretournierung</label>
             <value>4</value>
             <store>base.OrderStatus</store>
+            <options>
+                <valueField>id</valueField>
+                <displayField>description</displayField>
+            </options>
+        </element>
+
+        <element type="button">
+            <name>ratepay/buttons/button61</name>
+            <label lang="en">Bidirectional Sync for Ratepay Orders (Positions):</label>
+            <label lang="de">Bidirektionalität Ratepay-Bestellungen (Bestellpositionen):</label>
+        </element>
+        <element required="true" type="boolean">
+            <name>ratepay/bidirectional/position/enable</name>
+            <label lang="en">Activate bidirectional sync</label>
+            <label lang="de">Bidirektionalität aktivieren</label>
+            <description lang="en">Updates will be automatically sent to Ratepay, whenever position status has been
+                changed.
+            </description>
+            <description lang="de">Automatische Operationen an Ratepay senden, wenn sich der Status einer Position ändert
+            </description>
+        </element>
+        <element required="true" type="combo">
+            <name>ratepay/bidirectional/position/status/full_delivery</name>
+            <label lang="en">Status for `delivery completed`</label>
+            <label lang="de">Status für Volllieferung</label>
+            <value>3</value>
+            <store>Shopware.apps.Base.store.PositionStatus</store>
+            <options>
+                <valueField>id</valueField>
+                <displayField>description</displayField>
+            </options>
+        </element>
+        <element required="true" type="combo">
+            <name>ratepay/bidirectional/position/status/full_cancellation</name>
+            <label lang="en">Status for `cancelled`</label>
+            <label lang="de">Status für Vollstornierung</label>
+            <value>2</value>
+            <store>Shopware.apps.Base.store.PositionStatus</store>
+            <options>
+                <valueField>id</valueField>
+                <displayField>description</displayField>
+            </options>
+        </element>
+        <element required="true" type="combo">
+            <name>ratepay/bidirectional/position/status/full_return</name>
+            <label lang="en">Status for `returned`</label>
+            <label lang="de">Status für Vollretournierung</label>
+            <value>155</value>
+            <store>Shopware.apps.Base.store.PositionStatus</store>
             <options>
                 <valueField>id</valueField>
                 <displayField>description</displayField>

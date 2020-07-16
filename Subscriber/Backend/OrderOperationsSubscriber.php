@@ -23,6 +23,7 @@ use RpayRatePay\Services\HelperService;
 use RpayRatePay\Services\OrderStatusChangeService;
 use RpayRatePay\Services\Request\PaymentCancelService;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Payment\Payment;
 use Shopware_Controllers_Backend_Order;
@@ -84,6 +85,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
             'Shopware_Controllers_Backend_Order::saveAction::before' => 'beforeSaveOrderInBackend',
             'Shopware_Controllers_Backend_Order::saveAction::after' => 'onBidirectionalSendOrderOperation',
             'Shopware_Controllers_Backend_Order::batchProcessAction::after' => 'afterOrderBatchProcess',
+            'Shopware_Controllers_Backend_Order::savePositionAction::after' => 'onBidirectionalSendPositionOperation',
             'Shopware_Controllers_Backend_Order::deletePositionAction::before' => 'beforeDeleteOrderPosition',
             'Shopware_Controllers_Backend_Order::deleteAction::replace' => 'replaceDeleteOrder',
         ];
@@ -129,9 +131,6 @@ class OrderOperationsSubscriber implements SubscriberInterface
      */
     public function onBidirectionalSendOrderOperation(Enlight_Hook_HookArgs $args)
     {
-        if (!$this->config->isBidirectionalEnabled()) {
-            return;
-        }
         /** @var Shopware_Controllers_Backend_Order $controller */
         $controller = $args->getSubject();
         $orderId = $controller->Request()->getParam('id');
@@ -140,6 +139,23 @@ class OrderOperationsSubscriber implements SubscriberInterface
         $order = $this->modelManager->find(Order::class, $orderId);
 
         $this->orderStatusChangeService->informRatepayOfOrderStatusChange($order);
+    }
+
+
+    public function onBidirectionalSendPositionOperation(Enlight_Hook_HookArgs $args)
+    {
+        /** @var Shopware_Controllers_Backend_Order $subject */
+        $subject = $args->getSubject();
+        $id = $subject->Request()->getParam('id', null);
+
+        if ($id === null || $subject->View()->getAssign('success') !== true) {
+            return;
+        }
+
+        $detail = $this->modelManager->find(Detail::class, $id);
+        if ($detail) {
+            $this->orderStatusChangeService->informRatepayOfOrderPositionStatusChange($detail);
+        }
     }
 
     /**
@@ -160,7 +176,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
             return;
         }
 
-        if(count($orders) == 0) {
+        if (count($orders) == 0) {
             $orders = [['id' => $singleOrderId]];
         }
 
