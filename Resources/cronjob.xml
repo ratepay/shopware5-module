@@ -17,4 +17,12 @@
         <disableOnError>false</disableOnError>
     </cronjob>
 
+    <cronjob>
+        <name>Ratepay order position watcher</name>
+        <action>Shopware_CronJob_Ratepay_OrderPositionWatcher</action>
+        <active>true</active>
+        <interval>1800</interval>
+        <disableOnError>false</disableOnError>
+    </cronjob>
+
 </cronjobs>

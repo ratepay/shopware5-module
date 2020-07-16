@@ -10,6 +10,7 @@ namespace RpayRatePay\Subscriber\Cron;
 
 use DateInterval;
 use DateTime;
+use Doctrine\ORM\Query\Expr\Join;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use Exception;
@@ -18,14 +19,12 @@ use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\OrderStatusChangeService;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 use Shopware_Components_Cron_CronJob;
-use Shopware_Plugins_Frontend_RpayRatePay_Component_Service_OrderStatusChangeHandler;
 
 class UpdateTransactionsSubscriber implements SubscriberInterface
 {
-    const JOB_NAME = 'Shopware_CronJob_RatePay_UpdateTransactions';
-
     const MSG_NOTIFY_UPDATES_TO_RATEPAY = '[%d/%d] Processing order %d ...notify needed updates to RatePAY';
 
     /**
@@ -75,8 +74,40 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            self::JOB_NAME => 'updateRatepayTransactions',
+            'Shopware_CronJob_RatePay_UpdateTransactions' => 'updateRatepayTransactions',
+            'Shopware_CronJob_Ratepay_OrderPositionWatcher' => 'watchOrderDetails'
         ];
+    }
+
+    public function watchOrderDetails(\Enlight_Event_EventArgs $args)
+    {
+        $orderRepo = $this->modelManager->getRepository(Detail::class);
+
+        $qb = $orderRepo->createQueryBuilder('detail');
+        $qb->innerJoin('detail.order', 'o', Join::WITH)
+            ->innerJoin('detail.attribute', 'attribute', Join::WITH)
+            ->innerJoin('o.payment', 'paymentMethod', Join::WITH)
+            ->andWhere($qb->expr()->neq('attribute.ratepayLastStatus', 'detail.status'))
+            ->andWhere($qb->expr()->in('paymentMethod.name', ':methods'))
+            ->setParameter('methods', PaymentMethods::getNames());
+
+        $query = $qb->getQuery();
+
+        /** @var Detail $detail */
+        foreach ($query->getResult() as $detail) {
+            if ($detail->getAttribute() === null) {
+                continue;
+            }
+            $lastStatus = $detail->getAttribute()->getRatepayLastStatus();
+            if ($lastStatus !== $detail->getStatus()->getId()) {
+                $this->orderStatusChangeService->informRatepayOfOrderPositionStatusChange($detail);
+            } else {
+                continue;
+            }
+
+            $detail->getAttribute()->setRatepayLastStatus($detail->getStatus()->getId());
+            $this->modelManager->flush($detail->getAttribute());
+        }
     }
 
     /**

@@ -14,6 +14,7 @@ use RpayRatePay\Bootstrap\AbstractBootstrap;
 use RpayRatePay\Bootstrap\Configuration;
 use RpayRatePay\Bootstrap\Database;
 use RpayRatePay\Bootstrap\OrderAttribute;
+use RpayRatePay\Bootstrap\OrderDetailAttributes;
 use RpayRatePay\Bootstrap\OrderStatus;
 use RpayRatePay\Bootstrap\PaymentMeans;
 use RpayRatePay\Bootstrap\ProfileConfig;
@@ -59,6 +60,7 @@ class RpayRatePay extends Plugin
             new Database(),
             new ProfileConfig(),
             new OrderAttribute(),
+            new OrderDetailAttributes(),
             new PaymentMeans(),
             new OrderStatus(),
             new Configuration(),
