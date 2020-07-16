@@ -165,6 +165,11 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                     var randomnumber = Math.floor(Math.random() * 10001);
                                     var creditname = 'Credit' + id + '-' + randomnumber;
                                     var firstArticle = me.record.getPositions().data.items[0];
+                                    var value = Math.abs(Ext.getCmp('creditAmount').getValue());
+                                    if(value <= 0) {
+                                        Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=CreditAmountToLow}{/s}');
+                                        return;
+                                    }
                                     Ext.Ajax.request({
                                         url: '{url controller=Order action=savePosition}',
                                         method: 'POST',
@@ -177,7 +182,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             id: 0,
                                             inStock: 0,
                                             mode: 0,
-                                            price: (-1 * Math.abs(Ext.getCmp('creditAmount').getValue())),
+                                            price: (-1 * value),
                                             quantity: 1,
                                             statusDescription: "",
                                             statusId: 0,
@@ -249,6 +254,11 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                     var randomnumber = Math.floor(Math.random() * 10001);
                                     var debitname = 'Debit' + id + '+' + randomnumber;
                                     var firstArticle = me.record.getPositions().data.items[0];
+                                    var value = Math.abs(Ext.getCmp('debitAmount').getValue());
+                                    if(value <= 0) {
+                                        Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=CreditAmountToLow}{/s}');
+                                        return;
+                                    }
                                     Ext.Ajax.request({
                                         url: '{url controller=Order action=savePosition}',
                                         method: 'POST',
@@ -261,7 +271,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             id: 0,
                                             inStock: 0,
                                             mode: 0,
-                                            price: Math.abs(Ext.getCmp('debitAmount').getValue()),
+                                            price: value,
                                             quantity: 1,
                                             statusDescription: "",
                                             statusId: 0,
