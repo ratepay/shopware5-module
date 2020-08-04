@@ -81,33 +81,40 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
 
     public function watchOrderDetails(\Enlight_Event_EventArgs $args)
     {
-        $orderRepo = $this->modelManager->getRepository(Detail::class);
+        $orderRepo = $this->modelManager->getRepository(Order::class);
 
-        $qb = $orderRepo->createQueryBuilder('detail');
+        $qb = $orderRepo->createQueryBuilder('o');
+        $qb->addSelect('detail')
+            ->innerJoin('o.details', 'detail', Join::WITH)
+            ->innerJoin('o.payment', 'paymentMethod', Join::WITH)
+            ->innerJoin('detail.attribute', 'detailAttribute', Join::WITH, $qb->expr()->neq('detailAttribute.ratepayLastStatus', 'detail.status'))
+            ->andWhere($qb->expr()->in('paymentMethod.name', ':methods'))
+            ->setParameter('methods', PaymentMethods::getNames());
+
+        /*$qb = $orderRepo->createQueryBuilder('detail');
         $qb->innerJoin('detail.order', 'o', Join::WITH)
             ->innerJoin('detail.attribute', 'attribute', Join::WITH)
             ->innerJoin('o.payment', 'paymentMethod', Join::WITH)
             ->andWhere($qb->expr()->neq('attribute.ratepayLastStatus', 'detail.status'))
             ->andWhere($qb->expr()->in('paymentMethod.name', ':methods'))
-            ->setParameter('methods', PaymentMethods::getNames());
+            ->setParameter('methods', PaymentMethods::getNames());*/
 
         $query = $qb->getQuery();
 
-        /** @var Detail $detail */
-        foreach ($query->getResult() as $detail) {
-            if ($detail->getAttribute() === null) {
-                continue;
-            }
-            $lastStatus = $detail->getAttribute()->getRatepayLastStatus();
-            if ($lastStatus !== $detail->getStatus()->getId()) {
-                $this->orderStatusChangeService->informRatepayOfOrderPositionStatusChange($detail);
-            } else {
-                continue;
-            }
+        $attributesToFlush = [];
+        /** @var Order $order */
+        foreach ($query->getResult() as $order) {
+            $candidates = $order->getDetails()->toArray();
+            $this->orderStatusChangeService->informRatepayOfOrderPositionStatusChange($order, $candidates);
 
-            $detail->getAttribute()->setRatepayLastStatus($detail->getStatus()->getId());
-            $this->modelManager->flush($detail->getAttribute());
+            // at least sync the detail statuses
+            /** @var Detail $detail */
+            foreach ($candidates as $detail) {
+                $detail->getAttribute()->setRatepayLastStatus($detail->getStatus()->getId());
+                $attributesToFlush[] = $detail->getAttribute();
+            }
         }
+        $this->modelManager->flush($attributesToFlush);
     }
 
     /**
@@ -159,8 +166,8 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
             $this->configService->getBidirectionalOrderStatus('full_cancellation'),
             $this->configService->getBidirectionalOrderStatus('full_return'),
         ];
-        foreach($allowedOrderStates as $i => $allowedOrderState) {
-            if($allowedOrderState == null || empty($allowedOrderState) || is_numeric($allowedOrderState) == false) {
+        foreach ($allowedOrderStates as $i => $allowedOrderState) {
+            if ($allowedOrderState == null || empty($allowedOrderState) || is_numeric($allowedOrderState) == false) {
                 unset($allowedOrderStates[$i]);
             }
         }

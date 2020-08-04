@@ -154,7 +154,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
 
         $detail = $this->modelManager->find(Detail::class, $id);
         if ($detail) {
-            $this->orderStatusChangeService->informRatepayOfOrderPositionStatusChange($detail);
+            $this->orderStatusChangeService->informRatepayOfOrderPositionStatusChange($detail->getOrder(), [$detail]);
         }
     }
 
