@@ -227,7 +227,13 @@ class BasketArrayBuilder
             } else if ($item instanceof PositionStruct) {
                 $name = $item->getName();
                 $productNumber = $item->getNumber();
-                $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $item);
+
+                // RATEPLUG-106: we must fix the `price` in the item, cause if it is a percentage voucher,
+                // the percentage will be displayed as unit price (it is a fix for a shopware bug)
+                $fixedItem = clone $item;
+                $fixedItem->setPrice($fixedItem->getTotal() / $fixedItem->getQuantity());
+
+                $price = TaxHelper::getItemGrossPrice($this->paymentRequestData, $fixedItem);
                 $taxRate = TaxHelper::getItemTaxRate($this->paymentRequestData, $item);
             } else {
                 // should never occurs cause the function call `PositionHelper::isDiscount`
