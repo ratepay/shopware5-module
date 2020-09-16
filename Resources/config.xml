@@ -308,7 +308,7 @@
         <element required="true" type="boolean">
             <name>ratepay/advanced/use_fallback_discount_item</name>
             <label lang="en">Send discount as basket item</label>
-            <label lang="de">Übertrage Versandkosten als Warenkorbposition</label>
+            <label lang="de">Übertrage Gutschein als Warenkorbposition</label>
             <value>0</value>
         </element>
         <element required="true" type="boolean">
