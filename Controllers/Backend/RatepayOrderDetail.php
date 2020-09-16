@@ -391,23 +391,23 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
 
         $order = $this->modelManager->find(Order::class, $orderId);
 
-        if (PaymentMethods::isInstallment($order->getPayment())) {
-            $this->View()->assign([
-                'message' => $this->getSnippet('backend/ratepay/messages', 'CannotAddProductToRatePayment'),
-                'result' => false,
-                'success' => true
-            ]);
-            return;
-        }
-
         $qb = $this->modelManager->getRepository(Detail::class)->createQueryBuilder('detail');
         $qb->andWhere($qb->expr()->in('detail.id', $addedDetailIds));
+        /** @var Detail[] $addedDetails */
         $addedDetails = $qb->getQuery()->getResult();
 
         $isSuccess = true;
         if (count($addedDetails)) {
             $basketArrayBuilder = new BasketArrayBuilder($order);
             foreach ($addedDetails as $detail) {
+                if ($detail->getPrice() > 0 && PaymentMethods::isInstallment($order->getPayment())) {
+                    $this->View()->assign([
+                        'message' => $this->getSnippet('backend/ratepay/messages', 'CannotAddProductToRatePayment'),
+                        'result' => false,
+                        'success' => false
+                    ]);
+                    return;
+                }
                 $basketArrayBuilder->addItem($detail);
             }
 
