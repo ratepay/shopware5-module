@@ -33,6 +33,7 @@
 * RATEPLUG-73: fix bidirectionally
 * RATEPLUG-73: fix the installation of payment/order status
 * RATEPLUG-76: fix dfp in firefox (wrong variable declaration)
+* RATEPLUG-123: rate-payment: replace bank data
 
 ### Version 5.4.7 - Released 2020-01-15
 * RATEPLUG-33: fix namespaces
