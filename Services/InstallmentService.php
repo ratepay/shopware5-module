@@ -9,12 +9,12 @@
 namespace RpayRatePay\Services;
 
 
-use Exception;
+use Enlight_Template_Default;
+use Enlight_Template_Manager;
 use RatePAY\Frontend\InstallmentBuilder;
-use RatePAY\Service\Util;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentMethods;
-use RpayRatePay\Exception\NoProfileFoundException;
+use RpayRatePay\Helper\LanguageHelper;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
@@ -45,12 +45,17 @@ class InstallmentService
      */
     private $modelManager;
     private $pluginDir;
+    /**
+     * @var Enlight_Template_Manager
+     */
+    private $templateManager;
 
     public function __construct(
         ModelManager $modelManager,
         ProfileConfigService $profileConfigService,
         ConfigService $configService,
         SessionHelper $sessionHelper,
+        Enlight_Template_Manager $templateManager,
         $pluginDir
     )
     {
@@ -59,6 +64,7 @@ class InstallmentService
         $this->configService = $configService;
         $this->sessionHelper = $sessionHelper;
         $this->pluginDir = $pluginDir;
+        $this->templateManager = $templateManager;
     }
 
     /**
@@ -140,33 +146,16 @@ class InstallmentService
 
     public function getInstallmentPlanTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto)
     {
-        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
-        return $installmentBuilder->getInstallmentPlanByTemplate(
-            file_get_contents($this->getTemplate('template.installmentPlan.html', $isBackend)),
-            $requestDto->getTotalAmount(),
-            $requestDto->getType(),
-            $requestDto->getValue(),
-            $requestDto->getPaymentFirstDay()
-        );
-    }
+        $planData = $this->getInstallmentPlan($billingAddress, $shopId, $paymentMethodName, $isBackend, $requestDto);
 
-    protected function getTemplate($templateName, $isBackend)
-    {
-        if ($isBackend) {
-            //TODO implement
-            throw new Exception('not implemented');
-        }
+        /** @var Enlight_Template_Default $template */
+        $template = $this->templateManager->createTemplate('frontend/plugins/payment/ratepay/installment/plan.tpl');
 
-        //TODO add filter or something like that.
-        return $this->pluginDir .
-            DIRECTORY_SEPARATOR .
-            'Resources' .
-            DIRECTORY_SEPARATOR .
-            'templates' .
-            DIRECTORY_SEPARATOR .
-            ($isBackend ? 'backend' : 'frontend') .
-            DIRECTORY_SEPARATOR .
-            $templateName;
+        $template->assign('ratepay', [
+            'translations' => LanguageHelper::getRatepayTranslations(Shopware()->Shop()),
+            'plan' => $planData
+        ]);
+        return $template->fetch();
     }
 
     public function getInstallmentCalculator(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount)
@@ -179,19 +168,20 @@ class InstallmentService
     public function getInstallmentCalculatorTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount)
     {
         $bankData = $this->sessionHelper->getBankData($billingAddress);
+        $calculatorData = $this->getInstallmentCalculator($billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount);
 
-        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
-        $template = file_get_contents($this->getTemplate('template.installmentCalculator.html', $isBackend));
-        $htmlCalculator = $installmentBuilder->getInstallmentCalculatorByTemplate($totalAmount, $template);
-        $htmlCalculator = Util::templateReplace(
-            $htmlCalculator,
-            [
+        /** @var Enlight_Template_Default $template */
+        $template = $this->templateManager->createTemplate('frontend/plugins/payment/ratepay/installment/calculator.tpl');
+        $template->assign('ratepay', [
+            'translations' => LanguageHelper::getRatepayTranslations(Shopware()->Shop()),
+            'calculator' => $calculatorData,
+            'data' => [
                 'customer_name' => $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
                 'bank_data_iban' => $bankData ? ($bankData->getIban() ? $bankData->getIban() : $bankData->getAccountNumber()) : null,
                 'bank_data_bankcode' => $bankData ? $bankData->getBankCode() : null,
             ]
-        );
-        return $htmlCalculator;
+        ]);
+        return $template->fetch();
     }
 
 }

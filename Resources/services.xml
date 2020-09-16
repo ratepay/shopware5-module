@@ -82,11 +82,9 @@
             <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
+            <argument id="template" type="service"/>
             <argument>%rpay_rate_pay.plugin_dir%</argument>
         </service>
-
-
-
 
         <service id="RpayRatePay\Services\MessageManager">
             <argument id="snippets" type="service"/>
@@ -96,7 +94,6 @@
         <service id="RpayRatePay\Services\StaticTextService">
             <argument>%rpay_rate_pay.plugin_dir%</argument>
         </service>
-
 
     </services>
 </container>
