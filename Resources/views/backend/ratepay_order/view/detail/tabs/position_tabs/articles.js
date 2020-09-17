@@ -143,19 +143,30 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 handler: function () {
                     Ext.create('Ext.window.Window', {
                         title: '{s namespace="backend/ratepay" name=addcredit}Nachlass hinzuf&uuml;gen{/s}',
-                        width: 200,
-                        height: 100,
+                        width: 270,
+                        height: 125,
                         id: 'creditWindow',
-                        resizable: false,
-                        layout: 'fit',
+                        resizable: true,
+                        layout: 'vbox',
+                        modal: true,
                         items: [
                             {
                                 xtype: 'numberfield',
+                                fieldLabel: '{s namespace="backend/ratepay" name="credit"}{/s}',
                                 id: 'creditAmount',
                                 allowBlank: false,
                                 allowDecimals: true,
                                 minValue: 0.01,
                                 value: 1.00
+                            },
+                            {
+                                xtype: 'combobox',
+                                fieldLabel: '{s namespace="backend/ratepay" name="taxClass"}Steuerklasse{/s}',
+                                displayField: 'name',
+                                valueField: 'id',
+                                queryMode: 'remote',
+                                store: Ext.create('Shopware.apps.Base.store.Tax'),
+                                id: 'creditTaxId'
                             }
                         ],
                         buttons: [
@@ -166,8 +177,13 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                     var creditname = 'Credit' + id + '-' + randomnumber;
                                     var firstArticle = me.record.getPositions().data.items[0];
                                     var value = Math.abs(Ext.getCmp('creditAmount').getValue());
+                                    var taxClassId = Ext.getCmp('creditTaxId').getValue();
                                     if(value <= 0) {
                                         Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=CreditAmountToLow}{/s}');
+                                        return;
+                                    }
+                                    if ((taxClassId >= 0) === false) {
+                                        Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=taxClassMissing}{/s}');
                                         return;
                                     }
                                     Ext.Ajax.request({
@@ -187,7 +203,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             statusDescription: "",
                                             statusId: 0,
                                             taxDescription: "",
-                                            taxId: firstArticle.raw.taxId,
+                                            taxId: taxClassId,
                                             taxRate: 0,
                                             total: 0,
                                             changed: me.record.get('changed')
@@ -232,19 +248,30 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 handler: function () {
                     Ext.create('Ext.window.Window', {
                         title: '{s namespace="backend/ratepay" name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
-                        width: 200,
-                        height: 100,
+                        width: 270,
+                        height: 125,
                         id: 'debitWindow',
                         resizable: false,
-                        layout: 'fit',
+                        layout: 'vbox',
+                        modal: true,
                         items: [
                             {
                                 xtype: 'numberfield',
+                                fieldLabel: '{s namespace="backend/ratepay" name="debit"}{/s}',
                                 id: 'debitAmount',
                                 allowBlank: false,
                                 allowDecimals: true,
                                 minValue: 0.01,
                                 value: 1.00
+                            },
+                            {
+                                xtype: 'combobox',
+                                fieldLabel: '{s namespace="backend/ratepay" name="taxClass"}Steuerklasse{/s}',
+                                displayField: 'name',
+                                valueField: 'id',
+                                queryMode: 'remote',
+                                store: Ext.create('Shopware.apps.Base.store.Tax'),
+                                id: 'debitTaxId'
                             }
                         ],
                         buttons: [
@@ -255,8 +282,13 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                     var debitname = 'Debit' + id + '+' + randomnumber;
                                     var firstArticle = me.record.getPositions().data.items[0];
                                     var value = Math.abs(Ext.getCmp('debitAmount').getValue());
+                                    var taxClassId = Ext.getCmp('debitTaxId').getValue();
                                     if(value <= 0) {
                                         Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=CreditAmountToLow}{/s}');
+                                        return;
+                                    }
+                                    if ((taxClassId >= 0) === false) {
+                                        Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=taxClassMissing}{/s}');
                                         return;
                                     }
                                     Ext.Ajax.request({
@@ -276,7 +308,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             statusDescription: "",
                                             statusId: 0,
                                             taxDescription: "",
-                                            taxId: firstArticle.raw.taxId,
+                                            taxId: taxClassId,
                                             taxRate: 0,
                                             total: 0,
                                             changed: me.record.get('changed')
