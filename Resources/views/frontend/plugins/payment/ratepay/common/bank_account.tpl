@@ -18,7 +18,6 @@
                     <option value="{$accountHolder}"{if $sFormData.ratepay.bank_account.accountHolder.selected == $accountHolder} selected="selected"{/if}>{$accountHolder}</option>
                 {/foreach}
             </select>
-            {debug}
         </div>
     </div>
 {/block}
