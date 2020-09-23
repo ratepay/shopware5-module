@@ -68,7 +68,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $customerId = intval($params['customerId']);
 
         if (ValidationLib::isIbanValid($params['iban'])) {
-            $this->sessionHelper->setBankData($customerId, $accountNumber, null);
+            $this->sessionHelper->setBankData($customerId, null, $accountNumber, null);
             $this->view->assign([
                 'success' => true,
             ]);

@@ -11,6 +11,7 @@ namespace RpayRatePay\PaymentMethods;
 
 use Enlight_Controller_Request_Request;
 use RpayRatePay\Component\Service\ValidationLib;
+use RpayRatePay\Util\BankDataUtil;
 
 class Debit extends AbstractPaymentMethod
 {
@@ -26,8 +27,12 @@ class Debit extends AbstractPaymentMethod
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $bankData = $this->sessionHelper->getBankData($billingAddress);
 
+        $accountHolders = BankDataUtil::getAvailableAccountHolder($billingAddress, $bankData);
         $data['ratepay']['bank_account'] = [
-            'account_holder' => $bankData && !empty($bankData->getAccountHolder()) ? $bankData->getAccountHolder() : $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
+            'accountHolder' => [
+                'list' => $accountHolders,
+                'selected' => $bankData && $bankData->getAccountHolder() ? $bankData->getAccountHolder() : $accountHolders[0]
+            ],
             'iban' => $bankData ? ($bankData->getAccountNumber() ?: $bankData->getIban()) : null,
             'bankCode' => $bankData ? $bankData->getBankCode() : null,
         ];
@@ -47,6 +52,14 @@ class Debit extends AbstractPaymentMethod
             $return['sErrorMessages'][] = $this->getTranslatedMessage('AcceptSepaAgreement');
         }
         $bankAccount = $paymentData['ratepay']['bank_account'];
+
+        $billingAddress = $this->sessionHelper->getBillingAddress();
+        $accountHolders = BankDataUtil::getAvailableAccountHolder($billingAddress, $this->sessionHelper->getBankData($billingAddress));
+        if (!isset($bankAccount['accountHolder']['selected'])) {
+            $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingAccountHolder');
+        } else if (!in_array($bankAccount['accountHolder']['selected'], $accountHolders)) {
+            $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidAccountHolder');
+        }
 
         if (!isset($bankAccount['iban'])) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingIban');
@@ -74,19 +87,18 @@ class Debit extends AbstractPaymentMethod
     protected function saveRatePayPaymentData($userId, Enlight_Controller_Request_Request $request)
     {
         if ($this->isBankDataRequired === false) {
-            $this->sessionHelper->setBankData($userId, null);
+            $this->sessionHelper->setBankData($userId);
             return;
         }
         $paymentData = $request->getParam('ratepay');
         $bankAccount = $paymentData['bank_account'];
 
-        $bankAccount['iban'] = trim(str_replace(' ', '', $bankAccount['iban']));
-        $bankAccount['bankCode'] = trim(str_replace(' ', '', $bankAccount['bankCode']));
 
         $this->sessionHelper->setBankData(
             $userId,
-            $bankAccount['iban'],
-            $bankAccount['bankCode']
+            $bankAccount['accountHolder']['selected'],
+            trim(str_replace(' ', '', $bankAccount['iban'])),
+            trim(str_replace(' ', '', $bankAccount['bankCode']))
         );
     }
 

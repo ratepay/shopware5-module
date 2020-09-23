@@ -102,34 +102,7 @@
             <div class="col-md-12">
                 <input type="hidden" name="rp-payment-type" id="rp-payment-type" />
 
-                <div class="form-group row">
-                    <label class="col-sm-2 col-form-label">{$ratepay.translations.rp_account_holder}</label>
-                    <div class="col-sm-10">
-                        <input type="text" id="rp-iban-account-holder" class="form-control disabled" value="{$ratepay.data.customer_name}" disabled /><!-- Show account holder name = billing address firstname and lastname -->
-                    </div>
-                </div>
-                <!-- Account number is only allowed for customers with german billing address. IBAN must be used for all others -->
-                <div class="form-group row">
-                    <label class="col-sm-2 col-form-label" for="rp-iban-account-number">{$ratepay.translations.rp_iban}</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control required" id="rp-iban-account-number" name="ratepay[bank_account][iban]" value="{$ratepay.data.bank_data_iban}" />
-                    </div>
-                </div>
-                <!-- Bank code is only necessary if account number (no iban) is set -->
-                <div class="form-group row" id="rp-form-bank-code">
-                    <label class="col-sm-2 col-form-label" for="rp-bank-code">{$ratepay.translations.rp_bank_code}</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" id="rp-bank-code" name="ratepay[bank_account][bankCode]" value="{$ratepay.data.bank_data_bankcode}" />
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label class="col-sm-2 col-form-label"></label>
-                    <div class="col-sm-10">
-                        <input type="checkbox" name="ratepay[sepa_agreement]" id="rp-sepa-aggreement" class="required" required="required" />
-                        <label for="rp-sepa-aggreement" class="rp-label-sepa-agreement">{s namespace="frontend/plugins/payment/ratepay" name="sepaAuthorize"}{/s}</label>
-                    </div>
-                </div>
+                {include file="frontend/plugins/payment/ratepay/common/bank_account.tpl"}
             </div>
         </div>
 

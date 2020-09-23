@@ -132,7 +132,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         $customer = $this->sessionHelper->getCustomer();
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $shippingAddress = $this->sessionHelper->getShippingAddress();
-        if ($billingAddress == null) {
+        if ($billingAddress === null) {
             return $return;
         }
 
@@ -147,6 +147,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
                 // the payment method is locked for the customer
                 continue;
             }
+            $isB2b = ValidationService::isCompanySet($billingAddress);
 
             /** @var ProfileConfig $profileConfig */
             $profileConfig = $config['profileConfig'];
@@ -164,7 +165,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
             if ($this->modules->Basket()) {
                 $totalAmount = floatval($this->modules->Basket()->sGetAmount()['totalAmount']);
 
-                $isB2b = ValidationService::isCompanySet($billingAddress);
+
                 if (!ValidationService::areAmountsValid($isB2b, $paymentConfig, $totalAmount)) {
                     continue;
                 }

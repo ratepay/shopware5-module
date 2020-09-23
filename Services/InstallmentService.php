@@ -165,14 +165,16 @@ class InstallmentService
         return json_decode($result, true);
     }
 
-    public function getInstallmentCalculatorTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount)
+    public function getInstallmentCalculatorTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount, array $templateVars)
     {
         $bankData = $this->sessionHelper->getBankData($billingAddress);
         $calculatorData = $this->getInstallmentCalculator($billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount);
 
         /** @var Enlight_Template_Default $template */
         $template = $this->templateManager->createTemplate('frontend/plugins/payment/ratepay/installment/calculator.tpl');
-        $template->assign('ratepay', [
+
+        $templateVars['ratepay'] = $templateVars['ratepay'] ? : [];
+        $templateVars['ratepay'] = array_merge($templateVars['ratepay'], [
             'translations' => LanguageHelper::getRatepayTranslations(Shopware()->Shop()),
             'calculator' => $calculatorData,
             'data' => [
@@ -181,6 +183,7 @@ class InstallmentService
                 'bank_data_bankcode' => $bankData ? $bankData->getBankCode() : null,
             ]
         ]);
+        $template->assign($templateVars);
         return $template->fetch();
     }
 

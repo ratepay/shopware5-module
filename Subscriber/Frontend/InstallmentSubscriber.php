@@ -85,7 +85,8 @@ class InstallmentSubscriber implements SubscriberInterface
             Shopware()->Shop()->getId(),
             $paymentMethod,
             false,
-            $totalAmount
+            $totalAmount,
+            $view->getAssign()
         );
 
         $data['installmentCalculator'] = $htmlCalculator;

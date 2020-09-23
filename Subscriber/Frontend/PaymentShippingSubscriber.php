@@ -17,6 +17,7 @@ use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\InstallmentService;
+use RpayRatePay\Util\BankDataUtil;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware_Controllers_Frontend_Checkout;
@@ -117,7 +118,12 @@ class PaymentShippingSubscriber implements SubscriberInterface
         // fix static form data
         $viewParams = $view->getAssign();
         if (isset($viewParams['sFormData']['ratepay'])) {
-            $viewParams['sFormData']['ratepay']['bank_account']['account_holder'] = $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname();
+            $bankData = $this->sessionHelper->getBankData($billingAddress);
+            $accountHolders = BankDataUtil::getAvailableAccountHolder($billingAddress, $bankData);
+            $viewParams['sFormData']['ratepay']['bank_account']['accountHolder'] = [
+                'list' => $accountHolders,
+                'selected' => $bankData && $bankData->getAccountHolder() ? $bankData->getAccountHolder() : $accountHolders[0]
+            ];
         }
         $view->assign($viewParams);
     }

@@ -10,11 +10,15 @@
             {s namespace="frontend/plugins/payment/sepaemail" name="SepaEmailName"}{/s}:
         </label>
         <div class="col-sm-10">
-            <input class="register--field disabled"
-               type="text"
-               disabled="disabled"
-               value="{$form_data.ratepay.bank_account.account_holder}"
-           />
+            <select class="register--field disabled"
+                    name="ratepay[bank_account][accountHolder][selected]"
+                    required="required"
+                    aria-required="true">
+                {foreach from=$sFormData.ratepay.bank_account.accountHolder.list item=accountHolder}
+                    <option value="{$accountHolder}"{if $sFormData.ratepay.bank_account.accountHolder.selected == $accountHolder} selected="selected"{/if}>{$accountHolder}</option>
+                {/foreach}
+            </select>
+            {debug}
         </div>
     </div>
 {/block}
@@ -33,14 +37,14 @@
                required="required"
                aria-required="true"
                placeholder="{s namespace="frontend/plugins/payment/sepa" name="PaymentSepaLabelIban"}{/s}"
-               value="{$form_data.ratepay.bank_account.iban}"
+               value="{$sFormData.ratepay.bank_account.iban}"
             />
         </div>
     </div>
 {/block}
 
 {block name='ratepay_frontend_bankcode'}
-    <!-- Bank code is only necesarry if account number (no iban) is set -->
+    <!-- Bank code is only necessary if account number (no iban) is set -->
     <div class="form-group row bank-account-input" id="rp-form-bank-code">
         <label class="col-sm-2 col-form-label" for="rp-bank-code">
             {s namespace="frontend/plugins/payment/debit" name="PaymentDebitPlaceholderBankcode"}{/s}
@@ -51,7 +55,7 @@
                class="register--field is--required"
                type="text"
                placeholder="{s namespace="frontend/plugins/payment/debit" name="PaymentDebitPlaceholderBankcode"}Bankleitzahl{/s}*"
-               value="{$form_data.ratepay.bank_account.bankCode}"
+               value="{$sFormData.ratepay.bank_account.bankCode}"
             />
         </div>
     </div>

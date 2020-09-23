@@ -17,6 +17,7 @@ use RpayRatePay\DTO\BankData;
 use RpayRatePay\DTO\InstallmentDetails;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentSubType;
+use RpayRatePay\Util\BankDataUtil;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
@@ -164,11 +165,12 @@ class SessionHelper
         }
     }
 
-    public function setBankData($customerId, $accountNumber = null, $bankCode = null)
+    public function setBankData($customerId, $accountHolder = null, $accountNumber = null, $bankCode = null)
     {
         if ($accountNumber !== null) {
             $this->setData('bankData_c' . $customerId, [
                 'customerId' => $customerId,
+                'accountHolder' => $accountHolder,
                 'account' => $accountNumber,
                 'bankcode' => $bankCode
             ]);
@@ -184,14 +186,15 @@ class SessionHelper
     public function getBankData(Address $customerAddressBilling)
     {
         $sessionData = $this->getData('bankData_c' . $customerAddressBilling->getCustomer()->getId());
-        if ($sessionData == null) {
+        if ($sessionData === null) {
             return null;
         }
 
+        $accountHolder = $sessionData['accountHolder'];
         $bankCode = $sessionData['bankcode'];
         $account = $sessionData['account'];
 
-        $accountHolder = $customerAddressBilling->getFirstname() . ' ' . $customerAddressBilling->getLastname();
+        $accountHolder = $accountHolder ? : BankDataUtil::getDefaultAccountHolder($customerAddressBilling);
         if (!empty($bankCode)) {
             return new BankData($accountHolder, null, $bankCode, $account);
         } else {

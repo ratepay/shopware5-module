@@ -6,7 +6,7 @@
     {block name='ratepay_frontend_vatid'}
         <div class="form-group row vatid-input">
             <label class="col-sm-2 col-form-label">
-                {s name="RegisterLabelTaxId"}{/s}*
+                {s name="RegisterLabelTaxId"}{/s}
             </label>
             <div class="col-sm-10">
                 <input id="ratepay_vatid"
@@ -15,8 +15,6 @@
                        type="text"
                        placeholder="{s name='RegisterLabelTaxId'}{/s}"
                        value="{$form_data.ratepay.customer_data.vatId}"
-                       required="required"
-                       aria-required="true"
                 />
             </div>
         </div>

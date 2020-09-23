@@ -100,38 +100,26 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
             } else {
                 $dateTime = new DateTime();
                 $dateTime->setDate($ratepayData['birthday']['year'], $ratepayData['birthday']['month'], $ratepayData['birthday']['day']);
-                if (ValidationLib::isOldEnough($dateTime) == false) {
+                if (ValidationLib::isOldEnough($dateTime) === false) {
                     $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidBirthday'), 18); //TODO config?
                 }
             }
         }
-
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        if (!isset($ratepayData['vatId_required']) || $ratepayData['vatId_required'] == 1) {
-            if (!isset($ratepayData['vatId'])) {
-                $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingVatId');
-            } else {
-                if ($billingAddress && ValidationLib::isVatIdValid($billingAddress->getCountry()->getIso(), $ratepayData['vatId']) === false) {
-                    $vatPrefix = ValidationLib::VAT_REGEX[$billingAddress->getCountry()->getIso()]['prefix'];
-                    if (count($vatPrefix) > 1) {
-                        $textOr = $this->snippetManager->getNamespace('frontend/ratepay')->get('or');
-                        $lastIndex = count($vatPrefix) - 1;
-                        $lastItem = $vatPrefix[$lastIndex];
-                        unset($vatPrefix[$lastIndex]);
-                        $vatPrefix[$lastIndex - 1] .= ' ' . $textOr . ' ' . $lastItem;
-                    }
-                    $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidVatId'), implode(', ', $vatPrefix));
+        if (isset($ratepayData['vatId_required'], $ratepayData['vatId']) && ((int) $ratepayData['vatId_required']) === 1) {
+            if ($billingAddress && ValidationLib::isVatIdValid($billingAddress->getCountry()->getIso(), $ratepayData['vatId']) === false) {
+                $vatPrefix = ValidationLib::VAT_REGEX[$billingAddress->getCountry()->getIso()]['prefix'];
+                if (count($vatPrefix) > 1) {
+                    $textOr = $this->snippetManager->getNamespace('frontend/ratepay')->get('or');
+                    $lastIndex = count($vatPrefix) - 1;
+                    $lastItem = $vatPrefix[$lastIndex];
+                    unset($vatPrefix[$lastIndex]);
+                    $vatPrefix[$lastIndex - 1] .= ' ' . $textOr . ' ' . $lastItem;
                 }
+                $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidVatId'), implode(', ', $vatPrefix));
             }
         }
 
-        // RATEPLUG-67: the phone number is not required anymore
-        /*if (!isset($ratepayData['phone'])) {
-            $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingPhone');
-        }
-        if ((strlen(trim($ratepayData['phone'])) > 6) === false) {
-            $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidPhone'), 6); //TODO config?
-        }*/
         return $return;
     }
 
