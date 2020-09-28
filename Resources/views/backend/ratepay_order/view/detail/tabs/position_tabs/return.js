@@ -81,7 +81,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
             {
                 header: '{s namespace=backend/article/view/main name=detail/price/price}Preis{/s}',
                 dataIndex: 'price',
-                renderer: Ext.util.Format.numberRenderer('0.00')
+                renderer: Ext.util.Format.numberRenderer('0.000')
             },
             {
                 header: '{s namespace="backend/ratepay" name=ordered}Bestellt{/s}',

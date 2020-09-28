@@ -87,7 +87,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             {
                 header: '{s namespace=backend/article/view/main name=detail/price/price}Preis{/s}',
                 dataIndex: 'price',
-                renderer: Ext.util.Format.numberRenderer('0.00')
+                renderer: Ext.util.Format.numberRenderer('0.000')
             },
             {
                 header: '{s namespace="backend/ratepay" name=ordered}Bestellt{/s}',
@@ -143,8 +143,8 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 handler: function () {
                     Ext.create('Ext.window.Window', {
                         title: '{s namespace="backend/ratepay" name=addcredit}Nachlass hinzuf&uuml;gen{/s}',
-                        width: 270,
-                        height: 125,
+                        width: 300,
+                        height: 135,
                         id: 'creditWindow',
                         resizable: true,
                         layout: 'vbox',
@@ -156,8 +156,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                 id: 'creditAmount',
                                 allowBlank: false,
                                 allowDecimals: true,
-                                minValue: 0.01,
-                                value: 1.00
+                                decimalPrecision: 3,
+                                minValue: 0.001,
+                                value: 1.00,
+                                helpText: '{s namespace="backend/ratepay" name="precisionNote"}{/s}'
                             },
                             {
                                 xtype: 'combobox',
@@ -248,8 +250,8 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 handler: function () {
                     Ext.create('Ext.window.Window', {
                         title: '{s namespace="backend/ratepay" name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
-                        width: 270,
-                        height: 125,
+                        width: 300,
+                        height: 135,
                         id: 'debitWindow',
                         resizable: false,
                         layout: 'vbox',
@@ -261,8 +263,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                 id: 'debitAmount',
                                 allowBlank: false,
                                 allowDecimals: true,
-                                minValue: 0.01,
-                                value: 1.00
+                                decimalPrecision: 3,
+                                minValue: 0.001,
+                                value: 1.00,
+                                helpText: '{s namespace="backend/ratepay" name="precisionNote"}{/s}'
                             },
                             {
                                 xtype: 'combobox',
