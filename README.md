@@ -32,6 +32,7 @@
 * RATEPLUG-71: fix billingaddress update
 * RATEPLUG-73: fix bidirectionally
 * RATEPLUG-76: fix dfp in firefox (wrong variable declaration)
+* RATEPLUG-116: update legal textes
 
 ### Version 5.3.14 - Released 2020-01-15
 * RATEPLUG-19: birthday input: also allow whitespaces instead of zeros
