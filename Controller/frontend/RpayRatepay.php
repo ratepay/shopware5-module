@@ -162,10 +162,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $qualifiedParameters['ratepay_debit_updatedebitdata'] = $parameters['ratepay_debit_updatedebitdata'];
         }
 
-        if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_debit_bankcode', $parameters)) {
-            $qualifiedParameters['ratepay_debit_bankcode'] = $parameters['ratepay_debit_bankcode'];
-        }
-
         if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_agb', $parameters)) {
             $qualifiedParameters['ratepay_agb'] = $parameters['ratepay_agb'];
         }
@@ -221,7 +217,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 $userModel->getId(),
     //            $customerAddressBilling->getFirstname() . " " . $customerAddressBilling->getLastname(),
                 $Parameter['ratepay_debit_accountnumber'],
-                $Parameter['ratepay_debit_bankcode']
+                null
             );
         }
 

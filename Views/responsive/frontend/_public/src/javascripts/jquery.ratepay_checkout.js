@@ -40,7 +40,7 @@
 
             }
 
-            if ($(":input#ratepay_debit_bankcode") && !$("#paymentFirstday").val()) {
+            if (!$("#paymentFirstday").val()) {
                 $("#paywire").remove();
                 $("#wicAGB").remove();
             }
@@ -170,7 +170,7 @@
 
                 /* handle all normal inputs */
                 $('input[id^="ratepay_"]').each(function () {
-                    if ($(this).attr('id') == 'ratepay_debit_accountnumber' || $(this).attr('id') == 'ratepay_debit_bankcode')
+                    if ($(this).attr('id') == 'ratepay_debit_accountnumber')
                     {
                         requestParams += '&' + $(this).attr('id') + '=' + $(this).val().replace(/ /g, '');
                     } else {
@@ -182,7 +182,7 @@
                     }
 
                     /* validate sepa direct debit - no error if no blz is set @toDo: fix for international direct debits */
-                    if ($(this).attr('id') == 'ratepay_debit_bankcode' && !$(":input#ratepay_debit_accountnumber").val().match(/^\d+$/)) {
+                    if (!$(":input#ratepay_debit_accountnumber").val().match(/^\d+$/)) {
                         hasErrors = false;
                         userUpdate = true;
                     }
