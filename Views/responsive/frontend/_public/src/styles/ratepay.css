@@ -46,3 +46,11 @@
     width: 15%;
     float: left;
 }
+.register--accountholder label,
+.register--accountnumber label {
+    font-weight: bold;
+}
+
+.sepa-legal {
+    margin-top: 10px;
+}
