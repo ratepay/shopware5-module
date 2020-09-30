@@ -200,9 +200,8 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             if(isset($Parameter['ratepay_phone']) && !empty($Parameter['ratepay_phone'])) {
                 $billingAddress->setPhone($Parameter['ratepay_phone']);
             }
-            if(isset($Parameter['ratepay_company']) && !empty($Parameter['ratepay_company'])) {
-                $billingAddress->setCompany($Parameter['ratepay_company']);
-            } else {
+
+            if(empty($billingAddress->getCompany())) {
                 $userModel->setBirthday($Parameter['ratepay_dob'] ?: $userModel->getBirthday()->format('Y-m-d'));
             }
 
