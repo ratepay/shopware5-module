@@ -180,13 +180,6 @@
                         hasErrors = true;
                         userUpdate = false;
                     }
-
-                    /* validate sepa direct debit - no error if no blz is set @toDo: fix for international direct debits */
-                    if (!$(":input#ratepay_debit_accountnumber").val().match(/^\d+$/)) {
-                        hasErrors = false;
-                        userUpdate = true;
-                    }
-
                 });
 
                 /* dob validation */
