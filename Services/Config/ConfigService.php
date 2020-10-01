@@ -159,10 +159,15 @@ class ConfigService
         return $this->getConfig('ratepay/advanced/installment_direct_delivery', null, null) == 1;
     }
 
-    public function isBidirectionalEnabled()
+    public function isBidirectionalEnabled($type = 'order')
     {
         //this is a global configuration
-        return $this->getConfig('ratepay/bidirectional/enable', null, null) == 1;
+        if($type === 'order') {
+            return $this->getConfig('ratepay/bidirectional/enable', null, null) == 1;
+        } else if($type === 'position') {
+            return $this->getConfig('ratepay/bidirectional/position/enable', null, null) == 1;
+        }
+        return false;
     }
 
     /**
@@ -182,7 +187,16 @@ class ConfigService
         if (!in_array($action, $allowedActions)) {
             throw new RuntimeException('Just these actions are allowed: ' . implode(',', $allowedActions));
         }
-        return intval($this->getConfig('ratepay/bidirectional/status/' . $action, null));
+        return (int)$this->getConfig('ratepay/bidirectional/status/' . $action, null);
+    }
+
+    public function getBidirectionalPositionStatus($action)
+    {
+        $allowedActions = ['full_delivery', 'full_cancellation', 'full_return'];
+        if (!in_array($action, $allowedActions)) {
+            throw new RuntimeException('Just these actions are allowed: ' . implode(',', $allowedActions));
+        }
+        return (int)$this->getConfig('ratepay/bidirectional/position/status/' . $action, null);
     }
 
     public function getAllProfileConfigs(Shop $shop)

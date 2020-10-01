@@ -9,6 +9,7 @@
 namespace RpayRatePay\Services;
 
 use Monolog\Logger;
+use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -16,6 +17,7 @@ use RpayRatePay\Services\Request\PaymentCancelService;
 use RpayRatePay\Services\Request\PaymentDeliverService;
 use RpayRatePay\Services\Request\PaymentReturnService;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 
 class OrderStatusChangeService
@@ -91,10 +93,12 @@ class OrderStatusChangeService
      */
     public function informRatepayOfOrderStatusChange(Order $order)
     {
-        if (PaymentMethods::exists($order->getPayment()) === false) {
-            //payment is not a ratepay order
+        if ($this->pluginConfig->isBidirectionalEnabled() === false ||
+            PaymentMethods::exists($order->getPayment()) === false
+        ) {
             return;
         }
+
 
         $roundTrips = [
             self::CHANGE_DELIVERY => $this->pluginConfig->getBidirectionalOrderStatus('full_delivery'),
@@ -109,15 +113,79 @@ class OrderStatusChangeService
 
             switch ($changeType) {
                 case self::CHANGE_DELIVERY:
-                    $this->paymentDeliverService->doFullAction($order);
+                    $this->paymentDeliverService->doFullAction($order, null);
                     break;
                 case self::CHANGE_RETURN:
-                    $this->paymentReturnService->doFullAction($order);
+                    $this->paymentReturnService->doFullAction($order, null);
                     break;
                 case self::CHANGE_CANCEL:
-                    $this->paymentCancelService->doFullAction($order);
+                    $this->paymentCancelService->doFullAction($order, null);
                     break;
             }
         }
+    }
+
+    /**
+     * @param Order $order
+     * @param Detail[] $detailCandidates
+     */
+    public function informRatepayOfOrderPositionStatusChange(Order $order, array $detailCandidates)
+    {
+        if ($this->pluginConfig->isBidirectionalEnabled('position') === false ||
+            PaymentMethods::exists($order->getPayment()) === false
+        ) {
+            return;
+        }
+
+        $roundTrips = [
+            self::CHANGE_DELIVERY => $this->pluginConfig->getBidirectionalPositionStatus('full_delivery'),
+            self::CHANGE_RETURN => $this->pluginConfig->getBidirectionalPositionStatus('full_return'),
+            self::CHANGE_CANCEL => $this->pluginConfig->getBidirectionalPositionStatus('full_cancellation'),
+        ];
+
+        $detailsToSent = [
+            self::CHANGE_DELIVERY => [],
+            self::CHANGE_RETURN => [],
+            self::CHANGE_CANCEL => []
+        ];
+
+        foreach($detailCandidates as $detail){
+            if($detail->getOrder()->getId() !== $order->getId()) {
+                // this detail does not belongs to the given order.
+                continue;
+            }
+
+            $position = $this->positionHelper->getPositionForDetail($detail);
+            if($position === null) {
+                // maybe the detail has been added after the order has been complete.
+                continue;
+            }
+
+            foreach ($roundTrips as $changeType => $statusId) {
+                if ($detail->getStatus()->getId() !== $statusId) {
+                    continue;
+                }
+                $detailsToSent[$changeType][] = $detail;
+            }
+        }
+
+        foreach ($detailsToSent as $changeType => $details) {
+            if(count($details) === 0) {
+                // nothing to do
+                continue;
+            }
+            switch ($changeType) {
+                case self::CHANGE_DELIVERY:
+                    $this->paymentDeliverService->doFullAction($order, $details);
+                    break;
+                case self::CHANGE_RETURN:
+                    $this->paymentReturnService->doFullAction($order, $details);
+                    break;
+                case self::CHANGE_CANCEL:
+                    $this->paymentCancelService->doFullAction($order, $details);
+                    break;
+            }
+        }
+
     }
 }

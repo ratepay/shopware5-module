@@ -95,7 +95,7 @@ class PositionHelper
      * @param Detail $detail
      * @return AbstractPosition
      */
-    public function getPositionForDetail($detail)
+    public function getPositionForDetail(Detail $detail)
     {
         return $this->modelManager->find(self::getPositionClass($detail), $detail->getId());
     }
