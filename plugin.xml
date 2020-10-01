@@ -9,10 +9,10 @@
 <plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/plugin.xsd">
 
-    <label lang="de">Ratepay Zahlungsmodule</label>
-    <label>Ratepay Payment</label>
+    <label lang="de">Ratepay Payment Plugin für Shopware 5</label>
+    <label>Ratepay Payment Plugin for Shopware 5</label>
 
-    <version>6.0.0.28</version>
+    <version>6.0.0</version>
     <copyright>Copyright (c) 2020, Ratepay GmbH</copyright>
     <license>MIT</license>
     <link>https://www.ratepay.com</link>
