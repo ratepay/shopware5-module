@@ -441,9 +441,11 @@ class Shopware_Controllers_Backend_RpayRatepayOrderDetail extends Shopware_Contr
     {
         $repository = Shopware()->Models()->getRepository('Shopware\Models\Article\Detail');
         $article = $repository->findOneBy(['number' => $article]);
-        $article->setInStock($article->getInStock() + $count);
-        Shopware()->Models()->persist($article);
-        Shopware()->Models()->flush();
+        if($article) {
+            $article->setInStock($article->getInStock() + $count);
+            Shopware()->Models()->persist($article);
+            Shopware()->Models()->flush();
+        }
     }
 
     /**
