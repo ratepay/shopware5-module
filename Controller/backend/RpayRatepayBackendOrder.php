@@ -60,18 +60,11 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $params = $this->Request()->getParams();
 
         $iban = trim($params['iban']);
-        $accountNumber = trim($params['accountNumber']);
-        $bankCode = trim($params['bankCode']);
         $customerId = $params['customerId'];
 
         $sessionLoader = new SessionLoader(Shopware()->BackendSession());
 
-        $sessionLoader->setBankData(
-            $customerId,
-            $accountNumber ? $accountNumber : $iban,
-            $bankCode,
-            Shopware()->BackendSession()
-        );
+        $sessionLoader->setBankData($customerId, $iban);
 
         $this->view->assign([
             'success' => true,
