@@ -288,7 +288,7 @@ class PaymentRequestService extends AbstractRequest
     protected function processFailed(RequestBuilder $response)
     {
         /** @var $response AbstractResponse */
-        if($response->getReasonCode() === 703) {
+        if (in_array((int)$response->getReasonCode(), [703, 720, 721], true)) {
             $this->paymentMethodsService->lockPaymentMethodForCustomer($this->paymentRequestData->getCustomer(), $this->paymentRequestData->getMethod());
         }
     }
