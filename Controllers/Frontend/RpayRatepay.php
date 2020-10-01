@@ -173,7 +173,12 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             !isset($params['paymentFirstday'])) {
             exit(0);
         }
-        $paymentMethod = $this->sessionHelper->getPaymentMethod();
+        $paymentMethodId = (int) $params['paymentMethodId'];
+        $paymentMethod = Shopware()->Models()->find(\Shopware\Models\Payment\Payment::class, $paymentMethodId);
+        if (PaymentMethods::isInstallment($paymentMethod) === false) {
+            exit(0);
+        }
+
         $billingAddress = $this->sessionHelper->getBillingAddress();
 
         $requestDto = new InstallmentRequest(

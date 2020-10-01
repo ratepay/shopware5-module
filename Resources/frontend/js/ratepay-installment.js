@@ -173,7 +173,8 @@
                     calculationAmount: me.$el.find('#rp-calculation-amount').val(),
                     calculationValue: calcValue,
                     calculationType: calcType,
-                    paymentFirstday: me.$el.find("#rp-payment-firstday").val()
+                    paymentFirstday: me.$el.find("#rp-payment-firstday").val(),
+                    paymentMethodId: $('[name=payment]:checked').val()
                 }
             })
                 .done(function (result) {
