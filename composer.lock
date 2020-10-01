@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "ratepay/php-library",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ratepay/php-library.git",
-                "reference": "93e54a636356ad8af5f14826eb0d667537ec8157"
+                "reference": "a6f377e10ed28aca2ba3484b1b8b5c3d051bff9e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ratepay/php-library/zipball/93e54a636356ad8af5f14826eb0d667537ec8157",
-                "reference": "93e54a636356ad8af5f14826eb0d667537ec8157",
+                "url": "https://api.github.com/repos/ratepay/php-library/zipball/a6f377e10ed28aca2ba3484b1b8b5c3d051bff9e",
+                "reference": "a6f377e10ed28aca2ba3484b1b8b5c3d051bff9e",
                 "shasum": ""
             },
             "require": {
@@ -47,9 +47,14 @@
                     "email": "eduardo.iriarte-mendez@ratepay.com"
                 }
             ],
-            "description": "RatePAY API PHP Library",
+            "description": "Ratepay Payment-API PHP Library",
             "homepage": "https://ratepay.gitbook.io/docs/",
-            "time": "2020-07-15T15:20:57+00:00"
+            "support": {
+                "email": "integration@ratepay.com",
+                "issues": "https://github.com/ratepay/php-library/issues",
+                "source": "https://github.com/ratepay/php-library"
+            },
+            "time": "2020-09-30T05:32:11+00:00"
         }
     ],
     "packages-dev": [],
@@ -60,5 +65,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.0.0"
 }
