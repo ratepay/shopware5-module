@@ -56,8 +56,6 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
 
     },
     iban: null,
-    accountNumber: null,
-    bankCode: null,
     fail: function(combobox, message) {
         Shopware.Notification.createGrowlMessage('', message);
         combobox.setValue('');
@@ -212,14 +210,12 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         }
 
         //very minimalistic validation
-        if(me.iban || (me.bankCode && me.iban)) {
+        if(me.iban) {
             Ext.Ajax.request({
                 url: '{url controller="RpayRatepayBackendOrder" action="setExtendedData"}',
                 params: {
                     customerId: customerId,
-                    iban: me.iban,
-                    accountNumber: me.accountNumber,
-                    bankCode: me.bankCode
+                    iban: me.iban
                 },
                 success: function (response) {
                     var responseObj = Ext.decode(response.responseText);
@@ -374,38 +370,12 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             }
         });
 
-        var kontoNr = Ext.create('Ext.form.TextField', {
-            name: 'ktoNrTxtBox',
-            width: 230,
-            fieldLabel: 'Kto Nr.',
-            maxLengthText: 255,
-            listeners: {
-                blur: function (field) {
-                    me.accountNumber = field.getValue();
-                    me.handleBankDataBlur();
-                }
-            }
-        });
-
-        var blz = Ext.create('Ext.form.TextField', {
-            name: 'blzTxtBox',
-            width: 230,
-            fieldLabel: 'BLZ',
-            maxLengthText: 255,
-            listeners: {
-                blur: function (field) {
-                    me.bankCode = field.getValue();
-                    me.handleBankDataBlur();
-                }
-            }
-        });
-
         return Ext.create('Ext.Container', {
             name: 'bankDataContainer',
             width: 255,
             height: 'auto',
             items: [
-                iban, kontoNr, blz
+                iban
             ]
         });
     },
