@@ -26,6 +26,7 @@
 ## Changelog
 
 ### Version 5.4.8 - WIP
+* RATEPLUG-14: prevent delete order in admin if the order has been already shipped/canceled/returned
 * RATEPLUG-31: lock payment methods for customer if reason code 703
 * RATEPLUG-66: credit/debit fix gateway requests
 * RATEPLUG-68: add static legal texts (add readme text)
