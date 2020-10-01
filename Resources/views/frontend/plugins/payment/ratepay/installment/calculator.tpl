@@ -96,7 +96,7 @@
         </div>
 
         <div class="row rp-sepa-form">
-            <div class="sepa-intro">
+            <div class="col-md-12 sepa-intro">
                 {$ratepay.translations.wcd_sepa_notice_block}
             </div>
             <div class="col-md-12">
