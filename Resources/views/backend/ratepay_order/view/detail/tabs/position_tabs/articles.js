@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 RatePAY GmbH
+ * Copyright (c) 2020 Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -209,7 +209,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                                 message = '{s namespace="backend/ratepay" name=messagecreditsuccess}Nachlass wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
                                             } else {
                                                 me.deletePosition(newDetailsId);
-                                                message = '{s namespace="backend/ratepay" name=messagecreditfailrequest}Nachlass konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
+                                                message = '{s namespace="backend/ratepay" name=messagecreditfailrequest}Nachlass konnte nicht korrekt an Ratepay &uuml;bermittelt werden.{/s}';
                                             }
                                             Ext.getCmp('creditWindow').close();
                                             Ext.Msg.alert('{s namespace="backend/ratepay" name=messagecredittitle}Nachlass hinzuf&uuml;gen{/s}', message);

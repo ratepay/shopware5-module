@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 RatePAY GmbH
+ * Copyright (c) 2020 Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -55,13 +55,13 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.Window', {
 
         tabPanel.add([
             Ext.create('Shopware.apps.RatepayOrder.view.detail.tabs.Positions', {
-                title: '{s namespace="backend/ratepay" name=tabarticlemanagement}RatePAY Artikelverwaltung{/s}',
+                title: '{s namespace="backend/ratepay" name=tabarticlemanagement}Ratepay Artikelverwaltung{/s}',
                 record: me.record,
                 orderStatusStore: me.orderStatusStore,
                 paymentStatusStore: me.paymentStatusStore
             }),
             Ext.create('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
-                title: '{s namespace="backend/ratepay" name=tablog}RatePAY Log{/s}',
+                title: '{s namespace="backend/ratepay" name=tablog}Ratepay Log{/s}',
                 record: me.record
             }),
             Ext.create('Shopware.apps.RatepayOrder.view.detail.tab.History', {

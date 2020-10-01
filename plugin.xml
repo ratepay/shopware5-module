@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (c) 2020 RatePAY GmbH
+  ~ Copyright (c) 2020 Ratepay GmbH
   ~
   ~ For the full copyright and license information, please view the LICENSE
   ~ file that was distributed with this source code.
@@ -9,14 +9,14 @@
 <plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/plugin.xsd">
 
-    <label lang="de">RatePay Zahlungsmodule</label>
-    <label>RatePay Payment</label>
+    <label lang="de">Ratepay Zahlungsmodule</label>
+    <label>Ratepay Payment</label>
 
     <version>6.0.0.28</version>
-    <copyright>Copyright (c) 2019, RatePAY GmbH</copyright>
+    <copyright>Copyright (c) 2020, Ratepay GmbH</copyright>
     <license>MIT</license>
     <link>https://www.ratepay.com</link>
-    <author>RatePAY GmbH</author>
+    <author>Ratepay GmbH</author>
     <compatibility minVersion="5.5.0"/>
 
     <changelog version="6.0.0">
@@ -67,7 +67,7 @@
         <changes>Extend date of birth validation for correct inputs</changes>
     </changelog>
     <changelog version="5.3.3">
-        <changes>Fix RatePAY GmbH Legal link</changes>
+        <changes>Fix Ratepay GmbH Legal link</changes>
     </changelog>
     <changelog version="5.3.2">
         <changes>Fix whitespaces in date of birth fields</changes>
@@ -230,7 +230,7 @@
     <changelog version="4.2.1">
         <changes>Date of payment is now set automatically (cleareddate)</changes>
         <changes>Improved detection of divergent shipping address (Shopware >=5.2.0)</changes>
-        <changes>Remove deprecated RatePAY additional order attributes on update</changes>
+        <changes>Remove deprecated Ratepay additional order attributes on update</changes>
     </changelog>
     <changelog version="4.2.0">
         <changes>Mapping of new SWAG address management (Compatibility with Shopware 5.2.x)</changes>

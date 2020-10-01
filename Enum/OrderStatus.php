@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020 RatePAY GmbH
+ * Copyright (c) 2020 Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -21,7 +21,7 @@ final class OrderStatus extends Enum
             155 => ['name' => 'ratepay_return', 'description' => 'Retourniert'],
         ],
         'payment' => [
-            155 => ['name' => 'ratepay_payment_via_ratepay', 'description' => 'Zahlungsabwicklung durch RatePAY'],
+            155 => ['name' => 'ratepay_payment_via_ratepay', 'description' => 'Zahlungsabwicklung durch Ratepay'],
         ]
     ];
 }

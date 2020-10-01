@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020 RatePAY GmbH
+ * Copyright (c) 2020 Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -129,7 +129,7 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
     {
         if ($this->configService->isBidirectionalEnabled() === false) {
             $this->logger->info('RatePAY bidirectionality is turned off.');
-            return 'RatePAY bidirectionality is turned off.';
+            return 'Ratepay bidirectionality is turned off.';
         }
 
         try {

@@ -1,9 +1,8 @@
-# RatePAY GmbH - Shopware Payment Module
+# Ratepay GmbH - Shopware Payment Module
 ============================================
 
-|Module | RatePAY Module for Shopware
+|Module | Ratepay Module for Shopware
 |------|----------
-|Author | Annegret Seufert
 |Shop Version | `5.5.x` - `5.5.x`
 |Version | `5.4.1`
 |Link | http://www.ratepay.com

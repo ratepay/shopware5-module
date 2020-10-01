@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020 RatePAY GmbH
+ * Copyright (c) 2020 Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -36,7 +36,7 @@ class Shopware_Controllers_Backend_RatepayLogging extends Shopware_Controllers_B
      */
     public function indexAction()
     {
-        $this->View()->assign('title', 'RatePAY-Logging');
+        $this->View()->assign('title', 'Ratepay-Logging');
     }
 
     /**

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2020 RatePAY GmbH
+ * Copyright (c) 2020 Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 Ext.define('Shopware.apps.RatepayLogging.view.main.Window', {
     extend: 'Enlight.app.Window',
-    title: 'RatePAY Logging',
+    title: 'Ratepay Logging',
     alias: 'widget.rpay_ratepay_logging-main-window',
     border: false,
     autoShow: true,
