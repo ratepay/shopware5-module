@@ -108,8 +108,12 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
             }
         }
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        if (isset($ratepayData['vatId_required'], $ratepayData['vatId']) && ((int) $ratepayData['vatId_required']) === 1) {
-            if ($billingAddress && ValidationLib::isVatIdValid($billingAddress->getCountry()->getIso(), $ratepayData['vatId']) === false) {
+        if (isset($ratepayData['vatId_required'], $ratepayData['vatId']) && ((int)$ratepayData['vatId_required']) === 1) {
+            $ratepayData['vatId'] = trim($ratepayData['vatId']);
+            if ($billingAddress &&
+                !empty($ratepayData['vatId']) &&
+                ValidationLib::isVatIdValid($billingAddress->getCountry()->getIso(), $ratepayData['vatId']) === false
+            ) {
                 $vatPrefix = ValidationLib::VAT_REGEX[$billingAddress->getCountry()->getIso()]['prefix'];
                 if (count($vatPrefix) > 1) {
                     $textOr = $this->snippetManager->getNamespace('frontend/ratepay')->get('or');
