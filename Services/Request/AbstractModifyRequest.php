@@ -187,15 +187,15 @@ abstract class AbstractModifyRequest extends AbstractRequest
     protected function updateArticleStock($basketPosition)
     {
         $detail = $basketPosition->getOrderDetail();
-        if($detail === null) {
+        $article = $detail ? $detail->getArticleDetail() : null;
+        if($article === null) {
             // this is not a product/voucher. maybe shipping position.
             return;
         }
         try {
-            $article = $detail->getArticleDetail();
             $article->getInStock(); // lazy load call
         } catch (\Exception $e) {
-            // entity does not exist anymore
+            // entity may not exist anymore
             return;
         }
         if ($article) {
