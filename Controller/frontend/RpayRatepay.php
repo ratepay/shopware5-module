@@ -219,8 +219,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         if ($Parameter['ratepay_debit_updatedebitdata']) {
             $sessionLoader->setBankData(
                 $userModel->getId(),
-    //            $customerAddressBilling->getFirstname() . " " . $customerAddressBilling->getLastname(),
-                $Parameter['ratepay_debit_accountnumber'],
                 $Parameter['ratepay_debit_bankcode']
             );
         }

@@ -26,14 +26,13 @@ class SessionLoader
 
     /**
      * @param $customerId
-     * @param $accountNumber
+     * @param $iban
      * @param null $bankCode
      */
-    public function setBankData($customerId, $accountNumber, $bankCode = null)
+    public function setBankData($customerId, $iban)
     {
         $this->session->RatePAY['bankdata']['customerId'] = $customerId;
-        $this->session->RatePAY['bankdata']['account'] = $accountNumber;
-        $this->session->RatePAY['bankdata']['bankcode'] = $bankCode;
+        $this->session->RatePAY['bankdata']['account'] = $iban;
     }
 
     /**
@@ -54,15 +53,10 @@ class SessionLoader
                 $customerIdSession . ' checked value ' . $customerId . '.');
         }
 
-        $bankCode = $sessionArray['bankcode'];
-        $account = $sessionArray['account'];
+        $iban = $sessionArray['account'];
 
         $accountHolder = $customerAddressBilling->getFirstname() . ' ' . $customerAddressBilling->getLastname();
-        if (!empty($bankCode)) {
-            return new BankData($accountHolder, null, $bankCode, $account);
-        } else {
-            return new BankData($accountHolder, $account);
-        }
+        return new BankData($accountHolder, $iban);
     }
 
     /**
