@@ -98,7 +98,7 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
             if (!isset($ratepayData['birthday'])) {
                 $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingBirthday');
             } else if(checkdate($ratepayData['birthday']['month'], $ratepayData['birthday']['day'], $ratepayData['birthday']['year']) === false) {
-                $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidBirthday'), 18); //TODO config?
+                $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidDateFormatBirthday'));
             } else {
                 $dateTime = new DateTime();
                 $dateTime->setDate($ratepayData['birthday']['year'], $ratepayData['birthday']['month'], $ratepayData['birthday']['day']);
