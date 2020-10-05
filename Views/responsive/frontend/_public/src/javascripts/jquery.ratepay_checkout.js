@@ -280,6 +280,7 @@
                     if (preLoaderPlugin) {
                         setTimeout(function() {
                             preLoaderPlugin.reset();
+                            $submitButton.prop('disabled', false); // this is just a fix for a shopware bug (has been fixed in a further release)
                         }, 1000);
                     }
                     return false;
