@@ -35,7 +35,7 @@
                         </div>
 
                         <div class="panel-body">
-                            <div class="form-group">
+                            <div class="form-group runtime-select-container">
                                 <select id="rp-btn-runtime">
                                     <option></option>
                                     {foreach from=$ratepay.calculator.rp_allowedMonths item=month}
@@ -54,7 +54,7 @@
                         </div>
 
                         <div class="panel-body">
-                            <div class="input-group input-group-sm">
+                            <div class="input-group">
                                 <span class="input-group-addon">&euro;</span>
                                 <input type="text" id="rp-rate-value" class="form-control" aria-label="Amount" />
                                 <span class="input-group-btn">

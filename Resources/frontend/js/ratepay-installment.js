@@ -70,6 +70,8 @@
                 $runTimeSelect.val($runTimeSelectAbleOptions.first().val());
                 $runTimeSelect.trigger('change');
             }
+
+            StateManager.updatePlugin('select', 'swSelectboxReplacement');
         },
 
         initSepaFields: function () {
