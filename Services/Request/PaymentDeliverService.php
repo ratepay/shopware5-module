@@ -79,7 +79,8 @@ class PaymentDeliverService extends AbstractModifyRequest
         $head = parent::getRequestHead($profileConfig);
         $externalData = $this->externalArrayFactory->getData($this->_order);
         if ($externalData) {
-            $head[ExternalArrayFactory::ARRAY_KEY] = $externalData;
+            $data = isset($head[ExternalArrayFactory::ARRAY_KEY]) ? $head[ExternalArrayFactory::ARRAY_KEY] : [];
+            $head[ExternalArrayFactory::ARRAY_KEY] = array_merge($data, $externalData);
         }
         return $head;
     }

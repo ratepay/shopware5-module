@@ -31,8 +31,7 @@ class ExternalArrayFactory
                 }
             }
             return $data;
-        } else {
-            return null;
         }
+        return null;
     }
 }
