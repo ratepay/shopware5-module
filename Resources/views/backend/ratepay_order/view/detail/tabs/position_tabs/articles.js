@@ -166,7 +166,6 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                 handler: function () {
                                     var randomnumber = Math.floor(Math.random() * 10001);
                                     var creditname = 'Credit' + id + '-' + randomnumber;
-                                    var firstArticle = me.record.getPositions().data.items[0];
                                     var value = Math.abs(Ext.getCmp('creditAmount').getValue());
                                     if(value <= 0) {
                                         Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=CreditAmountToLow}{/s}');
@@ -189,7 +188,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             statusDescription: "",
                                             statusId: 0,
                                             taxDescription: "",
-                                            taxId: firstArticle.raw.taxId,
+                                            taxId: null,
                                             taxRate: 0,
                                             total: 0,
                                             changed: me.record.get('changed')
@@ -257,7 +256,6 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                 handler: function () {
                                     var randomnumber = Math.floor(Math.random() * 10001);
                                     var debitname = 'Debit' + id + '+' + randomnumber;
-                                    var firstArticle = me.record.getPositions().data.items[0];
                                     var value = Math.abs(Ext.getCmp('debitAmount').getValue());
                                     if(value <= 0) {
                                         Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=CreditAmountToLow}{/s}');
@@ -280,7 +278,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             statusDescription: "",
                                             statusId: 0,
                                             taxDescription: "",
-                                            taxId: firstArticle.raw.taxId,
+                                            taxId: null,
                                             taxRate: 0,
                                             total: 0,
                                             changed: me.record.get('changed')
