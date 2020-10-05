@@ -135,6 +135,7 @@
 
             var $form = $('#'+$submitButton.attr('form'));
             if (!$form.length || !$form[0].checkValidity()) {
+                preLoaderPlugin.reset();
                 return;
             }
 
