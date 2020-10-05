@@ -193,3 +193,11 @@
 .text-uppercase {
     text-transform: uppercase;
 }
+.month-selector-container .js--fancy-select{
+    display: block;
+    max-width: none;
+    width: 100%;
+}
+
+#secondInput {
+}
