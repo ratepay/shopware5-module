@@ -26,7 +26,7 @@
         $pi_config['payment_firstday'] = 28;
     }
 
-    
+
     if ($pi_language == "DE") {
         require_once $calcPath . '/languages/german.php';
         $pi_currency = 'EUR';
@@ -76,7 +76,7 @@
                     <input type="hidden" id="mode" name="mode" value="">
                     <div class="panel-body">
                         <div class="form-group month-selector-container">
-                            <select class="form-control" onchange="piRatepayRateCalculatorAction('runtime', this.value)">
+                            <select class="form-control" onchange="piRatepayRateCalculatorAction('runtime', this.value)" id="runtime-select">
                                 <?php
                                 foreach ($pi_monthAllowedArray AS $month) {
                                     ?><option value="<?=$month?>"><?php echo $month; ?> <?=$rp_months?></option><?php
