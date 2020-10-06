@@ -294,7 +294,11 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             if(in_array($resultRequest->getReasonCode(), [703, 720, 721], false)) {
                 PaymentMethodsService::getInstance()->lockPaymentMethodForCustomer($paymentRequestData->getCustomer(), strtolower($paymentRequestData->getMethod()));
             }
-            $this->_customerMessage = $resultRequest->getCustomerMessage();
+            if(!empty($resultRequest->getCustomerMessage())) {
+                $this->_customerMessage = $resultRequest->getCustomerMessage();
+            } else {
+                $this->_customerMessage = $resultRequest->getReasonMessage();
+            }
             $this->_error();
         }
 
