@@ -173,7 +173,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
 
         $profileConfig = $this->getProfileConfig($countryCode);
         if($profileConfig === null) {
-            throw new Exception(Shopware()->Snippets()->getNamespace('ratepay/errors')->get('profileNotFound'));
+            throw new Shopware_Plugins_Frontend_RpayRatePay_Exception_ProfileNotFoundException();
         }
         $head = [
             'SystemId' => $systemId,
