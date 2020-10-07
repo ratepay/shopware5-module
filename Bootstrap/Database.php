@@ -9,7 +9,6 @@
 namespace RpayRatePay\Bootstrap;
 
 
-use DateTime;
 use DirectoryIterator;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -46,16 +45,9 @@ class Database extends AbstractBootstrap
     private function applyMigrations($mode)
     {
         if ($this->installContext->assertMinimumVersion("5.6") === false) {
+            $this->createMigrationSchema();
 
             require_once $this->pluginDir . '/lib/shopware/migrations/AbstractPluginMigration.php';
-
-            $migrationTable = $this->modelManager->getClassMetadata(Migration::class);
-            if ($this->schemaManager->tablesExist([$migrationTable->getTableName()]) === false) {
-                $this->schemaTool->createSchema([$migrationTable]);
-            }
-            /** @var MigrationRepository $migrationRepo */
-            $migrationRepo = $this->modelManager->getRepository(Migration::class);
-
 
             /** @var PDO $connection */
             $connection = $this->container->get('db_connection');
@@ -67,12 +59,7 @@ class Database extends AbstractBootstrap
                 $migrationVersion = $result[1];
                 $migrationName = $result[2];
 
-                $migrationModel = $migrationRepo->findOneBy(['version' => $migrationVersion, 'completeDate' => null]);
-                if ($migrationModel === null) {
-                    $migration = new Migration();
-                    $migration->setVersion($migrationVersion);
-                    $migration->setName($migrationName);
-                    $migration->setStartDate(new DateTime());
+                if ($this->isMigrationAlreadyExecuted($migrationVersion) === false) {
 
                     require_once $migrationPath . $result[0];
                     $className = "\RpayRatePay\Migrations\Migration" . $migrationVersion;
@@ -85,20 +72,62 @@ class Database extends AbstractBootstrap
                         foreach ($migrationClass->getSql() as $sql) {
                             $connection->exec($sql);
                         }
-                        $migration->setCompleteDate(new DateTime());
+                        $this->insertMigration($connection, $migrationVersion, $migrationName);
                     } catch (Exception $e) {
                         $connection->rollBack();
-                        $migration->setErrorMsg($e->getMessage());
-                        $exception = $e;
-                    }
-                    $this->modelManager->persist($migration);
-                    $this->modelManager->flush($migration);
-                    if ($exception) {
-                        throw $exception;
+                        $this->insertMigration($connection, $migrationVersion, $migrationName, $e->getMessage());
+                        throw $e;
                     }
                 }
             }
         }
+    }
+
+    private function createMigrationSchema()
+    {
+        // this is the shopware schema of SW 5.6+
+        $connection = $this->container->get('db_connection');
+        $sql = '
+            CREATE TABLE IF NOT EXISTS `s_plugin_schema_version` (
+    `plugin_name` VARCHAR(255) NOT NULL COLLATE \'utf8_unicode_ci\',
+    `version` INT(11) NOT NULL,
+    `start_date` DATETIME NOT NULL,
+    `complete_date` DATETIME NULL DEFAULT NULL,
+    `name` VARCHAR(255) NOT NULL COLLATE \'utf8_unicode_ci\',
+    `error_msg` VARCHAR(255) NULL DEFAULT NULL COLLATE \'utf8_unicode_ci\',
+    PRIMARY KEY (`plugin_name`, `version`)
+)
+COLLATE=\'utf8_unicode_ci\'
+ENGINE=InnoDB
+        ';
+        $connection->exec($sql);
+        $connection->commit();
+    }
+
+    private function isMigrationAlreadyExecuted($version)
+    {
+        $connection = $this->container->get('db_connection');
+        $sql = "
+            SELECT 
+                1 
+            FROM `s_plugin_schema_version` 
+            WHERE 
+                `plugin_name` LIKE 'RpayRatePay' AND 
+                `version` = " . $version . " AND 
+                `complete_date` IS NOT NULL
+        ";
+        $query = $connection->query($sql);
+        return $query->rowCount() > 0;
+    }
+
+    private function insertMigration(PDO $connection, $migrationVersion, $migrationName, $errorMessage = null)
+    {
+        $migrationQuery = $connection->prepare("INSERT INTO `s_plugin_schema_version` VALUES (?, ?, NOW(), " . ($errorMessage ? 'NULL' : 'NOW()') . ",?,?)");
+        $migrationQuery->bindValue(1, 'RpayRatePay');
+        $migrationQuery->bindValue(2, $migrationVersion);
+        $migrationQuery->bindValue(3, $migrationName);
+        $migrationQuery->bindValue(4, $errorMessage);
+        $migrationQuery->execute();
     }
 
     public function install()
