@@ -323,7 +323,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         var me = this;
 
         var combobox = Ext.create('Ext.form.ComboBox', {
-            fieldLabel: 'Term',
+            fieldLabel: '{s namespace="ratepay/backend/backend_orders" name="runtime"}{/s}',
             name: 'calculatorSelect',
             store: me.calculatorStore,
             queryMode: 'local',
@@ -339,7 +339,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         var moneyTxtBox = Ext.create('Ext.form.TextField', {
             name: 'moneyTxtBox',
             width: 230,
-            fieldLabel: 'Geld',
+            fieldLabel: '{s namespace="ratepay/backend/backend_orders" name="rateAmount"}{/s}',
             maxLengthText: 255,
             listeners: {
                 blur: function (field) {
