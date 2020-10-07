@@ -164,7 +164,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      *
      * @param bool $countryCode
      * @return \RatePAY\ModelBuilder
-     * @throws \RatePAY\Exception\ModelException
+     * @throws Exception
      */
     private function getHead($countryCode = null)
     {
@@ -172,6 +172,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
         $bootstrap = new \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
 
         $profileConfig = $this->getProfileConfig($countryCode);
+        if($profileConfig === null) {
+            throw new Exception(Shopware()->Snippets()->getNamespace('ratepay/errors')->get('profileNotFound'));
+        }
         $head = [
             'SystemId' => $systemId,
             'Credential' => [
@@ -213,7 +216,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      *
      * @return \RatePAY\RequestBuilder
      * @throws \RatePAY\Exception\ModelException
-     * @throws \Exception
+     * @throws Exception
      */
     public function callPaymentRequest($paymentRequestData = null, $bankData = null)
     {
@@ -367,7 +370,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $calculatorAmountWithoutInterest = $this->getSession()->RatePAY['ratenrechner']['amount'];
 
             if ((string)$calculatorAmountWithoutInterest !== (string)$paymentRequestData->getAmount()) {
-                throw new \Exception(
+                throw new Exception(
                     'Attempt to create order with wrong amount in installment calculator.' .
                     'Expected ' . $paymentRequestData->getAmount() . ' Got ' . $calculatorAmountWithoutInterest
                 );
