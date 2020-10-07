@@ -19,14 +19,15 @@ class Migration600 extends AbstractPluginMigration
             $this->addSql("
                 ALTER TABLE rpay_ratepay_order_discount
                     CHANGE s_order_detail_id s_order_details_id INT NOT NULL,
-                    DROP INDEX s_order_id,
-                    DROP s_order_id
+                    DROP PRIMARY KEY;
                 ;
             ");
 
             $this->addSql("
                 ALTER TABLE rpay_ratepay_order_discount
-                    ADD PRIMARY KEY (s_order_details_id);
+                    DROP s_order_id,
+                    ADD PRIMARY KEY (s_order_details_id),
+                    ADD FOREIGN KEY (`s_order_details_id`) REFERENCES `s_order_details` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
             ");
 
             $this->addSql("    

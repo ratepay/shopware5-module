@@ -67,8 +67,8 @@ class Database extends AbstractBootstrap
                 $migrationVersion = $result[1];
                 $migrationName = $result[2];
 
-                $migrationModel = $migrationRepo->findMigrationByNumber($migrationVersion);
-                if ($migrationModel == null) {
+                $migrationModel = $migrationRepo->findOneBy(['version' => $migrationVersion, 'completeDate' => null]);
+                if ($migrationModel === null) {
                     $migration = new Migration();
                     $migration->setVersion($migrationVersion);
                     $migration->setName($migrationName);
@@ -85,12 +85,12 @@ class Database extends AbstractBootstrap
                         foreach ($migrationClass->getSql() as $sql) {
                             $connection->exec($sql);
                         }
+                        $migration->setCompleteDate(new DateTime());
                     } catch (Exception $e) {
                         $connection->rollBack();
                         $migration->setErrorMsg($e->getMessage());
                         $exception = $e;
                     }
-                    $migration->setCompleteDate(new DateTime());
                     $this->modelManager->persist($migration);
                     $this->modelManager->flush($migration);
                     if ($exception) {
