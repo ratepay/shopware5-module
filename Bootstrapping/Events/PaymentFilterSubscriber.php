@@ -59,6 +59,11 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
             return;
         }
 
+        if (Shopware()->Front()->Request()->getControllerName() !== 'checkout') {
+            // only filter the payments if the customer is in the checkout process
+            return;
+        }
+
         /** @var \Shopware\Models\Customer\Customer $user */
         $user = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $userId);
         $wrappedUser = new ShopwareCustomerWrapper($user, Shopware()->Models());
