@@ -35,6 +35,7 @@
 * RATEPLUG-73: fix the installation of payment/order status
 * RATEPLUG-76: fix dfp in firefox (wrong variable declaration)
 * RATEPLUG-88: backend: throw exception, if no profile is found.
+* RATEPLUG-90: disable payment filter in customer account
 * RATEPLUG-123: rate-payment: replace bank data
 
 ### Version 5.4.7 - Released 2020-01-15
