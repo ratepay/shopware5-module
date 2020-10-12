@@ -1,7 +1,7 @@
 {
     "label": {
-        "de": "RatePay Payment",
-        "en": "RatePay Payment"
+        "de": "Ratepay Payment Plugin für Shopware 5",
+        "en": "Ratepay Payment Plugin for Shopware 5"
     },
     "copyright": "Copyright (c) 2019, Ratepay GmbH",
     "license": "MIT",
