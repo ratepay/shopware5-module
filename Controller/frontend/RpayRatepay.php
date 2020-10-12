@@ -213,7 +213,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         if ($Parameter['ratepay_debit_updatedebitdata']) {
             $sessionLoader->setBankData(
                 $userModel->getId(),
-                $Parameter['ratepay_debit_accountnumber'],
+                $Parameter['ratepay_debit_accountnumber']
             );
         }
 
