@@ -22,8 +22,9 @@ function changeFirstday(firstday) {
         $('#changeFirstday').hide();
         $('#changeFirstday2').show();
 
-        $(':input#ratepay_debit_bankcode').prop('disabled', true);
-        $(':input#ratepay_debit_accountnumber').prop('disabled', true);
+        $('input#ratepay_debit_accountnumber')
+            .prop('required', false)
+            .prop('disabled', true);
         $("#ratepay_agb").prop('disabled', true);
         $("#paywire").hide();
         $("#wicAGB").hide();
@@ -42,9 +43,9 @@ function changeFirstday(firstday) {
         $("#paywire").show();
         $("#wicAGB").show();
 
-        $(':input#ratepay_debit_bankcode').prop('disabled', false);
-        $(':input#ratepay_debit_accountnumber').prop('disabled', false);
-
+        $('input#ratepay_debit_accountnumber')
+            .prop('required', true)
+            .prop('disabled', false);
         $("#ratepay_agb").prop('disabled', false);
         button.attr('disabled', 'disabled');
         button.attr('title', errorMessageAcceptSepaAGB);
