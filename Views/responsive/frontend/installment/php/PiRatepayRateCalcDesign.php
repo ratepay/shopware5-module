@@ -9,6 +9,7 @@
      */
     use RpayRatePay\Component\Service\ShopwareUtil;
 
+    $snippetManager = Shopware()->Snippets()->getNamespace('ratepay/frontend/installment');
     $pi_calculator = new PiRatepayRateCalc();
 
     $pi_calculator->unsetData();
@@ -26,7 +27,7 @@
         $pi_config['payment_firstday'] = 28;
     }
 
-    
+
     if ($pi_language == "DE") {
         require_once $calcPath . '/languages/german.php';
         $pi_currency = 'EUR';
@@ -56,11 +57,7 @@
     <?php if (count($pi_monthAllowedArray) > 1) { ?>
         <div class="row">
             <div class="col-md-10">
-                <?php
-                echo $rp_calculation_intro_part1;
-                echo $rp_calculation_intro_part2;
-                echo $rp_calculation_intro_part3;
-                ?>
+                <?= $snippetManager->get('intro') ?>
             </div>
         </div>
         <div class="row">
