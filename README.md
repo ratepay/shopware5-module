@@ -37,6 +37,7 @@
 * RATEPLUG-116: update legal textes
 * RATEPLUG-123: rate-payment: replace bank data
 * RATEPLUG-128: return with stock: prevent increase stock of credits/debits
+* RATEPLUG-131: shows reason message, if no customer message is available (only on payment request)
 
 ### Version 5.3.14 - Released 2020-01-15
 * RATEPLUG-19: birthday input: also allow whitespaces instead of zeros
