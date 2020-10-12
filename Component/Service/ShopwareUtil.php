@@ -23,30 +23,33 @@ class ShopwareUtil
         '2,28' => 'FIRSTDAY-SWITCH'
     ];
 
+    const METHODS = [
+        'INVOICE' => 'rpayratepayinvoice',
+        'INSTALLMENT' => 'rpayratepayrate',
+        'ELV' => 'rpayratepaydebit',
+        'INSTALLMENT0' => 'rpayratepayrate0',
+        'PREPAYMENT' => 'rpayratepayprepayment'
+    ];
+
     /**
-     * Return the methodname for RatePAY
+     * Returns the methodname for RatePAY
      *
+     * @param $shopwareMethod string the shopware method name
      * @return string
      */
-    public static function getPaymentMethod($payment)
+    public static function getPaymentMethod($shopwareMethod)
     {
-        switch ($payment) {
-            case 'rpayratepayinvoice':
-                return 'INVOICE';
-                break;
-            case 'rpayratepayrate':
-                return 'INSTALLMENT';
-                break;
-            case 'rpayratepaydebit':
-                return 'ELV';
-                break;
-            case 'rpayratepayrate0':
-                return 'INSTALLMENT0';
-                break;
-            case 'rpayratepayprepayment':
-                return 'PREPAYMENT';
-                break;
-        }
+        return array_flip(self::METHODS)[$shopwareMethod];
+    }
+
+    /**
+     * returns the method name for shopware
+     * @param $ratepayMethod string the ratepay method name
+     * @return mixed
+     */
+    public static function getShopwarePaymentMethod($ratepayMethod)
+    {
+        return self::METHODS[$ratepayMethod];
     }
 
     /**
