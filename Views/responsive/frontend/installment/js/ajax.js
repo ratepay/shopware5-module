@@ -9,6 +9,12 @@
 
 document.onreadystatechange = function () {
     if (document.readyState == "complete") {
+        var $runtimeSelect = jQuery('#runtime-select');
+        if ($runtimeSelect.length) {
+            $runtimeSelect
+                .val($runtimeSelect.children().first().val())
+                .trigger('change');
+        }
         if (document.getElementById('month').value !== "" && document.getElementById('mode').value == "runtime") {
             piRatepayRateCalculatorAction('runtime', document.getElementById('month').value);
         }
