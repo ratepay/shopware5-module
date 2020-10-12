@@ -36,7 +36,7 @@ class DatabaseSetup extends Bootstrapper
     }
 
     /**
-     * Drops all RatePAY database tables
+     * Drops all Ratepay database tables
      *
      * @return mixed|void
      * @throws \Exception

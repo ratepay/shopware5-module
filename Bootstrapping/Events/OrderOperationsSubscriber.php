@@ -143,7 +143,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
         $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $parameter['orderID']);
         $paymentMethods = \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap::getPaymentMethods();
         if ($parameter['valid'] != true && in_array($order->getPayment()->getName(), $paymentMethods)) {
-            Logger::singleton()->warning('Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
+            Logger::singleton()->warning('Positionen einer Ratepay-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
             $arguments->stop();
         }
 
@@ -172,7 +172,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
                 . '(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)';
             $count = Shopware()->Db()->fetchOne($sql, [$parameter['id']]);
             if ($count > 0) {
-                    $message = 'RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.';
+                    $message = 'Ratepay-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.';
                     $controller->View()->assign(['success' => false, 'message' => $message]);
                     Logger::singleton()->warning($message);
                     return;
@@ -236,7 +236,7 @@ class OrderOperationsSubscriber implements \Enlight\Event\SubscriberInterface
                 $result = $modelFactory->callPaymentChange($operationData);
 
                 if ($result !== true) {
-                    $message = 'Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.';
+                    $message = 'Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei Ratepay fehlgeschlagen ist.';
                     $controller->View()->assign(['success' => false, 'message' => $message]);
                     Logger::singleton()->warning($message);
                     return;

@@ -388,7 +388,7 @@ class RequestBuilder
     }
 
     /**
-     * Returns all available RatePAY request operations
+     * Returns all available Ratepay request operations
      *
      * @return array
      */

@@ -31,7 +31,7 @@ class MenuesSetup extends Bootstrapper
             $parent = $this->bootstrap->Menu()->findOneBy(['label' => 'logfile']);
             $this->bootstrap->createMenuItem(
                 [
-                    'label' => 'RatePAY',
+                    'label' => 'Ratepay',
                     'class' => 'sprite-cards-stack',
                     'active' => 1,
                     'controller' => 'RpayRatepayLogging',

@@ -15,7 +15,7 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
 {
     const JOB_NAME = 'Shopware_Cronjob_UpdateRatepayTransactions';
 
-    const MSG_NOTIFY_UPDATES_TO_RATEPAY = '[%d/%d] Processing order %d ...notify needed updates to RatePAY';
+    const MSG_NOTIFY_UPDATES_TO_RATEPAY = '[%d/%d] Processing order %d ...notify needed updates to Ratepay';
 
     /**
      * @var string
@@ -46,8 +46,8 @@ class UpdateTransactionsSubscriber implements \Enlight\Event\SubscriberInterface
         $config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();
 
         if (!$this->hasBiDirectionalityActivated($config)) {
-            Logger::singleton()->info('RatePAY bidirectionality is turned off.');
-            return 'RatePAY bidirectionality is turned off.';
+            Logger::singleton()->info('Ratepay bidirectionality is turned off.');
+            return 'Ratepay bidirectionality is turned off.';
         }
 
         try {

@@ -103,7 +103,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
 
         Logger::singleton()->info('INSTALL Plugin Bootstrap');
 
-        Logger::singleton()->info('RatePAY: event subscription');
+        Logger::singleton()->info('Ratepay: event subscription');
         $this->subscribeEvent(
             'Enlight_Controller_Front_StartDispatch',
             'onRegisterSubscriber'
@@ -126,14 +126,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
             new \RpayRatePay\Bootstrapping\UserAttributeSetup($this)
         ];
 
-        Logger::singleton()->info('RatePAY: bootstrap routines');
+        Logger::singleton()->info('Ratepay: bootstrap routines');
         foreach ($queue as $bootstrapper) {
             $bootstrapper->install();
             Logger::singleton()->info('[OK] ' . get_class($bootstrapper));
         }
 
         $this->Plugin()->setActive(true);
-        Logger::singleton()->info('RatePAY: Successful module installation');
+        Logger::singleton()->info('Ratepay: Successful module installation');
 
         return [
             'success' => true,
@@ -179,13 +179,13 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
 
         $this->_dropOrderAdditionalAttributes();
 
-        Logger::singleton()->info('RatePAY: bootstrap routines');
+        Logger::singleton()->info('Ratepay: bootstrap routines');
         foreach ($queue as $bootstrapper) {
             $bootstrapper->update();
             Logger::singleton()->info('[OK] ' . get_class($bootstrapper));
         }
 
-        Logger::singleton()->info('RatePAY: Successful module update');
+        Logger::singleton()->info('Ratepay: Successful module update');
         Logger::singleton()->addNotice('Successful module update');
 
         return [

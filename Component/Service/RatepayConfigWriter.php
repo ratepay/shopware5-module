@@ -77,14 +77,14 @@ class RatepayConfigWriter
             $response = $factory->callProfileRequest($data);
         } catch (\Exception $e) {
             Logger::singleton()->error(
-                'RatePAY: Profile_Request failed for profileId ' . $profileId
+                'Ratepay: Profile_Request failed for profileId ' . $profileId
             );
             return false;
         }
 
         if (!is_array($response) || $response === false) {
             Logger::singleton()
-                ->info('RatePAY: Profile_Request for profileId ' . $profileId . ' was empty ');
+                ->info('Ratepay: Profile_Request for profileId ' . $profileId . ' was empty ');
             return false;
         }
 

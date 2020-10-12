@@ -10,11 +10,11 @@
   "ok": "ok",
   "phonenumbernotvalid": "Veuillez fournir un numéro de téléphone valide pour le moyen de paiement choisi.",
   "ratepayAgbMouseover": "Veuillez vérifier les informations fournies.",
-  "ratepaySEPAAgbFirst": "Je consens par la présente à ce que mes données soient transmises à RatePAY GmbH, Franklinstraße 28-29 10587 Berlin conformément à la politique de confidentialité RatePAY et autorise ainsi le prélèvement automatique depuis mon compte mentionné ci-dessus des paiements relatifs au présent contrat. J’enjoins également mon établissement de crédit à acquitter les prélèvements automatiques depuis mon compte par RatePAY GmbH.",
-  "ratepaySEPAAgbLast": "Indication : après formation du contrat, ma référence de mandat me sera transmise par RatePAY. Je dispose de huit semaines à compter de la date de prélèvement pour exiger le remboursement du montant prélevé. Je dispose de huit semaines à compter de la date de prélèvement pour exiger le remboursement du montant prélevé. Les conditions ayant fait l’objet d’un accord avec mon établissement de crédit s’appliquent.",
-  "ratepaySEPAInformationHeader": "RatePAY GmbH, Franklinstraße 28-29, 10587 Berlin Identifiant du créancier : DE39RPY00000568463 Référence de mandat : (conforme à la référence transmise après conclusion de la vente",
+  "ratepaySEPAAgbFirst": "Je consens par la présente à ce que mes données soient transmises à Ratepay GmbH, Franklinstraße 28-29 10587 Berlin conformément à la politique de confidentialité RatePAY et autorise ainsi le prélèvement automatique depuis mon compte mentionné ci-dessus des paiements relatifs au présent contrat. J’enjoins également mon établissement de crédit à acquitter les prélèvements automatiques depuis mon compte par RatePAY GmbH.",
+  "ratepaySEPAAgbLast": "Indication : après formation du contrat, ma référence de mandat me sera transmise par Ratepay. Je dispose de huit semaines à compter de la date de prélèvement pour exiger le remboursement du montant prélevé. Je dispose de huit semaines à compter de la date de prélèvement pour exiger le remboursement du montant prélevé. Les conditions ayant fait l’objet d’un accord avec mon établissement de crédit s’appliquent.",
+  "ratepaySEPAInformationHeader": "Ratepay GmbH, Franklinstraße 28-29, 10587 Berlin Identifiant du créancier : DE39RPY00000568463 Référence de mandat : (conforme à la référence transmise après conclusion de la vente",
   "transactionid": "Transaction-ID",
   "version": "Version",
-  "ratepay_zgb": "Les <a href='https://www.ratepay.com/legal' target='_blank'>conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de RatePAY GmbH s´appliquent",
-  "ratepay_zgb_n": "Les <a href='https://www.ratepay.com/legal' target='_blank'>conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de RatePAY GmbH s´appliquent"
+  "ratepay_zgb": "Les <a href='https://www.ratepay.com/legal' target='_blank'>conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de Ratepay GmbH s´appliquent",
+  "ratepay_zgb_n": "Les <a href='https://www.ratepay.com/legal' target='_blank'>conditions générales supplémentaires ainsi que les informations sur la protection des données</a> de Ratepay GmbH s´appliquent"
 }

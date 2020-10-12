@@ -11,7 +11,7 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 require_once 'PiRatepayRateCalcBase.php';
 
     /**
-     * This is for the communication with RatePAY
+     * This is for the communication with Ratepay
      */
     class PiRatepayRateCalc extends PiRatepayRateCalcBase
     {
@@ -27,7 +27,7 @@ require_once 'PiRatepayRateCalcBase.php';
         }
 
         /**
-         * This method send's the config request to RatePAY or set's a error message
+         * This method send's the config request to Ratepay or set's a error message
          * and returns the config details
          *
          * @deprecated use ConfigLoader for all loading of Configs
@@ -91,7 +91,7 @@ require_once 'PiRatepayRateCalcBase.php';
         }
 
         /**
-         * This method send's the rate request to RatePAY or set's a error message
+         * This method send's the rate request to Ratepay or set's a error message
          * and returns the rate details
          *
          * @return array $resultArray
@@ -143,7 +143,7 @@ require_once 'PiRatepayRateCalcBase.php';
         }
 
         /**
-         * This method send the rate request to RatePAY and set's all response data
+         * This method send the rate request to Ratepay and set's all response data
          * if a error occurs the mthod throws a exception
          */
         private function requestRateDetails($subtype)
@@ -153,7 +153,7 @@ require_once 'PiRatepayRateCalcBase.php';
             } elseif (isset($Parameter['userid'])) {
                 $userId = $Parameter['userid'];
             } else { // return if no current user set. e.g. call by crawler
-                return "RatePAY frontend controller: No user set";
+                return "Ratepay frontend controller: No user set";
             }
 
             //$config = Shopware()->Plugins()->Frontend()->RpayRatePay()->Config();

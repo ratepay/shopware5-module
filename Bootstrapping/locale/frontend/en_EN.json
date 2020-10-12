@@ -8,12 +8,12 @@
   "dobnotvalid": "Please enter a valid date of birth",
   "invaliddata": "Please check your data",
   "phonenumbernotvalid": "Please enter a valid telephone number.",
-  "ratepayAgbMouseover": "Um RatePAY nutzen zu können müssen sie den AGBs von RatePAY zustimmen",
-  "ratepaySEPAAgbFirst": "Ich willige hiermit in die Weiterleitung meiner Daten an RatePAY GmbH, Franklinstraße 28-29, 10587 Berlin gemäß",
+  "ratepayAgbMouseover": "Um Ratepay nutzen zu können müssen sie den AGBs von Ratepay zustimmen",
+  "ratepaySEPAAgbFirst": "Ich willige hiermit in die Weiterleitung meiner Daten an Ratepay GmbH, Franklinstraße 28-29, 10587 Berlin gemäß",
   "ratepaySEPAAgbLast": "ein und ermächtige diese, mit diesem Kaufvertrag in Zusammenhang stehende Zahlungen von meinem",
-  "ratepaySEPAInformationHeader": "RatePAY GmbH, Schlüterstr. 39, 10629 Berlin<br/>Gläubiger-ID: DE39RPY00000568463<br/>Mandatsreferenz: (wird nach Kaufabschluss übermittelt)",
+  "ratepaySEPAInformationHeader": "Ratepay GmbH, Schlüterstr. 39, 10629 Berlin<br/>Gläubiger-ID: DE39RPY00000568463<br/>Mandatsreferenz: (wird nach Kaufabschluss übermittelt)",
   "transactionid": "Transaction-ID",
   "version": "Version",
-  "ratepay_zgb": "The Additional <a href='https://www.ratepay.com/legal' target='_blank'>General Terms and Conditions and Data Protection Notice</a> of the RatePAY GmbH apply",
+  "ratepay_zgb": "The Additional <a href='https://www.ratepay.com/legal' target='_blank'>General Terms and Conditions and Data Protection Notice</a> of the Ratepay GmbH apply",
   "ratepay_zgb_n": "The Additional <a href='https://www.ratepay.com/legal' target='_blank'>General Terms and Conditions and Data Protection Notice</a> apply of the payent menthod"
 }

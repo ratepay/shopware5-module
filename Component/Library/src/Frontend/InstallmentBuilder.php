@@ -20,14 +20,14 @@ class InstallmentBuilder
     private $sandbox = false;
 
     /**
-     * RatePAY profile id
+     * Ratepay profile id
      *
      * @var string
      */
     private $profileId;
 
     /**
-     * RatePAY security code
+     * Ratepay security code
      *
      * @var string
      */
@@ -103,7 +103,7 @@ class InstallmentBuilder
     }
 
     /**
-     * Sets RatePAY profile id
+     * Sets Ratepay profile id
      *
      * @param string $profileId
      */
@@ -113,7 +113,7 @@ class InstallmentBuilder
     }
 
     /**
-     * Sets RatePAY security code
+     * Sets Ratepay security code
      * @param string $securitycode
      */
     public function setSecuritycode($securitycode)

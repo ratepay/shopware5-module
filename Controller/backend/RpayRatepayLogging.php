@@ -18,7 +18,7 @@ use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
         public function indexAction()
         {
             $this->View()->loadTemplate('backend/rpay_ratepay_logging/app.js');
-            $this->View()->assign('title', 'RatePAY-Logging');
+            $this->View()->assign('title', 'Ratepay-Logging');
         }
 
         /**

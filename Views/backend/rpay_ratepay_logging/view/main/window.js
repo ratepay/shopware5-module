@@ -6,7 +6,7 @@
  */
 Ext.define('Shopware.apps.RpayRatepayLogging.view.main.Window', {
     extend: 'Enlight.app.Window',
-    title: 'RatePAY Logging',
+    title: 'Ratepay Logging',
     alias: 'widget.rpay_ratepay_logging-main-window',
     border: false,
     autoShow: true,

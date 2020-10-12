@@ -40,7 +40,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
 
     /**
      * Filters the shown Payments
-     * RatePAY-payments will be hidden, if one of the following requirement is not given
+     * Ratepay-payments will be hidden, if one of the following requirement is not given
      *  - Delivery Address is not allowed to be not the same as billing address
      *  - The Customer must be over 18 years old
      *  - The Country must be germany or austria

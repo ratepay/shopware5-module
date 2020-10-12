@@ -50,7 +50,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Logging
             $em->persist($log);
             $em->flush();
         } catch (\Exception $exception) {
-            Logger::singleton()->error('RatePAY was unable to log order history: ' . $exception->getMessage());
+            Logger::singleton()->error('Ratepay was unable to log order history: ' . $exception->getMessage());
         }
     }
 }

@@ -187,7 +187,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydelivery', {
                                                     message = '{s namespace=RatePAY name=messagecreditsuccess}Nachlass wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
                                                 } else {
                                                     me.deletePosition(insertedIds);
-                                                    message = '{s namespace=RatePAY name=messagecreditfailrequest}Nachlass konnte nicht korrekt an RatePAY &uuml;bermittelt werden.{/s}';
+                                                    message = '{s namespace=RatePAY name=messagecreditfailrequest}Nachlass konnte nicht korrekt an Ratepay &uuml;bermittelt werden.{/s}';
                                                 }
                                             } else {
                                                 message = '{s namespace=RatePAY name=messagecreditfailposition}Nachlass konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';

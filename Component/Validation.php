@@ -104,7 +104,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
     }
 
     /**
-     * Checks the Customers Age for RatePAY payments
+     * Checks the Customers Age for Ratepay payments
      *
      * TODO remove duplicate code (see isBirthdayValid)
      * @return boolean
