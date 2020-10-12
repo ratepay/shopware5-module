@@ -223,7 +223,7 @@
     "type":"button",
     "name":"button3",
     "config":{
-      "label":"<b>Bidirektionalität RatePAY-Bestellungen:</b>",
+      "label":"<b>Bidirektionalität Ratepay-Bestellungen:</b>",
       "value":""
     }
   },
@@ -231,7 +231,7 @@
     "type":"checkbox",
     "name":"RatePayBidirectional",
     "config":{
-      "label":"Bidirektionalität aktivieren (Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert)",
+      "label":"Bidirektionalität aktivieren (Automatische Operationen an Ratepay senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert)",
       "scope":1
     }
   },

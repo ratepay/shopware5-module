@@ -1,7 +1,7 @@
-# RatePAY GmbH - Shopware Payment Module
+# Ratepay GmbH - Shopware Payment Module
 ============================================
 
-|Module | RatePAY Module for Shopware
+|Module | Ratepay Module for Shopware
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.3.x` - `5.4.6`
@@ -95,7 +95,7 @@
 * Extend date of birth validation for correct inputs
 
 ### Version 5.3.3 - Released 2019-01-28
-* Fix RatePAY GmbH Legal link
+* Fix Ratepay GmbH Legal link
 
 ### Version 5.3.2 - Released 2018-11-26
 * Fix whitespaces in date of birth fields
@@ -257,7 +257,7 @@
 ### Version 4.2.1 - Released 2016-08-31
 * Date of payment is now set automatically (cleareddate)
 * Improved detection of divergent shipping address (Shopware >=5.2.0)
-* Remove deprecated RatePAY additional order attributes on update
+* Remove deprecated Ratepay additional order attributes on update
 
 ### Version 4.2.0 - Released 2016-08-29
 * Mapping of new SWAG address management (Compatibility with Shopware 5.2.x)

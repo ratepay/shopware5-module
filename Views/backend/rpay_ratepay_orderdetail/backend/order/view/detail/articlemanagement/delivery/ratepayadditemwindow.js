@@ -78,7 +78,7 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayadditemwindow', {
                                 del = false;
                                 message = '{s namespace=RatePAY name=dialogadditemsuccess}Artikel wurden erfolgreich zur Bestellung hinzugefügt.{/s}';
                             } else {
-                                message = '{s namespace=RatePAY name=dialogadditemfailrequest}Artikel konnten nicht korrekt an RatePAY übermittelt werden.{/s}';
+                                message = '{s namespace=RatePAY name=dialogadditemfailrequest}Artikel konnten nicht korrekt an Ratepay übermittelt werden.{/s}';
                             }
                         } else {
                             message = '{s namespace=RatePAY name=dialogadditemfailposition}Artikel konnten nicht der Bestellung hinzugefügt werden.{/s}';

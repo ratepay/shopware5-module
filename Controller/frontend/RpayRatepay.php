@@ -57,7 +57,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         }
 
         if ($customerId === null) {
-            return 'RatePAY frontend controller: No user set';
+            return 'Ratepay frontend controller: No user set';
         }
 
         $customer = Shopware()->Models()->find('Shopware\Models\Customer\Customer', $customerId);
@@ -90,13 +90,13 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         }
 
         if (!$this->isInstallmentPaymentWithoutCalculation()) {
-            Logger::singleton()->info('Proceed with RatePAY payment');
+            Logger::singleton()->info('Proceed with Ratepay payment');
             Shopware()->Session()->RatePAY['errorRatenrechner'] = 'false';
             $this->_proceedPayment();
             return;
         }
 
-        Logger::singleton()->info('RatePAY installment has incomplete calculation');
+        Logger::singleton()->info('Ratepay installment has incomplete calculation');
         Shopware()->Session()->RatePAY['errorRatenrechner'] = 'true';
         $this->redirect(
             Shopware()->Front()->Router()->assemble(
@@ -193,7 +193,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 $this->getModelManager()->flush([$userModel, $billingAddress]);
                 Logger::singleton()->info('Customer data has been updated');
             } catch (\Exception $exception) {
-                Logger::singleton()->error('RatePAY was unable to update customer data: ' . $exception->getMessage());
+                Logger::singleton()->error('Ratepay was unable to update customer data: ' . $exception->getMessage());
                 $return = 'NOK';
             }
         }
@@ -283,7 +283,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $this->_error();
         }
 
-        // Clear RatePAY session after call for authorization
+        // Clear Ratepay session after call for authorization
         Shopware()->Session()->RatePAY = [];
     }
 

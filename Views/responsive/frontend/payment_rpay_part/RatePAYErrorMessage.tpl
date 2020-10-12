@@ -1,4 +1,4 @@
-{* RatePAY error container *}
+{* Ratepay error container *}
 {block name="ratepay_frontend_error"}
     <div class="error alert is--error is--rounded is--hidden" style="margin-top: 20px;">
 

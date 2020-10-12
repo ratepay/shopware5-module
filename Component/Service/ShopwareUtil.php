@@ -26,7 +26,7 @@ class ShopwareUtil
     ];
 
     /**
-     * Returns the methodname for RatePAY
+     * Returns the methodname for Ratepay
      *
      * @param $shopwareMethod string the shopware method name
      * @return string

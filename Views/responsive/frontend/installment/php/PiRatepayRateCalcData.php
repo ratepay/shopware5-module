@@ -47,7 +47,7 @@ use RpayRatePay\Services\ProfileConfigService;
 
         /**
          * This method get the transaction-id and has to be rewritten
-         * Optional - Return Empty String - If empty String, it will not be sended to RatePAY.
+         * Optional - Return Empty String - If empty String, it will not be sended to Ratepay.
          *
          * @return string
          */
@@ -58,7 +58,7 @@ use RpayRatePay\Services\ProfileConfigService;
 
         /**
          * This method get the transaction-short-id and has to be rewritten
-         * Optional - Return Empty String - If empty String, it will not be sended to RatePAY.
+         * Optional - Return Empty String - If empty String, it will not be sended to Ratepay.
          *
          * @return string
          */
@@ -69,7 +69,7 @@ use RpayRatePay\Services\ProfileConfigService;
 
         /**
          * This method get the order-id and has to be rewritten
-         * Optional - Return Empty String - If empty String, it will not be sended to RatePAY.
+         * Optional - Return Empty String - If empty String, it will not be sended to Ratepay.
          *
          * @return string
          */
@@ -80,7 +80,7 @@ use RpayRatePay\Services\ProfileConfigService;
 
         /**
          * This method get the merchant-consumer-id and has to be rewritten
-         * Optional - Return Empty String - If empty String, it will not be sended to RatePAY.
+         * Optional - Return Empty String - If empty String, it will not be sended to Ratepay.
          *
          * @return string
          */
@@ -91,7 +91,7 @@ use RpayRatePay\Services\ProfileConfigService;
 
         /**
          * This method get the merchant-cosnumer-classification and has to be rewritten
-         * Optional - Return Empty String - If empty String, it will not be sended to RatePAY.
+         * Optional - Return Empty String - If empty String, it will not be sended to Ratepay.
          *
          * @return string
          */

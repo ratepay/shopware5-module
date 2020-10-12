@@ -50,10 +50,10 @@ Ext.define('Shopware.apps.Order.view.detail.ratepaydetailorder', {
                 orderStatusStore: me.orderStatusStore,
                 paymentStatusStore: me.paymentStatusStore
             }), Ext.create('Shopware.apps.Order.view.detail.ratepaylog', {
-                title: '{s namespace=RatePAY name=tablog}RatePAY Log{/s}',
+                title: '{s namespace=RatePAY name=tablog}Ratepay Log{/s}',
                 record: me.record
             }), Ext.create('Shopware.apps.Order.view.detail.ratepayhistory', {
-                title: '{s namespace=RatePAY name=tabhistory}RatePAY History{/s}',
+                title: '{s namespace=RatePAY name=tabhistory}Ratepay History{/s}',
                 historyStore: me.historyStore,
                 record: me.record,
                 orderStatusStore: me.orderStatusStore,

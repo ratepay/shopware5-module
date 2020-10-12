@@ -30,7 +30,7 @@
     "label": "Schweiz Security Code"
   },
   "RatePayBidirectional": {
-    "label":"Bidirektionalität aktivieren (Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer RatePAY-Bestellung ändert)"
+    "label":"Bidirektionalität aktivieren (Automatische Operationen an Ratepay senden, wenn sich der Bestellstatus einer Ratepay-Bestellung ändert)"
   },
   "RatePayFullDelivery": {
     "label": "Status für Volllieferung"
@@ -57,7 +57,7 @@
     "label": "<b>Zugangsdaten für die Schweiz</b>"
   },
   "button3": {
-    "label": "<b>Bidirektionalität RatePAY-Bestellungen</b>"
+    "label": "<b>Bidirektionalität Ratepay-Bestellungen</b>"
   },
   "button4": {
     "label": "<b>Zugangsdaten für Belgien</b>"

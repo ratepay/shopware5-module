@@ -30,7 +30,7 @@
     "label": "Security Code for Switzerland"
   },
   "RatePayBidirectional": {
-    "label":"Activate bidirectional sync (Updates will be automatically sent to RatePAY, whenever order status has been changed.)"
+    "label":"Activate bidirectional sync (Updates will be automatically sent to Ratepay, whenever order status has been changed.)"
   },
   "RatePayFullDelivery": {
     "label": "Status for `delivery completed`"
@@ -57,7 +57,7 @@
     "label": "<b>Credentials for Switzerland</b>"
   },
   "button3": {
-    "label": "<b>Bidirectional Sync for RatePAY Orders</b>"
+    "label": "<b>Bidirectional Sync for Ratepay Orders</b>"
   },
   "button4": {
     "label": "<b>Credentials for Belgium</b>"

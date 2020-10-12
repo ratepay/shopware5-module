@@ -26,7 +26,7 @@ class CronjobSetup extends Bootstrapper
 
         if (!$this->hasStoredCronjobs()) {
             $this->bootstrap->createCronJob(
-                'RatePAY Transaction Updater',
+                'Ratepay Transaction Updater',
                 self::UPDATE_TRANSACTIONS_ACTION,
                 $settings['interval']
             );
