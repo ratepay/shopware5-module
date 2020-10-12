@@ -38,7 +38,6 @@
 * RATEPLUG-76: fix dfp in firefox (wrong variable declaration)
 * RATEPLUG-88: backend: throw exception, if no profile is found.
 * RATEPLUG-90: disable payment filter in customer account
-* RATEPLUG-107: checkout: fix button get not undisabled, after validation
 * RATEPLUG-116: update legal textes for bankdata
 * RATEPLUG-119: branding
 * RATEPLUG-124: remove bank code fields from storefront
