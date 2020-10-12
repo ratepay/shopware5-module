@@ -130,8 +130,8 @@ class RatepayConfigWriter
                     isset($type['installment0']) ? $type['installment0'] : $type['installment'],
                     $response['result']['installmentConfig']['month-allowed'],
                     $response['result']['installmentConfig']['valid-payment-firstdays'],
-                    $response['result']['installmentConfig']['rate-min-normal'],
                     $response['result']['installmentConfig']['interestrate-default'],
+                    $response['result']['installmentConfig']['rate-min-normal'],
                 ];
                 $paymentSql = 'INSERT INTO `rpay_ratepay_config_installment`'
                     . '(`rpay_id`, `month_allowed`,`payment_firstday`,`interestrate_default`,'
