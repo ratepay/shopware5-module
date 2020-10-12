@@ -3,9 +3,9 @@
 
 |Module | RatePAY Module for Shopware
 |------|----------
-|Author | Annegret Seufert
+|Author | Interlutions GmbH
 |Shop Version | `5.5.x` - `5.6.x`
-|Version | `5.4.8`
+|Version | `5.5.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -25,29 +25,25 @@
 
 ## Changelog
 
-### Version 5.4.8 - WIP
-* RATEPLUG-14: prevent delete order in admin if the order has been already shipped/canceled/returned
-* RATEPLUG-31: lock payment methods for customer if reason code 703
+### Version 5.5.0 - WIP
+* RATEPLUG-14: prevent deleting Ratepay orders in adminpanel if the order has been already shipped/canceled/returned
+* RATEPLUG-31: lock payment methods for customer on risk rejection
 * RATEPLUG-31: fix "elv" <> "debit" names in whole plugin
 * RATEPLUG-66: credit/debit fix gateway requests
 * RATEPLUG-67: set phone number as not required field and apply static phonenumber if no phone number is provided
-* RATEPLUG-68: add static legal texts (add readme text)
+* RATEPLUG-68: add new legal texts (add readme text)
 * RATEPLUG-71: fix billingaddress update
-* RATEPLUG-73: fix bidirectionally
 * RATEPLUG-73: fix the installation of payment/order status
 * RATEPLUG-76: fix dfp in firefox (wrong variable declaration)
 * RATEPLUG-88: backend: throw exception, if no profile is found.
 * RATEPLUG-90: disable payment filter in customer account
 * RATEPLUG-116: update legal textes for bankdata
-* RATEPLUG-119: branding
-* RATEPLUG-123: rate-payment: replace bank data
-* RATEPLUG-124: remove bank code fields from storefront
+* RATEPLUG-119: rebranding of Ratepay
+* RATEPLUG-123: new SEPA mandate text for Ratepay inhouse installment payment method
+* RATEPLUG-124: remove old bank code fields from storefront
 * RATEPLUG-125: fix checkout validation
-* RATEPLUG-116: update legal textes
-* RATEPLUG-123: rate-payment: replace bank data
-* RATEPLUG-134: fix allowedmonths
-* RATEPLUG-134: fix 0% financing calculation
-* RATEPLUG-134: installment: improve UX
+* RATEPLUG-134: fix allowedmonths for payment method instalment & fix 0% financing calculation
+* RATEPLUG-135: backend instalment: improve UX
 
 ### Version 5.4.7 - Released 2020-01-15
 * RATEPLUG-33: fix namespaces
