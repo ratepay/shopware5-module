@@ -188,18 +188,17 @@ class PaymentRequestService extends AbstractRequest
     {
         /** @var $paymentResponse PaymentResponse */ // RequestBuilder is a proxy
         $orderAttribute = $order->getAttribute();
-        if ($orderAttribute == null) {
+        if ($orderAttribute === null) {
             $orderAttribute = new OrderAttribute();
             $orderAttribute->setOrder($order);
             $this->modelManager->persist($orderAttribute);
             $order->setAttribute($orderAttribute);
         }
 
-        $orderAttribute->setAttribute5($paymentResponse->getDescriptor()); // TODO attribute name
-        $orderAttribute->setAttribute6($paymentResponse->getTransactionId()); // TODO attribute name
+        $orderAttribute->setRatepayDescriptor($paymentResponse->getDescriptor());
         $orderAttribute->setRatepayBackend($this->isBackend);
         $orderAttribute->setRatepayFallbackDiscount($this->configService->isCommitDiscountAsCartItem());
-        $orderAttribute->setRatepayFallbackShipping($this->configService->isCommitDiscountAsCartItem());
+        $orderAttribute->setRatepayFallbackShipping($this->configService->isCommitShippingAsCartItem());
 
         /** @deprecated v6.2 */
         $orderAttribute->setRatepayDirectDelivery(
