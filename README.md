@@ -27,17 +27,26 @@
 ### Version 5.3.15 - WIP
 * RATEPLUG-14: prevent delete order in admin if the order has been already shipped/canceled/returned
 * RATEPLUG-31: lock payment methods for customer if reason code 703
+* RATEPLUG-31: fix "elv" <> "debit" names in whole plugin
 * RATEPLUG-66: credit/debit fix gateway requests
+* RATEPLUG-67: set phone number as not required field and apply static phonenumber if no phone number is provided
 * RATEPLUG-68: add static legal texts
 * RATEPLUG-71: fix billingaddress update
 * RATEPLUG-73: fix bidirectionally
 * RATEPLUG-76: fix dfp in firefox (wrong variable declaration)
 * RATEPLUG-88: backend: throw exception, if no profile is found.
 * RATEPLUG-90: disable payment filter in customer account
+* RATEPLUG-107: checkout: fix button get not undisabled, after validation
 * RATEPLUG-116: update legal textes
+* RATEPLUG-119: branding
 * RATEPLUG-123: rate-payment: replace bank data
+* RATEPLUG-124: remove bank code fields from storefront
+* RATEPLUG-125: fix checkout validation
 * RATEPLUG-128: return with stock: prevent increase stock of credits/debits
 * RATEPLUG-131: shows reason message, if no customer message is available (only on payment request)
+* RATEPLUG-134: fix allowedmonths
+* RATEPLUG-134: fix 0% financing calculation
+* RATEPLUG-134: installment: improve UX
 
 ### Version 5.3.14 - Released 2020-01-15
 * RATEPLUG-19: birthday input: also allow whitespaces instead of zeros
