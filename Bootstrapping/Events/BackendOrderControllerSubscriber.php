@@ -96,6 +96,7 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
             $netItemPrices = \RpayRatePay\Component\Service\ShopwareUtil::customerCreatesNetOrders($customer);
             $paymentRequester = new \Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory(null, true, $netItemPrices, $customer->getShop()->getId());
 
+            /** @var $answer \RatePAY\Model\Response\PaymentRequest */
             $answer = $paymentRequester->callPaymentRequest($paymentRequestData);
 
             if ($answer->isSuccessful()) {
@@ -106,7 +107,11 @@ class BackendOrderControllerSubscriber implements \Enlight\Event\SubscriberInter
 
                 $this->doPostProcessing($orderId, $answer, $paymentRequestData, $method);
             } else {
-                $customerMessage = $answer->getCustomerMessage();
+                if(!empty($answer->getCustomerMessage())) {
+                    $customerMessage = $answer->getCustomerMessage();
+                } else {
+                    $customerMessage = $answer->getReasonMessage();
+                }
                 $this->fail($view, [$customerMessage]);
             }
         } catch (\Exception $e) {
