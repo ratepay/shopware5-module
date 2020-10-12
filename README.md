@@ -40,6 +40,7 @@
 * RATEPLUG-90: disable payment filter in customer account
 * RATEPLUG-116: update legal textes for bankdata
 * RATEPLUG-119: branding
+* RATEPLUG-123: rate-payment: replace bank data
 * RATEPLUG-124: remove bank code fields from storefront
 * RATEPLUG-125: fix checkout validation
 * RATEPLUG-116: update legal textes
