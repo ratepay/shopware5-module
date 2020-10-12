@@ -29,9 +29,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
      *
      * @return string
      */
-    public function getLabel()
-    {
-        return 'RatePay Payment';
+    public function getLabel() {
+        return 'Ratepay Payment Plugin for Shopware 5';
     }
 
     public function afterInit()
