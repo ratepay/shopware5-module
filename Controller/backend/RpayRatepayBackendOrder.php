@@ -19,11 +19,11 @@
  */
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
-use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\Logger;
-use RpayRatePay\Models\ProfileConfig;
+use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\Models\ConfigRepository;
+use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\ConfigService;
 
 class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Controllers_Backend_ExtJs
@@ -99,6 +99,9 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         /** @var ConfigRepository $repo */
         $repo = Shopware()->Models()->getRepository(ProfileConfig::class);
         $profileConfig = $repo->findConfiguration($shopId, $countryIso, $nullPercent, true);
+        if($profileConfig === null) {
+            throw new Shopware_Plugins_Frontend_RpayRatePay_Exception_ProfileNotFoundException();
+        }
 
         $installmentBuilder = $this->getInstallmentBuilder($profileConfig);
         return $installmentBuilder;
@@ -153,13 +156,20 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
 
         $addressObj = Shopware()->Models()->find('Shopware\Models\Customer\Address', $billingId);
 
-        $installmentBuilder = $this->getInstallmentBuilderFromConfig($paymentMeansName, $addressObj, $shopId);
-        $result = $installmentBuilder->getInstallmentCalculatorAsJson($totalAmount);
+        try {
+            $installmentBuilder = $this->getInstallmentBuilderFromConfig($paymentMeansName, $addressObj, $shopId);
+            $result = $installmentBuilder->getInstallmentCalculatorAsJson($totalAmount);
 
-        $this->view->assign([
-            'success' => true,
-            'termInfo' => json_decode($result, true) //to prevent double encode
-        ]);
+            $this->view->assign([
+                'success' => true,
+                'termInfo' => json_decode($result, true)
+            ]);
+        } catch (\Exception $e) {
+            $this->view->assign([
+                'success' => false,
+                'messages' => [$e->getMessage()]
+            ]);
+        }
     }
 
     /**
@@ -206,9 +216,9 @@ class Shopware_Controllers_Backend_RpayRatepayBackendOrder extends Shopware_Cont
         $type = $calcParamSet ? $params['type'] : 'time';
         $val = $calcParamSet ? $params['value'] : $this->getTermFallback($paymentMeansName, $addressObj, $shopId);
 
-        $installmentBuilder = $this->getInstallmentBuilderFromConfig($paymentMeansName, $addressObj, $shopId);
 
         try {
+            $installmentBuilder = $this->getInstallmentBuilderFromConfig($paymentMeansName, $addressObj, $shopId);
             $result = $installmentBuilder->getInstallmentPlanAsJson($totalAmount, $type, $val);
         } catch (\Exception $e) {
             $this->view->assign([

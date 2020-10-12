@@ -9,6 +9,7 @@
      */
     use RpayRatePay\Component\Service\ShopwareUtil;
 
+    $snippetManager = Shopware()->Snippets()->getNamespace('ratepay/frontend/installment');
     $pi_calculator = new PiRatepayRateCalc();
 
     $pi_calculator->unsetData();
@@ -26,7 +27,7 @@
         $pi_config['payment_firstday'] = 28;
     }
 
-    
+
     if ($pi_language == "DE") {
         require_once $calcPath . '/languages/german.php';
         $pi_currency = 'EUR';
@@ -56,11 +57,7 @@
     <?php if (count($pi_monthAllowedArray) > 1) { ?>
         <div class="row">
             <div class="col-md-10">
-                <?php
-                echo $rp_calculation_intro_part1;
-                echo $rp_calculation_intro_part2;
-                echo $rp_calculation_intro_part3;
-                ?>
+                <?= $snippetManager->get('intro') ?>
             </div>
         </div>
         <div class="row">
@@ -75,16 +72,14 @@
                     <input type="hidden" id="month" name="month" value="">
                     <input type="hidden" id="mode" name="mode" value="">
                     <div class="panel-body">
-                        <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                            <?php
-                            foreach ($pi_monthAllowedArray AS $month) {
-                                ?>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button class="btn btn-default rp-btn-runtime" type="button" onclick="piRatepayRateCalculatorAction('runtime', <?php echo $month; ?>);" id="piRpInput-buttonMonth-<?php echo $month; ?>" role="group"><?php echo $month; ?></button>
-                                </div>
+                        <div class="form-group month-selector-container">
+                            <select class="form-control" onchange="piRatepayRateCalculatorAction('runtime', this.value)" id="runtime-select">
                                 <?php
-                            }
-                            ?>
+                                foreach ($pi_monthAllowedArray AS $month) {
+                                    ?><option value="<?=$month?>"><?php echo $month; ?> <?=$rp_months?></option><?php
+                                }
+                                ?>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -97,7 +92,7 @@
                 </div>
 
                 <div class="panel-body">
-                    <div class="input-group input-group-sm">
+                    <div class="input-group input-group-md">
                         <span class="input-group-addon">&euro;</span>
                         <input type="text" id="rp-rate-value" class="form-control" aria-label="Amount" />
                         <span class="input-group-btn">

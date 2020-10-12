@@ -162,10 +162,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $qualifiedParameters['ratepay_debit_updatedebitdata'] = $parameters['ratepay_debit_updatedebitdata'];
         }
 
-        if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_debit_bankcode', $parameters)) {
-            $qualifiedParameters['ratepay_debit_bankcode'] = $parameters['ratepay_debit_bankcode'];
-        }
-
         if (ShopwareUtil::hasValueAndIsNotEmpty('ratepay_agb', $parameters)) {
             $qualifiedParameters['ratepay_agb'] = $parameters['ratepay_agb'];
         }
@@ -200,9 +196,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             if(isset($Parameter['ratepay_phone']) && !empty($Parameter['ratepay_phone'])) {
                 $billingAddress->setPhone($Parameter['ratepay_phone']);
             }
-            if(isset($Parameter['ratepay_company']) && !empty($Parameter['ratepay_company'])) {
-                $billingAddress->setCompany($Parameter['ratepay_company']);
-            } else {
+            if(empty($billingAddress->getCompany())) {
                 $userModel->setBirthday($Parameter['ratepay_dob'] ?: $userModel->getBirthday()->format('Y-m-d'));
             }
 
@@ -219,7 +213,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         if ($Parameter['ratepay_debit_updatedebitdata']) {
             $sessionLoader->setBankData(
                 $userModel->getId(),
-                $Parameter['ratepay_debit_accountnumber']
+                $Parameter['ratepay_debit_accountnumber'],
             );
         }
 
@@ -290,9 +284,13 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         } else {
             /** @var $resultRequest RatePAY\Model\Response\PaymentRequest */
             if(in_array($resultRequest->getReasonCode(), [703, 720, 721], false)) {
-                PaymentMethodsService::getInstance()->lockPaymentMethodForCustomer($paymentRequestData->getCustomer(), strtolower($paymentRequestData->getMethod()));
+                PaymentMethodsService::getInstance()->lockPaymentMethodForCustomer($paymentRequestData->getCustomer(), $this->getPaymentShortName());
             }
-            $this->_customerMessage = $resultRequest->getCustomerMessage();
+            if(!empty($resultRequest->getCustomerMessage())) {
+                $this->_customerMessage = $resultRequest->getCustomerMessage();
+            } else {
+                $this->_customerMessage = $resultRequest->getReasonMessage();
+            }
             $this->_error();
         }
 

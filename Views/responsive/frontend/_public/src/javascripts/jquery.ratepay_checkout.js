@@ -40,7 +40,7 @@
 
             }
 
-            if ($(":input#ratepay_debit_bankcode") && !$("#paymentFirstday").val()) {
+            if (!$("#paymentFirstday").val()) {
                 $("#paywire").remove();
                 $("#wicAGB").remove();
             }
@@ -135,6 +135,7 @@
 
             var $form = $('#'+$submitButton.attr('form'));
             if (!$form.length || !$form[0].checkValidity()) {
+                preLoaderPlugin.reset();
                 return;
             }
 
@@ -170,7 +171,7 @@
 
                 /* handle all normal inputs */
                 $('input[id^="ratepay_"]').each(function () {
-                    if ($(this).attr('id') == 'ratepay_debit_accountnumber' || $(this).attr('id') == 'ratepay_debit_bankcode')
+                    if ($(this).attr('id') == 'ratepay_debit_accountnumber')
                     {
                         requestParams += '&' + $(this).attr('id') + '=' + $(this).val().replace(/ /g, '');
                     } else {
@@ -180,13 +181,6 @@
                         hasErrors = true;
                         userUpdate = false;
                     }
-
-                    /* validate sepa direct debit - no error if no blz is set @toDo: fix for international direct debits */
-                    if ($(this).attr('id') == 'ratepay_debit_bankcode' && !$(":input#ratepay_debit_accountnumber").val().match(/^\d+$/)) {
-                        hasErrors = false;
-                        userUpdate = true;
-                    }
-
                 });
 
                 /* dob validation */
@@ -286,6 +280,7 @@
                     if (preLoaderPlugin) {
                         setTimeout(function() {
                             preLoaderPlugin.reset();
+                            $submitButton.prop('disabled', false); // this is just a fix for a shopware bug (has been fixed in a further release)
                         }, 1000);
                     }
                     return false;

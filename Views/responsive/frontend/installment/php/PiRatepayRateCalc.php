@@ -66,13 +66,20 @@ require_once 'PiRatepayRateCalcBase.php';
             //get ratepay config based on shopId
             $rpRateConfig=Shopware()->Db()->fetchRow($qry);
 
-            $interestRate = ((float)$rpRateConfig["interestrate_default"] / 12) / 100;
+            $interestRate = (float)$rpRateConfig["interestrate_default"];
+            $interestRateMonth = ($interestRate / 12) / 100;
             $monthAllowed = explode(',', $rpRateConfig["month_allowed"]);
 
-            foreach ($monthAllowed AS $month) {
-                $rateAmount = ceil($basketAmount * (($interestRate * pow((1 + $interestRate), $month)) / (pow((1 + $interestRate), $month) - 1)));
-                if($rateAmount >= $rpRateConfig["rate_min_normal"]) {
-                    $allowedRuntimes[] = $month;
+            foreach ($monthAllowed AS $runtime) {
+                if ($interestRate > 0) {
+                    $rateAmount = $basketAmount * (($interestRateMonth * ((1 + $interestRateMonth) ** $runtime)) / (((1 + $interestRateMonth) ** $runtime) - 1));
+                } else {
+                    $rateAmount = $basketAmount / $runtime;
+                }
+                $rateAmount = ceil($rateAmount);
+
+                if ($rateAmount >= $rpRateConfig["rate_min_normal"]) {
+                    $allowedRuntimes[] = $runtime;
                 }
             }
 
