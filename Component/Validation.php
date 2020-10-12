@@ -1,25 +1,14 @@
 <?php
+/**
+ * Copyright (c) 2020 Ratepay GmbH
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 
-/**
- * This program is free software; you can redistribute it and/or modify it under the terms of
- * the GNU General Public License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with this program;
- * if not, see <http://www.gnu.org/licenses/>.
- *
- * validation
- *
- * @category   RatePAY
- * @copyright  Copyright (c) 2013 RatePAY GmbH (http://www.ratepay.com)
- */
 class Shopware_Plugins_Frontend_RpayRatePay_Component_Validation
 {
     /**
