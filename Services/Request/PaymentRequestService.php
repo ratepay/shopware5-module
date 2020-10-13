@@ -161,12 +161,10 @@ class PaymentRequestService extends AbstractRequest
      */
     protected function insertProductPositions(Order $order, RequestBuilder $paymentResponse)
     {
-        $isCommitDiscountAsCartItem = $this->configService->isCommitDiscountAsCartItem();
-
         $entitiesToFlush = [];
         /** @var Detail $detail */
         foreach ($order->getDetails() as $detail) {
-            if (PositionHelper::isDiscount($detail) && $isCommitDiscountAsCartItem == false) {
+            if (PositionHelper::isDiscount($detail)) {
                 $position = new Discount();
                 $position->setOrderDetail($detail);
             } else {
