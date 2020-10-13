@@ -24,7 +24,7 @@
 
 ## Changelog
 
-### Version 5.3.15 - WIP
+### Version 5.3.15 - 2020-10-13
 * RATEPLUG-14: prevent delete order in admin if the order has been already shipped/canceled/returned
 * RATEPLUG-31: lock payment methods for customer if reason code 703
 * RATEPLUG-31: fix "elv" <> "debit" names in whole plugin
