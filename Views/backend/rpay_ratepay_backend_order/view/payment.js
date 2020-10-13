@@ -51,10 +51,6 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             return true;
         });
 
-        me.subApplication.app.on('selectBillingAddress', function() {
-            alert('select billing address');
-        });
-
         var changePaymentTypeHandler = function(combobox, newValue, oldValue) {
            me.handleChangePaymentType.call(me, combobox, newValue);
         };
