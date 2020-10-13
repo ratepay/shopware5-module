@@ -32,13 +32,39 @@ class OrderAttribute extends AbstractAttributeBootstrap
         $addDirectDeliveryAttribute = $this->crudService->get('s_order_attributes', 'ratepay_direct_delivery') === null;
         $this->crudService->update('s_order_attributes', 'ratepay_direct_delivery', 'boolean', [], null, null, 1);
 
+        $connection = $this->modelManager->getConnection();
         if ($addDirectDeliveryAttribute) {
-            $this->modelManager->getConnection()->exec("
+            $connection->exec("
                 UPDATE s_order_attributes attr
                     INNER JOIN s_order s_order ON (s_order.id = attr.id)
                     INNER JOIN s_core_paymentmeans payment ON (s_order.paymentID = payment.id)
-                    set attr.ratepay_direct_delivery = 0 
-                    WHERE payment.name IN ('" . PaymentMethods::PAYMENT_RATE . "', '" . PaymentMethods::PAYMENT_INSTALLMENT0 . "')
+                    SET 
+                        attr.ratepay_direct_delivery = 0 
+                    WHERE 
+                        payment.name IN ('" . PaymentMethods::PAYMENT_RATE . "', '" . PaymentMethods::PAYMENT_INSTALLMENT0 . "')
+            ");
+        }
+
+        if (version_compare($this->getOldVersion(), "6.0.0", "<")) {
+            $connection->exec("
+                UPDATE s_order_attributes attr
+                    INNER JOIN s_order s_order ON (s_order.id = attr.id)
+                    INNER JOIN s_core_paymentmeans payment ON (s_order.paymentID = payment.id)
+                    SET 
+                        attr.ratepay_descriptor = attr.attribute5
+                    WHERE 
+                        payment.name IN ('" . implode("','", PaymentMethods::getNames()) . "') AND 
+                        attr.ratepay_descriptor IS NULL
+            ");
+            $connection->exec("
+                UPDATE s_order_attributes attr
+                    INNER JOIN s_order s_order ON (s_order.id = attr.id)
+                    INNER JOIN s_core_paymentmeans payment ON (s_order.paymentID = payment.id)
+                    SET 
+                        attr.attribute5 = NULL, 
+                        attr.attribute6 = NULL
+                    WHERE 
+                        payment.name IN ('" . implode("','", PaymentMethods::getNames()) . "')
             ");
         }
     }
