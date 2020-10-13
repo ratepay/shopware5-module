@@ -152,10 +152,11 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
      * get request head
      *
      * @param bool $countryCode
+     * @param null $orderId
      * @return \RatePAY\ModelBuilder
      * @throws Exception
      */
-    private function getHead($countryCode = null)
+    private function getHead($countryCode = null, $orderId = null)
     {
         $systemId = $this->getSystemId();
         $bootstrap = new \Shopware_Plugins_Frontend_RpayRatePay_Bootstrap('ratepay_config');
@@ -180,9 +181,9 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             ]
         ];
 
-        $orderId = $this->_orderId;
+        $orderId = $orderId ? : $this->_orderId;
         if (!empty($orderId)) {
-            $head['External']['OrderId'] = $this->_orderId;
+            $head['External']['OrderId'] = $orderId;
         }
 
         //side effect
@@ -632,7 +633,7 @@ class Shopware_Plugins_Frontend_RpayRatePay_Component_Mapper_ModelFactory
             $this->setZPercent();
         }
 
-        $mbHead = $this->getHead($countryCode);
+        $mbHead = $this->getHead($countryCode, $order->getNumber());
 
         $shoppingItems = $this->createBasketArray($order->getCurrency(), $operationData['items'], $operationData['subtype'], $operationData['orderId']);
         $shoppingBasket = [
