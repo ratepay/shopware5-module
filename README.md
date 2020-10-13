@@ -25,7 +25,7 @@
 
 ## Changelog
 
-### Version 5.5.0 - WIP
+### Version 5.5.0 - 2020-10-13
 * RATEPLUG-14: prevent deleting Ratepay orders in adminpanel if the order has been already shipped/canceled/returned
 * RATEPLUG-31: lock payment methods for customer on risk rejection
 * RATEPLUG-31: fix "elv" <> "debit" names in whole plugin
