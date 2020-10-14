@@ -15,6 +15,7 @@
         <service id="RpayRatePay\Subscriber\Backend\OrderControllerSubscriber">
             <argument id="models" type="service"/>
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
+            <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
             <argument id="RpayRatePay\Services\DfpService" type="service"/>
             <argument id="RpayRatePay\Services\Factory\PaymentRequestDataFactory" type="service"/>
             <argument id="RpayRatePay\Services\Request\PaymentRequestService" type="service"/>

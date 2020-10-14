@@ -165,13 +165,17 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                 var responseObj = Ext.decode(response.responseText);
                 if(responseObj.success) {
                     var options = responseObj.options;
-                    var TRANSFER = 28;
 
                     if (options.length === 1) {
                         me.installmentPaymentType = options[0];
                         me.directDebitCheckbox.setVisible(false);
+                        if(options[0] === 'DIRECT-DEBIT') {
+                            me.bankDataContainer.setVisible(true)
+                        } else {
+                            me.bankDataContainer.setVisible(false)
+                        }
                     } else {
-                        me.installmentPaymentType = TRANSFER;
+                        me.installmentPaymentType = 'BANK-TRANSFER';
                         //show switch for bank data
                         me.directDebitCheckbox.setValue(false);
                         me.directDebitCheckbox.setVisible(true);
@@ -245,7 +249,7 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                 totalAmount: me.getTotalAmount(),
                 type: type,
                 value: value,
-                paymentSubtype: me.installmentPaymentType
+                paymentType: me.installmentPaymentType
             },
             success: function (response) {
                 var responseObj = Ext.decode(response.responseText);
@@ -287,15 +291,13 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             height: 35,
             listeners: {
                 change: function (field, value) {
-                    var DIRECT_DEBIT = 2,
-                        TRANSFER = 28;
                     me.bankDataContainer.setVisible(value);
-                    me.installmentPaymentType = value ? DIRECT_DEBIT : TRANSFER;
+                    me.installmentPaymentType = value ? 'DIRECT-DEBIT' : 'BANK-TRANSFER';
 
                     Ext.Ajax.request({
                         url: '{url controller="RatepayBackendOrder" action="updatePaymentSubtype"}',
                         params: {
-                            paymentSubtype: me.installmentPaymentType,
+                            paymentType: me.installmentPaymentType,
                         },
                         success: function () {
                             //Shopware.Notification.createGrowlMessage('', 'Zahlart auf Server gesetzt');

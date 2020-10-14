@@ -97,8 +97,7 @@ class Debit extends AbstractPaymentMethod
         $this->sessionHelper->setBankData(
             $userId,
             $bankAccount['accountHolder']['selected'],
-            trim(str_replace(' ', '', $bankAccount['iban'])),
-            trim(str_replace(' ', '', $bankAccount['bankCode']))
+            trim(str_replace(' ', '', $bankAccount['iban']))
         );
     }
 

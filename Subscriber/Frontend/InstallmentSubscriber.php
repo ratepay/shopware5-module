@@ -76,22 +76,18 @@ class InstallmentSubscriber implements SubscriberInterface
             return;
         }
 
-        $data = [];
         $billingAddress = $this->sessionHelper->getBillingAddress();
 
         $totalAmount = floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']); // TODO no static access!
-        $htmlCalculator = $this->installmentService->getInstallmentCalculatorTemplate(
+        $templateVars = $this->installmentService->getInstallmentCalculatorVars(
             $billingAddress,
             Shopware()->Shop()->getId(),
             $paymentMethod,
             false,
-            $totalAmount,
-            $view->getAssign()
+            $totalAmount
         );
 
-        $data['installmentCalculator'] = $htmlCalculator;
-
-        $view->assign('ratepay', array_merge($view->getAssign('ratepay') ?: [], $data));
+        $view->assign('ratepay', array_merge($view->getAssign('ratepay') ?: [], $templateVars));
     }
 
     public function addInstallmentPlanHtml(\Enlight_Controller_ActionEventArgs $args)

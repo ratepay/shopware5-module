@@ -10,6 +10,7 @@
 use Monolog\Logger;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Exception\NoProfileFoundException;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -68,7 +69,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $customerId = intval($params['customerId']);
 
         if (ValidationLib::isIbanValid($params['iban'])) {
-            $this->sessionHelper->setBankData($customerId, null, $accountNumber, null);
+            $this->sessionHelper->setBankData($customerId, null, $accountNumber);
             $this->view->assign([
                 'success' => true,
             ]);
@@ -131,13 +132,13 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
             $customerAddress = $this->modelManager->find(Address::class, $billingId);
 
             $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMeansName, $shopId, $customerAddress->getCountry()->getIso(), true);
-            if ($installmentConfig == null) {
+            if ($installmentConfig === null) {
                 throw new NoProfileFoundException();
             }
 
             $optionsString = $installmentConfig->getPaymentFirstDay();
             $optionsArray = explode(',', $optionsString);
-            $optionsIntArray = array_map('intval', $optionsArray);
+            $optionsIntArray = array_map([PaymentFirstDay::class, 'getPayTypByFirstPayDay'], $optionsArray);
             $this->view->assign([
                 'success' => true,
                 'options' => $optionsIntArray
@@ -162,7 +163,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
 
         $paymentMethodName = $params['paymentMeansName'];
         $totalAmount = $params['totalAmount'];
-        $paymentFirstDay = $params['paymentSubtype']; //todo this is the paymentFirstDay
+        $paymentType = $params['paymentType'];
         $calcParamSet = !empty($params['value']) && !empty($params['type']);
         $type = $calcParamSet ? $params['type'] : 'time';
 
@@ -176,13 +177,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         }
 
         try {
-            $dto = new InstallmentRequest(
-                $totalAmount,
-                $type,
-                $val,
-                null,
-                $paymentFirstDay
-            );
+            $dto = new InstallmentRequest($totalAmount, $type, $val, $paymentType);
 
             $plan = $this->installmentService->initInstallmentData(
                 $billingAddress,
@@ -207,7 +202,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
     public function updatePaymentSubtypeAction()
     {
         $params = $this->Request()->getParams();
-        $this->sessionHelper->setInstallmentPaymentSubtype($params['paymentSubtype']);
+        $this->sessionHelper->setInstallmentPaymentType($params['paymentType']);
     }
 
     /**

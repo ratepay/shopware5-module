@@ -1,7 +1,6 @@
 {namespace name="frontend/register/personal_fieldset"}
 
-{* Phone *}
-{block name='ratepay_frontend_phone'}
+{block name='ratepay_payment_method__phone'}
     <div class="form-group row phone-input">
         <label class="col-sm-2 col-form-label">
             {s name="RegisterPlaceholderPhone"}{/s}

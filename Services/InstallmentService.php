@@ -99,7 +99,7 @@ class InstallmentService
             $plan['numberOfRatesFull'],
             $plan['rate'],
             $plan['lastRate'],
-            $requestDto->getPaymentFirstDay(),
+            $requestDto->getPaymentType(),
             $requestDto
         );
 
@@ -165,26 +165,14 @@ class InstallmentService
         return json_decode($result, true);
     }
 
-    public function getInstallmentCalculatorTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount, array $templateVars)
+    public function getInstallmentCalculatorVars(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount)
     {
-        $bankData = $this->sessionHelper->getBankData($billingAddress);
         $calculatorData = $this->getInstallmentCalculator($billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount);
 
-        /** @var Enlight_Template_Default $template */
-        $template = $this->templateManager->createTemplate('frontend/plugins/payment/ratepay/installment/calculator.tpl');
-
-        $templateVars['ratepay'] = $templateVars['ratepay'] ? : [];
-        $templateVars['ratepay'] = array_merge($templateVars['ratepay'], [
+        return array_merge([], [
             'translations' => LanguageHelper::getRatepayTranslations(Shopware()->Shop()),
-            'calculator' => $calculatorData,
-            'data' => [
-                'customer_name' => $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
-                'bank_data_iban' => $bankData ? ($bankData->getIban() ? $bankData->getIban() : $bankData->getAccountNumber()) : null,
-                'bank_data_bankcode' => $bankData ? $bankData->getBankCode() : null,
-            ]
+            'calculator' => $calculatorData
         ]);
-        $template->assign($templateVars);
-        return $template->fetch();
     }
 
 }

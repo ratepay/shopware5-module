@@ -16,7 +16,7 @@ use RpayRatePay\Bootstrap\PaymentMeans;
 use RpayRatePay\DTO\BankData;
 use RpayRatePay\DTO\InstallmentDetails;
 use RpayRatePay\DTO\InstallmentRequest;
-use RpayRatePay\Enum\PaymentSubType;
+use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Util\BankDataUtil;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Address;
@@ -46,15 +46,10 @@ class SessionHelper
     private $loadedShippingAddress;
     /** @var PaymentMeans */
     private $loadedPaymentMethod;
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
 
     public function __construct(ModelManager $entityManager, ContainerInterface $container)
     {
         $this->entityManager = $entityManager;
-        $this->container = $container;
         if ($container->has('shop')) {
             //frontend request
             $this->session = $container->get('session');
@@ -155,7 +150,7 @@ class SessionHelper
     public function setData($key = null, $value = null)
     {
         if ($key === null) {
-            $this->session->RatePay = [];
+            $this->session->offsetUnset('RatePay');
         } else {
             if ($value !== null) {
                 $this->session->RatePay[$key] = $value;
@@ -165,14 +160,13 @@ class SessionHelper
         }
     }
 
-    public function setBankData($customerId, $accountHolder = null, $accountNumber = null, $bankCode = null)
+    public function setBankData($customerId, $accountHolder = null, $accountNumber = null)
     {
         if ($accountNumber !== null) {
             $this->setData('bankData_c' . $customerId, [
                 'customerId' => $customerId,
                 'accountHolder' => $accountHolder,
-                'account' => $accountNumber,
-                'bankcode' => $bankCode
+                'account' => $accountNumber
             ]);
         } else {
             $this->setData('bankData_c' . $customerId, null);
@@ -191,15 +185,10 @@ class SessionHelper
         }
 
         $accountHolder = $sessionData['accountHolder'];
-        $bankCode = $sessionData['bankcode'];
-        $account = $sessionData['account'];
+        $iban = $sessionData['account'];
 
         $accountHolder = $accountHolder ? : BankDataUtil::getDefaultAccountHolder($customerAddressBilling);
-        if (!empty($bankCode)) {
-            return new BankData($accountHolder, null, $bankCode, $account);
-        } else {
-            return new BankData($accountHolder, $account);
-        }
+        return new BankData($accountHolder, $iban);
     }
 
     public function getData($key, $default = null)
@@ -225,13 +214,11 @@ class SessionHelper
         $object->setNumberOfRatesFull($data['number_of_rates']);
         $object->setRate($data['rate']);
         $object->setLastRate($data['last_rate']);
-        $object->setPaymentFirstday($data['payment_firstday']);
-        $object->setPaymentSubtype($data['payment_subtype']);
-        $object->setDueDate($data['dueDate']);
+        $object->setPaymentType($data['payment_subtype']);
         return $object;
     }
 
-    public function setInstallmentDetails($totalAmount, $amount, $interestRate, $interestAmount, $serviceCharge, $annualPercentageRate, $monthlyDebitInterest, $numberOfRatesFull, $rate, $lastRate, $paymentSubtype, InstallmentRequest $installmentRequest)
+    public function setInstallmentDetails($totalAmount, $amount, $interestRate, $interestAmount, $serviceCharge, $annualPercentageRate, $monthlyDebitInterest, $numberOfRatesFull, $rate, $lastRate, $paymentType, InstallmentRequest $installmentRequest)
     {
         $this->setData('ratenrechner', [
             'total_amount' => $totalAmount,
@@ -245,16 +232,16 @@ class SessionHelper
             'rate' => $rate,
             'last_rate' => $lastRate,
         ]);
-        $this->setInstallmentPaymentSubtype($paymentSubtype); //todo this is the paymentFirstDay
+        $this->setInstallmentPaymentType($paymentType);
         $this->setData('installment_calculator_input', $installmentRequest->toArray());
     }
 
-    public function setInstallmentPaymentSubtype($paymentFirstDay)
+    public function setInstallmentPaymentType($paymentType)
     {
         $data = $this->getData('ratenrechner');
-        $data['payment_subtype'] = PaymentSubType::getPayTypByFirstPayDay($paymentFirstDay); //TODO documentation.
-        $data['payment_firstday'] = $paymentFirstDay;
-        $data['dueDate'] = $paymentFirstDay;
+        $data['payment_subtype'] = $paymentType;
+        $data['payment_firstday'] = PaymentFirstDay::getFirstDayForPayType($paymentType);
+        $data['dueDate'] = $data['payment_firstday'];
         $this->setData('ratenrechner', $data);
     }
 

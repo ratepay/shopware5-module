@@ -15,12 +15,10 @@
 //hide some components on initial load
 .rp-container-calculator,
 .rp-installment-plan-details,
-#rp-form-bank-code,
 #rp-switch-payment-type-direct-debit,
 #rp-rate-elv,
 #rp-hide-installment-plan-details,
-.rp-sepa-form,
-.rp-payment-type-switch {
+.rp-sepa-form {
   display: none;
 }
 
@@ -81,7 +79,6 @@
 }
 
 .rp-container-calculator {
-  margin-top: 20px;
 
   .runtime-select-container {
     margin-bottom: 0;
@@ -96,10 +93,18 @@
   .form-group,
   .input-group,
   .input-group input,
-  .input-group button {  
+  .input-group button {
     height: 42px;
     margin-bottom: 0;
   }
+}
+
+.rp-sepa-form,
+.payment-type-select-container,
+.rp-container-calculator {
+  margin-top: 20px;
+  border-top: 1px solid @border-color;
+  padding-top: 20px;
 }
 
 .rp-sepa-form {
@@ -107,6 +112,7 @@
     margin-bottom: 20px;
   }
 }
+
 .runtime-select-container {
   margin-bottom: 0;
 }

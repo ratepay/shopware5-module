@@ -9,7 +9,7 @@
 namespace RpayRatePay\Enum;
 
 
-final class PaymentSubType extends Enum
+final class PaymentFirstDay extends Enum
 {
 
     const PAY_TYPE_DIRECT_DEBIT = 'DIRECT-DEBIT';
@@ -25,5 +25,10 @@ final class PaymentSubType extends Enum
     public static function getPayTypByFirstPayDay($firstPayDay)
     {
         return self::PAY_TYPES[$firstPayDay];
+    }
+
+    public static function getFirstDayForPayType($payType)
+    {
+        return array_search($payType, self::PAY_TYPES, true);
     }
 }

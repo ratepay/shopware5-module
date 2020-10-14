@@ -1,9 +1,8 @@
 {namespace name="frontend/register/billing_fieldset"}
 
-{* Phone *}
 <input type="hidden" name="ratepay[customer_data][vatId_required]" value="{if $form_data.ratepay.customer_data.vatId_required}1{else}0{/if}">
 {if $form_data.ratepay.customer_data.vatId_required != false}
-    {block name='ratepay_frontend_vatid'}
+    {block name='ratepay_payment_method__vatid'}
         <div class="form-group row vatid-input">
             <label class="col-sm-2 col-form-label">
                 {s name="RegisterLabelTaxId"}{/s}

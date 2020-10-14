@@ -22,9 +22,7 @@ class InstallmentDetails
     protected $numberOfRatesFull;
     protected $rate;
     protected $lastRate;
-    protected $paymentSubtype;
-    protected $paymentFirstday;
-    protected $dueDate;
+    protected $paymentType;
 
     /**
      * @return mixed
@@ -189,49 +187,16 @@ class InstallmentDetails
     /**
      * @return mixed
      */
-    public function getPaymentSubtype()
+    public function getPaymentType()
     {
-        return $this->paymentSubtype;
+        return $this->paymentType;
     }
 
     /**
-     * @param mixed $paymentSubtype
+     * @param mixed $paymentType
      */
-    public function setPaymentSubtype($paymentSubtype)
+    public function setPaymentType($paymentType)
     {
-        $this->paymentSubtype = $paymentSubtype;
+        $this->paymentType = $paymentType;
     }
-
-    /**
-     * @return mixed
-     */
-    public function getPaymentFirstday()
-    {
-        return $this->paymentFirstday;
-    }
-
-    /**
-     * @param mixed $paymentFirstday
-     */
-    public function setPaymentFirstday($paymentFirstday)
-    {
-        $this->paymentFirstday = $paymentFirstday;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getDueDate()
-    {
-        return $this->dueDate;
-    }
-
-    /**
-     * @param mixed $dueDate
-     */
-    public function setDueDate($dueDate)
-    {
-        $this->dueDate = $dueDate;
-    }
-
 }

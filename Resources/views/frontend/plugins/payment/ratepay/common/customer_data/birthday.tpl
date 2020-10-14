@@ -1,8 +1,8 @@
 {namespace name="frontend/register/personal_fieldset"}
-{* Birthday *}
+
 <input type="hidden" name="ratepay[customer_data][birthday_required]" value="{if $form_data.ratepay.customer_data.birthday_required}1{else}0{/if}">
 {if $form_data.ratepay.customer_data.birthday_required != false}
-    {block name='ratepay_frontend_birthday'}
+    {block name='ratepay_payment_method__birthday'}
         <div class="form-group row birthday-input-group">
             <label class="col-sm-2 col-form-label">
                 {s name="RegisterPlaceholderBirthday"}{/s}
@@ -11,7 +11,7 @@
                 <div class="col-xxs-12 col-xs-4 col-sm-3 col-md-2">
                     <div class="row row-no-gutters">
                         <div class="col-xxs-4 col-xs-12">
-                            <label for="register_personal_birthdate" class="birthday--label">{s name="RegisterBirthdaySelectDay"}Tag{/s}*</label>
+                            <label for="register_personal_birthdate" class="birthday--label">{s name="RegisterBirthdaySelectDay"}{/s}*</label>
                         </div>
                         <div class="col-xxs-8 col-xs-12">
                             <input type="text"
@@ -53,7 +53,7 @@
                                    id="ratepay_birthyear"
                                    name="ratepay[customer_data][birthday][year]"
                                    maxlength="4"
-                                   placeholder="{s name="RegisterBirthdaySelectYear"}Jahr{/s}"
+                                   placeholder="{s name="RegisterBirthdaySelectYear"}{/s}"
                                    value="{$form_data.ratepay.customer_data.birthday.year}"
                                    required="required" aria-required="true"
                             />

@@ -11,6 +11,7 @@ namespace RpayRatePay\Services\Factory;
 
 use Exception;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 
@@ -47,14 +48,14 @@ class PaymentArrayFactory
             }
 
             $data = array_merge($data, [
-                'DebitPayType' => $installment->getPaymentSubtype(),
+                'DebitPayType' => $installment->getPaymentType(),
                 'Amount' => $installment->getTotalAmount(),
                 'InstallmentDetails' => [
                     'InstallmentNumber' => $installment->getNumberOfRatesFull(),
                     'InstallmentAmount' => $installment->getRate(),
                     'LastInstallmentAmount' => $installment->getLastRate(),
                     'InterestRate' => $installment->getInterestRate(),
-                    'PaymentFirstday' => $installment->getPaymentFirstday()
+                    'PaymentFirstday' => PaymentFirstDay::getFirstDayForPayType($installment->getPaymentType())
                 ]
             ]);
         }

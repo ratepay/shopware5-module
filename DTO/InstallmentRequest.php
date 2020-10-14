@@ -9,8 +9,6 @@
 namespace RpayRatePay\DTO;
 
 
-use RpayRatePay\Enum\PaymentSubType;
-
 class InstallmentRequest
 {
 
@@ -18,15 +16,13 @@ class InstallmentRequest
     private $type;
     private $value;
     private $paymentType;
-    private $paymentFirstDay;
 
-    public function __construct($totalAmount = null, $type = null, $value = null, $paymentType = null, $paymentFirstDay = null)
+    public function __construct($totalAmount = null, $type = null, $value = null, $paymentType = null)
     {
         $this->totalAmount = $totalAmount;
         $this->type = $type;
         $this->value = $value;
-        $this->paymentType = $paymentType ?: $paymentFirstDay ? PaymentSubType::getPayTypByFirstPayDay($paymentFirstDay) : null;
-        $this->paymentFirstDay = $paymentFirstDay;
+        $this->paymentType = $paymentType;
     }
 
     /**
@@ -91,22 +87,6 @@ class InstallmentRequest
     public function setPaymentType($paymentType)
     {
         $this->paymentType = $paymentType;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPaymentFirstDay()
-    {
-        return $this->paymentFirstDay;
-    }
-
-    /**
-     * @param mixed $paymentFirstDay
-     */
-    public function setPaymentFirstDay($paymentFirstDay)
-    {
-        $this->paymentFirstDay = $paymentFirstDay;
     }
 
     public function toArray()

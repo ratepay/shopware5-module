@@ -169,8 +169,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $params = $this->Request()->getParams();
         if (!isset($params['calculationAmount']) ||
             !isset($params['calculationValue']) ||
-            !isset($params['calculationType']) ||
-            !isset($params['paymentFirstday'])) {
+            !isset($params['calculationType'])) {
             exit(0);
         }
         $paymentMethodId = (int) $params['paymentMethodId'];
@@ -185,8 +184,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $params['calculationAmount'],
             $params['calculationType'],
             $params['calculationValue'],
-            null,
-            $params['paymentFirstday']
+            $params['paymentType']
         );
 
         echo $this->installmentService->getInstallmentPlanTemplate(

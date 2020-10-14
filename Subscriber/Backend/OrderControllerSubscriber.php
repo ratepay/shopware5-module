@@ -14,6 +14,7 @@ use Exception;
 use Monolog\Logger;
 use RatePAY\Model\Response\PaymentRequest as PaymentResponse;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
@@ -62,10 +63,15 @@ class OrderControllerSubscriber implements SubscriberInterface
      * @var PaymentRequestService
      */
     protected $paymentRequestService;
+    /**
+     * @var SessionHelper
+     */
+    private $sessionHelper;
 
     public function __construct(
         ModelManager $modelManager,
         ConfigService $config,
+        SessionHelper $sessionHelper,
         DfpService $dfpService,
         PaymentRequestDataFactory $paymentRequestDataFactory,
         PaymentRequestService $paymentRequestService,
@@ -84,6 +90,7 @@ class OrderControllerSubscriber implements SubscriberInterface
         $this->logger = $logger;
         $this->paymentRequestService = $paymentRequestService;
         $this->paymentConfirmService = $paymentConfirmService;
+        $this->sessionHelper = $sessionHelper;
     }
 
     public static function getSubscribedEvents()
@@ -150,6 +157,8 @@ class OrderControllerSubscriber implements SubscriberInterface
                 if ($paymentResponse->isSuccessful() === false) {
                     $customerMessage = $paymentResponse->getCustomerMessage() . ' (' . $paymentResponse->getReasonMessage() . ')';
                     $this->fail($view, [$customerMessage]);
+                } else {
+                    $this->sessionHelper->cleanUp();
                 }
             } else {
                 $customerMessage = $paymentResponse->getCustomerMessage() . ' (' . $paymentResponse->getReasonMessage() . ')';

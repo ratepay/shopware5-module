@@ -11,7 +11,7 @@ namespace RpayRatePay\Services\Factory;
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Enum\PaymentMethods;
-use RpayRatePay\Enum\PaymentSubType;
+use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\DfpService;
 use Shopware\Components\Model\ModelManager;
@@ -77,7 +77,7 @@ class PaymentRequestDataFactory
         $bankData = null;
         if (PaymentMethods::isInstallment($paymentMethod)) {
             $installmentDetails = $this->sessionHelper->getInstallmentDetails();
-            if ($installmentDetails->getPaymentSubtype() == PaymentSubType::PAY_TYPE_DIRECT_DEBIT) {  //is rate payment with elv subtype
+            if ($installmentDetails->getPaymentType() === PaymentFirstDay::PAY_TYPE_DIRECT_DEBIT) {
                 $bankData = $this->sessionHelper->getBankData($billingAddress);
             }
         } else if (PaymentMethods::PAYMENT_DEBIT === $paymentMethod->getName()) { // is elv payment
