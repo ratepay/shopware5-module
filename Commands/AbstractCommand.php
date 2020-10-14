@@ -9,6 +9,7 @@
 namespace RpayRatePay\Commands;
 
 
+use RatePAY\RequestBuilder;
 use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Services\Request\AbstractModifyRequest;
@@ -19,6 +20,8 @@ use Shopware\Models\Order\Order;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use function Doctrine\ORM\QueryBuilder;
 
 abstract class AbstractCommand extends ShopwareCommand
 {
@@ -42,9 +45,9 @@ abstract class AbstractCommand extends ShopwareCommand
         $operation = explode(':', $this->getName())[1];
         $this
             ->setDescription($operation . ' an item of a ratepay order or ' . $operation . ' a complete ratepay order.')
-            ->addArgument('order', InputArgument::REQUIRED, 'related order')
-            ->addArgument('orderDetail', InputArgument::OPTIONAL, 'order-detail-id/detail-number to ' . $operation)
-            ->addArgument('qty', InputArgument::OPTIONAL, 'qty to ' . $operation);
+            ->addArgument('order', InputArgument::REQUIRED, 'related order (id, number or transaction-id')
+            ->addArgument('orderDetail', InputArgument::OPTIONAL, 'order-detail-id/detail-number to ' . $operation . ' (if not provided, a full-action of the operation will be performed)')
+            ->addArgument('qty', InputArgument::OPTIONAL, 'qty to ' . $operation . ' (if not provided, the ordered quantity will be used)');
     }
 
     /**
@@ -52,19 +55,27 @@ abstract class AbstractCommand extends ShopwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $io = new SymfonyStyle($input, $output);
+
         $orderId = $input->getArgument('order');
         $orderDetailId = $input->getArgument('orderDetail');
-        $qty = floatval($input->getArgument('qty'));
+        $qty = $input->getArgument('qty') ? (float)$input->getArgument('qty') : null;
 
-        $order = $this->modelManager->find(Order::class, $orderId);
-        $order = $order ?: $this->modelManager->getRepository(Order::class)->findOneBy(['number' => $orderId]);
-        if ($order == null) {
-            $output->writeln('the order with the id/number \'' . $orderId . '\' was not found.');
+        $qb = $this->modelManager->getRepository(Order::class)->createQueryBuilder('e');
+        $qb->orWhere(
+            $qb->expr()->eq('e.id', ':orderIdentifier'),
+            $qb->expr()->eq('e.number', ':orderIdentifier'),
+            $qb->expr()->eq('e.transactionId', ':orderIdentifier')
+        )->setMaxResults(1)->setParameter('orderIdentifier', $orderId);
+
+        $order = $qb->getQuery()->getOneOrNullResult();
+        if ($order === null) {
+            $io->error("the order with the id/number '$orderId'  was not found.");
             return 1;
         }
 
         if (PaymentMethods::exists($order->getPayment()->getName()) === false) {
-            $output->writeln('the order with the id/number \'' . $orderId . '\' is not a ratepay order.');
+            $io->error("the order with the id/number '$orderId' is not a ratepay order.");
             return 1;
         }
 
@@ -75,7 +86,7 @@ abstract class AbstractCommand extends ShopwareCommand
                     $orderDetailNumber = BasketPosition::SHIPPING_NUMBER;
                     $position = new BasketPosition($orderDetailNumber, $qty);
                 } else {
-                    $output->writeln('nothing to do. This order does not have shipping costs');
+                    $io->note('nothing to do. This order does not have shipping costs');
                     return 0;
                 }
             } else {
@@ -83,13 +94,14 @@ abstract class AbstractCommand extends ShopwareCommand
                 $orderDetail = $orderDetailRepo->findOneBy(['order' => $order->getId(), 'id' => $orderDetailId]);
                 $orderDetail = $orderDetail ?: $orderDetailRepo->findOneBy(['order' => $order->getId(), 'articleNumber' => $orderDetailId]);
 
-                if ($orderDetail == null) {
-                    $output->writeln('the order detail with the id/number \'' . $orderDetailId . '\' was not found.');
+                if ($orderDetail === null) {
+                    $io->error("the order detail with the id/number '$orderDetailId' was not found.'");
                     return 1;
                 }
 
+                $qty = $qty ?: $orderDetail->getQuantity();
                 if ($qty <= 0) {
-                    $output->writeln('the given quantity must be larger then zero');
+                    $io->error('the given quantity must be larger then zero');
                     return 1;
                 }
 
@@ -110,21 +122,36 @@ abstract class AbstractCommand extends ShopwareCommand
         } else if (method_exists($requestService, 'doFullAction')) {
             $response = $requestService->doFullAction($order);
         } else {
-            $output->writeln('nothing to do. full action is not possible for this operation');
+            $io->error('Full action is not possible for this operation');
             return 0;
         }
 
-        if ($response === true || $response->getResponse()) {
-            $output->writeln("Operation successfully");
+        if ($response === null) {
+            $io->note("Nothing to perform.");
             return 0;
-        } else {
-            $output->writeln("Operation failed. (Message: " . $response->getReasonMessage() . ")");
+        }
+
+        if ($response === true) {
+            $io->success("Operation successfully. (Info: Request has been skipped.");
+            return 0;
+        }
+
+        if ($response instanceof RequestBuilder) {
+            if ($response->getResponse()->isSuccessful()) {
+                $io->success($response->getResponse()->getResultMessage());
+                return 0;
+            }
+
+            $io->error($response->getResponse()->getReasonMessage());
             return 1;
         }
+
+        $io->error("Unknown error");
+        return 1;
     }
 
     /**
      * @return AbstractModifyRequest
      */
-    protected abstract function getRequestService();
+    abstract protected function getRequestService();
 }

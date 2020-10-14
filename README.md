@@ -10,25 +10,63 @@
 |Full Documentation | https://ratepay.gitbook.io/shopware/
 
 ## Installation
-1. Erzeugen Sie das Verzeichnis `RpayRatePay` in `custom/plugins/`
-2. Integrieren Sie den Inhalt in `custom/plugins/RpayRatePay`
-3. gegebenenfalls composer install ausführen in dem Verzeichnis `custom/plugins/RpayRatePay`
-4. Loggen Sie sich in ihr Shopware-Backend ein
-5. Installieren & konfigurieren Sie das Modul
 
-## Install
+### via packagist (recommenced)
+This is only possible if you use the [composer setup of shopware](https://developers.shopware.com/developers-guide/shopware-composer/)
+1. execute `composer require ratepay/shopware5-module` in your project directory
+3. Log into your Shopware-backend
+4. Install & configure the module
+
+### via Shopware store (or GitHub [release download](https://github.com/ratepay/shopware5-module/releases))
+1. Download the plugin from the [Shopware store](https://store.shopware.com/rpay00625f/ratepay-payment-plugin-for-shopware-5.html)
+2. Upload it via the Plugin Manager or put it into the folder `custom/plugins/RpayRatePay`
+3. Log into your Shopware-backend
+4. Install & configure the module
+
+### via GitHub repository clone
 1. Create Directory `RpayRatePay` in `custom/plugins/`
-2. Merge the content into  in the folder `custom/plugins/RpayRatePay`
-3. execute the command composer install in the folder `custom/plugins/RpayRatePay`
+2. Place the plugin into the folder `custom/plugins/RpayRatePay`
+3. execute the command `composer install --no-dev` in the folder `custom/plugins/RpayRatePay`
 4. Log into your Shopware-backend
 5. Install & configure the module
 
 ## Changelog
-Siehe plugin.xml
+please have a look into plugin.xml
 
+## Shopware CLI Commands
+You can use the Shopware CLI to perform operations on Ratepay orders.
+
+All commands has the same structure:
+
+``` 
+./bin/console ratepay:<operation> <order> [<orderDetail>] [<qty>] 
+```
+
+| Name          | Description                                                                                                                                                                                     | required |   |   |
+|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---|---|
+| `operation`   | one of `deliver`, `return`, `cancel`                                                                                                                                                            | Yes      |   |   |
+| `order`       | the `order id`, `order number` or the ` transaction id` of the order                                                                                                                        | Yes      |   |   |
+| `orderDetail` | the `detail id` or `detail number` which has to be performed. If not provided, all items of a order will be selected.<br>Use `shipping` to perform the action on the shipping costs. | No       |   |   |
+| `qty`         | the quantity which has to be performed. If not provided, the original ordered quantity will be used                                                                                          | No       |   |   |
+
+### example operation `deliver`
+all elements of the order (with the id `125`) will be deliverd
+``` 
+./bin/console ratepay:deliver 125
+```
+### example operation `return`
+`2` elements with item-number `SW0001` of the order (with the transaction-id `54-214XXXXXX2133`) will be returned
+``` 
+./bin/console ratepay:return 54-214XXXXXX2133 SW0001 2
+```
+### example operation `cancel`
+all elements with item-number `SW0001` of the order (with the order-number `200012`) will be canceled
+``` 
+./bin/console ratepay:cancel 200012 SW0001
+```
 
 ## Request services
-There are a three request services registered:
+There are a three request services registered in the container:
 - `\RpayRatePay\Services\Request\PaymentDeliveryService`
     
     Use this service to do deliveries for order.
@@ -83,4 +121,8 @@ $response = $requestService->doFullAction($order);
 
 ### Response
 you will get an `\RatePAY\Model\Response\AbstractResponse` or a boolean as response.
+
 If you get an `AbstractResponse`, just call `isSuccessful()` to verify if the request was successful.
+
+If you get a boolean with the value `true` the operation has been registered to in the database, but has not been sent to the gateway.
+This will happen, if the order is a installment and there a open (not delivered/canceled) items in the order.

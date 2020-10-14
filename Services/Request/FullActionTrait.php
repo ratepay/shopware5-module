@@ -9,6 +9,7 @@
 namespace RpayRatePay\Services\Request;
 
 
+use RatePAY\RequestBuilder;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Helper\PositionHelper;
@@ -30,14 +31,14 @@ trait FullActionTrait
      * if $details is provided, you must provide a element in the $details array with the value "shipping" to perform the shipping position.
      * @param Order $order
      * @param array|null $details
-     * @return bool
+     * @return bool|null|RequestBuilder false if skipped, null if nothing todo, RequestBuilder if request has been sent
      */
     public function doFullAction(Order $order, array $details = null)
     {
         $sendToGateway = false;
         $basketArrayBuilder = new BasketArrayBuilder($order);
 
-        foreach ($details ?? $order->getDetails()->getValues() as $detail) {
+        foreach ($details ? : $order->getDetails()->getValues() as $detail) {
             if ($detail === BasketPosition::SHIPPING_NUMBER) {
                 continue;
             }
@@ -66,7 +67,7 @@ trait FullActionTrait
 
         if ($sendToGateway === false) {
             $this->isRequestSkipped = true;
-            return true;
+            return null;
         }
 
         $this->setOrder($order);
