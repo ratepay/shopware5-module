@@ -50,14 +50,14 @@ class SessionHelper
     public function __construct(ModelManager $entityManager, ContainerInterface $container)
     {
         $this->entityManager = $entityManager;
-        if ($container->has('shop')) {
-            //frontend request
-            $this->session = $container->get('session');
-            $this->isFrontendSession = true;
-        } else if ($container->has('backendsession')) {
+        if ($container->has('backendsession')) {
             //admin request
             $this->session = $container->get('backendsession');
             $this->isFrontendSession = false;
+        } else if ($container->has('shop')) {
+            //frontend request
+            $this->session = $container->get('session');
+            $this->isFrontendSession = true;
         }
     }
 

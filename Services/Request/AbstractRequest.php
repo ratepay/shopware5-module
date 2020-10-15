@@ -53,12 +53,9 @@ abstract class AbstractRequest
         $this->requestLogger = $requestLogger;
     }
 
-    /**
-     * @return AbstractResponse
-     */
-    public final function doRequest()
+    final public function doRequest()
     {
-        /** @var AbstractResponse $response */
+        /*S* @var AbstractResponse $response */
         $response = $this->call(null, false);
         if ($response === true || $response->isSuccessful()) {
             $this->processSuccess();
@@ -75,7 +72,7 @@ abstract class AbstractRequest
             return true;
         }
         $profileConfig = $this->getProfileConfig();
-        if ($profileConfig == null) {
+        if ($profileConfig === null) {
             throw new NoProfileFoundException();
         }
         $content = $content ?: $this->getRequestContent();
@@ -95,19 +92,16 @@ abstract class AbstractRequest
             $rb = $rb->subtype($this->_subType);
         }
 
-        //yes this is "correct" - all functions with "get" or "is" as prefix will piped to this (abstract) model
-        /** @var AbstractResponse $responseModel */
-        $responseModel = $rb;
-
         $this->requestLogger->logRequest($rb->getRequestRaw(), $rb->getResponseRaw());
 
-        if ($responseModel->isSuccessful()) {
-            return $responseModel;
-        } elseif ($isRetry === false && intval($responseModel->getReasonCode()) == 2300) {
-            return $this->call($content, true);
-        } else {
-            return $responseModel;
+        if ($rb->getResponse()->isSuccessful()) {
+            return $rb;
         }
+
+        if ($isRetry === false && ((int) $rb->getResponse()->getReasonCode()) === 2300) {
+            return $this->call($content, true);
+        }
+        return $rb;
     }
 
     protected function isSkipRequest()

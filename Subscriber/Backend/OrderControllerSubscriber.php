@@ -135,17 +135,30 @@ class OrderControllerSubscriber implements SubscriberInterface
                 ]
             );
 
-            /** @var PaymentResponse $paymentResponse */
             $this->paymentRequestService->setPaymentRequestData($paymentRequestData);
             $this->paymentRequestService->setIsBackend(true);
             $paymentResponse = $this->paymentRequestService->doRequest();
 
-            if ($paymentResponse->isSuccessful()) {
+            if ($paymentResponse->getResponse()->isSuccessful()) {
+
+                // we must cleanup the session before the oder will be created, cause shopware will create a frontend session.
+                // after that we do not have access anymore to the backend session data.
+                // relates to RATEPLUG-144
+                $this->sessionHelper->cleanUp();
+
                 //let SWAG write order to db
                 $this->forwardToSWAGBackendOrders($args);
+                $orderId = $view->getAssign('orderId');
+
+                if(empty($orderId)) {
+                    if($message = $view->getAssign('message')) {
+                        $this->fail($view, [$message]);
+                    }
+                    return;
+                }
 
                 /** @var Order $order */
-                $order = $this->modelManager->find(Order::class, $view->getAssign('orderId'));
+                $order = $this->modelManager->find(Order::class, $orderId);
 
                 //write order & payment information to the database
                 $this->paymentRequestService->completeOrder($order, $paymentResponse);
@@ -154,14 +167,12 @@ class OrderControllerSubscriber implements SubscriberInterface
                 $this->paymentConfirmService->setOrder($order);
                 $paymentResponse = $this->paymentConfirmService->doRequest();
 
-                if ($paymentResponse->isSuccessful() === false) {
-                    $customerMessage = $paymentResponse->getCustomerMessage() . ' (' . $paymentResponse->getReasonMessage() . ')';
+                if ($paymentResponse->getResponse()->isSuccessful() === false) {
+                    $customerMessage = $paymentResponse->getResponse()->getCustomerMessage() . ' (' . $paymentResponse->getResponse()->getReasonMessage() . ')';
                     $this->fail($view, [$customerMessage]);
-                } else {
-                    $this->sessionHelper->cleanUp();
                 }
             } else {
-                $customerMessage = $paymentResponse->getCustomerMessage() . ' (' . $paymentResponse->getReasonMessage() . ')';
+                $customerMessage = $paymentResponse->getResponse()->getCustomerMessage() . ' (' . $paymentResponse->getResponse()->getReasonMessage() . ')';
                 $this->fail($view, [$customerMessage]);
             }
         } catch (Exception $e) {
