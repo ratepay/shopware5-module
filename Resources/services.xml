@@ -75,6 +75,7 @@
         <service id="RpayRatePay\Helper\SessionHelper">
             <argument id="models" type="service"/>
             <argument id="service_container" type="service"/>
+            <argument id="front" type="service"/>
         </service>
 
         <service id="RpayRatePay\Services\InstallmentService">

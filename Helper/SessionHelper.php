@@ -11,6 +11,7 @@ namespace RpayRatePay\Helper;
 
 use Doctrine\ORM\EntityManager;
 use Enlight_Components_Session_Namespace;
+use Enlight_Controller_Front;
 use Exception;
 use RpayRatePay\Bootstrap\PaymentMeans;
 use RpayRatePay\DTO\BankData;
@@ -47,17 +48,22 @@ class SessionHelper
     /** @var PaymentMeans */
     private $loadedPaymentMethod;
 
-    public function __construct(ModelManager $entityManager, ContainerInterface $container)
+    public function __construct(
+        ModelManager $entityManager,
+        ContainerInterface $container,
+        Enlight_Controller_Front $front
+    )
     {
         $this->entityManager = $entityManager;
-        if ($container->has('backendsession')) {
-            //admin request
-            $this->session = $container->get('backendsession');
-            $this->isFrontendSession = false;
-        } else if ($container->has('shop')) {
-            //frontend request
-            $this->session = $container->get('session');
-            $this->isFrontendSession = true;
+        switch ($front->Request()->getParam('module')) {
+            case 'frontend':
+                $this->session = $container->get('session');
+                $this->isFrontendSession = true;
+                break;
+            case 'backend':
+                $this->session = $container->get('backendsession');
+                $this->isFrontendSession = false;
+                break;
         }
     }
 
@@ -187,7 +193,7 @@ class SessionHelper
         $accountHolder = $sessionData['accountHolder'];
         $iban = $sessionData['account'];
 
-        $accountHolder = $accountHolder ? : BankDataUtil::getDefaultAccountHolder($customerAddressBilling);
+        $accountHolder = $accountHolder ?: BankDataUtil::getDefaultAccountHolder($customerAddressBilling);
         return new BankData($accountHolder, $iban);
     }
 
@@ -204,7 +210,7 @@ class SessionHelper
         $data = $this->getData('ratenrechner');
 
         $object = null;
-        if(is_array($data)) {
+        if (is_array($data)) {
             $object = new InstallmentDetails();
             $object->setTotalAmount($data['total_amount']);
             $object->setAmount($data['amount']);
@@ -281,7 +287,7 @@ class SessionHelper
         }
 
         $user = $this->session->sOrderVariables['sUserData'];
-        $basket = (array) $this->session->sOrderVariables['sBasket'];
+        $basket = (array)$this->session->sOrderVariables['sBasket'];
         if (!empty($user['additional']['charge_vat'])) {
             return empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
         } else {
