@@ -203,18 +203,21 @@ class SessionHelper
     {
         $data = $this->getData('ratenrechner');
 
-        $object = new InstallmentDetails();
-        $object->setTotalAmount($data['total_amount']);
-        $object->setAmount($data['amount']);
-        $object->setInterestRate($data['interest_rate']);
-        $object->setInterestAmount($data['interest_amount']);
-        $object->setServiceCharge($data['service_charge']);
-        $object->setAnnualPercentageRate($data['annual_percentage_rate']);
-        $object->setMonthlyDebitInterest($data['monthly_debit_interest']);
-        $object->setNumberOfRatesFull($data['number_of_rates']);
-        $object->setRate($data['rate']);
-        $object->setLastRate($data['last_rate']);
-        $object->setPaymentType($data['payment_subtype']);
+        $object = null;
+        if(is_array($data)) {
+            $object = new InstallmentDetails();
+            $object->setTotalAmount($data['total_amount']);
+            $object->setAmount($data['amount']);
+            $object->setInterestRate($data['interest_rate']);
+            $object->setInterestAmount($data['interest_amount']);
+            $object->setServiceCharge($data['service_charge']);
+            $object->setAnnualPercentageRate($data['annual_percentage_rate']);
+            $object->setMonthlyDebitInterest($data['monthly_debit_interest']);
+            $object->setNumberOfRatesFull($data['number_of_rates']);
+            $object->setRate($data['rate']);
+            $object->setLastRate($data['last_rate']);
+            $object->setPaymentType($data['payment_subtype']);
+        }
         return $object;
     }
 

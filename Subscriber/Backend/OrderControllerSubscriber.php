@@ -9,10 +9,10 @@
 namespace RpayRatePay\Subscriber\Backend;
 
 use Enlight\Event\SubscriberInterface;
+use Enlight_Components_Snippet_Manager;
 use Enlight_Hook_HookArgs;
 use Exception;
 use Monolog\Logger;
-use RatePAY\Model\Response\PaymentRequest as PaymentResponse;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -67,9 +67,14 @@ class OrderControllerSubscriber implements SubscriberInterface
      * @var SessionHelper
      */
     private $sessionHelper;
+    /**
+     * @var Enlight_Components_Snippet_Manager
+     */
+    private $snippetManager;
 
     public function __construct(
         ModelManager $modelManager,
+        Enlight_Components_Snippet_Manager $snippetManager,
         ConfigService $config,
         SessionHelper $sessionHelper,
         DfpService $dfpService,
@@ -91,6 +96,7 @@ class OrderControllerSubscriber implements SubscriberInterface
         $this->paymentRequestService = $paymentRequestService;
         $this->paymentConfirmService = $paymentConfirmService;
         $this->sessionHelper = $sessionHelper;
+        $this->snippetManager = $snippetManager;
     }
 
     public static function getSubscribedEvents()
@@ -135,6 +141,11 @@ class OrderControllerSubscriber implements SubscriberInterface
                 ]
             );
 
+            if (PaymentMethods::isInstallment($paymentMethod) && $paymentRequestData->getInstallmentDetails() === null) {
+                $this->fail($view, [$this->snippetManager->getNamespace('backend/ratepay/messages')->get('MissingInstallment')]);
+                return;
+            }
+
             $this->paymentRequestService->setPaymentRequestData($paymentRequestData);
             $this->paymentRequestService->setIsBackend(true);
             $paymentResponse = $this->paymentRequestService->doRequest();
@@ -150,8 +161,8 @@ class OrderControllerSubscriber implements SubscriberInterface
                 $this->forwardToSWAGBackendOrders($args);
                 $orderId = $view->getAssign('orderId');
 
-                if(empty($orderId)) {
-                    if($message = $view->getAssign('message')) {
+                if (empty($orderId)) {
+                    if ($message = $view->getAssign('message')) {
                         $this->fail($view, [$message]);
                     }
                     return;
