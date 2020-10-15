@@ -9,7 +9,6 @@
 namespace RpayRatePay\Subscriber\Backend;
 
 use Enlight\Event\SubscriberInterface;
-use Enlight_Components_Snippet_Manager;
 use Enlight_Hook_HookArgs;
 use Exception;
 use Monolog\Logger;
@@ -68,13 +67,13 @@ class OrderControllerSubscriber implements SubscriberInterface
      */
     private $sessionHelper;
     /**
-     * @var Enlight_Components_Snippet_Manager
+     * @var \Enlight_Components_Snippet_Manager
      */
     private $snippetManager;
 
     public function __construct(
         ModelManager $modelManager,
-        Enlight_Components_Snippet_Manager $snippetManager,
+        \Enlight_Components_Snippet_Manager $snippetManager,
         ConfigService $config,
         SessionHelper $sessionHelper,
         DfpService $dfpService,

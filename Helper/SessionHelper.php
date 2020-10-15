@@ -210,7 +210,7 @@ class SessionHelper
         $data = $this->getData('ratenrechner');
 
         $object = null;
-        if (is_array($data)) {
+        if (is_array($data) && isset($data['rate'])) {
             $object = new InstallmentDetails();
             $object->setTotalAmount($data['total_amount']);
             $object->setAmount($data['amount']);
