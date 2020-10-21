@@ -10,12 +10,13 @@ namespace RpayRatePay\Bootstrapping\Events;
 
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Component\Service\ConfigLoader;
+use RpayRatePay\Component\Service\Logger;
 use RpayRatePay\Component\Service\RatepayHelper;
 use RpayRatePay\Component\Service\ShopwareUtil;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
-use RpayRatePay\Component\Service\Logger;
 use RpayRatePay\Services\PaymentMethodsService;
 use RpayRatePay\Services\StaticTextService;
+use Shopware\Models\Payment\Payment;
 use Shopware_Controllers_Frontend_Checkout;
 
 class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
@@ -95,16 +96,20 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         //get current shopId
         $shopId = Shopware()->Shop()->getId();
 
-        $show = [];
         $backend = false;
         $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling, $backend);
+        $paymentRepo = Shopware()->Models()->getRepository(Payment::class);
         foreach ($config as $payment => $data) {
-            if($data['status'] != 2) {
+            $paymentModel = $paymentRepo->findOneBy(['name' => $payment]);
+
+            if ($paymentModel === null || ((int)$data['status']) !== 2) {
+                unset($return[$paymentModel->getId()]);
                 continue;
             }
 
-            if(PaymentMethodsService::getInstance()->isPaymentMethodLockedForCustomer($user, $payment)) {
+            if (PaymentMethodsService::getInstance()->isPaymentMethodLockedForCustomer($user, $payment)) {
                 // the payment method is locked for the customer
+                unset($return[$paymentModel->getId()]);
                 continue;
             }
 
@@ -115,25 +120,28 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
             $validation->setAllowedCountriesDelivery($data['country_code_delivery']);
 
             if ($validation->isRatepayHidden()) {
+                unset($return[$paymentModel->getId()]);
                 continue;
             }
 
             if (!$validation->isCurrencyValid($currency)) {
+                unset($return[$paymentModel->getId()]);
                 continue;
             }
 
             if (!$validation->isBillingCountryValid($countryBilling)) {
+                unset($return[$paymentModel->getId()]);
                 continue;
             }
 
             if (!$validation->isDeliveryCountryValid($countryDelivery)) {
+                unset($return[$paymentModel->getId()]);
                 continue;
             }
 
-            if (!$validation->isBillingAddressSameLikeShippingAddress()) {
-                if (!$data['address']) {
-                    continue;
-                }
+            if (!$validation->isBillingAddressSameLikeShippingAddress() && !((bool)$data['address'])) {
+                unset($return[$paymentModel->getId()]);
+                continue;
             }
 
             if (Shopware()->Modules()->Basket()) {
@@ -144,26 +152,22 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
                 $isB2b = $validation->isCompanyNameSet();
 
                 if (!ValidationService::areAmountsValid($isB2b, $data, $basket)) {
+                    unset($return[$paymentModel->getId()]);
                     continue;
                 }
-                $show[$payment] = true;
             }
         }
 
-        $paymentModel = Shopware()->Models()->find('Shopware\Models\Payment\Payment', $user->getPaymentId());
-        $setToDefaultPayment = RatepayHelper::isRatePayPayment($paymentModel) === true && ($paymentModel === null || !isset($show[$paymentModel->getName()]));
-
-        foreach ($return as $i => $payment) {
-            if(!isset($show[$payment['name']])) {
-                unset($return[$i]);
+        // set the default configured payment method, if the current selected payment method
+        // is a ratepay method, but it is not available
+        $currentPaymentModel = $paymentRepo->find($user->getPaymentId());
+        if (RatepayHelper::isRatePayPayment($currentPaymentModel)) {
+            if ($currentPaymentModel === null || !isset($return[$currentPaymentModel->getId()])) {
+                $user->setPaymentId(Shopware()->Config()->get('paymentdefault'));
+                Shopware()->Models()->persist($user);
+                Shopware()->Models()->flush();
+                Shopware()->Models()->refresh($user);
             }
-        }
-
-        if ($setToDefaultPayment) {
-            $user->setPaymentId(Shopware()->Config()->get('paymentdefault'));
-            Shopware()->Models()->persist($user);
-            Shopware()->Models()->flush();
-            Shopware()->Models()->refresh($user);
         }
 
         return $return;
