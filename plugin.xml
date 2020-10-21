@@ -20,8 +20,8 @@
     <compatibility minVersion="5.5.0"/>
 
     <changelog version="6.0.0">
-        <changes>RATEPLUG-8: Update plugin to the new plugin engine</changes>
-        <changes>fix a few bugs</changes>
+        <changes>RATEPLUG-9: Update plugin to the new plugin engine</changes>
+        <changes>... TODO ...</changes>
     </changelog>
 
     <changelog version="5.4.2">
