@@ -27,6 +27,8 @@
 
 ### Version 5.5.1 - Released 2020-10-21
 * RATEPLUG-147: fixes a bug, that no other payment methods are visible
+* RATEPLUG-145: add composer support
+* fix a few little bugs & improve css
 
 ### Version 5.5.0 - 2020-10-13
 * RATEPLUG-14: prevent deleting Ratepay orders in adminpanel if the order has been already shipped/canceled/returned
