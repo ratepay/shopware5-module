@@ -1,0 +1,10 @@
+.git
+.github
+.gitignore
+build
+build.sh
+.build_exclude
+.DS_Store
+vendor
+bin
+phpunit.xml.dist
