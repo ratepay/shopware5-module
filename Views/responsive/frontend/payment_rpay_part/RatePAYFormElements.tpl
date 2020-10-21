@@ -8,9 +8,8 @@
             <label for="register_personal_birthdate" class="birthday--label">
                 <strong>{s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthday}Geburtsdatum{/s}</strong>
             </label>
-            <br />
 
-            <div class="rp-birthday field--select">
+            <div class="rp-birthday birthday-field">
                 <label for="register_personal_birthdate" class="birthday--label">
                     {s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthdayTag}Tag{/s}*
                 </label>
@@ -26,7 +25,7 @@
                     value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday|date_format:'%d'}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday|date_format:'%d'}{/if}"/>
             </div>
 
-            <div class="rp-birthmonth field--select">
+            <div class="rp-birthmonth birthday-field">
                 <label for="register_personal_birthdate" class="birthday--label">
                     {s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthdayMonth}Monat{/s}*
                 </label>
@@ -42,7 +41,7 @@
                     value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday|date_format:'%m'}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday|date_format:'%m'}{/if}"/>
             </div>
 
-            <div class="rp-birthyear field--select">
+            <div class="rp-birthyear birthday-field">
                 <label for="register_personal_birthdate" class="birthday--label">
                     {s namespace=frontend/register/personal_fieldset name=RegisterPlaceholderBirthdayYear}Jahr{/s}*
                 </label>
@@ -57,8 +56,7 @@
                     aria-required="true"
                     value="{if $sUserData.billingaddress.birthday}{$sUserData.billingaddress.birthday|date_format:'%Y'}{/if}{if $sUserData.additional.user.birthday}{$sUserData.additional.user.birthday|date_format:'%Y'}{/if}"/>
             </div>
-            <br style="clear: both">
-            <p><small>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um per {$sPayment.description} bezahlen zu können.{/s}</small></p>
+            <p class="birthday-info"><small>{s namespace=RatePAY name=dob_info}Sie müssen mindestens 18 Jahre alt sein, um per {$sPayment.description} bezahlen zu können.{/s}</small></p>
         </div>
     {/block}
 {/if}

@@ -8,7 +8,10 @@
 
 namespace RpayRatePay\Bootstrapping\Events;
 
-class JavascriptSourceSubscriber implements \Enlight\Event\SubscriberInterface
+use Doctrine\Common\Collections\ArrayCollection;
+use Shopware\Components\Theme\LessDefinition;
+
+class AssetsSubscriber implements \Enlight\Event\SubscriberInterface
 {
     /**
      * @var string
@@ -28,20 +31,33 @@ class JavascriptSourceSubscriber implements \Enlight\Event\SubscriberInterface
     {
         return [
             'Theme_Compiler_Collect_Plugin_Javascript' => 'addJsFiles',
+            'Theme_Compiler_Collect_Plugin_Less' => 'addLessFiles'
         ];
     }
 
     /**
      * Add base javascripts
      *
-     * @return \Doctrine\Common\Collections\ArrayCollection
+     * @return ArrayCollection
      */
     public function addJsFiles()
     {
-        $jsPath = [
-            $this->path . 'Views/responsive/frontend/_public/src/javascripts/jquery.ratepay_checkout.js'
-        ];
+        return new ArrayCollection([
+            $this->path . 'Views/frontend/_public/src/js/jquery.ratepay_checkout.js'
+        ]);
+    }
 
-        return new \Doctrine\Common\Collections\ArrayCollection($jsPath);
+    /**
+     * @return ArrayCollection
+     */
+    public function addLessFiles()
+    {
+        return new ArrayCollection([
+            new LessDefinition(
+                [],
+                [$this->path . '/Views/frontend/_public/src/less/all.less'],
+                $this->path
+            ),
+        ]);
     }
 }

@@ -6,6 +6,33 @@
  * file that was distributed with this source code.
  */
 
+use RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup;
+use RpayRatePay\Bootstrapping\CronjobSetup;
+use RpayRatePay\Bootstrapping\DatabaseSetup;
+use RpayRatePay\Bootstrapping\DeliveryStatusesSetup;
+use RpayRatePay\Bootstrapping\Events\AssetsSubscriber;
+use RpayRatePay\Bootstrapping\Events\BackendOrderControllerSubscriber;
+use RpayRatePay\Bootstrapping\Events\BackendOrderViewExtensionSubscriber;
+use RpayRatePay\Bootstrapping\Events\BogxProductConfiguratorSubscriber;
+use RpayRatePay\Bootstrapping\Events\CheckoutValidationSubscriber;
+use RpayRatePay\Bootstrapping\Events\LoggingControllerSubscriber;
+use RpayRatePay\Bootstrapping\Events\OrderDetailControllerSubscriber;
+use RpayRatePay\Bootstrapping\Events\OrderDetailsProcessSubscriber;
+use RpayRatePay\Bootstrapping\Events\OrderOperationsSubscriber;
+use RpayRatePay\Bootstrapping\Events\OrderViewExtensionSubscriber;
+use RpayRatePay\Bootstrapping\Events\PaymentControllerSubscriber;
+use RpayRatePay\Bootstrapping\Events\PaymentFilterSubscriber;
+use RpayRatePay\Bootstrapping\Events\PluginConfigurationSubscriber;
+use RpayRatePay\Bootstrapping\Events\TemplateExtensionSubscriber;
+use RpayRatePay\Bootstrapping\Events\UpdateTransactionsSubscriber;
+use RpayRatePay\Bootstrapping\FormsSetup;
+use RpayRatePay\Bootstrapping\MenuesSetup;
+use RpayRatePay\Bootstrapping\PaymentsSetup;
+use RpayRatePay\Bootstrapping\PaymentStatusesSetup;
+use RpayRatePay\Bootstrapping\ShopConfigSetup;
+use RpayRatePay\Bootstrapping\TranslationsSetup;
+use RpayRatePay\Bootstrapping\UserAttributeSetup;
+use RpayRatePay\Component\Service\ConfigLoader;
 use RpayRatePay\Component\Service\Logger;
 
 require_once __DIR__ . '/Component/CSRFWhitelistAware.php';
@@ -100,39 +127,28 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
     {
         parent::install();
 
-        Logger::singleton()->info('INSTALL Plugin Bootstrap');
-
-        Logger::singleton()->info('Ratepay: event subscription');
-        $this->subscribeEvent(
-            'Enlight_Controller_Front_StartDispatch',
-            'onRegisterSubscriber'
-        );
-        $this->subscribeEvent(
-            'Shopware_Console_Add_Command',
-            'onRegisterSubscriber'
-        );
+        $this->subscribeEvent('Enlight_Controller_Front_StartDispatch', 'onRegisterSubscriber');
+        $this->subscribeEvent('Shopware_Console_Add_Command', 'onRegisterSubscriber');
 
         $queue = [
-            new \RpayRatePay\Bootstrapping\PaymentsSetup($this),
-            new \RpayRatePay\Bootstrapping\FormsSetup($this),
-            new \RpayRatePay\Bootstrapping\TranslationsSetup($this),
-            new \RpayRatePay\Bootstrapping\MenuesSetup($this),
-            new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
-            new \RpayRatePay\Bootstrapping\PaymentStatusesSetup($this),
-            new \RpayRatePay\Bootstrapping\DeliveryStatusesSetup($this),
-            new \RpayRatePay\Bootstrapping\CronjobSetup($this),
-            new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
-            new \RpayRatePay\Bootstrapping\UserAttributeSetup($this)
+            new PaymentsSetup($this),
+            new FormsSetup($this),
+            new DatabaseSetup($this),
+            new TranslationsSetup($this),
+            new MenuesSetup($this),
+            new ShopConfigSetup($this),
+            new CronjobSetup($this),
+            new AdditionalOrderAttributeSetup($this),
+            new PaymentStatusesSetup($this),
+            new DeliveryStatusesSetup($this),
+            new UserAttributeSetup($this)
         ];
 
-        Logger::singleton()->info('Ratepay: bootstrap routines');
         foreach ($queue as $bootstrapper) {
             $bootstrapper->install();
-            Logger::singleton()->info('[OK] ' . get_class($bootstrapper));
         }
 
         $this->Plugin()->setActive(true);
-        Logger::singleton()->info('Ratepay: Successful module installation');
 
         return [
             'success' => true,
@@ -144,65 +160,14 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
     }
 
     /**
-     * Updates the Plugin and its components
-     *
      * @param string $version
      * @return array|bool
-     * @throws exception
-     * @todo: implement translation update while updating
+     * @throws Exception
      */
     public function update($version)
     {
-        $this->subscribeEvent(
-            'Enlight_Controller_Front_StartDispatch',
-            'onRegisterSubscriber'
-        );
-        $this->subscribeEvent(
-            'Shopware_Console_Add_Command',
-            'onRegisterSubscriber'
-        );
-
-        Logger::singleton()->info('UPDATE Plugin Bootstrap ' . $version);
-        $queue = [
-            new \RpayRatePay\Bootstrapping\FormsSetup($this),
-            new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
-            new \RpayRatePay\Bootstrapping\TranslationsSetup($this),
-            new \RpayRatePay\Bootstrapping\PaymentsSetup($this),
-            new \RpayRatePay\Bootstrapping\ShopConfigSetup($this),
-            new \RpayRatePay\Bootstrapping\CronjobSetup($this),
-            new \RpayRatePay\Bootstrapping\AdditionalOrderAttributeSetup($this),
-            new \RpayRatePay\Bootstrapping\PaymentStatusesSetup($this),
-            new \RpayRatePay\Bootstrapping\DeliveryStatusesSetup($this),
-            new \RpayRatePay\Bootstrapping\UserAttributeSetup($this)
-        ];
-
-        $this->_dropOrderAdditionalAttributes();
-
-        Logger::singleton()->info('Ratepay: bootstrap routines');
-        foreach ($queue as $bootstrapper) {
-            $bootstrapper->update();
-            Logger::singleton()->info('[OK] ' . get_class($bootstrapper));
-        }
-
-        Logger::singleton()->info('Ratepay: Successful module update');
-        Logger::singleton()->addNotice('Successful module update');
-
-        return [
-            'success' => true,
-            'invalidateCache' => ['frontend', 'backend']
-        ];
-    }
-
-    /**
-     * drops additional attributes for ratepay orders in s_order_attributes
-     */
-    public function _dropOrderAdditionalAttributes()
-    {
-        $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
-        $metaDataCache->deleteAll();
-        Shopware()->Models()->generateAttributeModels(
-            ['s_order_attributes']
-        );
+        Shopware()->Db()->executeUpdate("DELETE FROM `s_core_subscribes` WHERE `listener` LIKE '%".__CLASS__."::add%Files%'");
+        return $this->install();
     }
 
     /**
@@ -215,8 +180,8 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
     {
         Logger::singleton()->info('UNINSTALL Plugin Bootstrap ');
         $queue = [
-            new \RpayRatePay\Bootstrapping\DatabaseSetup($this),
-            new \RpayRatePay\Bootstrapping\UserAttributeSetup($this)
+            new DatabaseSetup($this),
+            new UserAttributeSetup($this)
         ];
 
         $this->disable();
@@ -246,28 +211,28 @@ class Shopware_Plugins_Frontend_RpayRatePay_Bootstrap extends Shopware_Component
     public function onRegisterSubscriber()
     {
         $subscribers = [
-            new \RpayRatePay\Bootstrapping\Events\OrderOperationsSubscriber(),
-            new \RpayRatePay\Bootstrapping\Events\TemplateExtensionSubscriber($this->Path()),
-            new \RpayRatePay\Bootstrapping\Events\PaymentControllerSubscriber($this->Path()),
-            new \RpayRatePay\Bootstrapping\Events\LoggingControllerSubscriber($this->Path()),
-            new \RpayRatePay\Bootstrapping\Events\OrderDetailControllerSubscriber($this->Path()),
-            new \RpayRatePay\Bootstrapping\Events\CheckoutValidationSubscriber($this->Path()),
-            new \RpayRatePay\Bootstrapping\Events\PaymentFilterSubscriber(),
-            new \RpayRatePay\Bootstrapping\Events\PluginConfigurationSubscriber($this->getName()),
-            new \RpayRatePay\Bootstrapping\Events\OrderDetailsProcessSubscriber(),
-            new \RpayRatePay\Bootstrapping\Events\JavascriptSourceSubscriber($this->Path()),
-            new \RpayRatePay\Bootstrapping\Events\OrderViewExtensionSubscriber($this->Path()),
-            new \RpayRatePay\Bootstrapping\Events\UpdateTransactionsSubscriber(),
-            new \RpayRatePay\Bootstrapping\Events\BackendOrderControllerSubscriber(new \RpayRatePay\Component\Service\ConfigLoader($this->get('db')), $this->Path()),
-            new \RpayRatePay\Bootstrapping\Events\BackendOrderViewExtensionSubscriber($this->Path()),
-            new \RpayRatePay\Bootstrapping\Events\BogxProductConfiguratorSubscriber()
+            new OrderOperationsSubscriber(),
+            new TemplateExtensionSubscriber($this->Path()),
+            new PaymentControllerSubscriber($this->Path()),
+            new LoggingControllerSubscriber($this->Path()),
+            new OrderDetailControllerSubscriber($this->Path()),
+            new CheckoutValidationSubscriber($this->Path()),
+            new PaymentFilterSubscriber(),
+            new PluginConfigurationSubscriber($this->getName()),
+            new OrderDetailsProcessSubscriber(),
+            new AssetsSubscriber($this->Path()),
+            new OrderViewExtensionSubscriber($this->Path()),
+            new UpdateTransactionsSubscriber(),
+            new BackendOrderControllerSubscriber(new ConfigLoader($this->get('db')), $this->Path()),
+            new BackendOrderViewExtensionSubscriber($this->Path()),
+            new BogxProductConfiguratorSubscriber()
         ];
 
         $eventManager = Shopware()->Events();
 
         foreach ($subscribers as $subscriber) {
             $eventManager->addSubscriber($subscriber);
-//            Logger::singleton()->info('[OK] ' . get_class($subscriber));
         }
     }
+
 }

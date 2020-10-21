@@ -4,7 +4,7 @@
     {if $smarty.server.HTTPS eq '' || $smarty.server.HTTPS eq 'off'}
         pi_ratepay_rate_ajax_path = "{url controller="RpayRatepay" action=""}";
     {else}
-        pi_ratepay_rate_ajax_path = "{url controller="RpayRatepay" action="" forceSecure}";      
+        pi_ratepay_rate_ajax_path = "{url controller="RpayRatepay" action="" forceSecure}";
     {/if}
 </script>
 <script type="text/javascript" src="{link file='frontend/installment/js/mouseaction.js' fullPath}"></script>

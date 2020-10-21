@@ -29,6 +29,6 @@ class AdditionalOrderAttributeSetup extends AbstractAttributeBootstrap
 
     protected function uninstallAttributes()
     {
-        // $service->delete('s_articles_attributes', 'my_column');
+        
     }
 }

@@ -95,7 +95,6 @@ class TemplateExtensionSubscriber implements \Enlight\Event\SubscriberInterface
             }
             $view->assign('ratepaySandbox', $sandbox);
 
-            $view->extendsTemplate('frontend/payment_rpay_part/index/header.tpl');
             $view->extendsTemplate('frontend/payment_rpay_part/index/index.tpl');
             $view->extendsTemplate('frontend/payment_rpay_part/checkout/confirm.tpl');
 

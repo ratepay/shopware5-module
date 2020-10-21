@@ -1,0 +1,21 @@
+{
+    "name": "ratepay/shopware5-module",
+    "description": "Ratepay payment methods for Shopware 5",
+    "version": "5.5.1",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ratepay GmbH",
+            "homepage": "https://ratepay.gitbook.io/shopware5/",
+            "role": "Developer"
+        }
+    ],
+    "type": "shopware-frontend-plugin",
+    "require": {
+        "php": "^5.6",
+        "shopware/shopware": "^5.5.0 || ^5.6.0"
+    },
+    "extra": {
+        "installer-name": "RpayRatePay"
+    }
+}

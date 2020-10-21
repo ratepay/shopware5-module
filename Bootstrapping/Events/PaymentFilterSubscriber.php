@@ -99,15 +99,16 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
         $backend = false;
         $config = $this->getRatePayPluginConfigByCountry($shopId, $countryBilling, $backend);
         $paymentRepo = Shopware()->Models()->getRepository(Payment::class);
-        foreach ($config as $payment => $data) {
-            $paymentModel = $paymentRepo->findOneBy(['name' => $payment]);
+        foreach (RatepayHelper::getPaymentMethods() as $paymentMethodName) {
+            $data = isset($config[$paymentMethodName]) ? $config[$paymentMethodName] : null;
 
-            if ($paymentModel === null || ((int)$data['status']) !== 2) {
+            $paymentModel = $paymentRepo->findOneBy(['name' => $paymentMethodName]);
+            if ($paymentModel === null || $data === null || ((int)$data['status']) !== 2) {
                 unset($return[$paymentModel->getId()]);
                 continue;
             }
 
-            if (PaymentMethodsService::getInstance()->isPaymentMethodLockedForCustomer($user, $payment)) {
+            if (PaymentMethodsService::getInstance()->isPaymentMethodLockedForCustomer($user, $paymentMethodName)) {
                 // the payment method is locked for the customer
                 unset($return[$paymentModel->getId()]);
                 continue;
@@ -144,6 +145,7 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
                 continue;
             }
 
+            $isB2b = $basket = false;
             if (Shopware()->Modules()->Basket()) {
                 $basket = Shopware()->Modules()->Basket()->sGetAmount();
                 $basket = $basket['totalAmount']; //is this always brutto?
@@ -151,10 +153,10 @@ class PaymentFilterSubscriber implements \Enlight\Event\SubscriberInterface
                 Logger::singleton()->info('BasketAmount: ' . $basket);
                 $isB2b = $validation->isCompanyNameSet();
 
-                if (!ValidationService::areAmountsValid($isB2b, $data, $basket)) {
-                    unset($return[$paymentModel->getId()]);
-                    continue;
-                }
+            }
+            if ($basket === false || !ValidationService::areAmountsValid($isB2b, $data, $basket)) {
+                unset($return[$paymentModel->getId()]);
+                continue;
             }
         }
 
