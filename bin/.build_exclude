@@ -7,4 +7,3 @@ build.sh
 .DS_Store
 vendor
 bin
-phpunit.xml.dist

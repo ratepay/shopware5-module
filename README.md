@@ -42,12 +42,12 @@ All commands has the same structure:
 ./bin/console ratepay:<operation> <order> [<orderDetail>] [<qty>] 
 ```
 
-| Name          | Description                                                                                                                                                                                     | required |   |   |
-|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---|---|
-| `operation`   | one of `deliver`, `return`, `cancel`                                                                                                                                                            | Yes      |   |   |
-| `order`       | the `order id`, `order number` or the ` transaction id` of the order                                                                                                                        | Yes      |   |   |
-| `orderDetail` | the `detail id` or `detail number` which has to be performed. If not provided, all items of a order will be selected.<br>Use `shipping` to perform the action on the shipping costs. | No       |   |   |
-| `qty`         | the quantity which has to be performed. If not provided, the original ordered quantity will be used                                                                                          | No       |   |   |
+| Name          | Description                                                                                                                                                                                     | required |
+|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| `operation`   | one of `deliver`, `return`, `cancel`                                                                                                                                                            | Yes      |
+| `order`       | the `order id`, `order number` or the ` transaction id` of the order                                                                                                                        | Yes      |
+| `orderDetail` | the `detail id` or `detail number` which has to be performed. If not provided, all items of a order will be selected.<br>Use `shipping` to perform the action on the shipping costs. | No       |
+| `qty`         | the quantity which has to be performed. If not provided, the original ordered quantity will be used                                                                                          | No       |
 
 ### example operation `deliver`
 all elements of the order (with the id `125`) will be deliverd

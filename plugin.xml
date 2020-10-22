@@ -20,8 +20,92 @@
     <compatibility minVersion="5.5.0"/>
 
     <changelog version="6.0.0">
-        <changes>RATEPLUG-9: Update plugin to the new plugin engine</changes>
-        <changes>... TODO ...</changes>
+        <changes lang="en">
+            <![CDATA[
+                <h2>Important changes</h2>
+                <ul>
+                    <li>New plugin structure</li>
+                    <li>Ratepay data input fields are now located direct at the payment method</li>
+                    <li>Internal changes regarding Database structures</li>
+                </ul>
+
+                <h2>Technical changes</h2>
+                <ul>
+                    <li>Installation via Composer is now possible</li>
+                    <li>Added Shopware CLI commands to modify Ratepay orders</li>
+                    <li>Now it is possible to use the request-services of the plugin to execute the operations via a custom module (please see README.md)</li>
+                    <li>Integrated Ratepay-SDK (php-library) via Composer</li>
+                    <li>Template-Inheritance enhancements</li>
+                </ul>
+
+                <h2>Improvements</h2>
+                <ul>
+                    <li>Up to 3 decimals are now possible for credit and debit operations send from the Shopware backend</li>
+                    <li>New Shopware responses for Ratepay operations within the article management (Backend)</li>
+                    <li>Performance optimizations for the payment method instalment in the shop frontend</li>
+                    <li>Enhancements for DE and EN translations</li>
+                    <li>New customer information for an updated instalment plan during the checkout process</li>
+                    <li>Now the instalment calculation is automatically updated if shopping basket is modified</li>
+                    <li>New IBAN validation within the checkout (structural check)</li>
+                    <li>New VAT-ID validation within the checkout (structural check)</li>
+                    <li>For direct debit orders the B2B-customer can now choose between company name and the combination of first- and lastname as account owner</li>
+                    <li>Bug fixes in the context of VAT handling</li>
+                </ul>
+
+                <h2>New Features</h2>
+                <ul>
+                    <li>Now the separate configuration of the payment methods instalments and 0% financing are possible</li>
+                    <li>Bidirectionality are now supported at item level (via Cronjob)</li>
+                    <li>invoice number and tracking-id information are now supported and send to Ratepay</li>
+                </ul>
+
+                <h2>Bug fixes</h2>
+                <p>Bug fixes have already been published in the plugin version 5.5.0 and 5.5.1</p>
+            ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+                <h2>Wichtige Änderungen</h2>
+                <ul>
+                    <li>Neue Plugin Struktur</li>
+                    <li>Felder im Checkout sind nun direkt bei der Zahlungsart</li>
+                    <li>Anpassung der Datenbankstrukturen</li>
+                </ul>
+
+                <h2>Technische Änderungen</h2>
+                <ul>
+                    <li>Installation via Composer</li>
+                    <li>Hinzufügen von Commands um die Operationen über die Shopware CLI durchzuführen.</li>
+                    <li>Nun ist es möglich mit den RequestServices Operationen über ein eigenes Modul durchzuführen (siehe README.md)</li>
+                    <li>Das Ratepay-SDK (php-library) wurde nun über Composer integriert</li>
+                    <li>Verbesserung Template-Inheritance</li>
+                </ul>
+
+                <h2>Verbesserungen</h2>
+                <ul>
+                    <li>Gutscheine und Nachbelastungen aus dem Backend können nun bis zu 3 Nachkommastellen haben</li>
+                    <li>Rückmeldung wenn eine Operation in der Artikelverwaltung (Backend) ausgeführt wurde</li>
+                    <li>Performanceoptimierung bei der Ratenzahlung im Frontend</li>
+                    <li>Übersetzungen für die Sprachen DE und EN erstellt/verbessert</li>
+                    <li>Hinweis an den Kunden, wenn sich der Ratenplan aktualisiert wurde</li>
+                    <li>Änderung des Warenkorbs passt die Ratenberechnung automatisch an, ohne dass der Kunde weitere Eingaben tätigen muss</li>
+                    <li>IBAN Validierung bereits im Shop (Strukturprüfung)</li>
+                    <li>Ust-Id Validierung bereits im Shop (Strukturprüfung)</li>
+                    <li>Bei Lastschriftzahlungen kann der Kunde im Falle einer B2B Bestellung nun auch den Firmennamen als Kontoinhaber angeben.</li>
+                    <li>Fehlerbehebungen bei den Steuerangaben in den Gatewayanfragen</li>
+                </ul>
+
+                <h2>Neue Features</h2>
+                <ul>
+                    <li>separate Konfiguration der Zahlungsmethoden Rate und 0% Finanzierung</li>
+                    <li>Bidirektionalität nun auch auf Artikelebene (via Cronjob)</li>
+                    <li>Übermittlung Rechnungsnummer und Tracking-ID</li>
+                </ul>
+
+                <h2>Fehlerbehebungen</h2>
+                <p>Fehlerbehebungen wurden bereits in der Pluginversion 5.5.0 veröffentlicht.</p>
+            ]]>
+        </changes>
     </changelog>
 
     <changelog version="5.4.2">
