@@ -3,11 +3,11 @@
 
 |Module | Ratepay Module for Shopware
 |------|----------
-|Shop Version | `5.5.x` - `5.5.x`
-|Version | `5.4.1`
+|Shop Version | `5.5.x` - `5.6.x`
+|Version | `6.0.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
-|Full Documentation | https://ratepay.gitbook.io/shopware/
+|Full Documentation | https://ratepay.gitbook.io/shopware5/
 
 ## Installation
 
