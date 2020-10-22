@@ -1,7 +1,6 @@
 {
     "name": "ratepay/shopware5-module",
     "description": "Ratepay payment methods for Shopware 5",
-    "version": "6.0.0",
     "license": "MIT",
     "authors": [
         {
