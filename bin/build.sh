@@ -5,13 +5,15 @@ PLUGIN_DIR=$(dirname "$BASEDIR")
 PLUGIN_NAME=$(basename "$PLUGIN_DIR")
 BUILD_DIR=$(dirname "PLUGIN_DIR")/build/
 
-mkdir -p build/
+rm -rf "$BUILD_DIR"
+mkdir -p build/dist
 tar -C "$PLUGIN_DIR"/../ --exclude-from="$BASEDIR"/.build_exclude -czf "$BUILD_DIR"/dist.tar.gz "$PLUGIN_NAME"
-rm -rf "$BUILD_DIR"/dist/"$PLUGIN_NAME"
+
 mkdir -p "$BUILD_DIR"/dist/"$PLUGIN_NAME"
 tar -xzf "$BUILD_DIR"/dist.tar.gz -C "$BUILD_DIR"/dist/
 
 composer remove shopware/shopware --ignore-platform-reqs -o -d "$BUILD_DIR"/dist/"$PLUGIN_NAME"
+composer install --no-dev --ignore-platform-reqs -o -d "$BUILD_DIR"/dist/"$PLUGIN_NAME"
 
 rm -rf "$BUILD_DIR"/dist.tar.gz
 
