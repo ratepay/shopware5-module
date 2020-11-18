@@ -9,8 +9,6 @@
 
 use Monolog\Logger;
 use RatePAY\Model\Response\PaymentRequest;
-use RpayRatePay\Component\Service\ConfigLoader;
-use RpayRatePay\Component\Service\SessionLoader;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
