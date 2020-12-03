@@ -14,7 +14,7 @@
     "payment_confirm": true,
     "compatibility": {
         "minimumVersion": "5.5.0",
-        "maximumVersion": null,
+        "maximumVersion": "5.6.9",
         "blacklist": [
         ]
     }

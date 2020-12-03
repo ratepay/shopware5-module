@@ -4,7 +4,7 @@
 |Module | Ratepay Module for Shopware
 |------|----------
 |Author | Interlutions GmbH
-|Shop Version | `5.5.x` - `5.6.x`
+|Shop Version | `5.5.x` - `5.6.9`
 |Version | `5.5.1`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
@@ -24,6 +24,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.5.2 - WIP
+* RATEPLUG-151: set maximum shopware version to 5.6.9
 
 ### Version 5.5.1 - Released 2020-10-21
 * RATEPLUG-147: fixes a bug, that no other payment methods are visible
