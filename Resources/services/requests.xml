@@ -12,6 +12,7 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         https://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
+        <defaults public="true" autoconfigure="true" autowire="true"/>
 
         <service id="RpayRatePay\Services\Request\PaymentRequestService">
             <argument id="db" type="service"/>
@@ -23,7 +24,7 @@
             <argument id="models" type="service"/>
             <argument id="modules" type="service"/>
             <argument id="RpayRatePay\Services\PaymentMethodsService" type="service"/>
-            <argument id="rpay_rate_pay.logger" type="service"/>
+            <argument id="ratepay.logger" type="service"/>
         </service>
 
         <service id="RpayRatePay\Services\Request\PaymentConfirmService">

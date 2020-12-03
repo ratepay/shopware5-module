@@ -153,19 +153,6 @@ class SessionHelper
         $this->setData('bankData_c' . $customerId, null);
     }
 
-    public function setData($key = null, $value = null)
-    {
-        if ($key === null) {
-            $this->session->offsetUnset('RatePay');
-        } else {
-            if ($value !== null) {
-                $this->session->RatePay[$key] = $value;
-            } else {
-                unset($this->session->RatePay[$key]);
-            }
-        }
-    }
-
     public function setBankData($customerId, $accountHolder = null, $accountNumber = null)
     {
         if ($accountNumber !== null) {
@@ -197,9 +184,28 @@ class SessionHelper
         return new BankData($accountHolder, $iban);
     }
 
-    public function getData($key, $default = null)
+    public function getData($key = null, $default = null)
     {
-        return isset($this->session->RatePay[$key]) ? $this->session->RatePay[$key] : $default;
+        $data = is_array($this->session->offsetGet('RatePay')) ? $this->session->offsetGet('RatePay') : [];
+        if($key) {
+            return isset($data[$key]) ? $data[$key] : $default;
+        }
+        return $data;
+    }
+
+    public function setData($key = null, $value = null)
+    {
+        if ($key === null) {
+            $this->session->offsetUnset('RatePay');
+        } else {
+            $data = $this->getData();
+            if ($value !== null) {
+                $data[$key] = $value;
+            } else {
+                unset($data[$key]);
+            }
+            $this->session->offsetSet('RatePay', $data);
+        }
     }
 
     /**

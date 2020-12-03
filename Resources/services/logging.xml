@@ -12,16 +12,37 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         https://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
+        <defaults public="true" autoconfigure="true" autowire="true"/>
 
         <service id="RpayRatePay\Services\Logger\RequestLogger">
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="models" type="service"/>
-            <argument id="rpay_rate_pay.logger" type="service"/>
+            <argument id="ratepay.logger" type="service"/>
         </service>
 
         <service id="RpayRatePay\Services\Logger\HistoryLogger">
             <argument id="models" type="service"/>
         </service>
+
+        <!-- FileLogger -->
+        <!-- we register a new logger cause the plugin-logger of Shopware does not work anymore in SW5.7 -->
+        <!-- More info: https://forum.shopware.com/discussion/73445/shopware-5-7-rc1-plugins-koennen-nicht-mehr-genutzt-werden-viele-getestet-store -->
+        <service id="ratepay.logger" class="Monolog\Logger">
+            <argument>rpay_rate_pay</argument>
+            <call method="pushHandler">
+                <argument id="ratepay.logger_handler" type="service"/>
+            </call>
+            <call method="pushProcessor">
+                <argument id="ratepay.logger_formatter" type="service"/>
+            </call>
+        </service>
+
+        <service id="ratepay.logger_handler" class="Monolog\Handler\RotatingFileHandler">
+            <argument>%kernel.logs_dir%/ratepay_%kernel.environment%.log</argument>
+            <argument>%rpay_rate_pay.logger.max_files%</argument>
+            <argument>%rpay_rate_pay.logger.level%</argument>
+        </service>
+        <service id="ratepay.logger_formatter" class="Monolog\Processor\PsrLogMessageProcessor"/>
 
     </services>
 </container>

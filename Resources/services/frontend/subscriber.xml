@@ -13,6 +13,8 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
 
+        <defaults public="true" autoconfigure="true" autowire="true"/>
+
         <service id="RpayRatePay\Subscriber\Frontend\PaymentFilterSubscriber">
             <argument id="models" type="service"/>
             <argument id="shopware_storefront.context_service" type="service"/>
@@ -23,7 +25,7 @@
             <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
             <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
             <argument id="RpayRatePay\Services\PaymentMethodsService" type="service"/>
-            <argument id="rpay_rate_pay.logger" type="service"/>
+            <argument id="ratepay.logger" type="service"/>
             <tag name="shopware.event_subscriber"/>
         </service>
 

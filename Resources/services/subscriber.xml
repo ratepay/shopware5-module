@@ -13,7 +13,9 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
 
-        <service id="RpayRatePay\Subscriber\TemplateSubscriber">
+        <defaults public="true" autoconfigure="true" autowire="true"/>
+
+        <service id="RpayRatePay\Subscriber\TemplateSubscriber" public="true">
             <argument id="template" type="service"/>
             <argument>%rpay_rate_pay.plugin_dir%</argument>
             <tag name="shopware.event_subscriber"/>

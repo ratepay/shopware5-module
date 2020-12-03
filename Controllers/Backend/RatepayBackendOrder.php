@@ -50,7 +50,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
     public function setContainer(Container $loader = null)
     {
         parent::setContainer($loader);
-        $this->logger = Shopware()->Container()->get('rpay_rate_pay.logger');
+        $this->logger = Shopware()->Container()->get('ratepay.logger');
         $this->config = $this->container->get(ConfigService::class);
         $this->modelManager = $this->container->get('models');
         $this->profileConfigService = $this->container->get(ProfileConfigService::class);

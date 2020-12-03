@@ -12,6 +12,8 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         https://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
+        <defaults public="true" autoconfigure="true" autowire="true"/>
+
         <service id="RpayRatePay\Subscriber\BogxProductConfiguratorSubscriber">
             <argument id="models" type="service"/>
             <argument id="events" type="service"/>

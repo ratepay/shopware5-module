@@ -12,6 +12,8 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         https://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
+        <defaults public="true" autoconfigure="true" autowire="true"/>
+
         <service id="RpayRatePay\Subscriber\Backend\OrderControllerSubscriber">
             <argument id="models" type="service"/>
             <argument id="snippets" type="service"/>
@@ -21,7 +23,7 @@
             <argument id="RpayRatePay\Services\Factory\PaymentRequestDataFactory" type="service"/>
             <argument id="RpayRatePay\Services\Request\PaymentRequestService" type="service"/>
             <argument id="RpayRatePay\Services\Request\PaymentConfirmService" type="service"/>
-            <argument id="rpay_rate_pay.logger" type="service"/>
+            <argument id="ratepay.logger" type="service"/>
             <argument id="swag_backend_order.order.order_hydrator" type="service" on-invalid="null"/>
             <argument id="swag_backend_order.order.order_validator" type="service" on-invalid="null"/>
             <tag name="shopware.event_subscriber"/>

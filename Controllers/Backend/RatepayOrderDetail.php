@@ -86,7 +86,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         $this->paymentReturnService = $this->container->get(PaymentReturnService::class);
         $this->paymentDebitService = $this->container->get(PaymentDebitService::class);
         $this->paymentCreditService = $this->container->get(PaymentCreditService::class);
-        $this->logger = $this->container->get('rpay_rate_pay.logger');
+        $this->logger = $this->container->get('ratepay.logger');
         $this->snippetManager = $this->container->get('snippets');
     }
 

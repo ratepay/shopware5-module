@@ -12,7 +12,7 @@ namespace RpayRatePay\Services\Config;
 use InvalidArgumentException;
 use RuntimeException;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Components\Plugin\CachedConfigReader;
+use Shopware\Components\Plugin\ConfigReader;
 use Shopware\Models\Payment\Payment;
 use Shopware\Models\Shop\Shop;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -29,7 +29,7 @@ class ConfigService
      */
     protected $pluginName;
     /**
-     * @var CachedConfigReader
+     * @var ConfigReader
      */
     private $configReader;
     /**
@@ -45,7 +45,7 @@ class ConfigService
 
     public function __construct(
         ContainerInterface $container,
-        CachedConfigReader $configReader,
+        ConfigReader $configReader,
         ModelManager $modelManager,
         $pluginName,
         $updateVersion = null

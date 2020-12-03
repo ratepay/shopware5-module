@@ -16,14 +16,11 @@ use Exception;
 use PDO;
 use RecursiveRegexIterator;
 use RegexIterator;
-use RpayRatePay\Models\Migration;
-use RpayRatePay\Models\MigrationRepository;
 use Shopware\Components\Migrations\AbstractMigration;
 use Shopware\Components\Migrations\AbstractPluginMigration;
 
 class Database extends AbstractBootstrap
 {
-
     /** @var SchemaTool */
     protected $schemaTool;
 
@@ -39,6 +36,7 @@ class Database extends AbstractBootstrap
 
     public function update()
     {
+        require_once $this->pluginDir . '/lib/shopware/migrations/AbstractPluginMigration.php';
         $this->applyMigrations(AbstractMigration::MODUS_UPDATE);
     }
 
@@ -46,8 +44,6 @@ class Database extends AbstractBootstrap
     {
         if ($this->installContext->assertMinimumVersion("5.6") === false) {
             $this->createMigrationSchema();
-
-            require_once $this->pluginDir . '/lib/shopware/migrations/AbstractPluginMigration.php';
 
             /** @var PDO $connection */
             $connection = $this->container->get('db_connection');
@@ -132,6 +128,7 @@ ENGINE=InnoDB
 
     public function install()
     {
+        require_once $this->pluginDir . '/lib/shopware/migrations/AbstractPluginMigration.php';
         $this->applyMigrations(AbstractPluginMigration::MODUS_INSTALL);
     }
 

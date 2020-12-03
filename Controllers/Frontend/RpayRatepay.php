@@ -74,7 +74,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $this->paymentRequestService = $this->container->get(PaymentRequestService::class);
         $this->paymentConfirmService = $this->container->get(PaymentConfirmService::class);
         $this->installmentService = $this->container->get(InstallmentService::class);
-        $this->logger = $container->get('rpay_rate_pay.logger');
+        $this->logger = $this->container->get('ratepay.logger');
         $this->dfpService = $this->container->get(DfpService::class);
         $this->configService = $this->container->get(ConfigService::class);
         $this->profileConfigService = $this->container->get(ProfileConfigService::class);

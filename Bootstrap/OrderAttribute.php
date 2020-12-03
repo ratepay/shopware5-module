@@ -26,8 +26,8 @@ class OrderAttribute extends AbstractAttributeBootstrap
     protected function installAttributes()
     {
         $this->crudService->update('s_order_attributes', 'ratepay_descriptor', 'text', [], null, null, null);
-        $this->crudService->update('s_order_attributes', 'ratepay_fallback_shipping', 'boolean', [], null, null, false);
-        $this->crudService->update('s_order_attributes', 'ratepay_fallback_discount', 'boolean', [], null, null, false);
+        $this->crudService->update('s_order_attributes', 'ratepay_fallback_shipping', 'boolean', [], null, null, 0);
+        $this->crudService->update('s_order_attributes', 'ratepay_fallback_discount', 'boolean', [], null, null, 0);
         $this->crudService->update('s_order_attributes', 'ratepay_backend', 'boolean');
         $addDirectDeliveryAttribute = $this->crudService->get('s_order_attributes', 'ratepay_direct_delivery') === null;
         $this->crudService->update('s_order_attributes', 'ratepay_direct_delivery', 'boolean', [], null, null, 1);

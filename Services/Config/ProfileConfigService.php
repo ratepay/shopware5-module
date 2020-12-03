@@ -168,7 +168,7 @@ class ProfileConfigService
                             $saveResponse = $this->configWriterService->writeRatepayConfig($profileConfig);
 
                             if ($saveResponse) {
-                                $this->logger->addNotice('Profile for ' . strtoupper($countryCode) . ' successfully updated.');
+                                $this->logger->notice('Profile for ' . strtoupper($countryCode) . ' successfully updated.');
                             } else {
                                 $errors[] = strtoupper($countryCode) . ' Frontend';
                             }

@@ -10,6 +10,9 @@
 
 namespace RpayRatePay;
 
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
+use Monolog\Processor\PsrLogMessageProcessor;
 use RpayRatePay\Bootstrap\AbstractBootstrap;
 use RpayRatePay\Bootstrap\Configuration;
 use RpayRatePay\Bootstrap\Database;
@@ -38,15 +41,12 @@ class RpayRatePay extends Plugin
 
     public function build(ContainerBuilder $container)
     {
-        parent::build($container);
-
-        $loggerServiceName = $this->getContainerPrefix() . '.logger';
-        if ($container->has($loggerServiceName) === false) {
-            // SW 5.6 auto register a logger for each plugin - so if service not found
-            // (cause lower sw-version than 5.6), we will register our own logger
-            $container->register($loggerServiceName, FileLogger::class)
-                ->addArgument($container->getParameter('kernel.logs_dir'));
+        if ($container->hasParameter('rpay_rate_pay.logger.max_files') === false) {
+            $container->setParameter('rpay_rate_pay.logger.max_files', 5);
+            $container->setParameter('rpay_rate_pay.logger.level', Logger::DEBUG);
         }
+
+        parent::build($container);
     }
 
     /**
@@ -67,7 +67,21 @@ class RpayRatePay extends Plugin
             new UserAttribute()
         ];
 
-        $logger = new FileLogger($this->container->getParameter('kernel.logs_dir'));
+        if($this->container->has('ratepay.logger')) {
+            $logger = $this->container->get('ratepay.logger');
+        } else {
+            // create a new logger as described in services/logging.xml
+            $logger = new Logger(
+                'ratepay',
+                [new RotatingFileHandler(
+                    $this->container->getParameter('kernel.logs_dir') . '/ratepay_' . $this->container->getParameter('kernel.environment') . '.log',
+                    5,
+                    Logger::DEBUG
+                )],
+                [new PsrLogMessageProcessor()]
+            );
+        }
+        
         foreach ($bootstrapper as $bootstrap) {
             $bootstrap->setContext($context);
             $bootstrap->setLogger($logger);
@@ -89,7 +103,6 @@ class RpayRatePay extends Plugin
             $bootstrap->postInstall();
         }
         parent::install($context);
-        //$context->scheduleClearCache($context::CACHE_LIST_ALL); // RATEPLUG-70: prevent cache-popups
     }
 
     public function update(Plugin\Context\UpdateContext $context)

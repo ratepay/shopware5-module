@@ -13,6 +13,8 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
 
+        <defaults public="true" autoconfigure="true" autowire="true"/>
+
         <service id="RpayRatePay\Services\Factory\CustomerArrayFactory"/>
         <service id="RpayRatePay\Services\Factory\ExternalArrayFactory" />
 
