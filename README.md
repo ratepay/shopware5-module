@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.3.x` - `5.4.6`
-|Version | `5.3.15`
+|Version | `5.3.16`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,8 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.16 - WIP
 
 ### Version 5.3.15 - 2020-10-13
 * RATEPLUG-14: prevent delete order in admin if the order has been already shipped/canceled/returned
