@@ -5,7 +5,7 @@
 |------|----------
 |Author | Annegret Seufert
 |Shop Version | `5.3.x` - `5.4.6`
-|Version | `5.3.16`
+|Version | `5.3.17`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
 |Full Documentation | https://ratepay.gitbook.io/shopware/
@@ -23,6 +23,9 @@
 4. Install & configure the module
 
 ## Changelog
+
+### Version 5.3.17 - 2020-12-08
+* fix release information
 
 ### Version 5.3.16 - 2020-12-08
 * RATEPLUG-147: fix that other payment methods got not displayed
