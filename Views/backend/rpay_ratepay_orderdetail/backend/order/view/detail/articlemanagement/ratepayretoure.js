@@ -145,15 +145,12 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
             var item = new Object();
             var tax_rate = row.tax_rate;
 
-            if (row.quantityReturn > (row.quantity - row.returned - row.cancelled)) {
-                error = true;
-            }
-            if (row.quantityReturn > row.delivered) {
-                error = true;
+            if(!(row.quantityReturn > 0)) {
+                continue;
             }
 
-            if (row.quantityReturn < 1) {
-                continue;
+            if (row.quantityReturn > (row.quantity - row.returned) || row.quantityReturn > row.delivered) {
+                error = true;
             }
 
             if (row.tax_rate == null) {
@@ -202,17 +199,21 @@ Ext.define('Shopware.apps.Order.view.detail.ratepayretoure', {
     },
     toolbarReturnStock: function () {
         var me = this;
-        var items = new Array();
+        var items = [];
         var id = me.record.get('id');
         var error = false;
 
         var firstArticle = me.record.getPositions().data.items[0];
-        for (i = 0; i < me.store.data.items.length; i++) {
+        for (var i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
-            var item = new Object();
+            var item = {};
             var tax_rate = row.tax_rate;
 
-            if (row.quantityReturn > (row.quantity - row.returned) || row.delivered == 0) {
+            if(!(row.quantityReturn > 0)) {
+                continue;
+            }
+
+            if (row.quantityReturn > (row.quantity - row.returned) || row.quantityReturn > row.delivered) {
                 error = true;
             }
 
