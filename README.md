@@ -25,8 +25,8 @@
 ## Changelog
 
 ### Version 5.3.16 - 2020-12-08
-RATEPLUG-147: fix that other payment methods got not displayed
-RATEPLUG-154: fix issue that when one product has been canceled, no other articles can be returned
+* RATEPLUG-147: fix that other payment methods got not displayed
+* RATEPLUG-154: fix issue that when one product has been canceled, no other articles can be returned
 
 ### Version 5.3.15 - 2020-10-13
 * RATEPLUG-14: prevent delete order in admin if the order has been already shipped/canceled/returned
