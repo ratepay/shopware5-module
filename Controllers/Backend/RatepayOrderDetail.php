@@ -198,13 +198,12 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
     {
         //TODO DQL/Models
         $sql = 'SELECT '
-            . '`invoice_shipping` AS `price`, '
+            . '(CASE WHEN `net` = 1 THEN `invoice_shipping_net` ELSE `invoice_shipping` END) as price, '
             . '(1 - `delivered` - `cancelled`) AS `quantityDeliver`, '
             . '(`delivered` - `returned`) AS `quantityReturn`, '
             . '`delivered`, '
             . '`cancelled`, '
-            . '`returned`, '
-            . '`s_order`.`invoice_shipping_net` '
+            . '`returned`'
             . 'FROM `s_order` '
             . 'LEFT JOIN `rpay_ratepay_order_shipping` ON `s_order_id`=`s_order`.`id` '
             . 'LEFT JOIN `s_premium_dispatch` ON `s_order`.`dispatchID`=`s_premium_dispatch`.`id` '
