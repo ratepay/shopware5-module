@@ -381,6 +381,36 @@
             <label lang="de">ESD Produkte direkt nach Bestellung als "versendet" markieren</label>
             <value>1</value>
         </element>
+        <element required="true" type="select">
+            <name>ratepay/advanced/additional_address_line_config</name>
+            <label lang="en">Transmit additional address lines</label>
+            <label lang="de">Übertrage Adresszusatzzeilen</label>
+            <value>concat</value>
+            <store>
+                <option>
+                    <value>concat</value>
+                    <label>Addressline 1 AND Addressline 2 (separated by a space)</label>
+                    <label lang="de">Adresszeile 1 und Adresszeile 2 (getrennt durch ein Leerzeichen)</label>
+                </option>
+                <option>
+                    <value>line1</value>
+                    <label>only addressline 1</label>
+                    <label lang="de">nur Adresszeile 1</label>
+                </option>
+                <option>
+                    <value>line2</value>
+                    <label>only addressline 2</label>
+                    <label lang="de">nur Adresszeile 2</label>
+                </option>
+                <option>
+                    <value>disabled</value>
+                    <label>Disabled</label>
+                    <label lang="de">Deaktiviert</label>
+                </option>
+            </store>
+        </element>
+
+
 
         <element type="button">
             <name>ratepay/buttons/button8</name>

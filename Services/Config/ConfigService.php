@@ -175,7 +175,12 @@ class ConfigService
      */
     public function isEsdAutoDeliver()
     {
-        return $this->getConfig('ratepay/advanced/esd_auto_delivery', null, null) == 1;
+        return $this->getConfig('ratepay/advanced/esd_auto_delivery', 1, null) == 1;
+    }
+
+    public function getAdditionalAddressLineSetting()
+    {
+        return $this->getConfig('ratepay/advanced/additional_address_line_config', 'concat', null);
     }
 
     /**

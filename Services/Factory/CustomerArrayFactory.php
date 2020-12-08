@@ -10,10 +10,20 @@ namespace RpayRatePay\Services\Factory;
 
 
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\Services\Config\ConfigService;
 use Shopware\Models\Customer\Address;
 
 class CustomerArrayFactory
 {
+    /**
+     * @var ConfigService
+     */
+    private $configService;
+
+    public function __construct(ConfigService $configService)
+    {
+        $this->configService = $configService;
+    }
 
     const ARRAY_KEY = 'Customer';
 
@@ -122,6 +132,26 @@ class CustomerArrayFactory
             'City' => $address->getCity(),
             'CountryCode' => $address->getCountry()->getIso(),
         ];
+
+        if ($address->getAdditionalAddressLine1() || $address->getAdditionalAddressLine2()) {
+            switch ($this->configService->getAdditionalAddressLineSetting()) {
+                case 'concat':
+                    $additional = $address->getAdditionalAddressLine1() . ' ' . $address->getAdditionalAddressLine2();
+                    break;
+                case 'line1':
+                    $additional = $address->getAdditionalAddressLine1();
+                    break;
+                case 'line2':
+                    $additional = $address->getAdditionalAddressLine2();
+                    break;
+                default:
+                    $additional = '';
+            }
+            $additional = trim($additional);
+            if (!empty($additional)) {
+                $return['StreetAdditional'] = $additional;
+            }
+        }
 
         if ($addressType === 'DELIVERY') {
             $return['FirstName'] = $address->getFirstName();

@@ -59,6 +59,7 @@
                     <li>Bidirectionality are now supported at item level (via Cronjob)</li>
                     <li>invoice number and tracking-id information are now supported and send to Ratepay</li>
                     <li>Deliver ESD products immediately after the order</li>
+                    <li>Transmit additional address lines in PaymentRequest</li>
                 </ul>
 
                 <h2>Bug fixes</h2>
@@ -104,6 +105,7 @@
                     <li>Bidirektionalität nun auch auf Artikelebene (via Cronjob)</li>
                     <li>Übermittlung Rechnungsnummer und Tracking-ID</li>
                     <li>Konfiguration: Versende ESD-Produkte umgehend nach der Bestellung</li>
+                    <li>Konfiguration: Übertrage Adresszusatzzeilen</li>
                 </ul>
 
                 <h2>Fehlerbehebungen</h2>
