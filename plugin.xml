@@ -58,6 +58,7 @@
                     <li>Now the separate configuration of the payment methods instalments and 0% financing are possible</li>
                     <li>Bidirectionality are now supported at item level (via Cronjob)</li>
                     <li>invoice number and tracking-id information are now supported and send to Ratepay</li>
+                    <li>Deliver ESD products immediately after the order</li>
                 </ul>
 
                 <h2>Bug fixes</h2>
@@ -102,6 +103,7 @@
                     <li>separate Konfiguration der Zahlungsmethoden Rate und 0% Finanzierung</li>
                     <li>Bidirektionalität nun auch auf Artikelebene (via Cronjob)</li>
                     <li>Übermittlung Rechnungsnummer und Tracking-ID</li>
+                    <li>Konfiguration: Versende ESD-Produkte umgehend nach der Bestellung</li>
                 </ul>
 
                 <h2>Fehlerbehebungen</h2>

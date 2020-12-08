@@ -375,6 +375,12 @@
                 Funktionalität entfernt wird. In Zukunft können dann alle Positionen direkt versendet werden.
             </description>
         </element>
+        <element required="true" type="boolean">
+            <name>ratepay/advanced/esd_auto_delivery</name>
+            <label lang="en">Deliver ESD products immediately after the order</label>
+            <label lang="de">ESD Produkte direkt nach Bestellung als "versendet" markieren</label>
+            <value>1</value>
+        </element>
 
         <element type="button">
             <name>ratepay/buttons/button8</name>
@@ -449,7 +455,8 @@
             <value>ratepay</value>
         </element>
 
-        <!-- old fields - got renamed/removed in plugin install/update -->
+
+        <!-- @deprecated: old fields - got renamed/removed in plugin install/update -->
         <element><name>RatePayProfileIDDE</name><label>RatePayProfileIDDE</label></element>
         <element><name>RatePaySecurityCodeDE</name><label>RatePaySecurityCodeDE</label></element>
         <element><name>RatePayProfileIDDEBackend</name><label>RatePayProfileIDDEBackend</label></element>

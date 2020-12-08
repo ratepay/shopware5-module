@@ -32,6 +32,7 @@
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="RpayRatePay\Services\Logger\RequestLogger" type="service"/>
             <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
+            <argument id="RpayRatePay\Services\Request\PaymentDeliverService" type="service"/>
         </service>
 
         <service id="RpayRatePay\Services\Request\PaymentDeliverService">

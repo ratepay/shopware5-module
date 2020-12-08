@@ -171,6 +171,14 @@ class ConfigService
     }
 
     /**
+     * @return bool
+     */
+    public function isEsdAutoDeliver()
+    {
+        return $this->getConfig('ratepay/advanced/esd_auto_delivery', null, null) == 1;
+    }
+
+    /**
      * @param $paymentMethod
      * @param Shop|int $shop
      * @return int
