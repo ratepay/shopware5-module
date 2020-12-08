@@ -5,18 +5,6 @@
  * file that was distributed with this source code.
  */
 
-/**
- * This program is free software; you can redistribute it and/or modify it under the terms of
- * the GNU General Public License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with this program;
- * if not, see <http://www.gnu.org/licenses/>.
- */
 ////{namespace name=backend/order/main}
 //{block name="backend/order/view/detail/articlemanagement/ratepaydelivery"}
 Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
@@ -66,7 +54,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
     getColumns: function () {
         return [
             {
-                header: '{s namespace=backend/order/main name=column/quantity}Anzahl{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/quantity"}{/s}',
                 dataIndex: 'quantityDeliver',
                 editor: {
                     xtype: 'numberfield',
@@ -77,32 +65,32 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 }
             },
             {
-                header: '{s namespace=backend/order/main name=column/article_name}Artikelname{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/name"}{/s}',
                 dataIndex: 'name'
             },
             {
-                header: '{s namespace=backend/order/main name=column/article_number}Artikelnummer{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/number"}{/s}',
                 dataIndex: 'articleordernumber'
             },
             {
-                header: '{s namespace=backend/article/view/main name=detail/price/price}Preis{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/price"}{/s}',
                 dataIndex: 'price',
                 renderer: Ext.util.Format.numberRenderer('0.000')
             },
             {
-                header: '{s namespace="backend/ratepay" name=ordered}Bestellt{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/ordered"}{/s}',
                 dataIndex: 'quantity'
             },
             {
-                header: '{s namespace=backend/order/main name=overview/shipping/title}Versand{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/delivered"}{/s}',
                 dataIndex: 'delivered'
             },
             {
-                header: '{s namespace="backend/ratepay" name=cancelled}Storniert{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/canceled"}{/s}',
                 dataIndex: 'cancelled'
             },
             {
-                header: '{s namespace="backend/ratepay" name=returned}Retourniert{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/returned"}{/s}',
                 dataIndex: 'returned'
             },
         ];
@@ -113,7 +101,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
         var id = me.record.get('id');
         return [
             {
-                text: '{s namespace="backend/ratepay" name=setzero}Anzahl auf 0 setzen{/s}',
+                text: '{s namespace="backend/ratepay/order_management" name="column/reset"}{/s}',
                 handler: function () {
                     var id = me.record.get('id');
                     var positionStore = Ext.create('Shopware.apps.RatepayOrder.store.Position');
@@ -139,10 +127,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             },*/
             {
                 iconCls: 'sprite-plus-circle-frame',
-                text: '{s namespace="backend/ratepay" name=addcredit}Nachlass hinzuf&uuml;gen{/s}',
+                text: '{s namespace="backend/ratepay/order_management" name="action/addCredit"}{/s}',
                 handler: function () {
                     Ext.create('Ext.window.Window', {
-                        title: '{s namespace="backend/ratepay" name=addcredit}Nachlass hinzuf&uuml;gen{/s}',
+                        title: '{s namespace="backend/ratepay/order_management" name="action/addCredit"}{/s}',
                         width: 300,
                         height: 100,
                         id: 'creditWindow',
@@ -205,20 +193,20 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             articleNumber.push(response.data.articleNumber);
                                             newDetailsId.push(response.data.id);
                                             if (me.initPositions(newDetailsId, 'credit')) {
-                                                message = '{s namespace="backend/ratepay" name=messagecreditsuccess}Nachlass wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
+                                                message = '{s namespace="backend/ratepay/order_management" name="message/successCredit"}{/s}';
                                             } else {
                                                 me.deletePosition(newDetailsId);
-                                                message = '{s namespace="backend/ratepay" name=messagecreditfailrequest}Nachlass konnte nicht korrekt an Ratepay &uuml;bermittelt werden.{/s}';
+                                                message = '{s namespace="backend/ratepay/order_management" name="message/failedCredit"}{/s}';
                                             }
                                             Ext.getCmp('creditWindow').close();
-                                            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagecredittitle}Nachlass hinzuf&uuml;gen{/s}', message);
+                                            Ext.Msg.alert('{s namespace="backend/ratepay/order_management" name="action/addCredit"}{/s}', message);
                                             me.reloadGrid();
                                         }
                                     });
                                 }
                             },
                             {
-                                text: '{s namespace=backend/application/main name=detail_window/cancel_button_text}Cancel{/s}',
+                                text: '{s namespace="backend/application/main" name="detail_window/cancel_button_text"}Cancel{/s}',
                                 handler: function () {
                                     Ext.getCmp('creditWindow').close();
                                 }
@@ -229,10 +217,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             },
             {
                 iconCls: 'sprite-plus-circle-frame',
-                text: '{s namespace="backend/ratepay" name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
+                text: '{s namespace="backend/ratepay/order_management" name="action/addDebit"}{/s}',
                 handler: function () {
                     Ext.create('Ext.window.Window', {
-                        title: '{s namespace="backend/ratepay" name=adddebit}Nachbelastung hinzuf&uuml;gen{/s}',
+                        title: '{s namespace="backend/ratepay/order_management" name="action/addDebit"}{/s}',
                         width: 300,
                         height: 100,
                         id: 'debitWindow',
@@ -293,20 +281,20 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                             var message;
                                             newDetailIds.push(response.data.id);
                                             if (me.initPositions(newDetailIds, 'debit')) {
-                                                message = '{s namespace="backend/ratepay" name=messagedebituccess}Nachbelastung wurde erfolgreich zur Bestellung hinzugef&uuml;gt.{/s}';
+                                                message = '{s namespace="backend/ratepay/order_management" name="message/successDebit"}{/s}';
                                             } else {
                                                 me.deletePosition(newDetailIds);
-                                                message = '{s namespace="backend/ratepay" name=messagedebitfailposition}Nachbelastung konnte nicht der Bestellung hinzugef&uuml;gt werden.{/s}';
+                                                message = '{s namespace="backend/ratepay/order_management" name="message/failedDebit"}{/s}';
                                             }
                                             Ext.getCmp('debitWindow').close();
-                                            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagedebittitle}Nachbelastung hinzuf&uuml;gen{/s}', message);
+                                            Ext.Msg.alert('{s namespace="backend/ratepay/order_management" name="message/addDebit"}{/s}', message);
                                             me.reloadGrid();
                                         }
                                     });
                                 }
                             },
                             {
-                                text: '{s namespace=backend/application/main name=detail_window/cancel_button_text}Cancel{/s}',
+                                text: '{s namespace="backend/application/main" name="detail_window/cancel_button_text"}{/s}',
                                 handler: function () {
                                     Ext.getCmp('debitWindow').close();
                                 }
@@ -317,21 +305,21 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             },
             {
                 iconCls: 'sprite-truck',
-                text: '{s namespace="backend/ratepay" name=deliver}Auswahl versenden{/s}',
+                text: '{s namespace="backend/ratepay/order_management" name="action/deliver"}{/s}',
                 handler: function () {
                     me.toolbarDeliver();
                 }
             },
             {
                 iconCls: 'sprite-minus-circle-frame',
-                text: '{s namespace="backend/ratepay" name=cancel}Auswahl stornieren{/s}',
+                text: '{s namespace="backend/ratepay/order_management" name="action/cancel"}{/s}',
                 handler: function () {
                     me.toolbarCancel();
                 }
             },
             {
                 iconCls: 'sprite-minus-circle-frame',
-                text: '{s namespace="backend/ratepay" name=cancelStock}Auswahl stornieren, Inventar aktualisieren{/s}',
+                text: '{s namespace="backend/ratepay/order_management" name="action/cancelStock"}{/s}',
                 handler: function () {
                     me.toolbarCancelStock();
                 }
@@ -381,8 +369,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
         }
 
         if (error == true) {
-            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagedeliverytitle}Versand fehlgeschlagen{/s}',
-                '{s namespace="backend/ratepay" name=messagedeliverytext}Es k&ouml;nnen nicht mehr Artikel versendet werden als bestellt wurden!{/s}');
+            Ext.Msg.alert(
+                '{s namespace="backend/ratepay/order_management" name="message/deliverFailed"}{/s}',
+                '{s namespace="backend/ratepay/order_management" name="message/deliverTooMuch"}{/s}'
+            );
             return false;
         } else {
             Ext.Ajax.request({
@@ -396,12 +386,17 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 success: function (response) {
                     response = Ext.decode(response.responseText);
                     if(response.result && response.message){
-                        Shopware.Notification.createGrowlMessage('Success', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/deliverSuccess"}{/s}',
+                            response.message
+                        );
                     }
                     else if(response.result === false && response.message) {
-                        Shopware.Notification.createGrowlMessage('Error', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/deliverFailed"}{/s}',
+                            response.message
+                        );
                     }
-
                     me.reloadGrid();
                 }
             });
@@ -446,8 +441,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
         }
 
         if (error == true) {
-            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagecanceltitle}Stornierung fehlgeschlagen{/s}',
-                '{s namespace="backend/ratepay" name=messagecanceltext}Es k&ouml;nnen nicht mehr Artikel storniert werden als bestellt wurden!{/s}');
+            Ext.Msg.alert(
+                '{s namespace="backend/ratepay/order_management" name="message/cancelFailed"}{/s}',
+                '{s namespace="backend/ratepay/order_management" name="message/cancelTooMuch"}{/s}'
+            );
             return false;
         } else {
             Ext.Ajax.request({
@@ -462,10 +459,16 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 success: function (response) {
                     response = Ext.decode(response.responseText);
                     if(response.result && response.message){
-                        Shopware.Notification.createGrowlMessage('Success', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/cancelSuccess"}{/s}',
+                            response.message
+                        );
                     }
                     else if(response.result === false && response.message) {
-                        Shopware.Notification.createGrowlMessage('Error', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/cancelFailed"}{/s}',
+                            response.message
+                        );
                     }
                     me.reloadGrid();
                 }
@@ -510,9 +513,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
             items.push(item);
         }
         if (error == true) {
-            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagecanceltitle}Stornierung fehlgeschlagen{/s}',
-                '{s namespace="backend/ratepay" name=messagecanceltext}Es k&ouml;nnen nicht mehr Artikel storniert werden als bestellt wurden!{/s}');
-            return false;
+            Ext.Msg.alert(
+                '{s namespace="backend/ratepay/order_management" name="message/cancelFailed"}{/s}',
+                '{s namespace="backend/ratepay/order_management" name="message/cancelTooMuch"}{/s}'
+            );
         } else {
             Ext.Ajax.request({
                 url: '{url controller=RatepayOrderDetail action=cancelItems}',
@@ -526,10 +530,16 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                 success: function (response) {
                     response = Ext.decode(response.responseText);
                     if(response.result && response.message){
-                        Shopware.Notification.createGrowlMessage('Success', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/cancelSuccess"}{/s}',
+                            response.message
+                        );
                     }
                     else if(response.result === false && response.message) {
-                        Shopware.Notification.createGrowlMessage('Error', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/cancelFailed"}{/s}',
+                            response.message
+                        );
                     }
                     me.reloadGrid();
                 }

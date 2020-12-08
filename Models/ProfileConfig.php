@@ -99,7 +99,7 @@ class ProfileConfig extends ModelEntity
 
     /**
      * @var string
-     * @ORM\Column(name="error_default", type="text", length=30, nullable=true, options={"default":"Leider ist eine Bezahlung mit RatePAY nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href='http://www.ratepay.com/legal' target='_blank'>RatePAY-Datenschutzerklärung</a>"})
+     * @ORM\Column(name="error_default", type="text", length=30, nullable=true, options={"default":"Leider ist eine Bezahlung mit Ratepay nicht möglich. Diese Entscheidung ist auf Grundlage einer automatisierten Datenverarbeitung getroffen worden. Einzelheiten hierzu finden Sie in der <a href='http://www.ratepay.com/legal' target='_blank'>RatePAY-Datenschutzerklärung</a>"})
      */
     protected $errorDefault;
 

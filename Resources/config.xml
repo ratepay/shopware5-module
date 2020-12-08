@@ -256,7 +256,7 @@
             <description lang="en">Updates will be automatically sent to Ratepay, whenever order status has been
                 changed.
             </description>
-            <description lang="de">Automatische Operationen an RatePAY senden, wenn sich der Bestellstatus einer
+            <description lang="de">Automatische Operationen an Ratepay senden, wenn sich der Bestellstatus einer
                 Ratepay-Bestellung ändert
             </description>
         </element>

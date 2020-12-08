@@ -204,7 +204,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
 
         $order = $this->modelManager->find(Order::class, $orderId);
         if ($controller->Request()->get('valid') != true && $this->helperService->isRatePayPayment($order)) {
-            $this->logger->warning('Positionen einer RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
+            $this->logger->warning('Positionen einer Ratepay-Bestellung k&ouml;nnen nicht gelöscht werden. Bitte Stornieren Sie die Artikel in der Artikelverwaltung.');
             $args->stop();
         }
 
@@ -238,7 +238,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
             . '(`position`.`delivered` > 0 OR `position`.`cancelled` > 0 OR `position`.`returned` > 0)';
         $count = $this->db->fetchOne($sql, [$order->getId()]);
         if ($count > 0) {
-            $message = 'RatePAY-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.';
+            $message = 'Ratepay-Bestellung k&ouml;nnen nicht gelöscht werden, wenn sie bereits bearbeitet worden sind.';
             $controller->View()->assign(['success' => false, 'message' => $message]);
             $this->logger->warning($message);
         } else {
@@ -253,7 +253,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
             if ($response->isSuccessful()) {
                 $args->getSubject()->executeParent($args->getMethod(), $args->getArgs());
             } else {
-                $message = 'Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei RatePAY fehlgeschlagen ist.';
+                $message = 'Bestellung k&ouml;nnte nicht gelöscht werden, da die Stornierung bei Ratepay fehlgeschlagen ist.';
                 $controller->View()->assign(['success' => false, 'message' => $message]);
                 $this->logger->warning($message);
             }

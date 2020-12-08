@@ -93,20 +93,20 @@ class WriterService
                 $response = $this->profileRequestService->doRequest();
             } else if ($response->isSuccessful() === false) {
                 $this->logger->error(
-                    'RatePAY: Profile_Request failed for profileId ' . $profileConfig->getProfileId()
+                    'Ratepay: Profile_Request failed for profileId ' . $profileConfig->getProfileId()
                 );
                 return false;
             }
         } catch (Exception $e) {
             $this->logger->error(
-                'RatePAY: Profile_Request failed for profileId ' . $profileConfig->getProfileId()
+                'Ratepay: Profile_Request failed for profileId ' . $profileConfig->getProfileId()
             );
             return false;
         }
         $responseResult = $response->getResult();
         if (!is_array($responseResult) || $response === false) {
             $this->logger
-                ->notice('RatePAY: Profile_Request for profileId ' . $profileConfig->getProfileId() . ' was empty ');
+                ->notice('Ratepay: Profile_Request for profileId ' . $profileConfig->getProfileId() . ' was empty ');
             return false;
         }
 
@@ -209,7 +209,7 @@ class WriterService
             try {
                 $this->modelManager->flush($entitiesToFlush);
                 $this->logger
-                    ->info('RatePAY: Profile_Request for profileId ' . $profileConfig->getProfileId() . ' has been successfully saved');
+                    ->info('Ratepay: Profile_Request for profileId ' . $profileConfig->getProfileId() . ' has been successfully saved');
             } catch (Exception $exception) {
                 $this->logger->error($exception->getMessage());
                 return false;

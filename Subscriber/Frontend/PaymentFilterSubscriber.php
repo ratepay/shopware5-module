@@ -108,7 +108,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
     /**
      * Filters the shown Payments
-     * RatePAY-payments will be hidden, if one of the following requirement is not given
+     * Ratepay-payments will be hidden, if one of the following requirement is not given
      *  - Delivery Address is not allowed to be not the same as billing address
      *  - The Customer must be over 18 years old
      *  - The Country must be germany or austria
@@ -180,27 +180,27 @@ class PaymentFilterSubscriber implements SubscriberInterface
         $payments = [];
         foreach ($return as $payment) {
             if ($payment['name'] === PaymentMethods::PAYMENT_INVOICE && !$availableRatePayMethods[PaymentMethods::PAYMENT_INVOICE]) {
-                $this->logger->info('RatePAY: Filter RatePAY-Invoice');
+                $this->logger->info('Ratepay: Filter Ratepay-Invoice');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === PaymentMethods::PAYMENT_DEBIT && !$availableRatePayMethods[PaymentMethods::PAYMENT_DEBIT]) {
-                $this->logger->info('RatePAY: Filter RatePAY-Debit');
+                $this->logger->info('Ratepay: Filter Ratepay-Debit');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === PaymentMethods::PAYMENT_RATE && !$availableRatePayMethods[PaymentMethods::PAYMENT_RATE]) {
-                $this->logger->info('RatePAY: Filter RatePAY-Rate');
+                $this->logger->info('Ratepay: Filter Ratepay-Rate');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === PaymentMethods::PAYMENT_INSTALLMENT0 && !$availableRatePayMethods[PaymentMethods::PAYMENT_INSTALLMENT0]) {
-                $this->logger->info('RatePAY: Filter RatePAY-Rate0');
+                $this->logger->info('Ratepay: Filter Ratepay-Rate0');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
             }
             if ($payment['name'] === PaymentMethods::PAYMENT_PREPAYMENT && !$availableRatePayMethods[PaymentMethods::PAYMENT_PREPAYMENT]) {
-                $this->logger->info('RatePAY: Filter RatePAY-Prepayment');
+                $this->logger->info('Ratepay: Filter Ratepay-Prepayment');
                 $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
                 continue;
             }

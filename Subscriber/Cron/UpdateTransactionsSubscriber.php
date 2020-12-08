@@ -25,7 +25,7 @@ use Shopware_Components_Cron_CronJob;
 
 class UpdateTransactionsSubscriber implements SubscriberInterface
 {
-    const MSG_NOTIFY_UPDATES_TO_RATEPAY = '[%d/%d] Processing order %d ...notify needed updates to RatePAY';
+    const MSG_NOTIFY_UPDATES_TO_RATEPAY = '[%d/%d] Processing order %d ...notify needed updates to Ratepay';
 
     /**
      * @var string
@@ -128,7 +128,7 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
     public function updateRatepayTransactions(Shopware_Components_Cron_CronJob $job)
     {
         if ($this->configService->isBidirectionalEnabled() === false) {
-            $this->logger->info('RatePAY bidirectionality is turned off.');
+            $this->logger->info('Ratepay bidirectionality is turned off.');
             return 'Ratepay bidirectionality is turned off.';
         }
 

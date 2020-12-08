@@ -5,18 +5,6 @@
  * file that was distributed with this source code.
  */
 
-/**
- * This program is free software; you can redistribute it and/or modify it under the terms of
- * the GNU General Public License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with this program;
- * if not, see <http://www.gnu.org/licenses/>.
- */
 //{namespace name=backend/order/main}
 //{block name="backend/order/view/detail/articlemanagement/ratepayretoure"}
 Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
@@ -60,7 +48,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
     getColumns: function () {
         return [
             {
-                header: '{s namespace=backend/order/main name=column/quantity}Anzahl{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/quantity"}{/s}',
                 dataIndex: 'quantityReturn',
                 editor: {
                     xtype: 'numberfield',
@@ -71,32 +59,32 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
                 }
             },
             {
-                header: '{s namespace=backend/order/main name=column/article_name}Articlename{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/name"}{/s}',
                 dataIndex: 'name'
             },
             {
-                header: '{s namespace=backend/order/main name=column/article_number}Artikelnummer{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/number"}{/s}',
                 dataIndex: 'articleordernumber'
             },
             {
-                header: '{s namespace=backend/article/view/main name=detail/price/price}Preis{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/price"}{/s}',
                 dataIndex: 'price',
                 renderer: Ext.util.Format.numberRenderer('0.000')
             },
             {
-                header: '{s namespace="backend/ratepay" name=ordered}Bestellt{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/ordered"}{/s}',
                 dataIndex: 'quantity'
             },
             {
-                header: '{s namespace=backend/order/main name=overview/shipping/title}Versand{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/delivered"}{/s}',
                 dataIndex: 'delivered'
             },
             {
-                header: '{s namespace="backend/ratepay" name=cancelled}Storniert{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/canceled"}{/s}',
                 dataIndex: 'cancelled'
             },
             {
-                header: '{s namespace="backend/ratepay" name=returned}Retourniert{/s}',
+                header: '{s namespace="backend/ratepay/order_management" name="column/returned"}{/s}',
                 dataIndex: 'returned'
             },
         ];
@@ -107,7 +95,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
         var id = me.record.get('id');
         return [
             {
-                text: '{s namespace="backend/ratepay" name=setzero}Anzahl auf 0 setzen{/s}',
+                text: '{s namespace="backend/ratepay/order_management" name="column/reset"}{/s}',
                 handler: function () {
                     var id = me.record.get('id');
                     var positionStore = Ext.create('Shopware.apps.RatepayOrder.store.Position');
@@ -123,14 +111,14 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
             },
             {
                 iconCls: 'sprite-minus-circle-frame',
-                text: '{s namespace="backend/ratepay" name=return}Auswahl retournieren{/s}',
+                text: '{s namespace="backend/ratepay/order_management" name="action/return"}{/s}',
                 handler: function () {
                     me.toolbarReturn();
                 }
             },
             {
                 iconCls: 'sprite-minus-circle-frame',
-                text: '{s namespace="backend/ratepay" name=returnStock}Auswahl retournieren, Inventar aktualisieren{/s}',
+                text: '{s namespace="backend/ratepay/order_management" name="action/returnStock"}{/s}',
                 handler: function () {
                     me.toolbarReturnStock();
                 }
@@ -139,14 +127,14 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
     },
     toolbarReturn: function () {
         var me = this;
-        var items = new Array();
+        var items = [];
         var id = me.record.get('id');
         var error = false;
 
         var firstArticle = me.record.getPositions().data.items[0];
         for (i = 0; i < me.store.data.items.length; i++) {
             var row = me.store.data.items[i].data;
-            var item = new Object();
+            var item = {};
             var tax_rate = row.tax_rate;
 
             // we must work with numbers. ExtJs collects the data of the row as strings. So we will convert them to integers
@@ -186,8 +174,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
         }
 
         if (error == true) {
-            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagereturntitle}Retoure fehlgeschlagen{/s}',
-                '{s namespace="backend/ratepay" name=messagereturntext}Es k&ouml;nnen nicht mehr Artikel retourniert werden als versand wurden!{/s}');
+            Ext.Msg.alert(
+                '{s namespace="backend/ratepay/order_management" name="message/returnFailed"}{/s}',
+                '{s namespace="backend/ratepay/order_management" name="message/returnTooMuch"}{/s}'
+            );
             return false;
         } else {
             Ext.Ajax.request({
@@ -202,10 +192,16 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
                 success: function (response) {
                     response = Ext.decode(response.responseText);
                     if(response.result && response.message){
-                        Shopware.Notification.createGrowlMessage('Success', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/returnSuccess"}{/s}',
+                            response.message
+                        );
                     }
                     else if(response.result === false && response.message) {
-                        Shopware.Notification.createGrowlMessage('Error', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/returnFailed"}{/s}',
+                            response.message
+                        );
                     }
 
                     var positionStore = Ext.create('Shopware.apps.RatepayOrder.store.Position');
@@ -268,8 +264,10 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
         }
 
         if (error == true) {
-            Ext.Msg.alert('{s namespace="backend/ratepay" name=messagereturntitle}Retoure fehlgeschlagen{/s}',
-                '{s namespace="backend/ratepay" name=messagereturntext}Es k&ouml;nnen nicht mehr Artikel retourniert werden als versand wurden!{/s}');
+            Ext.Msg.alert(
+                '{s namespace="backend/ratepay/order_management" name="message/returnFailed"}{/s}',
+                '{s namespace="backend/ratepay/order_management" name="message/returnTooMuch"}{/s}'
+            );
             return false;
         } else {
             Ext.Ajax.request({
@@ -284,10 +282,16 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {
                 success: function (response) {
                     response = Ext.decode(response.responseText);
                     if(response.result && response.message){
-                        Shopware.Notification.createGrowlMessage('Success', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/returnSuccess"}{/s}',
+                            response.message
+                        );
                     }
                     else if(response.result === false && response.message) {
-                        Shopware.Notification.createGrowlMessage('Error', response.message);
+                        Shopware.Notification.createGrowlMessage(
+                            '{s namespace="backend/ratepay/order_management" name="message/returnFailed"}{/s}',
+                            response.message
+                        );
                     }
 
                     var positionStore = Ext.create('Shopware.apps.RatepayOrder.store.Position');

@@ -100,7 +100,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             return;
         }
 
-        $this->logger->info('Proceed with RatePAY payment');
+        $this->logger->info('Proceed with Ratepay payment');
         Shopware()->Session()->RatePAY['errorRatenrechner'] = 'false';
         $this->_proceedPayment();
     }
@@ -135,7 +135,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
                 $this->paymentConfirmService->setOrder($order);
                 $this->paymentConfirmService->doRequest();
 
-                // Clear RatePAY session after call for authorization
+                // Clear Ratepay session after call for authorization
                 $this->sessionHelper->cleanUp();
 
                 /*
