@@ -4,7 +4,7 @@
 |Module | Ratepay Module for Shopware
 |------|----------
 |Author | Interlutions GmbH
-|Shop Version | `5.5.x` - `5.6.9`
+|Shop Version | `5.5.10` - `5.6.9`
 |Version | `5.5.1`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
