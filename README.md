@@ -3,7 +3,7 @@
 
 |Module | Ratepay Module for Shopware
 |------|----------
-|Shop Version | `5.5.x` - `5.6.x`
+|Shop Version | `5.5.10` - `5.6.x`
 |Version | `6.0.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
