@@ -57,10 +57,10 @@ class RpayRatePay extends Plugin
     {
         /** @var AbstractBootstrap[] $bootstrapper */
         $bootstrapper = [
-            new Database(),
-            new ProfileConfig(),
             new OrderAttribute(),
             new OrderDetailAttributes(),
+            new Database(),
+            new ProfileConfig(),
             new PaymentMeans(),
             new OrderStatus(),
             new Configuration(),

@@ -103,15 +103,24 @@ abstract class AbstractBootstrap
     /**
      * @param mixed $pluginDir
      */
-    public final function setPluginDir($pluginDir)
+    final public function setPluginDir($pluginDir)
     {
         $this->pluginDir = $pluginDir;
     }
 
-    protected final function getOldVersion() {
+    /**
+     * @deprecated
+     * @return string
+     */
+    final protected function getOldVersion() {
         return $this->installContext->getCurrentVersion();
     }
-    protected final function getNewVersion() {
+
+    /**
+     * @deprecated
+     * @return string
+     */
+    final protected function getNewVersion() {
         return $this->installContext->getPlugin()->getUpdateVersion();
     }
 

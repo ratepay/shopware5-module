@@ -138,7 +138,7 @@ final class PaymentMethods extends Enum
     public static function isInstallment($paymentMethod)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
-        return in_array($paymentMethod, [self::PAYMENT_INSTALLMENT0, self::PAYMENT_RATE]);
+        return in_array($paymentMethod, [self::PAYMENT_INSTALLMENT0, self::PAYMENT_RATE], true);
     }
 
     /**
@@ -148,6 +148,15 @@ final class PaymentMethods extends Enum
     public static function isZeroPercentInstallment($paymentMethod)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
-        return $paymentMethod == self::PAYMENT_INSTALLMENT0;
+        return $paymentMethod === self::PAYMENT_INSTALLMENT0;
+    }
+    /**
+     * @param string|Payment $paymentMethod
+     * @return boolean
+     */
+    public static function isNormalInstallment($paymentMethod)
+    {
+        $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
+        return $paymentMethod === self::PAYMENT_RATE;
     }
 }

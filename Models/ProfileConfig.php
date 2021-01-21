@@ -8,14 +8,14 @@
 
 namespace RpayRatePay\Models;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use RpayRatePay\Enum\PaymentMethods;
-use RuntimeException;
 use Shopware\Components\Model\ModelEntity;
+use Shopware\Models\Shop\Shop;
 
 /**
- * @ORM\Entity(repositoryClass="ProfileConfigRepository")
- * @ORM\Table(name="rpay_ratepay_config")
+ * @ORM\Entity()
+ * @ORM\Table(name="ratepay_profile_config")
  */
 class ProfileConfig extends ModelEntity
 {
@@ -23,24 +23,33 @@ class ProfileConfig extends ModelEntity
     /**
      * @var int
      * @ORM\Id()
-     * @ORM\Column(name="shopId", type="integer", length=5, nullable=false)
+     * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\Column(name="id", type="integer", length=11, nullable=false)
+     */
+    protected $id;
+
+    /**
+     * @var int
+     * @ORM\Column(name="shop_id", type="integer")
      */
     protected $shopId;
+
+    /**
+     * @var Shop
+     * @ORM\ManyToOne(targetEntity="Shopware\Models\Shop\Shop")
+     * @ORM\JoinColumn(name="shop_id", referencedColumnName="id")
+     */
+    protected $shop;
+
     /**
      * @var boolean
-     * @ORM\Id()
      * @ORM\Column(name="backend", type="boolean", nullable=false)
      */
     protected $backend = false;
-    /**
-     * @var boolean
-     * @ORM\Id()
-     * @ORM\Column(name="is_zero_percent_installment", type="boolean")
-     */
-    protected $isZeroPercentInstallment = false;
+
     /**
      * @var string
-     * @ORM\Column(name="profileId", type="string", length=255, nullable=false)
+     * @ORM\Column(name="profile_id", type="string", length=255, nullable=false)
      */
     protected $profileId;
 
@@ -51,51 +60,28 @@ class ProfileConfig extends ModelEntity
     protected $securityCode;
 
     /**
-     * @var ConfigPayment
-     * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
-     * @ORM\JoinColumn(name="config_invoice_id", referencedColumnName="rpay_id")
+     * @var boolean
+     * @ORM\Column(name="active", type="boolean", nullable=false)
      */
-    protected $invoiceConfig;
+    protected $active = false;
 
     /**
-     * @var ConfigPayment
-     * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
-     * @ORM\JoinColumn(name="config_debit_id", referencedColumnName="rpay_id")
+     * @var array
+     * @ORM\Column(name="country_code_billing", type="simple_array", length=2, nullable=true)
      */
-    protected $debitConfig;
+    protected $countryCodesBilling;
 
     /**
-     * @var ConfigPayment
-     * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
-     * @ORM\JoinColumn(name="config_installment_id", referencedColumnName="rpay_id")
+     * @var array
+     * @ORM\Column(name="country_code_delivery", type="simple_array", length=30, nullable=true)
      */
-    protected $installmentConfig;
+    protected $countryCodesDelivery;
 
     /**
-     * @var ConfigPayment
-     * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
-     * @ORM\JoinColumn(name="config_prepayment_id", referencedColumnName="rpay_id")
+     * @var array
+     * @ORM\Column(name="currency", type="simple_array", length=30, nullable=true)
      */
-    protected $prepaymentConfig;
-
-    /**
-     * @var string
-     * @ORM\Id()
-     * @ORM\Column(name="country_code_billing", type="string", length=2, nullable=true)
-     */
-    protected $countryCodeBilling;
-
-    /**
-     * @var string
-     * @ORM\Column(name="country_code_delivery", type="string", length=30, nullable=true)
-     */
-    protected $countryCodeDelivery;
-
-    /**
-     * @var string
-     * @ORM\Column(name="currency", type="string", length=30, nullable=true)
-     */
-    protected $currency;
+    protected $currencies;
 
     /**
      * @var string
@@ -110,6 +96,29 @@ class ProfileConfig extends ModelEntity
     protected $sandbox = false;
 
     /**
+     * @var ConfigPayment[]|ArrayCollection
+     * @ORM\OneToMany(targetEntity="RpayRatePay\Models\ConfigPayment", mappedBy="profileConfig")
+     */
+    protected $paymentMethodConfigs;
+
+
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId(int $id)
+    {
+        $this->id = $id;
+    }
+
+    /**
      * @return int
      */
     public function getShopId()
@@ -118,11 +127,20 @@ class ProfileConfig extends ModelEntity
     }
 
     /**
-     * @param int $shopId
+     * @param Shop $shop
      */
-    public function setShopId($shopId)
+    public function setShop(Shop $shop)
     {
-        $this->shopId = $shopId;
+        $this->shop = $shop;
+        $this->shopId = $shop->getId();
+    }
+
+    /**
+     * @return Shop
+     */
+    public function getShop()
+    {
+        return $this->shop;
     }
 
     /**
@@ -174,115 +192,67 @@ class ProfileConfig extends ModelEntity
     }
 
     /**
-     * @return ConfigPayment
+     * @return bool
      */
-    public function getInvoiceConfig()
+    public function isActive()
     {
-        return $this->invoiceConfig;
+        return $this->active;
     }
 
     /**
-     * @param ConfigPayment $invoiceConfig
+     * @param bool $active
      */
-    public function setInvoiceConfig($invoiceConfig)
+    public function setActive($active)
     {
-        $this->invoiceConfig = $invoiceConfig;
+        $this->active = $active;
     }
 
     /**
-     * @return ConfigPayment
+     * @return array
      */
-    public function getDebitConfig()
+    public function getCountryCodesBilling()
     {
-        return $this->debitConfig;
+        return $this->countryCodesBilling;
     }
 
     /**
-     * @param ConfigPayment $debitConfig
+     * @param array $countryCodesBilling
      */
-    public function setDebitConfig($debitConfig)
+    public function setCountryCodesBilling($countryCodesBilling)
     {
-        $this->debitConfig = $debitConfig;
+        $this->countryCodesBilling = $countryCodesBilling;
     }
 
     /**
-     * @return ConfigPayment
+     * @return array
      */
-    public function getInstallmentConfig()
+    public function getCountryCodesDelivery()
     {
-        return $this->installmentConfig;
+        return $this->countryCodesDelivery;
     }
 
     /**
-     * @param ConfigPayment $installmentConfig
+     * @param array $countryCodesDelivery
      */
-    public function setInstallmentConfig($installmentConfig)
+    public function setCountryCodesDelivery($countryCodesDelivery)
     {
-        $this->installmentConfig = $installmentConfig;
+        $this->countryCodesDelivery = $countryCodesDelivery;
     }
 
     /**
-     * @return ConfigPayment
+     * @return array
      */
-    public function getPrepaymentConfig()
+    public function getCurrencies()
     {
-        return $this->prepaymentConfig;
+        return $this->currencies;
     }
 
     /**
-     * @param ConfigPayment $prepaymentConfig
+     * @param array $currencies
      */
-    public function setPrepaymentConfig($prepaymentConfig)
+    public function setCurrencies($currencies)
     {
-        $this->prepaymentConfig = $prepaymentConfig;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCountryCodeBilling()
-    {
-        return $this->countryCodeBilling;
-    }
-
-    /**
-     * @param string $countryCodeBilling
-     */
-    public function setCountryCodeBilling($countryCodeBilling)
-    {
-        $this->countryCodeBilling = $countryCodeBilling;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCountryCodeDelivery()
-    {
-        return $this->countryCodeDelivery;
-    }
-
-    /**
-     * @param string $countryCodeDelivery
-     */
-    public function setCountryCodeDelivery($countryCodeDelivery)
-    {
-        $this->countryCodeDelivery = $countryCodeDelivery;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCurrency()
-    {
-        return $this->currency;
-    }
-
-    /**
-     * @param string $currency
-     */
-    public function setCurrency($currency)
-    {
-        $this->currency = $currency;
+        $this->currencies = $currencies;
     }
 
     /**
@@ -317,41 +287,12 @@ class ProfileConfig extends ModelEntity
         $this->sandbox = $sandbox;
     }
 
-
     /**
-     * returns the payment specific configuration
-     * @param $paymentMethodName
-     * @return ConfigPayment
+     * @return ConfigPayment[]|ArrayCollection
      */
-    public function getPaymentConfig($paymentMethodName)
+    public function getPaymentMethodConfigs()
     {
-        switch ($paymentMethodName) {
-            case PaymentMethods::PAYMENT_PREPAYMENT:
-                return $this->prepaymentConfig;
-            case PaymentMethods::PAYMENT_RATE:
-                return $this->installmentConfig;
-            case PaymentMethods::PAYMENT_DEBIT:
-                return $this->debitConfig;
-            case PaymentMethods::PAYMENT_INVOICE:
-                return $this->invoiceConfig;
-            default:
-                throw new RuntimeException('the given payment method name does not exist: ' . $paymentMethodName);
-        }
+        return $this->paymentMethodConfigs;
     }
 
-    /**
-     * @return bool
-     */
-    public function isZeroPercentInstallment()
-    {
-        return $this->isZeroPercentInstallment;
-    }
-
-    /**
-     * @param bool $isZeroPercentInstallment
-     */
-    public function setZeroPercentInstallment($isZeroPercentInstallment)
-    {
-        $this->isZeroPercentInstallment = $isZeroPercentInstallment;
-    }
 }

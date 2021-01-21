@@ -27,6 +27,7 @@
                     <li>New plugin structure</li>
                     <li>Ratepay data input fields are now located direct at the payment method</li>
                     <li>Internal changes regarding Database structures</li>
+                    <li>New Profile Configuration</li>
                 </ul>
 
                 <h2>Technical changes</h2>
@@ -51,6 +52,7 @@
                     <li>For direct debit orders the B2B-customer can now choose between company name and the combination of first- and lastname as account owner</li>
                     <li>Bug fixes in the context of VAT handling</li>
                     <li>Enabled payments for ESD products by default</li>
+                    <li>Moved Profile configuration & Logging to an separate menu-entry</li>
                 </ul>
 
                 <h2>New Features</h2>
@@ -73,6 +75,7 @@
                     <li>Neue Plugin Struktur</li>
                     <li>Felder im Checkout sind nun direkt bei der Zahlungsart</li>
                     <li>Anpassung der Datenbankstrukturen</li>
+                    <li>Neue Profile-Konfiguration</li>
                 </ul>
 
                 <h2>Technische Änderungen</h2>
@@ -97,6 +100,7 @@
                     <li>Bei Lastschriftzahlungen kann der Kunde im Falle einer B2B Bestellung nun auch den Firmennamen als Kontoinhaber angeben.</li>
                     <li>Fehlerbehebungen bei den Steuerangaben in den Gatewayanfragen</li>
                     <li>Aktivieren der Zahlungsart bei ESD Produkten als Standardeinstellung</li>
+                    <li>Die Menüpunkte "Logging" & "Profilkonfiguration" haben nun einen eigenen Menüoberpunkt.</li>
                 </ul>
 
                 <h2>Neue Features</h2>

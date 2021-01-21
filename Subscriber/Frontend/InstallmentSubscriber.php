@@ -11,6 +11,7 @@ namespace RpayRatePay\Subscriber\Frontend;
 
 use Enlight\Event\SubscriberInterface;
 use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\InstallmentService;
@@ -77,13 +78,17 @@ class InstallmentSubscriber implements SubscriberInterface
         }
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress();
 
         $totalAmount = floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']); // TODO no static access!
-        $templateVars = $this->installmentService->getInstallmentCalculatorVars(
-            $billingAddress,
-            Shopware()->Shop()->getId(),
-            $paymentMethod,
-            false,
+
+        $templateVars = $this->installmentService->getInstallmentCalculatorVars((new PaymentConfigSearch())
+            ->setPaymentMethod($paymentMethod)
+            ->setBackend(false)
+            ->setBillingCountry($billingAddress->getCountry()->getIso())
+            ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+            ->setShop(Shopware()->Shop())
+            ->setCurrency(Shopware()->Config()->get('currency')),
             $totalAmount
         );
 
@@ -109,6 +114,7 @@ class InstallmentSubscriber implements SubscriberInterface
                 return;
             }
             $billingAddress = $this->sessionHelper->getBillingAddress();
+            $shippingAddress = $this->sessionHelper->getShippingAddress();
             $dto = $this->sessionHelper->getInstallmentRequestDTO();
             try {
                 //Update installment plan
@@ -120,11 +126,13 @@ class InstallmentSubscriber implements SubscriberInterface
             }
 
 
-            $installmentPlanHtml = $this->installmentService->getInstallmentPlanTemplate(
-                $billingAddress,
-                Shopware()->Shop()->getId(),
-                $paymentMethod,
-                false,
+            $installmentPlanHtml = $this->installmentService->getInstallmentPlanTemplate((new PaymentConfigSearch())
+                ->setPaymentMethod($paymentMethod)
+                ->setBackend(false)
+                ->setBillingCountry($billingAddress->getCountry()->getIso())
+                ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+                ->setShop(Shopware()->Shop())
+                ->setCurrency(Shopware()->Config()->get('currency')),
                 $this->sessionHelper->getInstallmentRequestDTO()
             );
             $data['installmentPlan'] = $installmentPlanHtml;
@@ -138,15 +146,18 @@ class InstallmentSubscriber implements SubscriberInterface
     {
         $sessionTotalAmount = $this->sessionHelper->getSession()->get('sOrderVariables')['sAmount'];
         $billingAddress = $this->sessionHelper->getBillingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress();
         if ($sessionTotalAmount != $dto->getTotalAmount()) {
             // ups! the calculated plan does not have the same amount as the shopping cart ...
             $dto->setTotalAmount($sessionTotalAmount);
             // try to recalculate it.
-            $this->installmentService->initInstallmentData(
-                $billingAddress,
-                Shopware()->Shop()->getId(),
-                $paymentMethod,
-                false,
+            $this->installmentService->initInstallmentData((new PaymentConfigSearch())
+                ->setPaymentMethod($paymentMethod)
+                ->setBackend(false)
+                ->setBillingCountry($billingAddress->getCountry()->getIso())
+                ->setShippingCountry(($shippingAddress ?: $billingAddress)->getCountry()->getIso())
+                ->setShop(Shopware()->Shop()->getId())
+                ->setCurrency(Shopware()->Config()->get('currency')),
                 $dto
             );
             $this->messageManager->addInfoMessage('InstallmentPlanMayUpdated');

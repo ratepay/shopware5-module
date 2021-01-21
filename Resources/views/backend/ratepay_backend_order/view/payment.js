@@ -158,7 +158,9 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             url: '{url controller="RatepayBackendOrder" action="getInstallmentPaymentOptions"}',
             params: {
                 shopId: me.getShopId(),
-                billingId: billingId,
+                billingAddressId: me.getBillingAddressId(),
+                shippingAddressId: me.getShippingAddressId(),
+                currencyId: me.getCurrencyId(),
                 paymentMeansName: paymentMeansName,
             },
             success: function (response) {
@@ -203,14 +205,16 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             }
         });
     },
-    requestInstallmentCalculator: function(shopId, billingAddressId, paymentTypeName, totalAmount) {
+    requestInstallmentCalculator: function(shopId, billingAddressId, paymentMeansName, totalAmount) {
         var me = this;
         Ext.Ajax.request({
             url: '{url controller="RatepayBackendOrder" action="getInstallmentInfo"}',
             params: {
                 shopId: shopId,
-                billingId: billingAddressId,
-                paymentTypeName: paymentTypeName,
+                billingAddressId: me.getBillingAddressId(),
+                shippingAddressId: me.getShippingAddressId(),
+                currencyId: me.getCurrencyId(),
+                paymentMeansName: paymentMeansName,
                 totalAmount: totalAmount
             },
             success: function(response) {
@@ -244,7 +248,9 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             url: '{url controller="RatepayBackendOrder" action="getInstallmentPlan"}',
             params: {
                 shopId: me.getShopId(),
-                billingId: me.getBillingAddressId(),
+                billingAddressId: me.getBillingAddressId(),
+                shippingAddressId: me.getShippingAddressId(),
+                currencyId: me.getCurrencyId(),
                 paymentMeansName: me.paymentMeansName,
                 totalAmount: me.getTotalAmount(),
                 type: type,
@@ -352,8 +358,10 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
                     maxLengthText: 255,
                     listeners: {
                         blur: function (field) {
-                            fieldTerm.setValue(null);
-                            me.handleCalculatorInput.call(me, field.getValue(), "rate");
+                            if(field.getValue().length > 0) {
+                                fieldTerm.setValue(null);
+                                me.handleCalculatorInput.call(me, field.getValue(), "rate");
+                            }
                         }
                     }
                 })
@@ -432,6 +440,14 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
         }
         return null;
     },
+    getCurrencyId: function() {
+        var me = this;
+        var backendOrder = me.getBackendOrder();
+        if (backendOrder == null) {
+            return null;
+        }
+        return backendOrder.get('currencyId');
+    },
     getBillingAddressId: function() {
         var me = this;
         var backendOrder = me.getBackendOrder();
@@ -439,6 +455,14 @@ Ext.define('Shopware.apps.RatepayBackendOrder.view.payment', {
             return null;
         }
         return backendOrder.get('billingAddressId');
+    },
+    getShippingAddressId: function() {
+        var me = this;
+        var backendOrder = me.getBackendOrder();
+        if (backendOrder == null) {
+            return null;
+        }
+        return backendOrder.get('shippingAddressId') ? backendOrder.get('shippingAddressId') : me.getBillingAddressId();
     },
     getTotalAmount: function() {
         var me = this;

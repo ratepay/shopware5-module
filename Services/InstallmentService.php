@@ -13,6 +13,7 @@ use Enlight_Template_Default;
 use Enlight_Template_Manager;
 use RatePAY\Frontend\InstallmentBuilder;
 use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\LanguageHelper;
 use RpayRatePay\Helper\SessionHelper;
@@ -70,23 +71,14 @@ class InstallmentService
     /**
      * if the first parameter is a array than the function will not fetch the installment data from the gateway.
      * the array must contains the installment data from the gateway. you can get it with the function `getInstallmentPlan`
-     * @param Address $billingAddress
-     * @param int $shopId
-     * @param string $paymentMethodName
-     * @param boolean $isBackend
+     * @param PaymentConfigSearch $configSearch
      * @param InstallmentRequest $requestDto
      * @return mixed
      */
-    public function initInstallmentData(
-        Address $billingAddress,
-        $shopId,
-        $paymentMethodName,
-        $isBackend,
-        InstallmentRequest $requestDto
-    )
+    public function initInstallmentData(PaymentConfigSearch $configSearch, InstallmentRequest $requestDto)
     {
 
-        $plan = $this->getInstallmentPlan($billingAddress, $shopId, $paymentMethodName, $isBackend, $requestDto);
+        $plan = $this->getInstallmentPlan($configSearch, $requestDto);
 
         $this->sessionHelper->setInstallmentDetails(
             $plan['totalAmount'],
@@ -106,47 +98,40 @@ class InstallmentService
         return $plan;
     }
 
-    public function getInstallmentPlan(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto)
+    public function getInstallmentPlan(PaymentConfigSearch $configSearch, InstallmentRequest $requestDto)
     {
-        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
+        $installmentBuilder = $this->getInstallmentBuilder($configSearch);
         $result = $installmentBuilder->getInstallmentPlanAsJson($requestDto->getTotalAmount(), $requestDto->getType(), $requestDto->getValue());
         return json_decode($result, true);
     }
 
     /**
-     * @param Address $billingAddress
-     * @param $shopId
-     * @param $paymentMethodName
-     * @param bool $isBackend
+     * @param PaymentConfigSearch $configSearch
      * @return InstallmentBuilder
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    protected function getInstallmentBuilder(Address $billingAddress, $shopId, $paymentMethodName, $isBackend = false)
+    protected function getInstallmentBuilder(PaymentConfigSearch $configSearch)
     {
-        $paymentMethodName = $paymentMethodName instanceof Payment ? $paymentMethodName->getName() : $paymentMethodName;
-        $zeroPercentInstallment = $paymentMethodName === PaymentMethods::PAYMENT_INSTALLMENT0;
+        $shop = $this->modelManager->find(Shop::class, $configSearch->getShop());
 
-        $profileConfig = $this->profileConfigService->getProfileConfig(
-            $billingAddress->getCountry()->getIso(),
-            $shopId,
-            $isBackend,
-            $zeroPercentInstallment
-        );
+        $paymentMethodConfig = $this->profileConfigService->getPaymentConfiguration($configSearch);
 
-        $shop = $this->modelManager->find(Shop::class, $shopId); //TODO improve performance
+        $profileConfig = $paymentMethodConfig->getProfileConfig();
 
-        $installmentBuilder = new InstallmentBuilder(
+        return new InstallmentBuilder(
             $profileConfig->isSandbox(),
             $profileConfig->getProfileId(),
             $profileConfig->getSecurityCode(),
             strtoupper(substr($shop->getLocale()->getLocale(), 0, 2)),
-            $billingAddress->getCountry()->getIso()
+            $configSearch->getBillingCountry()
         );
-        return $installmentBuilder;
     }
 
-    public function getInstallmentPlanTemplate(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, InstallmentRequest $requestDto)
+    public function getInstallmentPlanTemplate(PaymentConfigSearch $configSearch, InstallmentRequest $requestDto)
     {
-        $planData = $this->getInstallmentPlan($billingAddress, $shopId, $paymentMethodName, $isBackend, $requestDto);
+        $planData = $this->getInstallmentPlan($configSearch, $requestDto);
 
         /** @var Enlight_Template_Default $template */
         $template = $this->templateManager->createTemplate('frontend/plugins/payment/ratepay/installment/plan.tpl');
@@ -158,16 +143,16 @@ class InstallmentService
         return $template->fetch();
     }
 
-    public function getInstallmentCalculator(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount)
+    public function getInstallmentCalculator(PaymentConfigSearch $configSearch, $totalAmount)
     {
-        $installmentBuilder = $this->getInstallmentBuilder($billingAddress, $shopId, $paymentMethodName, $isBackend);
+        $installmentBuilder = $this->getInstallmentBuilder($configSearch);
         $result = $installmentBuilder->getInstallmentCalculatorAsJson($totalAmount);
         return json_decode($result, true);
     }
 
-    public function getInstallmentCalculatorVars(Address $billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount)
+    public function getInstallmentCalculatorVars(PaymentConfigSearch $configSearch, $totalAmount)
     {
-        $calculatorData = $this->getInstallmentCalculator($billingAddress, $shopId, $paymentMethodName, $isBackend, $totalAmount);
+        $calculatorData = $this->getInstallmentCalculator($configSearch, $totalAmount);
 
         return array_merge([], [
             'translations' => LanguageHelper::getRatepayTranslations(Shopware()->Shop()),

@@ -10,10 +10,11 @@ namespace RpayRatePay\Models;
 
 use Doctrine\ORM\Mapping as ORM;
 use Shopware\Components\Model\ModelEntity;
+use Shopware\Models\Payment\Payment;
 
 /**
- * @ORM\Entity()
- * @ORM\Table(name="rpay_ratepay_config_payment")
+ * @ORM\Entity(repositoryClass="RpayRatePay\Models\PaymentConfigRepository")
+ * @ORM\Table(name="ratepay_profile_config_method")
  */
 class ConfigPayment extends ModelEntity
 {
@@ -22,30 +23,48 @@ class ConfigPayment extends ModelEntity
      * @var int
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
-     * @ORM\Column(name="rpay_id", type="integer", length=2, nullable=false)
+     * @ORM\Column(name="id", type="integer", length=2, nullable=false)
      */
-    protected $rpayId;
+    protected $id;
+
+    /**
+     * @var ProfileConfig
+     * @ORM\ManyToOne(targetEntity="RpayRatePay\Models\ProfileConfig")
+     * @ORM\JoinColumn(name="profile_id", referencedColumnName="id")
+     */
+    protected $profileConfig;
+
+    /**
+     * @var Payment
+     * @ORM\ManyToOne(targetEntity="Shopware\Models\Payment\Payment", fetch="LAZY")
+     * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="id")
+     */
+    protected $paymentMethod;
 
     /**
      * @var boolean
-     * @ORM\Column(name="b2b", type="boolean")
+     * @ORM\Column(name="allow_b2b", type="boolean")
      */
-    protected $b2b;
+    protected $allowB2b;
+
     /**
      * @var int
      * @ORM\Column(name="limit_min", type="integer", nullable=false)
      */
     protected $limitMin;
+
     /**
      * @var int
      * @ORM\Column(name="limit_max", type="integer", nullable=false)
      */
     protected $limitMax;
+
     /**
      * @var int
      * @ORM\Column(name="limit_max_b2b", type="integer", nullable=true)
      */
     protected $limitMaxB2b;
+
     /**
      * @var boolean
      * @ORM\Column(name="allow_different_addresses", type="boolean")
@@ -55,33 +74,65 @@ class ConfigPayment extends ModelEntity
     /**
      * @return int
      */
-    public function getRpayId()
+    public function getId()
     {
-        return $this->rpayId;
+        return $this->id;
     }
 
     /**
      * @param int $rpayId
      */
-    public function setRpayId($rpayId)
+    public function setId($id)
     {
-        $this->rpayId = $rpayId;
+        $this->id = $id;
+    }
+
+    /**
+     * @return ProfileConfig
+     */
+    public function getProfileConfig()
+    {
+        return $this->profileConfig;
+    }
+
+    /**
+     * @param ProfileConfig $profileConfig
+     */
+    public function setProfileConfig(ProfileConfig $profileConfig)
+    {
+        $this->profileConfig = $profileConfig;
+    }
+
+    /**
+     * @return Payment
+     */
+    public function getPaymentMethod()
+    {
+        return $this->paymentMethod;
+    }
+
+    /**
+     * @param Payment $paymentMethod
+     */
+    public function setPaymentMethod(Payment $paymentMethod)
+    {
+        $this->paymentMethod = $paymentMethod;
     }
 
     /**
      * @return boolean
      */
-    public function isB2b()
+    public function isAllowB2B()
     {
-        return $this->b2b;
+        return $this->allowB2b;
     }
 
     /**
-     * @param boolean $b2b
+     * @param boolean $allowB2b
      */
-    public function setB2b($b2b)
+    public function setAllowB2B($allowB2b)
     {
-        $this->b2b = $b2b;
+        $this->allowB2b = $allowB2b;
     }
 
     /**

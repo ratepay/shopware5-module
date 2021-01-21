@@ -8,119 +8,70 @@
 
 namespace RpayRatePay\Bootstrap;
 
-use RpayRatePay\Services\Config\ConfigService;
-use RpayRatePay\Services\Config\ProfileConfigService;
-use RpayRatePay\Services\Config\WriterService;
-use RpayRatePay\Services\Logger\RequestLogger;
 use RpayRatePay\Services\PaymentMethodsService;
-use RpayRatePay\Services\Request\ProfileRequestService;
 use Shopware\Models\Config\Element;
 use Shopware\Models\Config\Value;
 
 class Configuration extends AbstractBootstrap
 {
 
-    /**
-     * @var PaymentMethodsService
-     */
-    protected $paymentMethodsService;
-    /**
-     * @var ProfileConfigService
-     */
-    protected $profileConfigService;
-    /**
-     * @var WriterService
-     */
-    protected $profileConfigWriter;
-
-    public function setContainer($container)
-    {
-        parent::setContainer($container);
-        $this->paymentMethodsService = new PaymentMethodsService($this->modelManager, $this->installContext->getPlugin()->getName());
-        $configService = new ConfigService(
-            $this->container,
-            $this->container->get('shopware.plugin.cached_config_reader'),
-            $this->modelManager,
-            $this->installContext->getPlugin()->getName(),
-            $this->updateContext ? $this->updateContext->getUpdateVersion() : $this->installContext->getPlugin()->getVersion()
-        );
-        $this->profileConfigWriter = new WriterService( /// TODO uhhh - that's not soo beautiful
-            $this->modelManager,
-            new ProfileRequestService(
-                $db = $this->container->get('db'),
-                $configService,
-                new RequestLogger(
-                    $configService,
-                    $this->modelManager,
-                    $this->logger
-                )
-            ),
-            $this->logger
-        );
-        $this->profileConfigService = new ProfileConfigService($this->modelManager, $configService, $this->profileConfigWriter, $this->logger);
-    }
-
     public function preInstall()
     {
-        $this->profileConfigWriter->truncateConfigTables();
         $this->moveOldPluginConfiguration();
     }
+
     public function preUpdate()
     {
-        $this->preInstall();
+        $this->moveOldPluginConfiguration();
     }
 
     public function install()
     {
-        $this->profileConfigService->refreshProfileConfigs();
+        // do nothing
     }
 
     public function update()
     {
-        if ($this->updateContext === null && $this->installContext->getPlugin()->getActive() == false) {
-            return;
-        }
-        $this->profileConfigService->refreshProfileConfigs();
+        // do nothing
     }
 
     public function uninstall($keepUserData = false)
     {
-        //do nothing
     }
 
     public function activate()
     {
-        $this->profileConfigService->refreshProfileConfigs();
+        // do nothing
     }
 
     public function deactivate()
     {
-        //do nothing
+        // do nothing
     }
 
     private function moveOldPluginConfiguration()
     {
         $fieldNames = [
-            "RatePayProfileIDDE" => "ratepay/profile/de/frontend/id",
-            "RatePaySecurityCodeDE" => "ratepay/profile/de/frontend/security_code",
-            "RatePayProfileIDDEBackend" => "ratepay/profile/de/backend/id",
-            "RatePaySecurityCodeDEBackend" => "ratepay/profile/de/backend/security_code",
-            "RatePayProfileIDAT" => "ratepay/profile/at/frontend/id",
-            "RatePaySecurityCodeAT" => "ratepay/profile/at/frontend/security_code",
-            "RatePayProfileIDATBackend" => "ratepay/profile/at/backend/id",
-            "RatePaySecurityCodeATBackend" => "ratepay/profile/at/backend/security_code",
-            "RatePayProfileIDCH" => "ratepay/profile/ch/frontend/id",
-            "RatePaySecurityCodeCH" => "ratepay/profile/ch/frontend/security_code",
-            "RatePayProfileIDCHBackend" => "ratepay/profile/ch/backend/id",
-            "RatePaySecurityCodeCHBackend" => "ratepay/profile/ch/backend/security_code",
-            "RatePayProfileIDBE" => "ratepay/profile/be/frontend/id",
-            "RatePaySecurityCodeBE" => "ratepay/profile/be/frontend/security_code",
-            "RatePayProfileIDBEBackend" => "ratepay/profile/be/backend/id",
-            "RatePaySecurityCodeBEBackend" => "ratepay/profile/be/backend/security_code",
-            "RatePayProfileIDNL" => "ratepay/profile/nl/frontend/id",
-            "RatePaySecurityCodeNL" => "ratepay/profile/nl/frontend/security_code",
-            "RatePayProfileIDNLBackend" => "ratepay/profile/nl/backend/id",
-            "RatePaySecurityCodeNLBackend" => "ratepay/profile/nl/backend/security_code",
+            "RatePayProfileIDDE" => null,
+            "RatePaySecurityCodeDE" => null,
+            "RatePayProfileIDDEBackend" => null,
+            "RatePaySecurityCodeDEBackend" => null,
+            "RatePayProfileIDAT" => null,
+            "RatePaySecurityCodeAT" => null,
+            "RatePayProfileIDATBackend" => null,
+            "RatePaySecurityCodeATBackend" => null,
+            "RatePayProfileIDCH" => null,
+            "RatePaySecurityCodeCH" => null,
+            "RatePayProfileIDCHBackend" => null,
+            "RatePaySecurityCodeCHBackend" => null,
+            "RatePayProfileIDBE" => null,
+            "RatePaySecurityCodeBE" => null,
+            "RatePayProfileIDBEBackend" => null,
+            "RatePaySecurityCodeBEBackend" => null,
+            "RatePayProfileIDNL" => null,
+            "RatePaySecurityCodeNL" => null,
+            "RatePayProfileIDNLBackend" => null,
+            "RatePaySecurityCodeNLBackend" => null,
             "RatePayBidirectional" => "ratepay/bidirectional/enable",
             "RatePayFullDelivery" => "ratepay/bidirectional/status/full_delivery",
             "RatePayFullCancellation" => "ratepay/bidirectional/status/full_cancellation",
@@ -139,15 +90,17 @@ class Configuration extends AbstractBootstrap
 
         $this->modelManager->beginTransaction();
         /** @var Element $oldField */
-        foreach($oldFields as $oldField) {
-            /** @var Element $newField */
-            $newField = $elementRepo->findOneBy(['name' => $fieldNames[$oldField->getName()]]);
-            if($newField && $oldField->getValues()) {
-                /** @var Value $value */
-                foreach($oldField->getValues() as $value) {
-                    if(!empty($value->getValue())) {
-                        $value->setElement($newField);
-                        $oldField->getValues()->removeElement($value);
+        foreach ($oldFields as $oldField) {
+            if ($newFieldName = $fieldNames[$oldField->getName()]) {
+                /** @var Element $newField */
+                $newField = $elementRepo->findOneBy(['name' => $newFieldName]);
+                if ($newField && $oldField->getValues()) {
+                    /** @var Value $value */
+                    foreach ($oldField->getValues() as $value) {
+                        if (!empty($value->getValue())) {
+                            $value->setElement($newField);
+                            $oldField->getValues()->removeElement($value);
+                        }
                     }
                 }
             }

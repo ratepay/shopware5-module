@@ -9,14 +9,15 @@
 namespace RpayRatePay\Services\Config;
 
 
+use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\TransactionRequiredException;
-use Exception;
 use Monolog\Logger;
-use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Models\ConfigInstallment;
 use RpayRatePay\Models\ConfigPayment;
+use RpayRatePay\Models\PaymentConfigRepository;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Models\ProfileConfigRepository;
 use Shopware\Components\Model\ModelManager;
@@ -58,124 +59,67 @@ class ProfileConfigService
     }
 
     /**
-     * @param PaymentMethod $paymentMethodName string
-     * @param $shopId
-     * @param $countryIso
-     * @param bool $backend
+     * @param PaymentConfigSearch $configSearch
      * @return object|ConfigInstallment|null
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws TransactionRequiredException
      */
-    public function getInstallmentConfig($paymentMethodName, $shopId, $countryIso = null, $backend = false)
+    public function getInstallmentConfig(PaymentConfigSearch $configSearch)
     {
-        // TODO naming is similar to `getPaymentConfig`, but do other stuffs
-        $config = $this->getPaymentConfig($paymentMethodName, $shopId, $countryIso, $backend);
-        return $config ? $this->modelManager->find(ConfigInstallment::class, $config->getRpayId()) : null;
+        $config = $this->getPaymentConfiguration($configSearch);
+
+        return $config ? $this->modelManager->find(ConfigInstallment::class, $config->getId()) : null;
     }
 
     /**
-     * @param PaymentMethod $paymentMethod
-     * @param $shopId int
-     * @param $countryIso
-     * @param $backend
+     * @param PaymentConfigSearch $configSearch
      * @return ConfigPayment|null
      */
-    protected function getPaymentConfig($paymentMethod, $shopId, $countryIso = null, $backend = null)
+    public function getPaymentConfiguration(PaymentConfigSearch $configSearch)
     {
-        $paymentMethod = $paymentMethod instanceof PaymentMethod ? $paymentMethod->getName() : $paymentMethod;
-        $profileConfig = $this->getProfileConfig(
-            $countryIso,
-            $shopId,
-            $backend,
-            $paymentMethod == PaymentMethods::PAYMENT_INSTALLMENT0
-        );
-        return $profileConfig ? $this->getPaymentConfigForProfileAndMethod($profileConfig, $paymentMethod) : null;
-    }
+        /** @var PaymentConfigRepository $repo */
+        $repo = $this->modelManager->getRepository(ConfigPayment::class);
 
-    public function getProfileConfig($countryIso, $shopId, $backend = false, $zeroPercentInstallment = false)
-    {
-        /** @var ProfileConfigRepository $repo */
-        $repo = $this->modelManager->getRepository(ProfileConfig::class);
-        return $repo->findConfiguration($shopId, $countryIso, $zeroPercentInstallment, $backend);
-    }
-
-    public function getPaymentConfigForProfileAndMethod(ProfileConfig $profileConfig, $paymentMethod)
-    {
-        switch ($paymentMethod) {
-            case PaymentMethods::PAYMENT_DEBIT:
-                return $profileConfig->getDebitConfig();
-            case PaymentMethods::PAYMENT_INVOICE:
-                return $profileConfig->getInvoiceConfig();
-            case PaymentMethods::PAYMENT_INSTALLMENT0:
-            case PaymentMethods::PAYMENT_RATE:
-                return $profileConfig->getInstallmentConfig();
-            case PaymentMethods::PAYMENT_PREPAYMENT:
-                return $profileConfig->getPrepaymentConfig();
-        }
-        throw new Exception('unknown payment method ' . $paymentMethod);
+        return $repo->findPaymentMethodConfiguration($configSearch);
     }
 
     /**
-     * Parameter must have the following structure:
-     * [
-     *  [shop_id] => [              // 1 | 2 | 3 | 4 | 5 | ...
-     *    [country_code] => [       // de | at | nl | ch | be
-     *      [scope] => [            // backend | frontend
-     *        [profile_type] => [   // general | installment0
-     *          [id] =>             // profile id
-     *          [security_code] =>  // security code
-     *        ]
-     *      ]
-     *    ]
-     *  ]
-     * ]
-     *
-     * @param array $shopCredentials
+     * @param int|null $profileEntityId
+     * @return bool
+     * @throws EntityNotFoundException
      */
-    public function refreshProfileConfigs(array $shopCredentials = null)
+    public function refreshProfileConfig($profileEntityId = null)
     {
-
-        if ($shopCredentials == null) {
-            $shops = $this->modelManager->getRepository(Shop::class)->findAll();
-            foreach ($shops as $shop) {
-                foreach ($this->configService->getAllProfileConfigs($shop) as $name => $value) {
-                    if (preg_match_all(self::REGEX_CONFIG, $name, $matches)) {
-                        $country = $matches[1][0];
-                        $scope = $matches[2][0]; // frontend | backend
-                        $fieldName = $matches[3][0]; // id | security_code
-                        $profileType = $matches[4][0] === 'installment0' ? 'installment0' : 'general';
-                        $shopCredentials[$shop->getId()][$country][$scope][$profileType][$fieldName] = trim($value);
-                    }
-                }
+        if ($profileEntityId === null) {
+            $configs = $this->modelManager->getRepository(ProfileConfig::class)->findAll();
+            foreach ($configs as $config) {
+                $this->refreshProfileConfig($config);
             }
+            return true;
         }
 
-        $this->configWriterService->truncateConfigTables();
-        foreach ($shopCredentials as $shopId => $countries) { // de | at | nl | ch | be
-            foreach ($countries as $countryCode => $scopes) { // backend | frontend
-                foreach ($scopes as $scope => $profileTypes) {  // general | installment0
-                    foreach ($profileTypes as $type => $credentials) {
-                        if (null !== $credentials['id'] && null !== $credentials['security_code']) {
-
-                            $profileConfig = new ProfileConfig();
-                            $profileConfig->setShopId($shopId);
-                            $profileConfig->setBackend($scope == 'backend');
-                            $profileConfig->setZeroPercentInstallment($type == 'installment0');
-                            $profileConfig->setProfileId($credentials['id']);
-                            $profileConfig->setSecurityCode($credentials['security_code']);
-
-                            $saveResponse = $this->configWriterService->writeRatepayConfig($profileConfig);
-
-                            if ($saveResponse) {
-                                $this->logger->notice('Profile for ' . strtoupper($countryCode) . ' successfully updated.');
-                            } else {
-                                $errors[] = strtoupper($countryCode) . ' Frontend';
-                            }
-                        }
-                    }
-                }
-            }
+        /** @var ProfileConfig $profileConfig */
+        $profileConfig = $this->modelManager->find(ProfileConfig::class, $profileEntityId);
+        if ($profileConfig === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(ProfileConfig::class, [$profileEntityId]);
         }
+
+        $saveResponse = $this->configWriterService->writeRatepayConfig($profileConfig);
+        if ($saveResponse) {
+            $this->logger->notice('Profile ' . strtoupper($profileConfig->getProfileId()) . ' successfully refreshed.');
+            return true;
+        }
+        return false;
     }
+
+    /**
+     * @param string $profileId the profileId of the entity. NOT the id of the entity!
+     * @return ProfileConfig|null
+     */
+    public function getProfileConfigById($profileId)
+    {
+        return $this->modelManager->getRepository(ProfileConfig::class)->findOneBy(['profileId' => $profileId]);
+    }
+
 }

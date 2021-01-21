@@ -13,7 +13,7 @@ use Shopware\Components\Model\ModelEntity;
 
 /**
  * @ORM\Entity(repositoryClass="ConfigInstallmentRepository")
- * @ORM\Table(name="rpay_ratepay_config_installment")
+ * @ORM\Table(name="ratepay_profile_config_method_installment")
  */
 class ConfigInstallment extends ModelEntity
 {
@@ -21,27 +21,27 @@ class ConfigInstallment extends ModelEntity
      * @var ConfigPayment
      * @ORM\Id()
      * @ORM\OneToOne(targetEntity="RpayRatePay\Models\ConfigPayment")
-     * @ORM\JoinColumn(name="rpay_id", referencedColumnName="rpay_id")
+     * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
     protected $paymentConfig;
 
     /**
      * @var string
-     * @ORM\Column(name="month_allowed", type="string", length=255, nullable=false)
+     * @ORM\Column(name="month_allowed", type="simple_array", nullable=false)
      */
-    protected $monthAllowed;
+    protected $monthsAllowed;
 
     /**
-     * @var string
-     * @ORM\Column(name="payment_firstday", type="string", length=10, nullable=false)
+     * @var boolean
+     * @ORM\Column(name="is_banktransfer_allowed", type="boolean", nullable=false)
      */
-    protected $paymentFirstDay;
+    protected $bankTransferAllowed;
 
     /**
-     * @var string
-     * @ORM\Column(name="interestrate_default", type="float", nullable=false)
+     * @var boolean
+     * @ORM\Column(name="is_debit_allowed", type="boolean", nullable=false)
      */
-    protected $interestRateDateDefault;
+    protected $debitAllowed;
 
     /**
      * @var string
@@ -68,49 +68,67 @@ class ConfigInstallment extends ModelEntity
     /**
      * @return string
      */
-    public function getMonthAllowed()
+    public function getMonthsAllowed()
     {
-        return $this->monthAllowed;
+        return $this->monthsAllowed;
     }
 
     /**
-     * @param string $monthAllowed
+     * @param string $monthsAllowed
      */
-    public function setMonthAllowed($monthAllowed)
+    public function setMonthsAllowed($monthsAllowed)
     {
-        $this->monthAllowed = $monthAllowed;
+        $this->monthsAllowed = $monthsAllowed;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBankTransferAllowed(): bool
+    {
+        return $this->bankTransferAllowed;
+    }
+
+    /**
+     * @param bool $bankTransferAllowed
+     */
+    public function setBankTransferAllowed(bool $bankTransferAllowed): void
+    {
+        $this->bankTransferAllowed = $bankTransferAllowed;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebitAllowed()
+    {
+        return $this->debitAllowed;
+    }
+
+    /**
+     * @param bool $debitAllowed
+     */
+    public function setDebitAllowed($debitAllowed)
+    {
+        $this->debitAllowed = $debitAllowed;
     }
 
     /**
      * @return string
+     * @deprecated
      */
     public function getPaymentFirstDay()
     {
-        return $this->paymentFirstDay;
-    }
-
-    /**
-     * @param string $paymentFirstDay
-     */
-    public function setPaymentFirstDay($paymentFirstDay)
-    {
-        $this->paymentFirstDay = $paymentFirstDay;
-    }
-
-    /**
-     * @return string
-     */
-    public function getInterestRateDateDefault()
-    {
-        return $this->interestRateDateDefault;
-    }
-
-    /**
-     * @param string $interestRateDateDefault
-     */
-    public function setInterestRateDateDefault($interestRateDateDefault)
-    {
-        $this->interestRateDateDefault = $interestRateDateDefault;
+        if ($this->isDebitAllowed() && $this->isBankTransferAllowed()) {
+            return '2,28';
+        }
+        if ($this->isDebitAllowed()) {
+            return 2;
+        }
+        if ($this->isBankTransferAllowed()) {
+            return 28;
+        }
+        throw new \RuntimeException('unknown paymentPaymentFirstDay');
     }
 
     /**

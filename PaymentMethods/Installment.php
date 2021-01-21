@@ -11,6 +11,7 @@ namespace RpayRatePay\PaymentMethods;
 
 use Enlight_Controller_Request_Request;
 use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Services\InstallmentService;
 
@@ -81,12 +82,17 @@ class Installment extends Debit
         );
 
         $paymentMethod = $this->getPaymentMethodFromRequest($request);
+
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $this->installmentService->initInstallmentData(
-            $billingAddress,
-            Shopware()->Shop()->getId(),
-            $paymentMethod->getName(),
-            false,
+        $shippingAddress = $this->sessionHelper->getShippingAddress();
+
+        $this->installmentService->initInstallmentData((new PaymentConfigSearch())
+            ->setPaymentMethod($paymentMethod)
+            ->setBackend(false)
+            ->setBillingCountry($billingAddress->getCountry()->getIso())
+            ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+            ->setShop(Shopware()->Shop()->getId())
+            ->setCurrency(Shopware()->Config()->get('currency')),
             $dto
         );
     }

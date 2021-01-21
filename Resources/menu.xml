@@ -7,15 +7,33 @@
   -->
 
 <menu xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.3/engine/Shopware/Components/Plugin/schema/menu.xsd">
+      xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/menu.xsd">
     <entries>
         <entry>
             <name>Ratepay</name>
             <label>Ratepay</label>
-            <controller>RatepayLogging</controller>
-            <action>index</action>
-            <class>sprite-cards-stack</class>
-            <parent identifiedBy="controller">Log</parent>
+            <class>ratepay-icon</class>
+            <parent identifiedBy="controller">ConfigurationMenu</parent>
+            <children>
+                <entry>
+                    <name>API-Log</name>
+                    <label>API-Log</label>
+                    <controller>RatepayLogging</controller>
+                    <action>index</action>
+                    <class>sprite-cards-stack</class>
+                    <parent identifiedBy="label">Ratepay</parent>
+                </entry>
+                <entry>
+                    <name>Ratepay profiles</name>
+                    <label>Profiles</label>
+                    <label lang="de">Profile</label>
+                    <controller>RatepayProfileConfig</controller>
+                    <action>index</action>
+                    <class>sprite-wrench-screwdriver</class>
+                    <parent identifiedBy="label">Ratepay</parent>
+                </entry>
+            </children>
         </entry>
+
     </entries>
 </menu>

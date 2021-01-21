@@ -10,6 +10,7 @@
 use Monolog\Logger;
 use RatePAY\Model\Response\PaymentRequest;
 use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -177,6 +178,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         }
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress();
 
         $requestDto = new InstallmentRequest(
             $params['calculationAmount'],
@@ -185,11 +187,13 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             $params['paymentType']
         );
 
-        echo $this->installmentService->getInstallmentPlanTemplate(
-            $billingAddress,
-            Shopware()->Shop()->getId(),
-            $paymentMethod,
-            false,
+        echo $this->installmentService->getInstallmentPlanTemplate((new PaymentConfigSearch())
+            ->setPaymentMethod($paymentMethod)
+            ->setBackend(false)
+            ->setBillingCountry($billingAddress->getCountry()->getIso())
+            ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+            ->setShop(Shopware()->Shop())
+            ->setCurrency(Shopware()->Config()->get('currency')),
             $requestDto
         );
     }

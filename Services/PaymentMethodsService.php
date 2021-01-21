@@ -65,7 +65,7 @@ class PaymentMethodsService
         $payments = $this->getPlugin()->getPayments()->toArray();
         /** @var Payment $payment */
         foreach ($payments as $payment) {
-            $payment->setActive(true);
+            $payment->setActive(false);
         }
         $this->modelManager->flush($payments);
     }

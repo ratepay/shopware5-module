@@ -104,17 +104,9 @@ class PaymentConfirmService extends AbstractRequest
         }
     }
 
-    /**
-     * @param $isBackend
-     * @return ProfileConfig
-     */
     protected function getProfileConfig()
     {
-        return $this->profileConfigService->getProfileConfig(
-            $this->order->getBilling()->getCountry()->getIso(),
-            $this->order->getShop()->getId(),
-            $this->order->getAttribute()->getRatepayBackend() == 1,
-            $this->order->getPayment()->getName() == PaymentMethods::PAYMENT_INSTALLMENT0
-        );
+        $orderAttribute = $this->order->getAttribute();
+        return $orderAttribute ? $this->profileConfigService->getProfileConfigById($orderAttribute->getRatepayProfileId()) : null;
     }
 }

@@ -10,6 +10,7 @@
 use Monolog\Logger;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Exception\NoProfileFoundException;
 use RpayRatePay\Helper\SessionHelper;
@@ -85,23 +86,26 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
 
     public function getInstallmentInfoAction()
     {
-        //TODO: add try/catch block
         try {
             $params = $this->Request()->getParams();
 
             $shopId = $params['shopId'];
-            $billingId = $params['billingId'];
-            //TODO: change array key to paymentMeansName
-            $paymentMeansName = $params['paymentTypeName'];
+            $paymentMethodName = $params['paymentMeansName'];
+            $billingAddressId = $params['billingAddressId'];
+            $shippingAddressId = $params['billingAddressId'];
+            $currencyId = $params['currencyId'];
             $totalAmount = $params['totalAmount'];
 
-            $customerAddress = $this->modelManager->find(Address::class, $billingId);
+            $billingAddress = $this->modelManager->find(Address::class, $billingAddressId);
+            $shippingAddress = $this->modelManager->find(Address::class, $shippingAddressId);
 
-            $result = $this->installmentService->getInstallmentCalculator(
-                $customerAddress,
-                $shopId,
-                $paymentMeansName,
-                true,
+            $result = $this->installmentService->getInstallmentCalculator((new PaymentConfigSearch())
+                ->setPaymentMethod($paymentMethodName)
+                ->setBackend(true)
+                ->setBillingCountry($billingAddress->getCountry()->getIso())
+                ->setShippingCountry($shippingAddress->getCountry()->getIso())
+                ->setShop($shopId)
+                ->setCurrency($currencyId),
                 $totalAmount
             );
 
@@ -125,13 +129,23 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $params = $this->Request()->getParams();
 
         $shopId = $params['shopId'];
-        $billingId = $params['billingId'];
-        $paymentMeansName = $params['paymentMeansName'];
+        $paymentMethodName = $params['paymentMeansName'];
+        $billingAddressId = $params['billingAddressId'];
+        $shippingAddressId = $params['billingAddressId'];
+        $currencyId = $params['currencyId'];
 
         try {
-            $customerAddress = $this->modelManager->find(Address::class, $billingId);
+            $billingAddress = $this->modelManager->find(Address::class, $billingAddressId);
+            $shippingAddress = $this->modelManager->find(Address::class, $shippingAddressId);
 
-            $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMeansName, $shopId, $customerAddress->getCountry()->getIso(), true);
+            $installmentConfig = $this->profileConfigService->getInstallmentConfig((new PaymentConfigSearch())
+                ->setPaymentMethod($paymentMethodName)
+                ->setBackend(true)
+                ->setBillingCountry($billingAddress->getCountry()->getIso())
+                ->setShippingCountry($shippingAddress->getCountry()->getIso())
+                ->setShop($shopId)
+                ->setCurrency($currencyId)
+            );
             if ($installmentConfig === null) {
                 throw new NoProfileFoundException();
             }
@@ -157,9 +171,12 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $params = $this->Request()->getParams();
 
         $shopId = $params['shopId'];
-        $billingId = $params['billingId'];
+        $billingAddressId = $params['billingAddressId'];
+        $shippingAddressId = $params['billingAddressId'];
+        $currencyId = $params['currencyId'];
 
-        $billingAddress = $this->modelManager->find(Address::class, $billingId);
+        $billingAddress = $this->modelManager->find(Address::class, $billingAddressId);
+        $shippingAddress = $this->modelManager->find(Address::class, $shippingAddressId);
 
         $paymentMethodName = $params['paymentMeansName'];
         $totalAmount = $params['totalAmount'];
@@ -167,25 +184,27 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $calcParamSet = !empty($params['value']) && !empty($params['type']);
         $type = $calcParamSet ? $params['type'] : 'time';
 
-        $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentMethodName, $shopId, $billingAddress->getCountry()->getIso(), true);
+        $paymentConfigSearch = (new PaymentConfigSearch())
+            ->setPaymentMethod($paymentMethodName)
+            ->setBackend(true)
+            ->setBillingCountry($billingAddress->getCountry()->getIso())
+            ->setShippingCountry($shippingAddress->getCountry()->getIso())
+            ->setShop($shopId)
+            ->setCurrency($currencyId);
+
+        $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentConfigSearch);
 
         //TODO refactor
         if ($calcParamSet) {
             $val = $params['value'];
         } else {
-            $val = explode(',', $installmentConfig->getMonthAllowed())[0];
+            $val = $installmentConfig->getMonthsAllowed();
         }
 
         try {
             $dto = new InstallmentRequest($totalAmount, $type, $val, $paymentType);
 
-            $plan = $this->installmentService->initInstallmentData(
-                $billingAddress,
-                $shopId,
-                $paymentMethodName,
-                true,
-                $dto
-            );
+            $plan = $this->installmentService->initInstallmentData($paymentConfigSearch, $dto);
             $this->view->assign([
                 'success' => true,
                 'plan' => $plan,

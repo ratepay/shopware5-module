@@ -17,6 +17,7 @@ use RatePAY\Model\Response\PaymentRequest as PaymentResponse;
 use RatePAY\RequestBuilder;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Models\Position\Discount;
@@ -193,6 +194,7 @@ class PaymentRequestService extends AbstractRequest
             $order->setAttribute($orderAttribute);
         }
 
+        $orderAttribute->setRatepayProfileId($this->getProfileConfig()->getProfileId());
         $orderAttribute->setRatepayDescriptor($paymentResponse->getDescriptor());
         $orderAttribute->setRatepayBackend($this->isBackend);
         $orderAttribute->setRatepayFallbackDiscount($this->configService->isCommitDiscountAsCartItem());
@@ -274,12 +276,15 @@ class PaymentRequestService extends AbstractRequest
 
     protected function getProfileConfig()
     {
-        return $this->profileConfigService->getProfileConfig(
-            $this->paymentRequestData->getBillingAddress()->getCountry()->getIso(),
-            $this->paymentRequestData->getShop()->getId(),
-            $this->isBackend,
-            $this->paymentRequestData->getMethod()->getName() == PaymentMethods::PAYMENT_INSTALLMENT0
+        $paymentMethodConfig = $this->profileConfigService->getPaymentConfiguration((new PaymentConfigSearch())
+            ->setPaymentMethod($this->paymentRequestData->getMethod())
+            ->setBackend($this->isBackend)
+            ->setBillingCountry($this->paymentRequestData->getBillingAddress()->getCountry()->getIso())
+            ->setShippingCountry($this->paymentRequestData->getShippingAddress()->getCountry()->getIso())
+            ->setShop($this->paymentRequestData->getShop())
+            ->setCurrency($this->paymentRequestData->getCurrencyId())
         );
+        return $paymentMethodConfig ? $paymentMethodConfig->getProfileConfig() : null;
     }
 
     protected function processSuccess()

@@ -20,6 +20,6 @@ class ConfigInstallmentRepository extends ModelRepository
      */
     public function findOneByPaymentConfig(ConfigPayment $paymentConfig)
     {
-        return $this->findOneBy(['paymentConfig' => $paymentConfig->getRpayId()]);
+        return $this->findOneBy(['paymentConfig' => $paymentConfig->getId()]);
     }
 }

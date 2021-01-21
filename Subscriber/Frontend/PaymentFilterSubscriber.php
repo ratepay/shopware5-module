@@ -17,16 +17,14 @@ use Enlight_Controller_Front;
 use Enlight_Event_EventArgs;
 use Monolog\Logger;
 use RpayRatePay\Component\Service\ValidationLib as ValidationService;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
-use RpayRatePay\Models\ConfigPayment;
-use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\PaymentMethodsService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Country\Country;
 use Shopware\Models\Payment\Payment;
 use Shopware_Components_Config;
 use Shopware_Components_Modules;
@@ -136,29 +134,42 @@ class PaymentFilterSubscriber implements SubscriberInterface
             return $return;
         }
 
-        $configs = $this->getRatePayPluginConfigByCountry($this->context->getShop()->getId(), $billingAddress->getCountry());
-
         $availableRatePayMethods = [];
-        foreach ($configs as $payment => $config) {
-            //TODO https://ratepay.gitbook.io/payment-api/gateway-operations/checkout/payment-query
-            $availableRatePayMethods[$payment] = false;
+        foreach ($return as $idx => $paymentData) {
+            $paymentMethodName = $paymentData['name'];
 
-            if ($this->paymentMethodsService->isPaymentMethodLockedForCustomer($customer, $payment)) {
-                // the payment method is locked for the customer
+            if (PaymentMethods::exists($paymentMethodName) === false) {
+                // this is not a ratepay method. skip it.
                 continue;
             }
+
+            if ($this->paymentMethodsService->isPaymentMethodLockedForCustomer($customer, $paymentMethodName)) {
+                // the payment method is locked for the customer
+                unset($return[$idx]);
+                continue;
+            }
+
+            $paymentMethodConfiguration = $this->profileConfig->getPaymentConfiguration((new PaymentConfigSearch())
+                ->setPaymentMethod($paymentMethodName)
+                ->setBackend(false)
+                ->setBillingCountry($billingAddress->getCountry()->getIso())
+                ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+                ->setShop($this->context->getShop())
+                ->setCurrency($currency)
+            );
+
+            if ($paymentMethodConfiguration === null) {
+                // there is not profile/payment config for this method
+                unset($return[$idx]);
+                continue;
+            }
+
             $isB2b = ValidationService::isCompanySet($billingAddress);
 
-            /** @var ProfileConfig $profileConfig */
-            $profileConfig = $config['profileConfig'];
-            /** @var ConfigPayment $paymentConfig */
-            $paymentConfig = $config['paymentConfig'];
-
-            if (!ValidationService::isCurrencyValid($profileConfig->getCurrency(), $currency) ||
-                !ValidationService::isCountryValid($profileConfig->getCountryCodeBilling(), $billingAddress->getCountry()) ||
-                !ValidationService::isCountryValid($profileConfig->getCountryCodeDelivery(), $shippingAddress ? $shippingAddress->getCountry() : $billingAddress->getCountry()) ||
-                (!ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress) && !$paymentConfig->isAllowDifferentAddresses())
+            if (!ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress) &&
+                !$paymentMethodConfiguration->isAllowDifferentAddresses()
             ) {
+                unset($return[$idx]);
                 continue;
             }
 
@@ -166,84 +177,28 @@ class PaymentFilterSubscriber implements SubscriberInterface
                 $totalAmount = floatval($this->modules->Basket()->sGetAmount()['totalAmount']);
 
 
-                if (!ValidationService::areAmountsValid($isB2b, $paymentConfig, $totalAmount)) {
+                if (!ValidationService::areAmountsValid($isB2b, $paymentMethodConfiguration, $totalAmount)) {
+                    unset($return[$idx]);
                     continue;
                 }
-                $availableRatePayMethods[$payment] = true;
+                $availableRatePayMethods[$paymentMethodName] = true;
             }
         }
 
-        $customer = $this->sessionHelper->getCustomer();
-        $paymentModel = $this->modelManager->find(Payment::class, $customer->getPaymentId());
-        $setToDefaultPayment = false;
-
-        $payments = [];
-        foreach ($return as $payment) {
-            if ($payment['name'] === PaymentMethods::PAYMENT_INVOICE && !$availableRatePayMethods[PaymentMethods::PAYMENT_INVOICE]) {
-                $this->logger->info('Ratepay: Filter Ratepay-Invoice');
-                $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
-                continue;
-            }
-            if ($payment['name'] === PaymentMethods::PAYMENT_DEBIT && !$availableRatePayMethods[PaymentMethods::PAYMENT_DEBIT]) {
-                $this->logger->info('Ratepay: Filter Ratepay-Debit');
-                $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
-                continue;
-            }
-            if ($payment['name'] === PaymentMethods::PAYMENT_RATE && !$availableRatePayMethods[PaymentMethods::PAYMENT_RATE]) {
-                $this->logger->info('Ratepay: Filter Ratepay-Rate');
-                $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
-                continue;
-            }
-            if ($payment['name'] === PaymentMethods::PAYMENT_INSTALLMENT0 && !$availableRatePayMethods[PaymentMethods::PAYMENT_INSTALLMENT0]) {
-                $this->logger->info('Ratepay: Filter Ratepay-Rate0');
-                $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
-                continue;
-            }
-            if ($payment['name'] === PaymentMethods::PAYMENT_PREPAYMENT && !$availableRatePayMethods[PaymentMethods::PAYMENT_PREPAYMENT]) {
-                $this->logger->info('Ratepay: Filter Ratepay-Prepayment');
-                $setToDefaultPayment = $paymentModel->getName() === $payment['name'] ?: $setToDefaultPayment;
-                continue;
-            }
-            $payments[] = $payment;
-        }
-
-        if ($setToDefaultPayment) {
-            $customer->setPaymentId($this->config->get('paymentdefault'));
-            $this->modelManager->flush($customer);
-        }
-
-        return $payments;
-    }
-
-    /**
-     * Get ratepay plugin config from rpay_ratepay_config table
-     *
-     * @param $shopId
-     * @param $country
-     * @return array
-     */
-    private function getRatePayPluginConfigByCountry($shopId, Country $country)
-    {
-        $return = [];
-        foreach (PaymentMethods::getNames() as $payment) {
-            $profileConfig = $this->profileConfig->getProfileConfig(
-                $country->getIso(),
-                $shopId,
-                false,
-                $payment == PaymentMethods::PAYMENT_INSTALLMENT0
-            );
-            if ($profileConfig == null) {
-                continue;
-            }
-            $paymentConfig = $this->profileConfig->getPaymentConfigForProfileAndMethod($profileConfig, $payment);
-
-            if ($paymentConfig) {
-                $return[$payment] = [
-                    'profileConfig' => $profileConfig,
-                    'paymentConfig' => $paymentConfig
-                ];
+        $selectedPaymentMethod = $customer ? $this->modelManager->find(Payment::class, $customer->getPaymentId()) : null;
+        if ($selectedPaymentMethod && PaymentMethods::exists($selectedPaymentMethod)) {
+            foreach ($return as $payment) {
+                if (!$availableRatePayMethods[$payment['name']] &&
+                    $payment['name'] === $selectedPaymentMethod->getName()
+                ) {
+                    // set payment method of customer to the default payment method, cause ratepay is not available for the customer
+                    $customer->setPaymentId($this->config->get('paymentdefault'));
+                    $this->modelManager->flush($customer);
+                    break;
+                }
             }
         }
+
         return $return;
     }
 }

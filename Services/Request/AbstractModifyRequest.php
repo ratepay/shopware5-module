@@ -119,14 +119,8 @@ abstract class AbstractModifyRequest extends AbstractRequest
 
     protected function getProfileConfig()
     {
-        /** @var OrderAttribute $orderAttribute */
         $orderAttribute = $this->_order->getAttribute();
-        return $this->profileConfigService->getProfileConfig(
-            $this->_order->getBilling()->getCountry()->getIso(),
-            $this->_order->getShop()->getId(),
-            $orderAttribute->getRatepayBackend() == 1,
-            $this->_order->getPayment()->getName() == PaymentMethods::PAYMENT_INSTALLMENT0
-        );
+        return $orderAttribute ? $this->profileConfigService->getProfileConfigById($orderAttribute->getRatepayProfileId()) : null;
     }
 
     protected function getRequestHead(ProfileConfig $profileConfig)

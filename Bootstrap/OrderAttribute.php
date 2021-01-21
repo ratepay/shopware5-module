@@ -25,6 +25,7 @@ class OrderAttribute extends AbstractAttributeBootstrap
 
     protected function installAttributes()
     {
+        $this->crudService->update('s_order_attributes', 'ratepay_profile_id', 'text', [], null, null, null);
         $this->crudService->update('s_order_attributes', 'ratepay_descriptor', 'text', [], null, null, null);
         $this->crudService->update('s_order_attributes', 'ratepay_fallback_shipping', 'boolean', [], null, null, 0);
         $this->crudService->update('s_order_attributes', 'ratepay_fallback_discount', 'boolean', [], null, null, 0);
@@ -45,7 +46,9 @@ class OrderAttribute extends AbstractAttributeBootstrap
             ");
         }
 
-        if (version_compare($this->getOldVersion(), "6.0.0", "<")) {
+        if ($this->updateContext &&
+            version_compare($this->updateContext->getCurrentVersion(), "6.0.0", "<")
+        ) {
             $connection->exec("
                 UPDATE s_order_attributes attr
                     INNER JOIN s_order s_order ON (s_order.id = attr.id)
@@ -67,11 +70,43 @@ class OrderAttribute extends AbstractAttributeBootstrap
                         payment.name IN ('" . implode("','", PaymentMethods::getNames()) . "')
             ");
         }
+
+        if ($this->updateContext &&
+            version_compare($this->updateContext->getCurrentVersion(), "6.0.0", "<")
+        ) {
+            $backendDeviceType = $this->container->get('config')
+                ->getByNamespace('SwagBackendOrder', 'desktopTypes') ?: 'Backend';
+
+            $connection->exec("
+                UPDATE s_order_attributes attr
+                    INNER JOIN s_order o ON (attr.orderID = o.id)
+                    INNER JOIN s_order_attributes oa ON (o.id = oa.orderID)
+                    INNER JOIN s_core_paymentmeans p ON (p.id = o.paymentID)
+                    INNER JOIN s_order_billingaddress a ON (o.id = a.orderID)
+                    INNER JOIN s_core_countries co ON (co.id = a.countryID)
+                    INNER JOIN rpay_ratepay_config config ON (
+                        config.shopId = o.subshopID AND 
+                        config.country_code_billing LIKE CONCAT('%',co.countryiso,'%') AND 
+                        (
+                            (p.name != '" . PaymentMethods::PAYMENT_INSTALLMENT0 . "' AND config.is_zero_percent_installment = 0) OR
+                            (p.name = '" . PaymentMethods::PAYMENT_INSTALLMENT0 . "' AND config.is_zero_percent_installment = 1)
+                        ) 
+                        AND 
+                        (
+                            (o.deviceType = '" . $backendDeviceType . "' AND config.backend = 1) OR					
+                            (o.deviceType != '" . $backendDeviceType . "' AND config.backend = 0)
+                        )
+                    )
+                SET attr.ratepay_profile_id = config.profileId    
+                WHERE 
+                    p.name LIKE 'rpay%'  AND attr.ratepay_profile_id IS NULL
+            ");
+        }
     }
 
     protected function uninstallAttributes()
     {
-        $this->crudService->delete('s_order_attributes', 'ratepay_descriptor');
+        $this->crudService->delete('s_order_attributes', 'ratepay_profile_id');
         $this->crudService->delete('s_order_attributes', 'ratepay_fallback_shipping');
         $this->crudService->delete('s_order_attributes', 'ratepay_fallback_discount');
         $this->crudService->delete('s_order_attributes', 'ratepay_backend');

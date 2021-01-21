@@ -10,8 +10,6 @@ namespace RpayRatePay\Bootstrap;
 
 
 use DirectoryIterator;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
 use PDO;
 use RecursiveRegexIterator;
@@ -21,18 +19,6 @@ use Shopware\Components\Migrations\AbstractPluginMigration;
 
 class Database extends AbstractBootstrap
 {
-    /** @var SchemaTool */
-    protected $schemaTool;
-
-    /** @var AbstractSchemaManager */
-    protected $schemaManager;
-
-    public function setContainer($container)
-    {
-        parent::setContainer($container);
-        $this->schemaTool = new SchemaTool($this->modelManager);
-        $this->schemaManager = $this->modelManager->getConnection()->getSchemaManager();
-    }
 
     public function update()
     {
@@ -51,7 +37,16 @@ class Database extends AbstractBootstrap
             $directoryIterator = new DirectoryIterator($migrationPath);
             $regex = new RegexIterator($directoryIterator, '/^([0-9]*)-(.*)\.php$/i', RecursiveRegexIterator::GET_MATCH);
 
+            // collect migrations
+            $migrations = [];
             foreach ($regex as $result) {
+                $migrationVersion = $result[1];
+                $migrations[$migrationVersion] = $result;
+            }
+            ksort($migrations);
+
+            // execute migrations
+            foreach($migrations as $result) {
                 $migrationVersion = $result[1];
                 $migrationName = $result[2];
 
@@ -85,16 +80,16 @@ class Database extends AbstractBootstrap
         $connection = $this->container->get('db_connection');
         $sql = '
             CREATE TABLE IF NOT EXISTS `s_plugin_schema_version` (
-    `plugin_name` VARCHAR(255) NOT NULL COLLATE \'utf8_unicode_ci\',
-    `version` INT(11) NOT NULL,
-    `start_date` DATETIME NOT NULL,
-    `complete_date` DATETIME NULL DEFAULT NULL,
-    `name` VARCHAR(255) NOT NULL COLLATE \'utf8_unicode_ci\',
-    `error_msg` VARCHAR(255) NULL DEFAULT NULL COLLATE \'utf8_unicode_ci\',
-    PRIMARY KEY (`plugin_name`, `version`)
-)
-COLLATE=\'utf8_unicode_ci\'
-ENGINE=InnoDB
+                `plugin_name` VARCHAR(255) NOT NULL COLLATE \'utf8_unicode_ci\',
+                `version` INT(11) NOT NULL,
+                `start_date` DATETIME NOT NULL,
+                `complete_date` DATETIME NULL DEFAULT NULL,
+                `name` VARCHAR(255) NOT NULL COLLATE \'utf8_unicode_ci\',
+                `error_msg` VARCHAR(255) NULL DEFAULT NULL COLLATE \'utf8_unicode_ci\',
+                PRIMARY KEY (`plugin_name`, `version`)
+            )
+            COLLATE=\'utf8_unicode_ci\'
+            ENGINE=InnoDB
         ';
         $connection->exec($sql);
         $connection->commit();
@@ -146,6 +141,9 @@ ENGINE=InnoDB
                 DROP TABLE IF EXISTS rpay_ratepay_order_history;
                 DROP TABLE IF EXISTS rpay_ratepay_order_positions;
                 DROP TABLE IF EXISTS rpay_ratepay_order_shipping;
+                DROP TABLE IF EXISTS ratepay_profile_config;
+                DROP TABLE IF EXISTS ratepay_profile_config_method;
+                DROP TABLE IF EXISTS ratepay_profile_config_method_installment;
                 SET FOREIGN_KEY_CHECKS=1;
             ");
         }

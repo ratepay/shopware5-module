@@ -10,6 +10,9 @@ namespace RpayRatePay\Services\Config;
 
 use Exception;
 use Monolog\Logger;
+use Ratepay\RpayPayments\Components\PaymentHandler\InstallmentPaymentHandler;
+use Ratepay\RpayPayments\Components\PaymentHandler\InstallmentZeroPercentPaymentHandler;
+use Ratepay\RpayPayments\Components\ProfileConfig\Model\ProfileConfigEntity;
 use RpayRatePay\Component\Mapper\ModelFactory;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Models\ConfigInstallment;
@@ -17,6 +20,7 @@ use RpayRatePay\Models\ConfigPayment;
 use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Request\ProfileRequestService;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Payment\Payment;
 
 class WriterService
 {
@@ -73,25 +77,36 @@ class WriterService
         return true;
     }
 
+    private function resetProfileInformation(ProfileConfig $profileConfig)
+    {
+        // truncate existing payment configurations
+        $this->deletePaymentConfigs([$profileConfig->getId()]);
+        $profileConfig->setActive(false);
+        $profileConfig->setCurrencies([]);
+        $profileConfig->setCountryCodesBilling([]);
+        $profileConfig->setCountryCodesDelivery([]);
+        $profileConfig->setErrorDefault(null);
+        $this->modelManager->flush($profileConfig);
+    }
+
     /**
      * Sends a Profile_request and saves the data into the Database
      *
      * @param ProfileConfig $profileConfig
-     * @param $isZeroInstallment
      * @return bool
      */
     public function writeRatepayConfig(ProfileConfig $profileConfig)
     {
+
+        $this->resetProfileInformation($profileConfig);
+
+        // fetch new profile information
         try {
             $this->profileRequestService->setProfileConfig($profileConfig);
             $response = $this->profileRequestService->doRequest();
             $profileConfig = $this->profileRequestService->getProfileConfig();
 
-            // if response is failed, we will try as a production request
-            if ($response->getReasonCode() == 120 && $profileConfig->isSandbox()) {
-                $profileConfig->setSandbox(false);
-                $response = $this->profileRequestService->doRequest();
-            } else if ($response->isSuccessful() === false) {
+            if ($response->isSuccessful() === false) {
                 $this->logger->error(
                     'Ratepay: Profile_Request failed for profileId ' . $profileConfig->getProfileId()
                 );
@@ -110,111 +125,93 @@ class WriterService
             return false;
         }
 
-        $countries = explode(',', $responseResult['merchantConfig']['country-code-billing']);
-        foreach ($countries as $country) {
+        if ($response->isSuccessful() === false) {
+            $profileConfig->setActive(false);
+//            $profileConfig->setMessage($response->getReasonMessage());
+        } elseif (((int)$responseResult['merchantConfig']['merchant-status']) === 1) {
+            $profileConfig->setActive(false);
+//            $profileConfig->setMessage('The profile is disabled. Please contact your account manager.');
+        } else {
+            $profileConfig->setActive(true);
+            $profileConfig->setCountryCodesBilling(explode(',', $responseResult['merchantConfig']['country-code-billing']));
+            $profileConfig->setCountryCodesDelivery(explode(',', $responseResult['merchantConfig']['country-code-delivery']));
+            $profileConfig->setCurrencies(explode(',', $responseResult['merchantConfig']['currency']));
 
-            $entity = $this->modelManager->find(ProfileConfig::class, [
-                'countryCodeBilling' => $country,
-                'backend' => $profileConfig->isBackend(),
-                'shopId' => $profileConfig->getShopId(),
-                'isZeroPercentInstallment' => $profileConfig->isZeroPercentInstallment()
-            ]);
-
-            if ($entity) {
-                return true; //profile id has been already loaded
-            }
-
-            /** @var ConfigPayment[] $paymentMethodsConfigs */
-            $paymentMethodsConfigs = [];
-
-            $entitiesToFlush = [];
-            //INSERT INTO rpay_ratepay_config_payment AND sets $type[]
-            foreach (PaymentMethods::getNames() as $methodCode) {
-                $saveAsMethodCode = $methodCode;
-                if (PaymentMethods::isInstallment($methodCode)) {
-                    // we save all installment types to the installment fields
-                    // (also the zero percent installment, cause it is also an installment)
-                    $saveAsMethodCode = PaymentMethods::PAYMENT_RATE;
-                }
-
-                if (isset($paymentMethodsConfigs[$saveAsMethodCode])) {
-                    // has been already created
+            $installmentConfigs = [];
+            foreach (PaymentMethods::getNames() as $paymentMethodName) {
+                $paymentMethod = $this->modelManager->getRepository(Payment::class)->findOneBy(['name' => $paymentMethodName]);
+                if ($paymentMethod === null) {
                     continue;
                 }
-
-                // we set always a null value, so we will not get a "undefined index"-warning
-                // (while setting the paymentConfigs to the ratepay config table)
-                $paymentMethodsConfigs[$methodCode] = null;
 
                 // gets the ratepay internal payment method code
-                $ratepayMethodCode = strtolower(PaymentMethods::getRatepayPaymentMethod($methodCode));
+                $ratepayMethodCode = strtolower(PaymentMethods::getRatepayPaymentMethod($paymentMethodName));
+                $merchantConfig = $responseResult['merchantConfig'];
 
-                if ($profileConfig->isZeroPercentInstallment() &&
-                    PaymentMethods::isZeroPercentInstallment($methodCode) == false) {
-                    // the current payment method is a zero percent installment, but we have not requested a zero percent method
+                if (((int)$merchantConfig['activation-status-' . $ratepayMethodCode]) === 1) {
+                    // method is disabled.
                     continue;
                 }
 
-                //just save the method if it is enabled
-                if ($responseResult['merchantConfig']['activation-status-' . $ratepayMethodCode] == 2) {
-                    $this->count++;
-                    $merchantConfig = $responseResult['merchantConfig'];
-                    $configPaymentModel = new ConfigPayment();
-                    $configPaymentModel->setB2b($merchantConfig['b2b-' . $ratepayMethodCode] == 'yes');
-                    $configPaymentModel->setLimitMin($merchantConfig['tx-limit-' . $ratepayMethodCode . '-min']);
-                    $configPaymentModel->setLimitMax($merchantConfig['tx-limit-' . $ratepayMethodCode . '-max']);
-                    $configPaymentModel->setLimitMaxB2b($merchantConfig['tx-limit-' . $ratepayMethodCode . '-max-b2b']);
-                    $configPaymentModel->setAllowDifferentAddresses($merchantConfig['delivery-address-' . $ratepayMethodCode] == 'yes');
+                if ($responseResult['installmentConfig']['interestrate-min'] > 0 &&
+                    PaymentMethods::isZeroPercentInstallment($paymentMethod)
+                ) {
+                    // if `interestrate-min` greater than zero, the profile has an installment config, but NOT a zeropercent-config
+                    continue;
+                }
 
-                    $paymentMethodsConfigs[$saveAsMethodCode] = $configPaymentModel;
-                    $this->modelManager->persist($configPaymentModel);
-                    $this->modelManager->flush();
+                if (((int)$responseResult['installmentConfig']['interestrate-min']) === 0 &&
+                    PaymentMethods::isNormalInstallment($paymentMethod)
+                ) {
+                    // if `interestrate-min` is zero, the profile has is a zero-percent installment config
+                    continue;
+                }
 
-                    if (PaymentMethods::isInstallment($methodCode)) {
-                        $configInstallmentModel = new ConfigInstallment();
-                        $configInstallmentModel->setPaymentConfig($configPaymentModel);
-                        $configInstallmentModel->setMonthAllowed($responseResult['installmentConfig']['month-allowed']);
-                        $configInstallmentModel->setPaymentFirstDay($responseResult['installmentConfig']['valid-payment-firstdays']);
-                        $configInstallmentModel->setRateMinNormal($responseResult['installmentConfig']['rate-min-normal']);
-                        $configInstallmentModel->setInterestRateDateDefault($responseResult['installmentConfig']['interestrate-default']);
+                $paymentMethodConfig = new ConfigPayment();
+                $paymentMethodConfig->setProfileConfig($profileConfig);
+                $paymentMethodConfig->setPaymentMethod($paymentMethod);
+                $paymentMethodConfig->setAllowB2B($merchantConfig['b2b-' . $ratepayMethodCode] === 'yes');
+                $paymentMethodConfig->setLimitMin($merchantConfig['tx-limit-' . $ratepayMethodCode . '-min']);
+                $paymentMethodConfig->setLimitMax($merchantConfig['tx-limit-' . $ratepayMethodCode . '-max']);
+                $paymentMethodConfig->setLimitMaxB2b($merchantConfig['tx-limit-' . $ratepayMethodCode . '-max-b2b']);
+                $paymentMethodConfig->setAllowDifferentAddresses($merchantConfig['delivery-address-' . $ratepayMethodCode] === 'yes');
+                $this->modelManager->persist($paymentMethodConfig);
 
-                        $this->modelManager->persist($configInstallmentModel);
-                        $this->modelManager->flush();
-                    }
-
+                if (PaymentMethods::isInstallment($paymentMethod)) {
+                    $paymentFirstDay = explode(',', $responseResult['installmentConfig']['valid-payment-firstdays']);
+                    $installmentConfig = new ConfigInstallment();
+                    $installmentConfig->setPaymentConfig($paymentMethodConfig);
+                    $installmentConfig->setMonthsAllowed(explode(',', $responseResult['installmentConfig']['month-allowed']));
+                    $installmentConfig->setDebitAllowed(in_array(2, $paymentFirstDay, false));
+                    $installmentConfig->setBankTransferAllowed(in_array(28, $paymentFirstDay, false));
+                    $installmentConfig->setRateMinNormal($responseResult['installmentConfig']['rate-min-normal']);
+                    $installmentConfigs[] = $installmentConfig;
                 }
             }
 
-
-            $entitiesToFlush = [];
-
-            $configModel = new ProfileConfig();
-            $configModel->setProfileId($responseResult['merchantConfig']['profile-id']);
-            $configModel->setSecurityCode($profileConfig->getSecurityCode());
-            $configModel->setInvoiceConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_INVOICE]);
-            $configModel->setInstallmentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_RATE]);
-            $configModel->setDebitConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_DEBIT]);
-            $configModel->setPrepaymentConfig($paymentMethodsConfigs[PaymentMethods::PAYMENT_PREPAYMENT]);
-            $configModel->setCountryCodeBilling(strtoupper($country));
-            $configModel->setCountryCodeDelivery(strtoupper($responseResult['merchantConfig']['country-code-delivery']));
-            $configModel->setCurrency(strtoupper($responseResult['merchantConfig']['currency']));
-            $configModel->setZeroPercentInstallment($profileConfig->isZeroPercentInstallment());
-            $configModel->setSandbox($profileConfig->isSandbox());
-            $configModel->setBackend($profileConfig->isBackend());
-            $configModel->setShopId($profileConfig->getShopId());
-
-            $this->modelManager->persist($configModel);
-            $entitiesToFlush[] = $configModel;
-
             try {
-                $this->modelManager->flush($entitiesToFlush);
+                $this->modelManager->flush();
+                foreach ($installmentConfigs as $installmentConfig) {
+                    $this->modelManager->persist($installmentConfig);
+                }
+                $this->modelManager->flush();
                 $this->logger
                     ->info('Ratepay: Profile_Request for profileId ' . $profileConfig->getProfileId() . ' has been successfully saved');
             } catch (Exception $exception) {
                 $this->logger->error($exception->getMessage());
-                return false;
+                throw $exception;
             }
         }
         return true;
+    }
+
+    public function deletePaymentConfigs(array $profileConfigEntityIds = [])
+    {
+        $qb = $this->modelManager->createQueryBuilder();
+        $qb->delete(ConfigPayment::class, 'e');
+        if (count($profileConfigEntityIds)) {
+            $qb->where($qb->expr()->in('e.profileConfig', $profileConfigEntityIds));
+        }
+        $qb->getQuery()->execute();
     }
 }

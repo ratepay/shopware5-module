@@ -11,6 +11,7 @@ namespace RpayRatePay\Subscriber\Frontend;
 
 use Enlight\Event\SubscriberInterface;
 use Enlight_Hook_HookArgs;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -20,6 +21,7 @@ use RpayRatePay\Services\InstallmentService;
 use RpayRatePay\Util\BankDataUtil;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
+use Shopware_Components_Config;
 use Shopware_Controllers_Frontend_Checkout;
 
 class PaymentShippingSubscriber implements SubscriberInterface
@@ -51,8 +53,13 @@ class PaymentShippingSubscriber implements SubscriberInterface
      * @var InstallmentService
      */
     protected $installmentService;
+    /**
+     * @var Shopware_Components_Config
+     */
+    private $config;
 
     public function __construct(
+        Shopware_Components_Config $config,
         SessionHelper $sessionHelper,
         ContextService $contextService,
         ConfigService $configService,
@@ -69,6 +76,7 @@ class PaymentShippingSubscriber implements SubscriberInterface
         $this->profileConfigService = $profileConfigService;
         $this->installmentService = $installmentService;
         $this->pluginDir = $pluginDir;
+        $this->config = $config;
     }
 
     public static function getSubscribedEvents()
@@ -89,6 +97,8 @@ class PaymentShippingSubscriber implements SubscriberInterface
         }
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress();
+        $currency = $this->config->get('currency');
 
         $sUserData = $view->getAssign('sUserData');
         if (isset($sUserData['additional']['payment']['name'])) {
@@ -100,15 +110,21 @@ class PaymentShippingSubscriber implements SubscriberInterface
         }
 
         if (PaymentMethods::exists($paymentMethodName)) {
-            $profileConfig = $this->profileConfigService->getProfileConfig(
-                $billingAddress->getCountry()->getIso(),
-                $this->context->getShop()->getId(),
-                false,
-                PaymentMethods::isZeroPercentInstallment($paymentMethodName)
+            $paymentMethodConfig = $this->profileConfigService->getPaymentConfiguration((new PaymentConfigSearch())
+                ->setPaymentMethod($paymentMethodName)
+                ->setBackend(false)
+                ->setBillingCountry($billingAddress->getCountry()->getIso())
+                ->setShippingCountry($shippingAddress->getCountry()->getIso())
+                ->setShop($this->context->getShop())
+                ->setCurrency($currency)
             );
 
+            if ($paymentMethodConfig === null) {
+                return;
+            }
+
             $data = [
-                'sandbox' => $profileConfig->isSandbox(),
+                'sandbox' => $paymentMethodConfig->getProfileConfig()->isSandbox(),
                 'agb' => 'https://www.ratepay.com/legal'
             ];
 
