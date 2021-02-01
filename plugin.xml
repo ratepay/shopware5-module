@@ -53,6 +53,7 @@
                     <li>Bug fixes in the context of VAT handling</li>
                     <li>Enabled payments for ESD products by default</li>
                     <li>Moved Profile configuration & Logging to an separate menu-entry</li>
+                    <li>Now the Logging panel is resizeable and have a few new information within it.</li>
                 </ul>
 
                 <h2>New Features</h2>
@@ -101,6 +102,7 @@
                     <li>Fehlerbehebungen bei den Steuerangaben in den Gatewayanfragen</li>
                     <li>Aktivieren der Zahlungsart bei ESD Produkten als Standardeinstellung</li>
                     <li>Die Menüpunkte "Logging" & "Profilkonfiguration" haben nun einen eigenen Menüoberpunkt.</li>
+                    <li>Die API-Log Ansicht enthält nun ein paar Informationen mehr, und kann nun vergrößert/verkleinert werden.</li>
                 </ul>
 
                 <h2>Neue Features</h2>

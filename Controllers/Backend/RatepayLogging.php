@@ -6,8 +6,10 @@
  * file that was distributed with this source code.
  */
 
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
-use Shopware\Models\Customer\Customer;
+use RpayRatePay\Helper\XmlHelper;
+use RpayRatePay\Models\Log;
 
 class Shopware_Controllers_Backend_RatepayLogging extends Shopware_Controllers_Backend_ExtJs
 {
@@ -27,60 +29,50 @@ class Shopware_Controllers_Backend_RatepayLogging extends Shopware_Controllers_B
      */
     public function loadLogEntriesAction()
     {
-        //TODO improve
-        $start = intval($this->Request()->getParam('start'));
-        $limit = intval($this->Request()->getParam('limit'));
-        $orderId = $this->Request()->getParam('orderId');
+        $start = (int)$this->Request()->getParam('start');
+        $limit = (int)$this->Request()->getParam('limit');
+        $orderId = (int)$this->Request()->getParam('orderId');
 
-        if (!is_null($orderId)) {
-            $transactionId = Shopware()->Db()->fetchOne('SELECT `transactionId` FROM `s_order` WHERE `id`=?', [$orderId]);
-            $sqlTotal = 'SELECT COUNT(*) FROM `rpay_ratepay_logging` WHERE `transactionId`=?';
+        $logRepo = $this->getModelManager()->getRepository(Log::class);
 
-            $sql = 'SELECT log.*, s_user.id as user_id FROM `rpay_ratepay_logging` AS `log` '
-                . 'LEFT JOIN `s_order` ON `log`.`transactionId`=`s_order`.`transactionID` '
-                . 'LEFT JOIN s_user ON s_order.userID=s_user.id '
-                . 'WHERE log.transactionId=?'
-                . 'ORDER BY `id` DESC';
+        $qb = $logRepo->createQueryBuilder('log');
+        $qb->addSelect('e_order')
+            ->addSelect('billing_address')
+            ->leftJoin('log.order', 'e_order')
+            ->leftJoin('e_order.billing', 'billing_address')
+            ->setMaxResults($limit)
+            ->setFirstResult($start)
+            ->orderBy('log.date', 'DESC');
 
-            $data = Shopware()->Db()->fetchAll($sql, [$transactionId]);
-            $total = Shopware()->Db()->fetchOne($sqlTotal, [$transactionId]);
-        } else {
-            $sqlTotal = 'SELECT COUNT(*) FROM `rpay_ratepay_logging`';
-
-            $sql = 'SELECT log.*, s_user.id as user_id FROM `rpay_ratepay_logging` AS `log` '
-                . 'LEFT JOIN `s_order` ON `log`.`transactionId`=`s_order`.`transactionID` '
-                . 'LEFT JOIN s_user ON s_order.userID=s_user.id '
-                . 'ORDER BY `id` DESC';
-
-            $data = Shopware()->Db()->fetchAll($sql);
-            $total = Shopware()->Db()->fetchOne($sqlTotal);
+        if ($orderId) {
+            $qb->andWhere($qb->expr()->eq('e_order.id', ':order_id'))
+                ->setParameter('order_id', $orderId);
         }
 
-        $store = [];
-        foreach ($data as $row) {
-
-            if ($row['user_id']) {
-                //TODO hier muss eigentlich die billing_address aus der Order gezogen werden.
-                $customer = Shopware()->Models()->find(Customer::class, $row['user_id']);
-                $row['firstname'] = $customer->getDefaultBillingAddress()->getFirstname();
-                $row['lastname'] = $customer->getDefaultBillingAddress()->getLastname();
-            }
-
+        $paginator = new Paginator($qb);
+        $results = $paginator->getQuery()->getArrayResult();
+        foreach ($results as &$result) {
             $matchesRequest = [];
-            preg_match("/(.*)(<\?.*)/s", $row['request'], $matchesRequest);
-            $row['request'] = $matchesRequest[1] . "\n" . $this->formatXml(trim($matchesRequest[2]));
+            preg_match("/(.*)(<\?.*)/s", $result['request'], $matchesRequest);
+            $result['request'] = $matchesRequest[1] . "\n" . $this->formatXml(trim($matchesRequest[2]));
 
             $matchesResponse = [];
-            preg_match('/(.*)(<response xml.*)/s', $row['response'], $matchesResponse);
-            $row['response'] = $matchesResponse[1] . "\n" . $this->formatXml(trim($matchesResponse[2]));
+            preg_match('/(.*)(<response xml.*)/s', $result['response'], $matchesResponse);
+            $result['response'] = $matchesResponse[1] . "\n" . $this->formatXml(trim($matchesResponse[2]));
 
-            $store[] = $row;
+            $result['status_code'] = XmlHelper::findValue($result['response'], 'status');
+
+            if (isset($result['order']['billing'])) {
+                $result['firstname'] = $result['order']['billing']['firstName'];
+                $result['lastname'] = $result['order']['billing']['lastName'];
+            }
         }
+        unset($result);
 
         $this->View()->assign(
             [
-                'data' => $store,
-                'total' => $total,
+                'data' => $results,
+                'total' => $paginator->count(),
                 'success' => true
             ]
         );
@@ -94,16 +86,30 @@ class Shopware_Controllers_Backend_RatepayLogging extends Shopware_Controllers_B
     private function formatXml($xmlString)
     {
         $str = str_replace("\n", '', $xmlString);
-        $xml = new DOMDocument('1.0');
-        $xml->preserveWhiteSpace = false;
-        $xml->formatOutput = true;
         if ($this->validate($str)) {
+            $xml = new DOMDocument('1.0');
+            $xml->preserveWhiteSpace = false;
+            $xml->formatOutput = true;
             $xml->loadXML($str);
 
             return $xml->saveXML();
         }
 
         return $xmlString;
+    }
+
+    private function parseXml($xmlString)
+    {
+        $str = str_replace("\n", '', $xmlString);
+        if ($this->validate($str)) {
+            $xml = new DOMDocument('1.0');
+            $xml->preserveWhiteSpace = false;
+            $xml->formatOutput = true;
+            $xml->loadXML($str);
+
+            return $xml;
+        }
+        return null;
     }
 
     /**
