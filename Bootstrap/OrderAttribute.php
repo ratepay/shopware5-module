@@ -77,30 +77,32 @@ class OrderAttribute extends AbstractAttributeBootstrap
             $backendDeviceType = $this->container->get('config')
                 ->getByNamespace('SwagBackendOrder', 'desktopTypes') ?: 'Backend';
 
-            $connection->exec("
-                UPDATE s_order_attributes attr
-                    INNER JOIN s_order o ON (attr.orderID = o.id)
-                    INNER JOIN s_order_attributes oa ON (o.id = oa.orderID)
-                    INNER JOIN s_core_paymentmeans p ON (p.id = o.paymentID)
-                    INNER JOIN s_order_billingaddress a ON (o.id = a.orderID)
-                    INNER JOIN s_core_countries co ON (co.id = a.countryID)
-                    INNER JOIN rpay_ratepay_config config ON (
-                        config.shopId = o.subshopID AND 
-                        config.country_code_billing LIKE CONCAT('%',co.countryiso,'%') AND 
-                        (
-                            (p.name != '" . PaymentMethods::PAYMENT_INSTALLMENT0 . "' AND config.is_zero_percent_installment = 0) OR
-                            (p.name = '" . PaymentMethods::PAYMENT_INSTALLMENT0 . "' AND config.is_zero_percent_installment = 1)
-                        ) 
-                        AND 
-                        (
-                            (o.deviceType = '" . $backendDeviceType . "' AND config.backend = 1) OR					
-                            (o.deviceType != '" . $backendDeviceType . "' AND config.backend = 0)
+            if($this->modelManager->getConnection()->getSchemaManager()->tablesExist(['rpay_ratepay_config'])) {
+                $connection->exec("
+                    UPDATE s_order_attributes attr
+                        INNER JOIN s_order o ON (attr.orderID = o.id)
+                        INNER JOIN s_order_attributes oa ON (o.id = oa.orderID)
+                        INNER JOIN s_core_paymentmeans p ON (p.id = o.paymentID)
+                        INNER JOIN s_order_billingaddress a ON (o.id = a.orderID)
+                        INNER JOIN s_core_countries co ON (co.id = a.countryID)
+                        INNER JOIN rpay_ratepay_config config ON (
+                            config.shopId = o.subshopID AND 
+                            config.country_code_billing LIKE CONCAT('%',co.countryiso,'%') AND 
+                            (
+                                (p.name != '" . PaymentMethods::PAYMENT_INSTALLMENT0 . "' AND config.is_zero_percent_installment = 0) OR
+                                (p.name = '" . PaymentMethods::PAYMENT_INSTALLMENT0 . "' AND config.is_zero_percent_installment = 1)
+                            ) 
+                            AND 
+                            (
+                                (o.deviceType = '" . $backendDeviceType . "' AND config.backend = 1) OR					
+                                (o.deviceType != '" . $backendDeviceType . "' AND config.backend = 0)
+                            )
                         )
-                    )
-                SET attr.ratepay_profile_id = config.profileId    
-                WHERE 
-                    p.name LIKE 'rpay%'  AND attr.ratepay_profile_id IS NULL
-            ");
+                    SET attr.ratepay_profile_id = config.profileId    
+                    WHERE 
+                        p.name LIKE 'rpay%' AND attr.ratepay_profile_id IS NULL
+                ");
+            }
         }
     }
 
