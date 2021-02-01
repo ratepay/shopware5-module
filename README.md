@@ -23,13 +23,6 @@ This is only possible if you use the [composer setup of shopware](https://develo
 3. Log into your Shopware-backend
 4. Install & configure the module
 
-### via GitHub repository clone
-1. Create Directory `RpayRatePay` in `custom/plugins/`
-2. Place the plugin into the folder `custom/plugins/RpayRatePay`
-3. execute the command `composer install --no-dev` in the folder `custom/plugins/RpayRatePay`
-4. Log into your Shopware-backend
-5. Install & configure the module
-
 ## Changelog
 please have a look into plugin.xml
 
