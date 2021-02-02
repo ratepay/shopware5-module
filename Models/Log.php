@@ -12,6 +12,7 @@ namespace RpayRatePay\Models;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Shopware\Components\Model\ModelEntity;
+use Shopware\Models\Order\Order;
 
 /**
  * @ORM\Entity()
@@ -36,38 +37,39 @@ class Log extends ModelEntity
 
     /**
      * @var string
-     * @ORM\Column(name="version", type="string", length=10, options={"default":"N/A"})
+     * @ORM\Column(name="version", type="string", length=10, nullable=false)
      */
-    protected $version = 'N/A';
-    /**
-     * @var string
-     * @ORM\Column(name="operation", type="string", length=255, options={"default":"N/A"})
-     */
-    protected $operation = 'N/A';
+    protected $version;
 
     /**
      * @var string
-     * @ORM\Column(name="suboperation", type="string", length=255, options={"default":"N/A"})
+     * @ORM\Column(name="operation", type="string", length=255, nullable=true)
      */
-    protected $subOperation = 'N/A';
+    protected $operation;
 
     /**
      * @var string
-     * @ORM\Column(name="transactionId", type="string", length=255, options={"default":"N/A"})
+     * @ORM\Column(name="suboperation", type="string", length=255, nullable=true)
      */
-    protected $transationId = 'N/A';
+    protected $subOperation;
 
     /**
      * @var string
-     * @ORM\Column(name="firstname", type="string", length=255, options={"default":"N/A"})
+     * @ORM\Column(name="transactionId", type="string", length=255, nullable=true)
      */
-    protected $firstname = 'N/A';
+    protected $transactionId;
 
     /**
      * @var string
-     * @ORM\Column(name="lastname", type="string", length=255, options={"default":"N/A"})
+     * @ORM\Column(name="firstname", type="string", length=255, nullable=true)
      */
-    protected $lastname = 'N/A';
+    protected $firstname;
+
+    /**
+     * @var string
+     * @ORM\Column(name="lastname", type="string", length=255, nullable=true)
+     */
+    protected $lastname;
 
     /**
      * @var string
@@ -81,6 +83,12 @@ class Log extends ModelEntity
      */
     protected $response;
 
+    /**
+     * @var Order
+     * @ORM\ManyToOne(targetEntity="Shopware\Models\Order\Order")
+     * @ORM\JoinColumn(name="transactionId", referencedColumnName="transactionID")
+     */
+    protected $order;
 
     public function __construct()
     {
@@ -170,17 +178,17 @@ class Log extends ModelEntity
     /**
      * @return string
      */
-    public function getTransationId()
+    public function getTransactionId()
     {
-        return $this->transationId;
+        return $this->transactionId;
     }
 
     /**
-     * @param string $transationId
+     * @param string $transactionId
      */
-    public function setTransationId($transationId)
+    public function setTransactionId($transactionId)
     {
-        $this->transationId = $transationId;
+        $this->transactionId = $transactionId;
     }
 
     /**
@@ -245,5 +253,13 @@ class Log extends ModelEntity
     public function setResponse($response)
     {
         $this->response = $response;
+    }
+
+    /**
+     * @return Order
+     */
+    public function getOrder()
+    {
+        return $this->order;
     }
 }

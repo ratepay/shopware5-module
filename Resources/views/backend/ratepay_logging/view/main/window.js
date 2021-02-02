@@ -12,7 +12,9 @@ Ext.define('Shopware.apps.RatepayLogging.view.main.Window', {
     autoShow: true,
     resizable: false,
     layout: {
-        type: 'vbox'
+        type: 'vbox',
+        pack: 'start',
+        align: 'stretch'
     },
     height: 520,
     width: 800,
@@ -29,49 +31,49 @@ Ext.define('Shopware.apps.RatepayLogging.view.main.Window', {
     createOverviewGrid: function (me) {
         return Ext.create('Ext.grid.Panel', {
             store: me.store,
-            forceFit: false,
             border: false,
-            height: 266,
+            flex: 0,
             width: '100%',
             columns: [
                 {
-                    header: '{s namespace=backend/index/view/widgets name=orders/headers/date}Datum{/s}',
+                    header: '{s namespace="backend/index/view/widgets" name="orders/headers/date"}Datum{/s}',
                     dataIndex: 'date',
-                    flex: 2
+                    flex: 2,
+                    xtype: 'datecolumn',
+                    format: 'd.m.Y H:i:s'
                 },
-
                 {
-                    header: '{s namespace="backend/ratepay" name=version}Version{/s}',
+                    header: '{s namespace="backend/ratepay" name="version"}Version{/s}',
                     dataIndex: 'version',
                     flex: 1
                 },
-
                 {
-                    header: '{s namespace=backend/article_list/main name=multiEdit/operation}Operation{/s}',
+                    header: '{s namespace=backend/article_list/main name="multiEdit/operation"}Operation{/s}',
                     dataIndex: 'operation',
                     flex: 2
                 },
-
                 {
-                    header: '{s namespace="backend/ratepay" name=suboperation}Suboperation{/s}',
-                    dataIndex: 'suboperation',
+                    header: '{s namespace="backend/ratepay" name="suboperation"}Suboperation{/s}',
+                    dataIndex: 'subOperation',
                     flex: 2
                 },
-
                 {
-                    header: '{s namespace="backend/ratepay" name=transactionid}Transaction-ID{/s}',
+                    header: '{s namespace="backend/ratepay" name="status"}Status{/s}',
+                    dataIndex: 'status_code',
+                    flex: 2
+                },
+                {
+                    header: '{s namespace="backend/ratepay" name="transactionid"}Transaction-ID{/s}',
                     dataIndex: 'transactionId',
                     flex: 2
                 },
-
                 {
-                    header: '{s namespace=backend/customer/view/detail name=base/firstname}Firstname{/s}',
+                    header: '{s namespace="backend/customer/view/detail" name="base/firstname"}Firstname{/s}',
                     dataIndex: 'firstname',
                     flex: 1
                 },
-
                 {
-                    header: '{s namespace=backend/customer/view/detail name=base/lastname}Lastname{/s}',
+                    header: '{s namespace="backend/customer/view/detail" name="base/lastname"}Lastname{/s}',
                     dataIndex: 'lastname',
                     flex: 1
                 }
@@ -97,8 +99,8 @@ Ext.define('Shopware.apps.RatepayLogging.view.main.Window', {
     createDetailGrid: function (me) {
         return Ext.create('Ext.panel.Panel', {
             width: '100%',
-            height: 215,
             border: false,
+            flex: 1,
             layout: {
                 type: 'hbox',
                 align: 'strech'

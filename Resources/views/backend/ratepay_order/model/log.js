@@ -6,11 +6,11 @@
  */
 Ext.define('Shopware.apps.RatepayOrder.model.Log', {
     extend: 'Ext.data.Model',
-    fields: [ 'date', 'version', 'operation', 'suboperation', 'transactionId', 'firstname', 'lastname', 'request', 'response'],
+    fields: ['date', 'version', 'operation', 'subOperation', 'transactionId', 'firstname', 'lastname', 'request', 'response', 'status_code'],
     proxy: {
         type: 'ajax',
         api: {
-            read: '{url controller=RatepayLogging action=loadLogEntries}'
+            read: '{url controller="RatepayLogging" action="loadLogEntries"}'
         },
         reader: {
             type: 'json',

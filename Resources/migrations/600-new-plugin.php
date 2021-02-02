@@ -40,13 +40,17 @@ class Migration600 extends AbstractPluginMigration
 
             $this->addSql("
                 ALTER TABLE rpay_ratepay_logging
-                    CHANGE version version VARCHAR(10) DEFAULT 'N/A' NOT NULL,
-                    CHANGE operation operation VARCHAR(255) DEFAULT 'N/A' NOT NULL,
-                    CHANGE suboperation suboperation VARCHAR(255) DEFAULT 'N/A' NOT NULL,
-                    CHANGE transactionid transactionid VARCHAR(255) DEFAULT 'N/A' NOT NULL,
-                    CHANGE firstname firstname VARCHAR(255) DEFAULT 'N/A' NOT NULL,
-                    CHANGE lastname lastname VARCHAR(255) DEFAULT 'N/A' NOT NULL
+                    CHANGE version version VARCHAR(10) NOT NULL,
+                    CHANGE operation operation VARCHAR(255) NOT NULL,
+                    CHANGE suboperation suboperation VARCHAR(255) NULL DEFAULT NULL,
+                    CHANGE transactionid transactionid VARCHAR(255) NULL DEFAULT NULL,
+                    CHANGE firstname firstname VARCHAR(255) NULL DEFAULT NULL,
+                    CHANGE lastname lastname VARCHAR(255) NULL DEFAULT NULL
             ");
+            $this->addSql("UPDATE rpay_ratepay_logging SET suboperation = NULL WHERE suboperation = 'N/A'");
+            $this->addSql("UPDATE rpay_ratepay_logging SET transactionid = NULL WHERE transactionid = 'N/A'");
+            $this->addSql("UPDATE rpay_ratepay_logging SET firstname = NULL WHERE firstname = 'N/A'");
+            $this->addSql("UPDATE rpay_ratepay_logging SET lastname = NULL WHERE lastname = 'N/A'");
 
         } else if ($mode == self::MODUS_INSTALL) {
             $this->addSql("
@@ -54,12 +58,12 @@ class Migration600 extends AbstractPluginMigration
             CREATE TABLE IF NOT EXISTS `rpay_ratepay_logging` (
               `id` int(11) NOT NULL AUTO_INCREMENT,
               `date` datetime NOT NULL,
-              `version` varchar(10) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
-              `operation` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
-              `suboperation` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
-              `transactionId` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
-              `firstname` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
-              `lastname` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'N/A',
+              `version` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
+              `operation` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+              `suboperation` varchar(255) COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+              `transactionId` varchar(255) COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+              `firstname` varchar(255) COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+              `lastname` varchar(255) COLLATE utf8_unicode_ci NULL DEFAULT NULL,
               `request` longtext COLLATE utf8_unicode_ci NOT NULL,
               `response` longtext COLLATE utf8_unicode_ci NOT NULL,
               PRIMARY KEY (`id`)

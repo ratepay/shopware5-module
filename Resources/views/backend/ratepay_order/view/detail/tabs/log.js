@@ -65,22 +65,24 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
 
             {
                 header: '{s namespace="backend/ratepay" name=suboperation}Suboperation{/s}',
-                dataIndex: 'suboperation',
+                dataIndex: 'subOperation',
                 flex: 2
             },
-
+            {
+                header: '{s namespace="backend/ratepay" name="status"}Status{/s}',
+                dataIndex: 'status_code',
+                flex: 2
+            },
             {
                 header: '{s namespace="backend/ratepay" name=transactionid}Transaction-ID{/s}',
                 dataIndex: 'transactionId',
                 flex: 2
             },
-
             {
                 header: '{s namespace=backend/customer/view/detail name=base/firstname}FirstName{/s}',
                 dataIndex: 'firstname',
                 flex: 1
             },
-
             {
                 header: '{s namespace=backend/customer/view/detail name=base/lastname}Lastname{/s}',
                 dataIndex: 'lastname',

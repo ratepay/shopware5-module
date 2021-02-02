@@ -10,6 +10,7 @@ namespace RpayRatePay\Services\Logger;
 
 use Exception;
 use Monolog\Logger;
+use RpayRatePay\Helper\XmlHelper;
 use RpayRatePay\Models\Log;
 use RpayRatePay\Services\Config\ConfigService;
 use Shopware\Components\Model\ModelManager;
@@ -50,17 +51,10 @@ class RequestLogger
      */
     public function logRequest($requestXml, $responseXml)
     {
-        preg_match("/<operation.*>(.*)<\/operation>/", $requestXml, $operationMatches);
-        $operation = $operationMatches[1];
-
-        preg_match('/<operation subtype=\"(.*)">(.*)<\/operation>/', $requestXml, $operationSubtypeMatches);
-        $operationSubtype = isset($operationSubtypeMatches[1]) ? $operationSubtypeMatches[1] : 'N/A';
-
-        preg_match("/<transaction-id>(.*)<\/transaction-id>/", $requestXml, $transactionMatches);
-        $transactionId = isset($transactionMatches[1]) ? $transactionMatches[1] : 'N/A';
-
-        preg_match("/<transaction-id>(.*)<\/transaction-id>/", $responseXml, $transactionMatchesResponse);
-        $transactionId = $transactionId == 'N/A' && isset($transactionMatchesResponse[1]) ? $transactionMatchesResponse[1] : $transactionId;
+        $operation = XmlHelper::findValue($requestXml, 'operation');
+        $operationSubtype = XmlHelper::findAttributeValue($requestXml, 'operation', 'subtype');
+        $transactionId = XmlHelper::findValue($requestXml, 'transaction-id');
+        $transactionId = XmlHelper::findValue($responseXml, 'transaction-id', $transactionId);
 
         $requestXml = preg_replace("/<owner>(.*)<\/owner>/", '<owner>xxxxxxxx</owner>', $requestXml);
         $requestXml = preg_replace("/<bank-account-number>(.*)<\/bank-account-number>/", '<bank-account-number>xxxxxxxx</bank-account-number>', $requestXml);
@@ -71,7 +65,7 @@ class RequestLogger
             $log->setVersion($this->config->getPluginVersion());
             $log->setOperation($operation);
             $log->setSubOperation($operationSubtype);
-            $log->setTransationId($transactionId);
+            $log->setTransactionId($transactionId);
             $log->setRequest($requestXml);
             $log->setResponse($responseXml);
 
