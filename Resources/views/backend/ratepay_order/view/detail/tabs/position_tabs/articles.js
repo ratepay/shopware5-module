@@ -132,14 +132,25 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                     Ext.create('Ext.window.Window', {
                         title: '{s namespace="backend/ratepay/order_management" name="action/addCredit"}{/s}',
                         width: 300,
-                        height: 100,
+                        height: 150,
                         id: 'creditWindow',
                         resizable: false,
-                        layout: 'fit',
+                        layout: {
+                            type: 'vbox',
+                            align : 'stretch',
+                            pack  : 'start',
+                        },
                         items: [
+                            {
+                                xtype: 'textfield',
+                                id: 'creditLabel',
+                                fieldLabel: '{s namespace="backend/ratepay" name="label"}{/s}',
+                                allowBlank: false
+                            },
                             {
                                 xtype: 'numberfield',
                                 id: 'creditAmount',
+                                fieldLabel: '{s namespace="backend/ratepay" name="amount"}{/s}',
                                 helpText: '{s namespace="backend/ratepay" name="precisionNote"}{/s}',
                                 allowBlank: false,
                                 allowDecimals: true,
@@ -159,6 +170,11 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                         Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=CreditAmountToLow}{/s}');
                                         return;
                                     }
+                                    var label = Ext.getCmp('creditLabel').getValue();
+                                    if(label.length === 0) {
+                                        Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=EmptyLabel}{/s}');
+                                        return;
+                                    }
                                     Ext.Ajax.request({
                                         url: '{url controller=Order action=savePosition}',
                                         method: 'POST',
@@ -166,7 +182,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                         params: {
                                             orderId: id,
                                             articleId: 0,
-                                            articleName: 'Nachlass',
+                                            articleName: label,
                                             articleNumber: creditname,
                                             id: 0,
                                             inStock: 0,
@@ -222,14 +238,25 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                     Ext.create('Ext.window.Window', {
                         title: '{s namespace="backend/ratepay/order_management" name="action/addDebit"}{/s}',
                         width: 300,
-                        height: 100,
+                        height: 150,
                         id: 'debitWindow',
                         resizable: false,
-                        layout: 'fit',
+                        layout: {
+                            type: 'vbox',
+                            align : 'stretch',
+                            pack  : 'start',
+                        },
                         items: [
+                            {
+                                xtype: 'textfield',
+                                id: 'debitLabel',
+                                fieldLabel: '{s namespace="backend/ratepay" name="label"}{/s}',
+                                allowBlank: false
+                            },
                             {
                                 xtype: 'numberfield',
                                 id: 'debitAmount',
+                                fieldLabel: '{s namespace="backend/ratepay" name="amount"}{/s}',
                                 helpText: '{s namespace="backend/ratepay" name="precisionNote"}{/s}',
                                 allowBlank: false,
                                 allowDecimals: true,
@@ -249,6 +276,11 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                         Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=CreditAmountToLow}{/s}');
                                         return;
                                     }
+                                    var label = Ext.getCmp('debitLabel').getValue();
+                                    if(label.length === 0) {
+                                        Ext.Msg.alert('Error', '{s namespace="backend/ratepay/messages" name=EmptyLabel}{/s}');
+                                        return;
+                                    }
                                     Ext.Ajax.request({
                                         url: '{url controller=Order action=savePosition}',
                                         method: 'POST',
@@ -256,7 +288,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
                                         params: {
                                             orderId: id,
                                             articleId: 0,
-                                            articleName: 'Nachbelastung',
+                                            articleName: label,
                                             articleNumber: debitname,
                                             id: 0,
                                             inStock: 0,
