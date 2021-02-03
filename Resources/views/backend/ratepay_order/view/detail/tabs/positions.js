@@ -21,7 +21,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Positions', {
         var me = this;
         me.items = [
             {
-                title: '{s namespace="backend/ratepay" name=subtabdelivery}Versand/Stornierung{/s}',
+                title: '{s namespace="backend/ratepay" name="SubTabDelivery"}{/s}',
                 layout: 'fit',
                 items: [
                     Ext.create('Shopware.apps.RatepayOrder.view.detail.positionTabs.Articles', {
@@ -43,7 +43,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Positions', {
                 }
             },
             {
-                title: '{s namespace="backend/ratepay" name=subtabreturn}Retoure{/s}',
+                title: '{s namespace="backend/ratepay" name="SubTabReturn"}{/s}',
                 layout: 'fit',
                 items: [
                     Ext.create('Shopware.apps.RatepayOrder.view.detail.positionTabs.Return', {

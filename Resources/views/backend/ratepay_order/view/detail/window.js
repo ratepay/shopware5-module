@@ -43,7 +43,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.Window', {
 
         tabPanel.add([
             Ext.create('Shopware.apps.RatepayOrder.view.detail.tabs.Positions', {
-                title: '{s namespace="backend/ratepay" name=tabarticlemanagement}Ratepay Artikelverwaltung{/s}',
+                title: '{s namespace="backend/ratepay" name="TabPositions"}Ratepay Artikelverwaltung{/s}',
                 record: me.record,
                 orderStatusStore: me.orderStatusStore,
                 paymentStatusStore: me.paymentStatusStore
