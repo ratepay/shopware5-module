@@ -47,7 +47,7 @@ class PositionHelper
     public static function isDiscount($object)
     {
         if ($object instanceof Detail || $object instanceof PositionStruct) {
-            return in_array($object->getMode(), self::MODE_SW_DISCOUNT);
+            return in_array($object->getMode(), self::MODE_SW_DISCOUNT) && $object->getPrice() < 0;
         } else {
             throw new RuntimeException('the object must be a type of ' . Detail::class . ' or ' . PositionStruct::class);
         }
