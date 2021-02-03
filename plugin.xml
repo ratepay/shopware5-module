@@ -12,7 +12,7 @@
     <label lang="de">Ratepay Payment Plugin für Shopware 5</label>
     <label>Ratepay Payment Plugin for Shopware 5</label>
 
-    <version>6.0.0-alpha2</version>
+    <version>6.0.0</version>
     <copyright>Copyright (c) 2020, Ratepay GmbH</copyright>
     <license>MIT</license>
     <link>https://www.ratepay.com</link>
@@ -20,7 +20,7 @@
     <compatibility minVersion="5.5.0"/>
 
     <changelog version="6.0.0">
-        <changes lang="en">
+        <changes>
             <![CDATA[
                 <h2>Important changes</h2>
                 <ul>
@@ -63,6 +63,7 @@
                     <li>invoice number and tracking-id information are now supported and send to Ratepay</li>
                     <li>Deliver ESD products immediately after the order</li>
                     <li>Transmit additional address lines in PaymentRequest</li>
+                    <li>Debit/Credit: added field to define a custom item label</li>
                 </ul>
 
                 <h2>Bug fixes</h2>
@@ -112,6 +113,7 @@
                     <li>Übermittlung Rechnungsnummer und Tracking-ID</li>
                     <li>Konfiguration: Versende ESD-Produkte umgehend nach der Bestellung</li>
                     <li>Konfiguration: Übertrage Adresszusatzzeilen</li>
+                    <li>Nachbelastung/Gutschrift: Feld zum Definieren eines eigenen Beschreibungstext hinzugefügt</li>
                 </ul>
 
                 <h2>Fehlerbehebungen</h2>

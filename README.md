@@ -3,7 +3,7 @@
 
 |Module | Ratepay Module for Shopware
 |------|----------
-|Shop Version | `5.5.10` - `5.6.x`
+|Shop Version | `5.5.0` - `5.7.x`
 |Version | `6.0.0`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
@@ -29,7 +29,7 @@ please have a look into plugin.xml
 ## Shopware CLI Commands
 You can use the Shopware CLI to perform operations on Ratepay orders.
 
-All commands has the same structure:
+All commands have the same structure:
 
 ``` 
 ./bin/console ratepay:<operation> <order> [<orderDetail>] [<qty>] 
@@ -43,7 +43,7 @@ All commands has the same structure:
 | `qty`         | the quantity which has to be performed. If not provided, the original ordered quantity will be used                                                                                          | No       |
 
 ### example operation `deliver`
-all elements of the order (with the id `125`) will be deliverd
+all elements of the order (with the id `125`) will be delivered
 ``` 
 ./bin/console ratepay:deliver 125
 ```
@@ -101,7 +101,7 @@ $response = $requestService->doRequest();
 If you want to deliver/cancel/return the shipping costs of an order, you need to provide `shipping` as a string as `$productNumber`. The `$qty` must be `1`. 
 You must not call `setOrderDetail()` on the `$basketPosition`.
 
-Please not that you always have to call `setOrderDetail()` if you want to deliver/cancel/return an product or voucher, except the shipping costs.
+Please note that you always have to call `setOrderDetail()` if you want to deliver/cancel/return a product or voucher, except the shipping costs.
 
 
 #### perform full action
@@ -118,4 +118,4 @@ you will get an `\RatePAY\Model\Response\AbstractResponse` or a boolean as respo
 If you get an `AbstractResponse`, just call `isSuccessful()` to verify if the request was successful.
 
 If you get a boolean with the value `true` the operation has been registered to in the database, but has not been sent to the gateway.
-This will happen, if the order is a installment and there a open (not delivered/canceled) items in the order.
+This will happen, if the order is an installment and there an open (not delivered/canceled) items in the order.
