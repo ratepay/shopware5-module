@@ -48,7 +48,9 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
             {
                 header: '{s namespace=backend/index/view/widgets name=orders/headers/date}Datum{/s}',
                 dataIndex: 'date',
-                flex: 2
+                flex: 2,
+                xtype: 'datecolumn',
+                format: 'd.m.Y H:i:s'
             },
 
             {
