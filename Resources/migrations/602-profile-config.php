@@ -17,6 +17,10 @@ class Migration602 extends AbstractPluginMigration
      */
     public function up($mode)
     {
+        if(defined('RATEPAY_MIGRATION_DONE_603')) {
+            return;
+        }
+
         $this->addSql("
             CREATE TABLE IF NOT EXISTS `ratepay_profile_config` (
                 `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,

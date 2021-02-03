@@ -28,11 +28,22 @@ class Database extends AbstractBootstrap
 
     private function applyMigrations($mode)
     {
-        if ($this->installContext->assertMinimumVersion("5.6") === false) {
-            $this->createMigrationSchema();
+        /** @var PDO $connection */
+        $connection = $this->container->get('db_connection');
 
-            /** @var PDO $connection */
-            $connection = $this->container->get('db_connection');
+        if ($this->installContext->assertMinimumVersion("5.6") === false) {
+
+            $connection->exec("
+                CREATE TABLE IF NOT EXISTS `ratepay_schema_version` (
+                  `version` int(11) NOT NULL,
+                  `start_date` datetime NOT NULL,
+                  `complete_date` datetime DEFAULT NULL,
+                  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+                  `error_msg` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+                  PRIMARY KEY (`version`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+            ");
+
             $migrationPath = $this->pluginDir . '/Resources/migrations/';
             $directoryIterator = new DirectoryIterator($migrationPath);
             $regex = new RegexIterator($directoryIterator, '/^([0-9]*)-(.*)\.php$/i', RecursiveRegexIterator::GET_MATCH);
@@ -71,28 +82,9 @@ class Database extends AbstractBootstrap
                     }
                 }
             }
+        } else {
+            $connection->exec("DROP TABLE IF EXISTS ratepay_schema_version;");
         }
-    }
-
-    private function createMigrationSchema()
-    {
-        // this is the shopware schema of SW 5.6+
-        $connection = $this->container->get('db_connection');
-        $sql = '
-            CREATE TABLE IF NOT EXISTS `s_plugin_schema_version` (
-                `plugin_name` VARCHAR(255) NOT NULL COLLATE \'utf8_unicode_ci\',
-                `version` INT(11) NOT NULL,
-                `start_date` DATETIME NOT NULL,
-                `complete_date` DATETIME NULL DEFAULT NULL,
-                `name` VARCHAR(255) NOT NULL COLLATE \'utf8_unicode_ci\',
-                `error_msg` VARCHAR(255) NULL DEFAULT NULL COLLATE \'utf8_unicode_ci\',
-                PRIMARY KEY (`plugin_name`, `version`)
-            )
-            COLLATE=\'utf8_unicode_ci\'
-            ENGINE=InnoDB
-        ';
-        $connection->exec($sql);
-        $connection->commit();
     }
 
     private function isMigrationAlreadyExecuted($version)
@@ -101,9 +93,8 @@ class Database extends AbstractBootstrap
         $sql = "
             SELECT 
                 1 
-            FROM `s_plugin_schema_version` 
+            FROM `ratepay_schema_version` 
             WHERE 
-                `plugin_name` LIKE 'RpayRatePay' AND 
                 `version` = " . $version . " AND 
                 `complete_date` IS NOT NULL
         ";
@@ -113,11 +104,10 @@ class Database extends AbstractBootstrap
 
     private function insertMigration(PDO $connection, $migrationVersion, $migrationName, $errorMessage = null)
     {
-        $migrationQuery = $connection->prepare("INSERT INTO `s_plugin_schema_version` VALUES (?, ?, NOW(), " . ($errorMessage ? 'NULL' : 'NOW()') . ",?,?)");
-        $migrationQuery->bindValue(1, 'RpayRatePay');
-        $migrationQuery->bindValue(2, $migrationVersion);
-        $migrationQuery->bindValue(3, $migrationName);
-        $migrationQuery->bindValue(4, $errorMessage);
+        $migrationQuery = $connection->prepare("INSERT INTO `ratepay_schema_version` VALUES (?, NOW(), " . ($errorMessage ? 'NULL' : 'NOW()') . ",?,?)");
+        $migrationQuery->bindValue(1, $migrationVersion);
+        $migrationQuery->bindValue(2, $migrationName);
+        $migrationQuery->bindValue(3, $errorMessage);
         $migrationQuery->execute();
     }
 
@@ -132,7 +122,7 @@ class Database extends AbstractBootstrap
         if ($keepUserData === false) {
             $this->modelManager->getConnection()->exec("
                 SET FOREIGN_KEY_CHECKS=0;
-                DROP TABLE IF EXISTS rpay_ratepay_schema_version;
+                DROP TABLE IF EXISTS ratepay_schema_version;
                 DROP TABLE IF EXISTS rpay_ratepay_config;
                 DROP TABLE IF EXISTS rpay_ratepay_config_installment;
                 DROP TABLE IF EXISTS rpay_ratepay_config_payment;

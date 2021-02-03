@@ -14,6 +14,10 @@ class Migration600 extends AbstractPluginMigration
 {
     public function up($mode)
     {
+        if(defined('RATEPAY_MIGRATION_DONE_600')) {
+            return;
+        }
+
         if (self::MODUS_UPDATE === $mode) {
 
             $this->addSql("

@@ -17,6 +17,10 @@ class Migration601 extends AbstractPluginMigration
      */
     public function up($mode)
     {
+        if(defined('RATEPAY_MIGRATION_DONE_601')) {
+            return;
+        }
+
         if (self::MODUS_UPDATE === $mode) {
             $connection = Shopware()->Models()->getConnection();
             $schemaManager = $connection->getSchemaManager();
