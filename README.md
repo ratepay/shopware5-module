@@ -11,7 +11,7 @@
 
 ## Installation
 
-### via packagist (recommenced)
+### via packagist (recommended)
 This is only possible if you use the [composer setup of shopware](https://developers.shopware.com/developers-guide/shopware-composer/)
 1. execute `composer require ratepay/shopware5-module` in your project directory
 3. Log into your Shopware-backend
