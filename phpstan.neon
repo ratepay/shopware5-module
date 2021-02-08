@@ -1,0 +1,21 @@
+parameters:
+    level: 0
+    paths:
+        - %currentWorkingDirectory%
+    excludePaths:
+        - vendor/
+        - build/
+
+    ignoreErrors:
+        - '#(Instantiated )?[cC]lass SwagBackendOrder\\.* not found.#'
+        - '#Parameter .* of method .* has invalid typehint type SwagBackendOrder\\.*.#'
+        - '#(Instantiated )?[cC]lass BogxProductConfigurator\\.* not found.#'
+        - '#Parameter .* of method .* has invalid typehint type BogxProductConfigurator\\.*.#'
+        - '#(Instantiated )?[cC]lass Shopware\\Models\\Attribute\\.* not found.#'
+        - '#Parameter .* of method .* has invalid typehint type Shopware\\Models\\Attribute\\.*.#'
+
+    reportUnmatchedIgnoredErrors: false
+    tipsOfTheDay: false
+    bootstrapFiles:
+        - phpstan.class_aliases.php
+        - ../../../vendor/autoload.php

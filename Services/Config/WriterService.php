@@ -46,8 +46,6 @@ class WriterService
         $this->modelManager = $modelManager;
         $this->profileRequestService = $profileRequestService;
         $this->logger = $logger;
-
-        $this->count = 0;
     }
 
     /**

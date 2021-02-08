@@ -84,13 +84,13 @@ class Installment extends Debit
         $paymentMethod = $this->getPaymentMethodFromRequest($request);
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
 
         $this->installmentService->initInstallmentData((new PaymentConfigSearch())
             ->setPaymentMethod($paymentMethod)
             ->setBackend(false)
             ->setBillingCountry($billingAddress->getCountry()->getIso())
-            ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+            ->setShippingCountry($shippingAddress->getCountry()->getIso())
             ->setShop(Shopware()->Shop()->getId())
             ->setCurrency(Shopware()->Config()->get('currency')),
             $dto

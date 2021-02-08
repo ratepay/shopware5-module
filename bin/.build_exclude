@@ -7,3 +7,5 @@ build.sh
 .DS_Store
 vendor
 bin
+phpstan.neon
+phpstan.class_aliases.php

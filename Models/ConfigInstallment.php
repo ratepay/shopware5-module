@@ -84,7 +84,7 @@ class ConfigInstallment extends ModelEntity
     /**
      * @return bool
      */
-    public function isBankTransferAllowed(): bool
+    public function isBankTransferAllowed()
     {
         return $this->bankTransferAllowed;
     }
@@ -92,7 +92,7 @@ class ConfigInstallment extends ModelEntity
     /**
      * @param bool $bankTransferAllowed
      */
-    public function setBankTransferAllowed(bool $bankTransferAllowed): void
+    public function setBankTransferAllowed(bool $bankTransferAllowed)
     {
         $this->bankTransferAllowed = $bankTransferAllowed;
     }

@@ -223,7 +223,7 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
     {
         if (empty($this->_cronjobLastExecutionDate)) {
             $query = 'SELECT `next`, `interval` FROM s_crontab WHERE `action` = ?';
-            $row = $this->db->fetchRow($query, [self::JOB_NAME]);
+            $row = $this->db->fetchRow($query, ['Shopware_CronJob_RatePay_UpdateTransactions']);
 
             $date = new DateTime($row['next']);
             $date->sub(new DateInterval('PT' . $row['interval'] . 'S'));

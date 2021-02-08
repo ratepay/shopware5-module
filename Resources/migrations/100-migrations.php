@@ -12,6 +12,7 @@ use Shopware\Components\Migrations\AbstractPluginMigration;
 
 class Migration100 extends AbstractPluginMigration
 {
+    // @phpstan-ignore-next-line
     public function up($mode)
     {
         $connection = Shopware()->Models()->getConnection();
@@ -30,6 +31,7 @@ class Migration100 extends AbstractPluginMigration
         }
     }
 
+    // @phpstan-ignore-next-line
     public function down($keepUserData)
     {
         $this->addSql("

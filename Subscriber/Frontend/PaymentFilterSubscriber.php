@@ -129,7 +129,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
         $customer = $this->sessionHelper->getCustomer();
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
         if ($billingAddress === null) {
             return $return;
         }
@@ -153,7 +153,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
                 ->setPaymentMethod($paymentMethodName)
                 ->setBackend(false)
                 ->setBillingCountry($billingAddress->getCountry()->getIso())
-                ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+                ->setShippingCountry($shippingAddress->getCountry()->getIso())
                 ->setShop($this->context->getShop())
                 ->setCurrency($currency)
             );

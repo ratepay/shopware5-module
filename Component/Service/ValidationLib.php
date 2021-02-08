@@ -196,6 +196,7 @@ class ValidationLib
 
     public static function isVatIdValid($countryCode, $vatId)
     {
-        return isset(self::VAT_REGEX[$countryCode]) ? preg_match('/^' . self::VAT_REGEX[$countryCode]['regex'] . '$/i', $vatId) === 1 : true;
+        $regexStrings = self::VAT_REGEX[$countryCode];
+        return isset($regexStrings) ? preg_match('/^' . self::VAT_REGEX[$countryCode]['regex'] . '$/i', $vatId) === 1 : true;
     }
 }

@@ -12,9 +12,7 @@ use Shopware\Components\Migrations\AbstractPluginMigration;
 
 class Migration602 extends AbstractPluginMigration
 {
-    /**
-     * {@inheritdoc}
-     */
+    // @phpstan-ignore-next-line
     public function up($mode)
     {
         if(defined('RATEPAY_MIGRATION_DONE_603')) {
@@ -75,6 +73,7 @@ class Migration602 extends AbstractPluginMigration
 //        $this->addSql("DROP TABLE IF EXISTS rpay_ratepay_config_payment");
     }
 
+    // @phpstan-ignore-next-line
     public function down($keepUserData)
     {
         $this->addSql("DROP TABLE IF EXISTS ratepay_profile_config_method_installment");

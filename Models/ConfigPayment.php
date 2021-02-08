@@ -184,22 +184,6 @@ class ConfigPayment extends ModelEntity
     }
 
     /**
-     * @return int
-     */
-    public function getAddress()
-    {
-        return $this->address;
-    }
-
-    /**
-     * @param int $address
-     */
-    public function setAddress($address)
-    {
-        $this->address = $address;
-    }
-
-    /**
      * @return bool
      */
     public function isAllowDifferentAddresses()

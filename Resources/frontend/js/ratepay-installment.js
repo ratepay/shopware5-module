@@ -182,8 +182,6 @@
                 me.$el.find(me.opts.selectorPlanResult).html(result);
                 me.$el.find(me.opts.selectorCalculationType).val(calcType);
                 me.$el.find(me.opts.selectorCalculationValue).val(calcValue);
-            }).fail(function () {
-                alert("error");
             });
         },
 

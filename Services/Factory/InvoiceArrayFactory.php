@@ -31,7 +31,7 @@ class InvoiceArrayFactory
 
     public function getData(Order $order)
     {
-        $documentModel = $this->modelManager->getRepository(Document::class); //TODO DI
+        $documentModel = $this->modelManager->getRepository(Document::class);
         $document = $documentModel->findOneBy(['orderId' => $order->getId(), 'type' => 1]);
         if ($document !== null) {
             /** @var DateTimeInterface $dateObject */

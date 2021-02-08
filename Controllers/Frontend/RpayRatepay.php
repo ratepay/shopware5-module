@@ -178,7 +178,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         }
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
 
         $requestDto = new InstallmentRequest(
             $params['calculationAmount'],
@@ -191,7 +191,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             ->setPaymentMethod($paymentMethod)
             ->setBackend(false)
             ->setBillingCountry($billingAddress->getCountry()->getIso())
-            ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+            ->setShippingCountry($shippingAddress->getCountry()->getIso())
             ->setShop(Shopware()->Shop())
             ->setCurrency(Shopware()->Config()->get('currency')),
             $requestDto

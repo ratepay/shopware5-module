@@ -78,7 +78,7 @@ class InstallmentSubscriber implements SubscriberInterface
         }
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
 
         $totalAmount = floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']); // TODO no static access!
 
@@ -86,7 +86,7 @@ class InstallmentSubscriber implements SubscriberInterface
             ->setPaymentMethod($paymentMethod)
             ->setBackend(false)
             ->setBillingCountry($billingAddress->getCountry()->getIso())
-            ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+            ->setShippingCountry($shippingAddress->getCountry()->getIso())
             ->setShop(Shopware()->Shop())
             ->setCurrency(Shopware()->Config()->get('currency')),
             $totalAmount
@@ -114,7 +114,7 @@ class InstallmentSubscriber implements SubscriberInterface
                 return;
             }
             $billingAddress = $this->sessionHelper->getBillingAddress();
-            $shippingAddress = $this->sessionHelper->getShippingAddress();
+            $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
             $dto = $this->sessionHelper->getInstallmentRequestDTO();
             try {
                 //Update installment plan
@@ -130,7 +130,7 @@ class InstallmentSubscriber implements SubscriberInterface
                 ->setPaymentMethod($paymentMethod)
                 ->setBackend(false)
                 ->setBillingCountry($billingAddress->getCountry()->getIso())
-                ->setShippingCountry(($shippingAddress ? : $billingAddress)->getCountry()->getIso())
+                ->setShippingCountry($shippingAddress->getCountry()->getIso())
                 ->setShop(Shopware()->Shop())
                 ->setCurrency(Shopware()->Config()->get('currency')),
                 $this->sessionHelper->getInstallmentRequestDTO()
@@ -146,7 +146,7 @@ class InstallmentSubscriber implements SubscriberInterface
     {
         $sessionTotalAmount = $this->sessionHelper->getSession()->get('sOrderVariables')['sAmount'];
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress();
+        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
         if ($sessionTotalAmount != $dto->getTotalAmount()) {
             // ups! the calculated plan does not have the same amount as the shopping cart ...
             $dto->setTotalAmount($sessionTotalAmount);
@@ -155,7 +155,7 @@ class InstallmentSubscriber implements SubscriberInterface
                 ->setPaymentMethod($paymentMethod)
                 ->setBackend(false)
                 ->setBillingCountry($billingAddress->getCountry()->getIso())
-                ->setShippingCountry(($shippingAddress ?: $billingAddress)->getCountry()->getIso())
+                ->setShippingCountry($shippingAddress->getCountry()->getIso())
                 ->setShop(Shopware()->Shop()->getId())
                 ->setCurrency(Shopware()->Config()->get('currency')),
                 $dto

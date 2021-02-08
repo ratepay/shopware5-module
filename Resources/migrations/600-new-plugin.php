@@ -12,6 +12,7 @@ use Shopware\Components\Migrations\AbstractPluginMigration;
 
 class Migration600 extends AbstractPluginMigration
 {
+    // @phpstan-ignore-next-line
     public function up($mode)
     {
         if(defined('RATEPAY_MIGRATION_DONE_600')) {
@@ -115,6 +116,7 @@ class Migration600 extends AbstractPluginMigration
         }
     }
 
+    // @phpstan-ignore-next-line
     public function down($keepUserData)
     {
     }
