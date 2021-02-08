@@ -49,8 +49,29 @@ Ext.define('Shopware.apps.RatepayProfileConfig.view.detail.ProfileConfig', {
 });
 
 Shopware.app.Application.on('profileconfig-save-successfully', function (view, result, window, record, form, operation) {
-    var responseData = JSON.parse(operation.response.responseText);
-    if (responseData.message) {
-        Shopware.Notification.createGrowlMessage('', responseData.message);
+    // RATEPLUG-165: shopware issue, that the response is not available in the frontend. so we will call the
+    // `reloadProfileAction` if the no response is available. this issue is fixed in shopware 5.6
+
+    var message = null;
+    if (operation.response !== undefined) {
+        message = JSON.parse(operation.response.responseText).message;
+        if (message) {
+            Shopware.Notification.createGrowlMessage('', message);
+        }
+    } else {
+        Ext.Ajax.request({
+            url: '{url controller="RatepayProfileConfig" action="reloadProfile"}',
+            method: 'GET',
+            async: false,
+            params: {
+                ids: [result.data.id],
+            },
+            success: function (response) {
+                response = Ext.JSON.decode(response.responseText);
+                if (response.success) {
+                    Shopware.Notification.createGrowlMessage('', response.message);
+                }
+            }
+        });
     }
 });

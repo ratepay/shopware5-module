@@ -17,12 +17,18 @@ class Shopware_Controllers_Backend_RatepayProfileConfig extends Shopware_Control
      */
     private $profileConfigService;
 
+    /**
+     * @var Shopware_Components_Snippet_Manager
+     */
+    private $snippetManager;
+
 
     public function setContainer(Container $loader = null)
     {
         parent::setContainer($loader);
 
         $this->profileConfigService = $this->container->get(ProfileConfigService::class);
+        $this->snippetManager = $this->container->get('snippets');
     }
 
     protected function getListQuery()
@@ -32,12 +38,31 @@ class Shopware_Controllers_Backend_RatepayProfileConfig extends Shopware_Control
             ->join($this->alias . '.shop', 'shop');
     }
 
+    public function reloadProfileAction()
+    {
+        $snippetNamespace = $this->snippetManager->getNamespace('backend/ratepay/profile_config/messages');
+
+        try {
+            $result = $this->profileConfigService->refreshProfileConfig($this->Request()->getParam('ids'));
+
+            if ($result === false) {
+                $message = $snippetNamespace->get('invalid_profile');
+            } else {
+                $message = $snippetNamespace->get('profile_reloaded');
+            }
+        } catch (Exception $e) {
+            $message = $snippetNamespace->get('unknown_error');
+        }
+
+        $this->View()->assign([
+            'success' => true,
+            'message' => $message
+        ]);
+    }
+
     public function save($data)
     {
-        $snippetManager = $this->container->get('snippets');
-        /** @var Enlight_Components_Snippet_Namespace $snippetNamespace */
-        $snippetNamespace = $snippetManager->getNamespace('backend/ratepay/profile_config/messages');
-
+        $snippetNamespace = $this->snippetManager->getNamespace('backend/ratepay/profile_config/messages');
 
         try {
             $returnData = parent::save($data);
@@ -45,30 +70,32 @@ class Shopware_Controllers_Backend_RatepayProfileConfig extends Shopware_Control
             return [
                 'success' => false,
                 'error' => $snippetNamespace->get('profile_config_already_exists'),
-                'message' => $e->getMessage()
+                'message' => $snippetNamespace->get('profile_config_already_exists')
             ];
         }
 
-        if (isset($returnData['data']['id'])) {
-            try {
-                $result = $this->profileConfigService->refreshProfileConfig($returnData['data']['id']);
+        // RATEPLUG-165: shopware issue, that the response is not available in the frontend. so we will call the
+        // `reloadProfileAction` if the no response is available. this issue is fixed in shopware 5.6
+        if(version_compare(Shopware()->Config()->get('version'), '5.6', '>=')) {
+            if (isset($returnData['data']['id'])) {
+                try {
+                    $result = $this->profileConfigService->refreshProfileConfig($returnData['data']['id']);
 
-                if ($result === false) {
-                    $returnData['message'] = $snippetNamespace->get('invalid_profile');
-                } else {
-                    $returnData['message'] = $snippetNamespace->get('profile_reloaded');
+                    if ($result === false) {
+                        $returnData['message'] = $snippetNamespace->get('invalid_profile');
+                    } else {
+                        $returnData['message'] = $snippetNamespace->get('profile_reloaded');
+                    }
+                } catch (Exception $e) {
+                    $message = $snippetNamespace->get('unknown_error');
+                    if ($e->getPrevious() && ((int)$e->getPrevious()->getCode()) === 23000) {
+                        $message = $snippetNamespace->get('profile_config_already_exists');
+                    }
+                    $returnData['message'] = $message;
                 }
-            } catch (Exception $e) {
-                $message = $snippetNamespace->get('unknown_error');
-                if ($e->getPrevious() && ((int)$e->getPrevious()->getCode()) === 23000) {
-                    $message = $snippetNamespace->get('profile_config_already_exists');
-                }
-                $returnData['message'] = $message;
             }
         }
-
         return $returnData;
-
     }
 
 
