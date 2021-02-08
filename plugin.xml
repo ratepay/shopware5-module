@@ -65,9 +65,6 @@
                     <li>Transmit additional address lines in PaymentRequest</li>
                     <li>Debit/Credit: added field to define a custom item label</li>
                 </ul>
-
-                <h2>Bug fixes</h2>
-                <p>Bug fixes have already been published in the plugin version 5.5.0 and 5.5.1</p>
             ]]>
         </changes>
         <changes lang="de">
@@ -115,9 +112,6 @@
                     <li>Konfiguration: Übertrage Adresszusatzzeilen</li>
                     <li>Nachbelastung/Gutschrift: Feld zum Definieren eines eigenen Beschreibungstext hinzugefügt</li>
                 </ul>
-
-                <h2>Fehlerbehebungen</h2>
-                <p>Fehlerbehebungen wurden bereits in der Pluginversion 5.5.0 veröffentlicht.</p>
             ]]>
         </changes>
     </changelog>
