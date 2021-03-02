@@ -31,6 +31,8 @@
                     <li>Ratepay data input fields are now located direct at the payment method</li>
                     <li>Internal changes regarding Database structures</li>
                     <li>New Profile Configuration</li>
+                    <li>the descriptor will not be saved into the attribute `attribute5` of the order anymore. now the descriptor will be saved into the attribute `ratepay_descriptor` of the order</li>
+                    <li>the transaction-id will not be saved into the attribute `attribute6` of the order anymore. now the transaction-id will be saved into the field `transactionID` of the order (Shopware default)</li>
                 </ul>
 
                 <h2>Technical changes</h2>
@@ -78,6 +80,8 @@
                     <li>Felder im Checkout sind nun direkt bei der Zahlungsart</li>
                     <li>Anpassung der Datenbankstrukturen</li>
                     <li>Neue Profile-Konfiguration</li>
+                    <li>Der Verwendungszweck wird nun nicht mehr in das Freitextfeld `attribute5` gespeichert, sondern in das Freitextfeld `ratepay_descriptor` bei der Bestellung</li>
+                    <li>Die Transaktions-ID wird nun nicht mehr in das Freitextfeld `attribute6` gespeichert, sondern in das Feld `transactionID` bei der Bestellung (Shopware Standard)</li>
                 </ul>
 
                 <h2>Technische Änderungen</h2>

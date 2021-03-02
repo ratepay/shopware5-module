@@ -109,6 +109,7 @@ class OrderAttribute extends AbstractAttributeBootstrap
     protected function uninstallAttributes()
     {
         $this->crudService->delete('s_order_attributes', 'ratepay_profile_id');
+        $this->crudService->delete('s_order_attributes', 'ratepay_descriptor');
         $this->crudService->delete('s_order_attributes', 'ratepay_fallback_shipping');
         $this->crudService->delete('s_order_attributes', 'ratepay_fallback_discount');
         $this->crudService->delete('s_order_attributes', 'ratepay_backend');
