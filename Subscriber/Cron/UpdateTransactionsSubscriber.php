@@ -16,6 +16,7 @@ use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use Exception;
 use Monolog\Logger;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Exception\RatepayException;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\OrderStatusChangeService;
 use Shopware\Components\Model\ModelManager;
@@ -25,8 +26,6 @@ use Shopware_Components_Cron_CronJob;
 
 class UpdateTransactionsSubscriber implements SubscriberInterface
 {
-    const MSG_NOTIFY_UPDATES_TO_RATEPAY = '[%d/%d] Processing order %d ...notify needed updates to Ratepay';
-
     /**
      * @var string
      */
@@ -131,24 +130,37 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
             $this->logger->info('Ratepay bidirectionality is turned off.');
             return 'Ratepay bidirectionality is turned off.';
         }
-
         try {
             $orderIds = $this->findCandidateOrdersForUpdate();
             $totalOrders = count($orderIds);
             foreach ($orderIds as $key => $orderId) {
                 $order = $this->modelManager->find(Order::class, $orderId);
                 $this->logger->info(
-                    sprintf(self::MSG_NOTIFY_UPDATES_TO_RATEPAY, ($key + 1), $totalOrders, $orderId)
+                    sprintf('Bidirectionality: Processing %d/%d order-id %d ...', ($key + 1), $totalOrders, $orderId),
+                    [
+                        'order_id' => $order->getId(),
+                        'order_number' => $order->getNumber()
+                    ]
                 );
-                $this->orderStatusChangeService->informRatepayOfOrderStatusChange($order);
+                try {
+                    $this->orderStatusChangeService->informRatepayOfOrderStatusChange($order);
+                } catch (Exception $e) {
+                    $context = [
+                        'order_id' => $order->getId(),
+                        'order_number' => $order->getNumber(),
+                        'trace' => $e->getTraceAsString()
+                    ];
+                    if ($e instanceof RatepayException) {
+                        /** @noinspection SlowArrayOperationsInLoopInspection */
+                        $context = array_merge($context, $e->getContext());
+                    }
+                    $this->logger->error('Bidirectionality: ' . $e->getMessage(), $context);
+                }
             }
         } catch (Exception $e) {
-            $this->logger->error(
-                sprintf('Fehler UpdateTransactionsSubscriber: %s %s', $e->getMessage(), $e->getTraceAsString())
-            );
+            $this->logger->error('bidirectionality: ' .$e->getMessage(), [$e->getTraceAsString()]);
             return $e->getMessage();
         }
-
         return 'Success';
     }
 
@@ -173,24 +185,21 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
         }
 
         $changeDate = $this->getChangeDateLimit();
+        $paymentMethods = PaymentMethods::getNames();
 
         $query = $this->db->select()
+            ->distinct(true)
             ->from(['history' => 's_order_history'], null)
-            ->joinLeft(['order' => 's_order'], 'history.orderID = order.id', ['id'])
-            ->joinLeft(['payment' => 's_core_paymentmeans'], 'order.paymentID = payment.id', null)
+            ->joinLeft(['s_order' => 's_order'], 'history.orderID = s_order.id', ['id'])
+            ->joinLeft(['payment' => 's_core_paymentmeans'], 's_order.paymentID = payment.id', null)
             ->where('history.change_date >= :changeDate')
-            ->where('order.status IN (:allowed_orderstatus)')
-            ->where('payment.name IN (:payment_methods)')
-            ->distinct(true);
-
-        $rows = $this->db->fetchAll(
-            $query,
-            [
-                ':changeDate' => $changeDate,
-                ':allowed_orderstatus' => $allowedOrderStates,
-                ':payment_methods' => PaymentMethods::getNames()
+            ->where("s_order.status IN (" . implode(",", $allowedOrderStates) . ")")
+            ->where("payment.name IN ('" . implode("','", $paymentMethods) . "')")
+            ->bind([
+                'changeDate' => $changeDate
             ]);
 
+        $rows = $this->db->fetchAll($query);
         return array_column($rows, 'id');
     }
 
@@ -230,7 +239,6 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
 
             $this->_cronjobLastExecutionDate = $date;
         }
-
         return $this->_cronjobLastExecutionDate;
     }
 

@@ -10,6 +10,7 @@ namespace RpayRatePay\Helper;
 
 
 use RpayRatePay\DTO\BasketPosition;
+use RpayRatePay\Exception\RatepayPositionNotFoundException;
 use RpayRatePay\Models\Position\AbstractPosition;
 use RpayRatePay\Models\Position\Discount;
 use RpayRatePay\Models\Position\Product;
@@ -94,10 +95,15 @@ class PositionHelper
     /**
      * @param Detail $detail
      * @return AbstractPosition
+     * @throws RatepayPositionNotFoundException
      */
     public function getPositionForDetail(Detail $detail)
     {
-        return $this->modelManager->find(self::getPositionClass($detail), $detail->getId());
+        $entity = $this->modelManager->find(self::getPositionClass($detail), $detail->getId());
+        if ($entity === null) {
+            throw new RatepayPositionNotFoundException($detail->getOrder(), $detail, self::getPositionClass($detail));
+        }
+        return $entity;
     }
 
     public static function getPositionClass(Detail $detail)
@@ -107,12 +113,10 @@ class PositionHelper
             case self::MODE_SW_PRODUCT[0]: //product
             case self::MODE_SW_PRODUCT[1]: //premium product
                 return Product::class;
-                break;
             case self::MODE_SW_DISCOUNT[0]: //voucher
             case self::MODE_SW_DISCOUNT[1]: //IS_REBATE = rabatt
             case self::MODE_SW_DISCOUNT[2]: //IS_SURCHARGE_DISCOUNT //IST ZUSCHLAGSRABATT
                 return Discount::class;
-                break;
             case self::MODE_RP_SHIPPING:
                 return ShippingPosition::class;
             default:
