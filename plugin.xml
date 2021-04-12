@@ -28,6 +28,7 @@
                 <ul>
                     <li>fix fatal exception during calculation of shipping costs</li>
                     <li>added de_AT and de_CH translations</li>
+                    <li>moved static texts to Shopware snippets, so that the legal textes are editable by the shop owner</li>
                 </ul>
             ]]>
         </changes>
@@ -36,6 +37,7 @@
                 <ul>
                     <li>Behebt einen fatalen Fehler während der Versandkostenberechnung</li>
                     <li>de_AT und de_CH Übersetzungen wurden hinzugefügt</li>
+                    <li>Die statischen Texte wurden in die Shopware Textbausteine verschoben, damit die Rechtstexte ebenfalls durch den Shopbetreiber bearbeitbar sind.</li>
                 </ul>
             ]]>
         </changes>
