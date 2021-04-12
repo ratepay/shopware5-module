@@ -21,12 +21,17 @@ class Debit extends AbstractPaymentMethod
     public function getCurrentPaymentDataAsArray($userId)
     {
         $data = parent::getCurrentPaymentDataAsArray($userId);
-        if ($this->isBankDataRequired === false) {
+
+        // if parent method "failed" with `null`, this method has to be "failed", too.
+        if ($this->isBankDataRequired === false || $data === null) {
             return $data;
         }
         $billingAddress = $this->sessionHelper->getBillingAddress();
+
+        /** @noinspection NullPointerExceptionInspection */ // has been already caught in parent method
         $bankData = $this->sessionHelper->getBankData($billingAddress);
 
+        /** @noinspection NullPointerExceptionInspection */ // has been already caught in parent method
         $accountHolders = BankDataUtil::getAvailableAccountHolder($billingAddress, $bankData);
         $data['ratepay']['bank_account'] = [
             'accountHolder' => [
@@ -54,10 +59,10 @@ class Debit extends AbstractPaymentMethod
         $bankAccount = $paymentData['ratepay']['bank_account'];
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $accountHolders = BankDataUtil::getAvailableAccountHolder($billingAddress, $this->sessionHelper->getBankData($billingAddress));
-        if (!isset($bankAccount['accountHolder']['selected'])) {
+        $accountHolders = $billingAddress ? BankDataUtil::getAvailableAccountHolder($billingAddress, $this->sessionHelper->getBankData($billingAddress)) : null;
+        if (!isset($bankAccount['accountHolder']['selected']) || $accountHolders === null) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingAccountHolder');
-        } else if (!in_array($bankAccount['accountHolder']['selected'], $accountHolders)) {
+        } else if (!in_array($bankAccount['accountHolder']['selected'], $accountHolders, true)) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidAccountHolder');
         }
 

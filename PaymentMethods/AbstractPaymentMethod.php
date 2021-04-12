@@ -61,12 +61,16 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
 
     public function getCurrentPaymentDataAsArray($userId)
     {
-        $data = parent::getCurrentPaymentDataAsArray($userId);
         $customer = $this->sessionHelper->getCustomer();
-        if ($customer == null || $customer->getId() !== (int)$userId) {
-            return [];
+        $billingAddress = $customer ? $this->sessionHelper->getBillingAddress($customer) : null;
+
+        // this can occur, if the customer want's to calculate the shipping costs in the cart
+        // please also see RATEPLUG-180
+        if ($customer === null || $billingAddress === null || $customer->getId() !== (int)$userId) {
+            return null;
         }
-        $billingAddress = $this->sessionHelper->getBillingAddress($customer);
+
+        $data = parent::getCurrentPaymentDataAsArray($userId);
 
         /** @var DateTime $birthday */
         $birthday = $customer->getBirthday();
@@ -79,7 +83,7 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
                 'month' => $birthday ? $birthday->format('m') : null,
                 'day' => $birthday ? $birthday->format('d') : null
             ],
-            'vatId_required' => ValidationLib::isCompanySet($billingAddress) == true,
+            'vatId_required' => ValidationLib::isCompanySet($billingAddress) === true,
             'vatId' => $billingAddress->getVatId()
         ];
         return $data;
@@ -88,16 +92,17 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
     protected function _validate($paymentData)
     {
         $return = [];
-        if ($this->sessionHelper->getCustomer() == null) {
+        if ($this->sessionHelper->getCustomer() === null) {
             // customer is not logged in - maybe session has been expired
             $return['sErrorMessages'][] = 'Please login';
             return $return;
         }
+
         $ratepayData = $paymentData['ratepay']['customer_data'];
         if (!isset($ratepayData['birthday_required']) || $ratepayData['birthday_required'] == 1) {
             if (!isset($ratepayData['birthday'])) {
                 $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingBirthday');
-            } else if(checkdate($ratepayData['birthday']['month'], $ratepayData['birthday']['day'], $ratepayData['birthday']['year']) === false) {
+            } else if (checkdate($ratepayData['birthday']['month'], $ratepayData['birthday']['day'], $ratepayData['birthday']['year']) === false) {
                 $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidDateFormatBirthday'));
             } else {
                 $dateTime = new DateTime();
