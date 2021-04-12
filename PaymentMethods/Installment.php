@@ -34,10 +34,15 @@ class Installment extends Debit
 
     public function getCurrentPaymentDataAsArray($userId)
     {
+        $data = parent::getCurrentPaymentDataAsArray($userId);
+        if ($data === null) {
+            // if parent method "failed" with `null`, this method has to be "failed", too.
+            return null;
+        }
+
         $installmentData = $this->sessionHelper->getInstallmentRequestDTO();
         $this->isBankDataRequired = $installmentData->getPaymentType() !== PaymentFirstDay::PAY_TYPE_BANK_TRANSFER;
 
-        $data = parent::getCurrentPaymentDataAsArray($userId);
         $data['ratepay'][$this->formDataKey] = $installmentData->toArray();
 
         return $data;
@@ -84,7 +89,7 @@ class Installment extends Debit
         $paymentMethod = $this->getPaymentMethodFromRequest($request);
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
+        $shippingAddress = $this->sessionHelper->getShippingAddress() ?: $billingAddress;
 
         $this->installmentService->initInstallmentData((new PaymentConfigSearch())
             ->setPaymentMethod($paymentMethod)
