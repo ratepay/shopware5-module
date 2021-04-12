@@ -19,7 +19,7 @@
     <author>Ratepay GmbH</author>
     <compatibility minVersion="5.5.0"/>
 
-    <description>Ratepay enables you to accept online payments wrten zur Verfügung, ohne dass Sie sich mit Risikoprüfungen beschäftigen müssen.ithout any risk of fraud and without the hassle of debtors management.</description>
+    <description>Ratepay enables you to accept online payments without any risk of fraud and without the hassle of debtors management.</description>
     <description lang="de">Ratepay stellt verschiedene Zahlungsarten für Ihren Onlineshop zur Verfügung, ohne dass Sie sich mit der Risikoprüfung oder dem Debitorenmanagement beschäftigen müssen.</description>
 
     <changelog version="6.0.1">
