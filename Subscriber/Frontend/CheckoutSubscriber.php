@@ -9,16 +9,12 @@
 namespace RpayRatePay\Subscriber\Frontend;
 
 use Enlight\Event\SubscriberInterface;
-use Enlight_Event_EventArgs;
 use RatePAY\Service\DeviceFingerprint;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
-use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
-use RpayRatePay\Services\InstallmentService;
 use RpayRatePay\Services\StaticTextService;
-use sBasket;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware\Components\Model\ModelManager;
