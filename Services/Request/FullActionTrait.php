@@ -31,7 +31,7 @@ trait FullActionTrait
      * if $details is provided, you must provide a element in the $details array with the value "shipping" to perform the shipping position.
      * @param Order $order
      * @param array|null $details
-     * @return bool|null|RequestBuilder false if skipped, null if nothing todo, RequestBuilder if request has been sent
+     * @return bool|null|RequestBuilder false if skipped, null if nothing
      */
     public function doFullAction(Order $order, array $details = null)
     {

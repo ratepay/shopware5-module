@@ -27,6 +27,7 @@
             <![CDATA[
                 <ul>
                     <li>fixes loading of payment surcharges</li>
+                    <li>improve bidirectionality</li>
                 </ul>
             ]]>
         </changes>
@@ -34,6 +35,7 @@
             <![CDATA[
                 <ul>
                     <li>Behebt einen Fehler beim Laden von Zahlungsaufschlägen</li>
+                    <li>Bidirektionalität verbessert</li>
                 </ul>
             ]]>
         </changes>

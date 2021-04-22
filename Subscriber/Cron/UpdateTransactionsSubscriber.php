@@ -22,6 +22,8 @@ use RpayRatePay\Services\OrderStatusChangeService;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
+use Shopware\Models\Order\Status;
+use Shopware\Proxies\__CG__\Shopware\Models\Order\DetailStatus;
 use Shopware_Components_Cron_CronJob;
 
 class UpdateTransactionsSubscriber implements SubscriberInterface
@@ -90,27 +92,55 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
             ->andWhere($qb->expr()->in('paymentMethod.name', ':methods'))
             ->setParameter('methods', PaymentMethods::getNames());
 
-        /*$qb = $orderRepo->createQueryBuilder('detail');
-        $qb->innerJoin('detail.order', 'o', Join::WITH)
-            ->innerJoin('detail.attribute', 'attribute', Join::WITH)
-            ->innerJoin('o.payment', 'paymentMethod', Join::WITH)
-            ->andWhere($qb->expr()->neq('attribute.ratepayLastStatus', 'detail.status'))
-            ->andWhere($qb->expr()->in('paymentMethod.name', ':methods'))
-            ->setParameter('methods', PaymentMethods::getNames());*/
-
         $query = $qb->getQuery();
+        $orders = $query->getResult();
+        $totalOrders = count($orders);
 
         $attributesToFlush = [];
         /** @var Order $order */
-        foreach ($query->getResult() as $order) {
+        foreach ($orders as $key => $order) {
             $candidates = $order->getDetails()->toArray();
-            $this->orderStatusChangeService->informRatepayOfOrderPositionStatusChange($order, $candidates);
 
-            // at least sync the detail statuses
-            /** @var Detail $detail */
-            foreach ($candidates as $detail) {
-                $detail->getAttribute()->setRatepayLastStatus($detail->getStatus()->getId());
-                $attributesToFlush[] = $detail->getAttribute();
+            $modelManager = $this->modelManager;
+            $detailsContextInfo = array_map(static function (Detail $detail) use ($modelManager) {
+                /** @var \Shopware\Models\Order\DetailStatus $status */
+                $status = $detail->getStatus();
+                $lastStatusId = $detail->getAttribute()->getRatepayLastStatus();
+                $oldStatus = $lastStatusId ? $modelManager->find(DetailStatus::class, $lastStatusId) : null;
+                return [
+                    'details-id' => $detail->getId(),
+                    'order-number' => $detail->getNumber(),
+                    'old-status' => $oldStatus ? $oldStatus->getDescription() : null,
+                    'new-status' => $status->getDescription()
+                ];
+            }, $candidates);
+
+            $this->logger->info(
+                sprintf('Bidirectionality (Position): %d/%d order-id %d ...', ($key + 1), $totalOrders, $order->getId()),
+                [
+                    'order_id' => $order->getId(),
+                    'order_number' => $order->getNumber(),
+                    'details' => $detailsContextInfo
+                ]
+            );
+
+            try {
+                $this->orderStatusChangeService->informRatepayOfOrderPositionStatusChange($order, $candidates);
+
+                // at least sync the detail statuses
+                /** @var Detail $detail */
+                foreach ($candidates as $detail) {
+                    $detail->getAttribute()->setRatepayLastStatus($detail->getStatus()->getId());
+                    $attributesToFlush[] = $detail->getAttribute();
+                }
+            } catch (RatepayException $e) {
+                $this->logger->error(
+                    'Bidirectionality (Position): ' . $e->getMessage(),
+                    array_merge([
+                        'order_id' => $order->getId(),
+                        'order_number' => $order->getNumber()
+                    ], $e->getContext())
+                );
             }
         }
         $this->modelManager->flush($attributesToFlush);
@@ -133,32 +163,44 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
         try {
             $orderIds = $this->findCandidateOrdersForUpdate();
             $totalOrders = count($orderIds);
-            foreach ($orderIds as $key => $orderId) {
+            foreach ($orderIds as $key => $historyData) {
+                $orderId = $historyData['id'];
+                $oldStatusId = $historyData['previous_order_status_id'];
+                $newStatusId = $historyData['order_status_id'];
+
+                $oldStatus = $oldStatusId ? $this->modelManager->find(Status::class, $oldStatusId) : null;
+                $newStatus = $newStatusId ? $this->modelManager->find(Status::class, $newStatusId) : null;
+
+                /** @var Order $order */
                 $order = $this->modelManager->find(Order::class, $orderId);
-                $this->logger->info(
-                    sprintf('Bidirectionality: Processing %d/%d order-id %d ...', ($key + 1), $totalOrders, $orderId),
-                    [
-                        'order_id' => $order->getId(),
-                        'order_number' => $order->getNumber()
-                    ]
-                );
+
+                $logContext = [
+                    'order_id' => $order->getId(),
+                    'order_number' => $order->getNumber(),
+                    'old-status' => $oldStatus ? $oldStatus->getName() : null,
+                    'new-status' => $newStatus ? $newStatus->getName() : null,
+                    'change-date' => $historyData['change_date']
+                ];
+
+                $this->logger->info(sprintf('Bidirectionality: Processing %d/%d order-id %d ...', ($key + 1), $totalOrders, $orderId), $logContext);
+
+                if ($newStatus === null) {
+                    continue;
+                }
+
                 try {
-                    $this->orderStatusChangeService->informRatepayOfOrderStatusChange($order);
+                    $this->orderStatusChangeService->informRatepayOfOrderStatusChange($order, $newStatus->getId());
                 } catch (Exception $e) {
-                    $context = [
-                        'order_id' => $order->getId(),
-                        'order_number' => $order->getNumber(),
-                        'trace' => $e->getTraceAsString()
-                    ];
                     if ($e instanceof RatepayException) {
                         /** @noinspection SlowArrayOperationsInLoopInspection */
-                        $context = array_merge($context, $e->getContext());
+                        $logContext = array_merge($logContext, $e->getContext());
                     }
-                    $this->logger->error('Bidirectionality: ' . $e->getMessage(), $context);
+                    $logContext['trace'] = $e->getTrace();
+                    $this->logger->error('Bidirectionality: ' . $e->getMessage(), $logContext);
                 }
             }
         } catch (Exception $e) {
-            $this->logger->error('bidirectionality: ' .$e->getMessage(), [$e->getTraceAsString()]);
+            $this->logger->error('bidirectionality: ' . $e->getMessage(), ['trace' => $e->getTrace()]);
             return $e->getMessage();
         }
         return 'Success';
@@ -179,7 +221,7 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
             $this->configService->getBidirectionalOrderStatus('full_return'),
         ];
         foreach ($allowedOrderStates as $i => $allowedOrderState) {
-            if ($allowedOrderState == null || empty($allowedOrderState) || is_numeric($allowedOrderState) == false) {
+            if ($allowedOrderState === null || empty($allowedOrderState) || is_numeric($allowedOrderState) === false) {
                 unset($allowedOrderStates[$i]);
             }
         }
@@ -189,18 +231,19 @@ class UpdateTransactionsSubscriber implements SubscriberInterface
 
         $query = $this->db->select()
             ->distinct(true)
-            ->from(['history' => 's_order_history'], null)
+            ->from(['history' => 's_order_history'], ['previous_order_status_id', 'order_status_id', 'change_date'])
             ->joinLeft(['s_order' => 's_order'], 'history.orderID = s_order.id', ['id'])
             ->joinLeft(['payment' => 's_core_paymentmeans'], 's_order.paymentID = payment.id', null)
             ->where('history.change_date >= :changeDate')
+            ->where('history.previous_order_status_id != history.order_status_id')
             ->where("s_order.status IN (" . implode(",", $allowedOrderStates) . ")")
             ->where("payment.name IN ('" . implode("','", $paymentMethods) . "')")
             ->bind([
                 'changeDate' => $changeDate
-            ]);
+            ])
+            ->order('history.change_date ASC');
 
-        $rows = $this->db->fetchAll($query);
-        return array_column($rows, 'id');
+        return $this->db->fetchAll($query);
     }
 
     /**
