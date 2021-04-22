@@ -13,20 +13,19 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tab.History', {
     autoScroll: true,
     listeners: {
         activate: function (tab) {
-            var me = this;
-            var historystore = Ext.create('Shopware.apps.RatepayOrder.store.History');
-            var id = me.record.get('id');
-            var store = historystore.load({
-                params: {
-                    'orderId': id
-                }
-            });
-            me.reconfigure(store);
+            this.store.load();
         }
     },
 
     initComponent: function () {
         var me = this;
+
+        me.store = Ext.create('Shopware.apps.RatepayOrderHistory.store.History', {
+            filters: [{
+                property: 'orderId',
+                value: me.record.get('id')
+            }]
+        });
 
         me.columns = {
             items: me.getColumns(),
@@ -34,6 +33,15 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tab.History', {
                 flex: 1
             }
         };
+
+        me.dockedItems = [
+            {
+                xtype: 'pagingtoolbar',
+                store: me.store,
+                dock: 'bottom',
+                displayInfo: true
+            }
+        ];
 
         me.callParent(arguments);
 
@@ -43,27 +51,25 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tab.History', {
             {
                 header: '{s namespace=backend/index/view/widgets name=orders/headers/date}Datum{/s}',
                 dataIndex: 'date',
-                flex: 1
+                flex: 1,
+                xtype: 'datecolumn',
+                format: 'd.m.Y H:i:s'
             },
-
             {
                 header: '{s namespace="backend/ratepay" name=event}Event{/s}',
                 dataIndex: 'event',
                 flex: 2
             },
-
             {
                 header: '{s namespace=backend/article_list/main name=columns/product/Article_name}Name{/s}',
-                dataIndex: 'articlename',
+                dataIndex: 'productName',
                 flex: 2
             },
-
             {
                 header: '{s namespace=backend/article/view/main name=list/column_number}Nummer{/s}',
-                dataIndex: 'articlenumber',
+                dataIndex: 'productNumber',
                 flex: 1
             },
-
             {
                 header: '{s namespace=frontend/checkout/cart_header name=CartColumnQuantity}Anzahl{/s}',
                 dataIndex: 'quantity',
