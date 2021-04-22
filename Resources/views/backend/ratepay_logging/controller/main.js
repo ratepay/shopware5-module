@@ -9,9 +9,7 @@ Ext.define('Shopware.apps.RatepayLogging.controller.Main', {
     mainWindow: null,
     init: function () {
         var me = this;
-        me.mainWindow = me.getView('main.Window').create({
-            listStore: me.getStore('List').load()
-        });
+        me.mainWindow = me.getView('main.Window').create();
         me.callParent(arguments);
     }
 });

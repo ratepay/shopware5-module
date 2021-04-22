@@ -31,6 +31,7 @@ class OrderViewExtensionSubscriber implements SubscriberInterface
 
         if ($controller->Request()->getActionName() === 'index') {
             $controller->View()->extendsTemplate('backend/ratepay_backend_order/includes.js');
+            $controller->View()->extendsTemplate('backend/ratepay_logging/app.js');
         }
     }
 

@@ -10,12 +10,10 @@
 
 // Model components
 //{include file="backend/ratepay_order/model/history.js"}
-//{include file="backend/ratepay_order/model/log.js"}
 //{include file="backend/ratepay_order/model/position.js"}
 
 // Store components
 //{include file="backend/ratepay_order/store/history.js"}
-//{include file="backend/ratepay_order/store/log.js"}
 //{include file="backend/ratepay_order/store/position.js"}
 
 // View components

@@ -6,16 +6,20 @@
  */
 Ext.define('Shopware.apps.RatepayLogging', {
     extend: 'Enlight.app.SubApplication',
+
     name: 'Shopware.apps.RatepayLogging',
-    bulkLoad: true,
+
     loadPath: '{url action=load}',
+    bulkLoad: true,
+
     controllers: ['Main'],
-    models: ['Main'],
+
     views: ['main.Window'],
-    store: ['List'],
+
+    models: ['Log'],
+    stores: ['Log'],
+
     launch: function () {
-        var me = this;
-        mainController = me.getController('Main');
-        return mainController.mainWindow;
+        return this.getController('Main').mainWindow;
     }
 });

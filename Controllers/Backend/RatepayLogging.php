@@ -6,52 +6,31 @@
  * file that was distributed with this source code.
  */
 
-use Doctrine\ORM\Tools\Pagination\Paginator;
-use RpayRatePay\Component\Model\ShopwareCustomerWrapper;
 use RpayRatePay\Helper\XmlHelper;
 use RpayRatePay\Models\Log;
 
-class Shopware_Controllers_Backend_RatepayLogging extends Shopware_Controllers_Backend_ExtJs
+class Shopware_Controllers_Backend_RatepayLogging extends Shopware_Controllers_Backend_Application
 {
 
-    /**
-     * index action is called if no other action is triggered
-     *
-     * @return void
-     */
-    public function indexAction()
+    protected $model = Log::class;
+    protected $alias = 'log';
+
+    protected function getListQuery()
     {
-        $this->View()->assign('title', 'Ratepay-Logging');
-    }
-
-    /**
-     * This Action loads the loggingdata from the datebase into the backendview
-     */
-    public function loadLogEntriesAction()
-    {
-        $start = (int)$this->Request()->getParam('start');
-        $limit = (int)$this->Request()->getParam('limit');
-        $orderId = (int)$this->Request()->getParam('orderId');
-
-        $logRepo = $this->getModelManager()->getRepository(Log::class);
-
-        $qb = $logRepo->createQueryBuilder('log');
-        $qb->addSelect('e_order')
+        $builder = parent::getListQuery();
+        $builder->addSelect('e_order')
             ->addSelect('billing_address')
             ->leftJoin('log.order', 'e_order')
             ->leftJoin('e_order.billing', 'billing_address')
-            ->setMaxResults($limit)
-            ->setFirstResult($start)
             ->orderBy('log.date', 'DESC');
+        return $builder;
+    }
 
-        if ($orderId) {
-            $qb->andWhere($qb->expr()->eq('e_order.id', ':order_id'))
-                ->setParameter('order_id', $orderId);
-        }
+    protected function getList($offset, $limit, $sort = [], $filter = [], array $wholeParams = [])
+    {
+        $results = parent::getList($offset, $limit, $sort, $filter, $wholeParams);
 
-        $paginator = new Paginator($qb);
-        $results = $paginator->getQuery()->getArrayResult();
-        foreach ($results as &$result) {
+        foreach ($results['data'] as &$result) {
             $matchesRequest = [];
             preg_match("/(.*)(<\?.*)/s", $result['request'], $matchesRequest);
             $result['request'] = $matchesRequest[1] . "\n" . $this->formatXml(trim($matchesRequest[2]));
@@ -66,16 +45,11 @@ class Shopware_Controllers_Backend_RatepayLogging extends Shopware_Controllers_B
                 $result['firstname'] = $result['order']['billing']['firstName'];
                 $result['lastname'] = $result['order']['billing']['lastName'];
             }
-        }
-        unset($result);
 
-        $this->View()->assign(
-            [
-                'data' => $results,
-                'total' => $paginator->count(),
-                'success' => true
-            ]
-        );
+            unset($result['order']);
+        }
+
+        return $results;
     }
 
     /**
