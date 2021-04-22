@@ -88,10 +88,11 @@ class OrderStatusChangeService
 
     /**
      * Sends Ratepay notification of order status change when new status meets criteria.
-     *
+     * provide a status id to ignore the current status of the order and force the operation depend on the given status
      * @param Order $order
+     * @param int|null $newStatusId
      */
-    public function informRatepayOfOrderStatusChange(Order $order)
+    public function informRatepayOfOrderStatusChange(Order $order, $newStatusId = null)
     {
         if ($this->pluginConfig->isBidirectionalEnabled() === false ||
             PaymentMethods::exists($order->getPayment()) === false
@@ -107,7 +108,7 @@ class OrderStatusChangeService
         ];
 
         foreach ($roundTrips as $changeType => $statusId) {
-            if ($order->getOrderStatus()->getId() !== $statusId) {
+            if (($newStatusId ?: $order->getOrderStatus()->getId()) !== $statusId) {
                 continue;
             }
 
@@ -155,11 +156,8 @@ class OrderStatusChangeService
                 continue;
             }
 
-            $position = $this->positionHelper->getPositionForDetail($detail);
-            if($position === null) {
-                // maybe the detail has been added after the order has been complete.
-                continue;
-            }
+            // test if the position exists for detail. Exception will be thrown if not.
+            $this->positionHelper->getPositionForDetail($detail);
 
             foreach ($roundTrips as $changeType => $statusId) {
                 if ($detail->getStatus()->getId() !== $statusId) {

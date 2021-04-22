@@ -101,7 +101,6 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             return;
         }
 
-        $this->logger->info('Proceed with Ratepay payment');
         Shopware()->Session()->RatePAY['errorRatenrechner'] = 'false';
         $this->_proceedPayment();
     }

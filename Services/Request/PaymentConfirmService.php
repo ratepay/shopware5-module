@@ -15,6 +15,7 @@ use RpayRatePay\Models\ProfileConfig;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\Logger\RequestLogger;
+use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 
@@ -25,26 +26,35 @@ class PaymentConfirmService extends AbstractRequest
      * @var Order
      */
     protected $order;
+
     /**
      * @var ProfileConfigService
      */
     private $profileConfigService;
+
     /**
      * @var PaymentDeliverService
      */
     private $paymentDeliverService;
+
+    /**
+     * @var ModelManager
+     */
+    private $modelManager;
 
     public function __construct(
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         ConfigService $configService,
         RequestLogger $requestLogger,
         ProfileConfigService $profileConfigService,
-        PaymentDeliverService $paymentDeliverService
+        PaymentDeliverService $paymentDeliverService,
+        ModelManager $modelManager
     )
     {
         parent::__construct($db, $configService, $requestLogger);
         $this->profileConfigService = $profileConfigService;
         $this->paymentDeliverService = $paymentDeliverService;
+        $this->modelManager = $modelManager;
     }
 
     /**
@@ -84,6 +94,14 @@ class PaymentConfirmService extends AbstractRequest
 
     protected function processSuccess()
     {
+        $attributes = [];
+        /** @var Detail $detail */
+        foreach ($this->order->getDetails() as $detail) {
+            $detail->getAttribute()->setRatepayLastStatus($detail->getStatus());
+            $attributes[] = $detail->getAttribute();
+        }
+        $this->modelManager->flush($attributes);
+
         if ($this->configService->isEsdAutoDeliver() &&
             $this->order->getPayment()->getName() !== PaymentMethods::PAYMENT_PREPAYMENT
         ) {
