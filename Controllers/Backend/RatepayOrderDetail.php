@@ -84,26 +84,6 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
     }
 
     /**
-     * Loads the History for the given Order
-     */
-    public function loadHistoryStoreAction()
-    {
-        //TODO DQL & Models + update store in ExtJs to use own controller
-        $orderId = $this->Request()->getParam('orderId');
-        $sql = 'SELECT * FROM `rpay_ratepay_order_history`'
-            . ' WHERE `orderId`=? '
-            . 'ORDER BY `id` DESC';
-        $history = Shopware()->Db()->fetchAll($sql, [$orderId]);
-
-        $this->View()->assign(
-            [
-                'data' => $history,
-                'success' => true
-            ]
-        );
-    }
-
-    /**
      * This Action loads the data from the datebase into the backendview
      */
     public function loadPositionStoreAction()

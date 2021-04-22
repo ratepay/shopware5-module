@@ -21,7 +21,9 @@ Ext.define('Shopware.apps.RatepayLogging.view.main.Window', {
 
     initComponent: function () {
         var me = this;
-        me.store = me.listStore;
+        me.store = Ext.create('Shopware.apps.RatepayLogging.store.Log')
+        me.store.load();
+
         me.items = [
             me.createOverviewGrid(me),
             me.createDetailGrid(me)
@@ -32,7 +34,7 @@ Ext.define('Shopware.apps.RatepayLogging.view.main.Window', {
         return Ext.create('Ext.grid.Panel', {
             store: me.store,
             border: false,
-            flex: 0,
+            flex: 1,
             width: '100%',
             columns: [
                 {

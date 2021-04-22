@@ -17,15 +17,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
     autoScroll: true,
     listeners: {
         activate: function (tab) {
-            var me = this;
-            var logstore = Ext.create('Shopware.apps.RatepayOrder.store.Log');
-            var id = me.record.get('id');
-            var store = logstore.load({
-                params: {
-                    'orderId': id
-                }
-            });
-            me.reconfigure(store);
+            this.store.load();
         }
     },
 
@@ -38,6 +30,22 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
                 flex: 1
             }
         };
+
+        me.store = Ext.create('Shopware.apps.RatepayLogging.store.Log', {
+            filters: [{
+                property: 'transactionId',
+                value: me.record.get('transactionId')
+            }]
+        });
+
+        me.dockedItems = [
+            {
+                xtype: 'pagingtoolbar',
+                store: me.store,
+                dock: 'bottom',
+                displayInfo: true
+            }
+        ];
 
         me.callParent(arguments);
 

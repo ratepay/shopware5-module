@@ -4,22 +4,15 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-Ext.define('Shopware.apps.RatepayLogging', {
+Ext.define('Shopware.apps.RatepayOrderHistory', {
     extend: 'Enlight.app.SubApplication',
 
-    name: 'Shopware.apps.RatepayLogging',
+    name: 'Shopware.apps.RatepayOrderHistory',
 
     loadPath: '{url action=load}',
     bulkLoad: true,
 
-    controllers: ['Main'],
-
-    views: ['main.Window'],
-
-    models: ['Log'],
-    stores: ['Log'],
-
-    launch: function () {
-        return this.getController('Main').mainWindow;
-    }
+    controllers: ['History'],
+    models: ['History'],
+    stores: ['History'],
 });
