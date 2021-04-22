@@ -116,6 +116,9 @@ class PositionHelper
             case self::MODE_SW_DISCOUNT[0]: //voucher
             case self::MODE_SW_DISCOUNT[1]: //IS_REBATE = rabatt
             case self::MODE_SW_DISCOUNT[2]: //IS_SURCHARGE_DISCOUNT //IST ZUSCHLAGSRABATT
+                if($detail->getPrice() > 0 ) {
+                    return Product::class;
+                }
                 return Discount::class;
             case self::MODE_RP_SHIPPING:
                 return ShippingPosition::class;
