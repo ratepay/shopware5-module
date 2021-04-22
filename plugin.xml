@@ -29,7 +29,7 @@
                     <li>fixes loading of payment surcharges</li>
                     <li>improves admin logging component</li>
                     <li>improves admin order history component</li>
-                    <li>improve bidirectionality</li>
+                    <li>improves bidirectionality</li>
                 </ul>
             ]]>
         </changes>
