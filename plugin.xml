@@ -22,6 +22,23 @@
     <description>Ratepay enables you to accept online payments without any risk of fraud and without the hassle of debtors management.</description>
     <description lang="de">Ratepay stellt verschiedene Zahlungsarten für Ihren Onlineshop zur Verfügung, ohne dass Sie sich mit der Risikoprüfung oder dem Debitorenmanagement beschäftigen müssen.</description>
 
+    <changelog version="6.0.4">
+        <changes>
+            <![CDATA[
+                <ul>
+                    <li>fix import of class</li>
+                </ul>
+            ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+                <ul>
+                    <li>Fehlerbehebung PHP-Klassenimport</li>
+                </ul>
+            ]]>
+        </changes>
+    </changelog>
+
     <changelog version="6.0.3">
         <changes>
             <![CDATA[

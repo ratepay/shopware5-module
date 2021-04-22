@@ -23,7 +23,7 @@ use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Order\Status;
-use Shopware\Proxies\__CG__\Shopware\Models\Order\DetailStatus;
+use Shopware\Models\Order\DetailStatus;
 use Shopware_Components_Cron_CronJob;
 
 class UpdateTransactionsSubscriber implements SubscriberInterface
