@@ -12,6 +12,7 @@ use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentFirstDay;
+use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Exception\NoProfileFoundException;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -77,7 +78,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         } else {
             $this->view->assign([
                 'success' => false,
-                'messages' => [$this->getSnippet('backend/ratepay', 'InvalidIban', null)]
+                'messages' => [$this->getSnippet('InvalidIban')]
             ]);
         }
 
@@ -192,13 +193,22 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
             ->setShop($shopId)
             ->setCurrency($currencyId);
 
-        $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentConfigSearch);
-
         //TODO refactor
+        $val = null;
         if ($calcParamSet) {
             $val = $params['value'];
-        } else {
-            $val = $installmentConfig->getMonthsAllowed();
+        } else if (PaymentMethods::isZeroPercentInstallment($paymentMethodName)) {
+            $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentConfigSearch);
+            $allowedMonths = $installmentConfig ? $installmentConfig->getMonthsAllowed() : null;
+            $val = $allowedMonths && isset($allowedMonths[0]) ? $allowedMonths[0] : null;
+        }
+
+        if ($val === null) {
+            $this->view->assign([
+                'success' => false,
+                'messages' => [$this->getSnippet('InvalidInstallmentValue')]
+            ]);
+            return;
         }
 
         try {
@@ -225,14 +235,12 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
     }
 
     /**
-     * @param string $namespace
      * @param string $name
-     * @param string $default
      * @return mixed
      */
-    private function getSnippet($namespace, $name, $default)
+    private function getSnippet($name)
     {
-        $ns = Shopware()->Snippets()->getNamespace($namespace);
-        return $ns->get($name, $default);
+        $ns = Shopware()->Snippets()->getNamespace('backend/ratepay');
+        return $ns->get($name);
     }
 }
