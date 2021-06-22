@@ -54,7 +54,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
     getColumns: function () {
         return [
             {
-                header: '{s namespace=backend/index/view/widgets name=orders/headers/date}Datum{/s}',
+                header: '{s namespace="backend/index/view/widgets" name="orders/headers/date"}Datum{/s}',
                 dataIndex: 'date',
                 flex: 2,
                 xtype: 'datecolumn',
@@ -62,19 +62,19 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
             },
 
             {
-                header: '{s namespace="backend/ratepay" name=version}Version{/s}',
+                header: '{s namespace="backend/ratepay" name="version"}Version{/s}',
                 dataIndex: 'version',
                 flex: 1
             },
 
             {
-                header: '{s namespace=backend/article_list/main name=multiEdit/operation}Operation{/s}',
+                header: '{s namespace="backend/article_list/main" name="multiEdit/operation"}Operation{/s}',
                 dataIndex: 'operation',
                 flex: 2
             },
 
             {
-                header: '{s namespace="backend/ratepay" name=suboperation}Suboperation{/s}',
+                header: '{s namespace="backend/ratepay" name="suboperation"}Suboperation{/s}',
                 dataIndex: 'subOperation',
                 flex: 2
             },
@@ -84,22 +84,22 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
                 flex: 2
             },
             {
-                header: '{s namespace="backend/ratepay" name=transactionid}Transaction-ID{/s}',
+                header: '{s namespace="backend/ratepay" name="transactionid"}Transaction-ID{/s}',
                 dataIndex: 'transactionId',
                 flex: 2
             },
             {
-                header: '{s namespace=backend/customer/view/detail name=base/firstname}FirstName{/s}',
+                header: '{s namespace="backend/customer/view/detail" name="base/firstname"}FirstName{/s}',
                 dataIndex: 'firstname',
                 flex: 1
             },
             {
-                header: '{s namespace=backend/customer/view/detail name=base/lastname}Lastname{/s}',
+                header: '{s namespace="backend/customer/view/detail" name="base/lastname"}Lastname{/s}',
                 dataIndex: 'lastname',
                 flex: 1
             },
             {
-                header: '{s namespace=backend/application/main name=progress_window/request_header}Request{/s}',
+                header: '{s namespace="backend/application/main" name="progress_window/request_header"}Request{/s}',
                 xtype: 'actioncolumn',
                 flex: 1,
                 items: [
@@ -124,7 +124,7 @@ Ext.define('Shopware.apps.RatepayOrder.view.detail.tabs.Log', {
                 ]
             },
             {
-                header: '{s namespace="backend/ratepay" name=response}Response{/s}',
+                header: '{s namespace="backend/ratepay" name="response"}Response{/s}',
                 xtype: 'actioncolumn',
                 flex: 1,
                 items: [

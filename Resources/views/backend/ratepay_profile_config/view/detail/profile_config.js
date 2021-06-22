@@ -54,24 +54,27 @@ Shopware.app.Application.on('profileconfig-save-successfully', function (view, r
 
     var message = null;
     if (operation.response !== undefined) {
-        message = JSON.parse(operation.response.responseText).message;
-        if (message) {
+        var response = JSON.parse(operation.response.responseText);
+        message = response.message;
+        if (response.success !== false && message) {
+            // if an error occurred
             Shopware.Notification.createGrowlMessage('', message);
+            return;
         }
-    } else {
-        Ext.Ajax.request({
-            url: '{url controller="RatepayProfileConfig" action="reloadProfile"}',
-            method: 'GET',
-            async: false,
-            params: {
-                ids: [result.data.id],
-            },
-            success: function (response) {
-                response = Ext.JSON.decode(response.responseText);
-                if (response.success) {
-                    Shopware.Notification.createGrowlMessage('', response.message);
-                }
-            }
-        });
     }
+
+    Ext.Ajax.request({
+        url: '{url controller="RatepayProfileConfig" action="reloadProfile"}',
+        method: 'GET',
+        async: false,
+        params: {
+            ids: [result.data.id],
+        },
+        success: function (response) {
+            response = Ext.JSON.decode(response.responseText);
+            if (response.success) {
+                Shopware.Notification.createGrowlMessage('', response.message);
+            }
+        }
+    });
 });

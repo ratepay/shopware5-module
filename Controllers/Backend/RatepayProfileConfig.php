@@ -76,7 +76,7 @@ class Shopware_Controllers_Backend_RatepayProfileConfig extends Shopware_Control
 
         // RATEPLUG-165: shopware issue, that the response is not available in the frontend. so we will call the
         // `reloadProfileAction` if the no response is available. this issue is fixed in shopware 5.6
-        if(version_compare(Shopware()->Config()->get('version'), '5.6', '>=')) {
+        if (version_compare(Shopware()->Config()->get('version'), '5.6', '>=')) {
             if (isset($returnData['data']['id'])) {
                 try {
                     $result = $this->profileConfigService->refreshProfileConfig($returnData['data']['id']);
@@ -106,6 +106,11 @@ class Shopware_Controllers_Backend_RatepayProfileConfig extends Shopware_Control
                 'property' => 'mainId',
                 'value' => null
             ];
+            // is this a shopware bug??
+            // please have a look into parent::getSearchAssociationQuery
+            // the $search Variable will be compared with an empty string. But Shopware sends a NULL value to the server.
+            // so this comparison will be true, cause it is not a empty string.
+            $search = $search === null ? '' : $search;
         }
         return parent::searchAssociation($search, $association, $offset, $limit, $id, $filter, $sort);
     }
