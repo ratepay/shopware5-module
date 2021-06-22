@@ -175,6 +175,21 @@
                 </option>
             </store>
         </element>
+        <element required="false" type="text">
+            <name>ratepay/advanced/tracking_separator</name>
+            <label lang="en">Tracking code separator</label>
+            <label lang="de">Tracking Code Trennzeichen</label>
+            <value/>
+            <description lang="en">
+                If you provide more than one tracking code for one order, you should setup a separator which separates
+                the codes. Keep the field empty, if you do not want to separate the codes.
+            </description>
+            <description lang="de">
+                Wenn Sie in das Shopware-Feld für die Tracking-Codes einer Bestellung mehrere Tracking Codes einfügen,
+                geben Sie hier bitte das entsprechende Trennzeichen an. Lassen Sie dieses Feld leer, falls die Codes
+                nicht getrennt werden sollen.
+            </description>
+        </element>
         <element required="false" type="textarea">
             <name>ratepay/advanced/feature_flags</name>
             <label lang="en">Feature Flags</label>

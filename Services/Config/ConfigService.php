@@ -212,6 +212,12 @@ class ConfigService
         return (int)$this->getConfig('ratepay/bidirectional/position/status/' . $action, null);
     }
 
+    public function getTrackingCodeSeparator()
+    {
+        $separator = $this->getConfig('ratepay/advanced/tracking_separator', null);
+        return !empty($separator) ? $separator : null;
+    }
+
     /**
      * @return array
      */
