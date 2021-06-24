@@ -9,9 +9,13 @@
 
 // Model components
 //{include file="backend/ratepay_order/model/position.js"}
+//{include file="backend/ratepay_logging/model/log.js"}
+//{include file="backend/ratepay_order_history/model/history.js"}
 
 // Store components
 //{include file="backend/ratepay_order/store/position.js"}
+//{include file="backend/ratepay_logging/store/log.js"}
+//{include file="backend/ratepay_order_history/store/history.js"}
 
 // View components
 //{include file="backend/ratepay_order/view/detail/window.js"}
