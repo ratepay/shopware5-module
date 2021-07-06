@@ -130,3 +130,4 @@ Please contact your contact person to make sure that this feature will work in y
 
 |Flag          |Description |
 |------------ |----------- |
+|FEATURE-4465 |The PaymentRequest against the gateway sends all items from the BASKET. The ConfirmationDeliver-Request will send all items from the ORDER. So if there is any extension which will add new line-items during the save of the order, the plugin tries to deliver the items during the ConfirmationDeliver request. This feature compares the items, which are in the order and in the basket. Enabling this means, that items, which are not in the basket (but saved to the order), will not saved as ratepay position and can not be delivered. |

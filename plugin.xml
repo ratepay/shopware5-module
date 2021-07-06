@@ -28,6 +28,7 @@
                 <ul>
                     <li>fix loading of admin components for order view (Shopware version 5.5.x)</li>
                     <li>installment calculator: fix error if user enter "0" as rate.</li>
+                    <li>fixes issue with third-party plugin (Product Sets powered by Pickware)</li>
                 </ul>
             ]]>
         </changes>
@@ -36,6 +37,7 @@
                 <ul>
                     <li>Behebt einen Fehler beim Laden von Admin Komponenten für die Bestellungen (Shopware Version 5.5.x) </li>
                     <li>Ratenrechner: Behebt einen Fehler, wenn der Nutzer "0" als Ratenhöhe angibt.</li>
+                    <li>Behebt einen Fehler mit einem Drittanbieterplugin (Stücklisten / Sets powered by Pickware) </li>
                 </ul>
             ]]>
         </changes>

@@ -29,6 +29,7 @@ use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\Factory\BasketArrayFactory;
 use RpayRatePay\Services\Factory\CustomerArrayFactory;
 use RpayRatePay\Services\Factory\PaymentArrayFactory;
+use RpayRatePay\Services\FeatureService;
 use RpayRatePay\Services\Logger\RequestLogger;
 use RpayRatePay\Services\PaymentMethodsService;
 use RuntimeException;
@@ -81,6 +82,10 @@ class PaymentRequestService extends AbstractRequest
      * @var PaymentMethodsService
      */
     private $paymentMethodsService;
+    /**
+     * @var \RpayRatePay\Services\FeatureService
+     */
+    private $featureService;
 
 
     public function __construct(
@@ -93,7 +98,8 @@ class PaymentRequestService extends AbstractRequest
         ModelManager $modelManager,
         Shopware_Components_Modules $moduleManager,
         PaymentMethodsService $paymentMethodsService,
-        Logger $logger
+        Logger $logger,
+        FeatureService $featureService
     )
     {
         parent::__construct($db, $configService, $requestLogger);
@@ -104,6 +110,7 @@ class PaymentRequestService extends AbstractRequest
         $this->logger = $logger;
         $this->profileConfigService = $profileConfigService;
         $this->paymentMethodsService = $paymentMethodsService;
+        $this->featureService = $featureService;
     }
 
     /**
@@ -162,9 +169,28 @@ class PaymentRequestService extends AbstractRequest
      */
     protected function insertProductPositions(Order $order, RequestBuilder $paymentResponse)
     {
+        $details = $order->getDetails();
+
+        if ($this->featureService->isFeatureEnabled('FEATURE-4465')) {
+            // filter items in the order, which are NOT in the payment request. (RATEPLUG-192)
+            $requestData = $this->paymentRequestData;
+            $details = $details->filter(static function (Detail $detail) use ($requestData) {
+                foreach ($requestData->getItems() as $item) {
+                    if (is_array($item) && isset($item['ordernumber']) && $detail->getArticleNumber() === $item['ordernumber']) {
+                        return true;
+                    }
+
+                    if ($item instanceof \SwagBackendOrder\Components\Order\Struct\PositionStruct && $detail->getArticleNumber() === $item->getNumber()) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+
         $entitiesToFlush = [];
         /** @var Detail $detail */
-        foreach ($order->getDetails() as $detail) {
+        foreach ($details as $detail) {
             if (PositionHelper::isDiscount($detail)) {
                 $position = new Discount();
                 $position->setOrderDetail($detail);
@@ -258,7 +284,7 @@ class PaymentRequestService extends AbstractRequest
         }
 
         $items = $this->paymentRequestData->getItems();
-        if(count($items) === 0 || (count($items) === 1 && $items[0] === 'shipping')) {
+        if (count($items) === 0 || (count($items) === 1 && $items[0] === 'shipping')) {
             throw new RuntimeException('there are no items in the basket. this order can not be proceeded.');
         }
 
