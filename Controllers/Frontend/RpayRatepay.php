@@ -8,6 +8,7 @@
  */
 
 use Monolog\Logger;
+use RatePAY\Exception\RequestException;
 use RatePAY\Model\Response\PaymentRequest;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\DTO\PaymentConfigSearch;
@@ -66,6 +67,10 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
      * @var object|MessageManager
      */
     private $messageManager;
+    /**
+     * @var \Shopware_Components_Snippet_Manager
+     */
+    private $snippetManager;
 
     public function setContainer(Container $container = null)
     {
@@ -81,6 +86,7 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $this->profileConfigService = $this->container->get(ProfileConfigService::class);
         $this->sessionHelper = $this->container->get(SessionHelper::class);
         $this->messageManager = $this->container->get(MessageManager::class);
+        $this->snippetManager = $this->container->get('snippets');
     }
 
     /**
@@ -170,31 +176,46 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             !isset($params['calculationType'])) {
             exit(0);
         }
-        $paymentMethodId = (int) $params['paymentMethodId'];
+        $paymentMethodId = (int)$params['paymentMethodId'];
         $paymentMethod = Shopware()->Models()->find(\Shopware\Models\Payment\Payment::class, $paymentMethodId);
         if (PaymentMethods::isInstallment($paymentMethod) === false) {
             exit(0);
         }
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
+        $shippingAddress = $this->sessionHelper->getShippingAddress() ?: $billingAddress;
 
         $requestDto = new InstallmentRequest(
             $params['calculationAmount'],
             $params['calculationType'],
-            $params['calculationValue'],
+            (float)$params['calculationValue'] > 0 ? $params['calculationValue'] : 1,
             $params['paymentType']
         );
 
-        echo $this->installmentService->getInstallmentPlanTemplate((new PaymentConfigSearch())
-            ->setPaymentMethod($paymentMethod)
-            ->setBackend(false)
-            ->setBillingCountry($billingAddress->getCountry()->getIso())
-            ->setShippingCountry($shippingAddress->getCountry()->getIso())
-            ->setShop(Shopware()->Shop())
-            ->setCurrency(Shopware()->Config()->get('currency')),
-            $requestDto
-        );
+        try {
+            $html = $this->installmentService->getInstallmentPlanTemplate((new PaymentConfigSearch())
+                ->setPaymentMethod($paymentMethod)
+                ->setBackend(false)
+                ->setBillingCountry($billingAddress->getCountry()->getIso())
+                ->setShippingCountry($shippingAddress->getCountry()->getIso())
+                ->setShop(Shopware()->Shop())
+                ->setCurrency(Shopware()->Config()->get('currency')),
+                $requestDto
+            );
+
+            $data = [
+                'success' => true,
+                'html' => $html,
+            ];
+        } catch (RequestException $requestException) {
+            $data = [
+                'success' => false,
+                'message' => $this->snippetManager->getNamespace('frontend/ratepay/messages')->get('UnknownError'),
+            ];
+        }
+
+        // cause shopware does not support json response, we will send it via a simple echo.
+        echo json_encode($data);
     }
 
     public function getWhitelistedCSRFActions()

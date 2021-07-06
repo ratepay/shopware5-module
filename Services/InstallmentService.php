@@ -11,6 +11,7 @@ namespace RpayRatePay\Services;
 
 use Enlight_Template_Default;
 use Enlight_Template_Manager;
+use RatePAY\Exception\RequestException;
 use RatePAY\Frontend\InstallmentBuilder;
 use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\DTO\PaymentConfigSearch;
@@ -98,6 +99,12 @@ class InstallmentService
         return $plan;
     }
 
+    /**
+     * @param \RpayRatePay\DTO\PaymentConfigSearch $configSearch
+     * @param \RpayRatePay\DTO\InstallmentRequest $requestDto
+     * @return mixed
+     * @throws RequestException
+     */
     public function getInstallmentPlan(PaymentConfigSearch $configSearch, InstallmentRequest $requestDto)
     {
         $installmentBuilder = $this->getInstallmentBuilder($configSearch);
@@ -129,6 +136,12 @@ class InstallmentService
         );
     }
 
+    /**
+     * @param \RpayRatePay\DTO\PaymentConfigSearch $configSearch
+     * @param \RpayRatePay\DTO\InstallmentRequest $requestDto
+     * @return string
+     * @throws \RatePAY\Exception\RequestException
+     */
     public function getInstallmentPlanTemplate(PaymentConfigSearch $configSearch, InstallmentRequest $requestDto)
     {
         $planData = $this->getInstallmentPlan($configSearch, $requestDto);

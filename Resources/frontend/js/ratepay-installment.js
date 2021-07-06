@@ -177,14 +177,20 @@
                     calculationType: calcType,
                     paymentMethodId: $('[name=payment]:checked').val(),
                     paymentType: $(me.opts.selectorPaymentTypeValue).val()
+                },
+                dataType: 'json'
+            }).done(function (response) {
+                if (response.success) {
+                    me.$el.find(me.opts.selectorPlanResult).html(response.html);
+                    me.$el.find(me.opts.selectorCalculationType).val(calcType);
+                    me.$el.find(me.opts.selectorCalculationValue).val(calcValue);
+                } else {
+                    var $messageContainer = jQuery('#ratepay__installment__message-template').clone();
+                    $messageContainer.find('.placeholder').replaceWith(response.message);
+                    me.$el.find(me.opts.selectorPlanResult).html($messageContainer.html());
                 }
-            }).done(function (result) {
-                me.$el.find(me.opts.selectorPlanResult).html(result);
-                me.$el.find(me.opts.selectorCalculationType).val(calcType);
-                me.$el.find(me.opts.selectorCalculationValue).val(calcValue);
             });
         },
-
     });
 
     StateManager.addPlugin('[data-ratepay-installment-calculator="true"]', 'RatePayInstallmentCalculator');

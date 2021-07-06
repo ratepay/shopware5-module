@@ -113,4 +113,8 @@
             {/if}
         </div>
     </div>
+
+    <div id="ratepay__installment__message-template" style="display: none!important">
+        {include file="frontend/_includes/messages.tpl" type="error" content="<div class='placeholder'></div>" isHidden=true}
+    </div>
 {/block}
