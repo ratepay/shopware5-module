@@ -118,3 +118,15 @@ If you get an `AbstractResponse`, just call `isSuccessful()` to verify if the re
 
 If you get a boolean with the value `true` the operation has been registered to in the database, but has not been sent to the gateway.
 This will happen, if the order is an installment and there an open (not delivered/canceled) items in the order.
+
+
+# Feature flags
+
+You can enable specific features by setting the flags in the plugin configuration.
+
+*Please note: *You should test each feature very carefully, cause the may break your processes in some cases.
+
+Please contact your contact person to make sure that this feature will work in your installation.
+
+|Flag          |Description |
+|------------ |----------- |

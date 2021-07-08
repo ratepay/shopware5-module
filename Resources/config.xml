@@ -175,8 +175,11 @@
                 </option>
             </store>
         </element>
-
-
+        <element required="false" type="textarea">
+            <name>ratepay/advanced/feature_flags</name>
+            <label lang="en">Feature Flags</label>
+            <label lang="de">Feature Flags</label>
+        </element>
 
         <element type="button">
             <name>ratepay/buttons/button8</name>

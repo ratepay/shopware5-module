@@ -212,6 +212,20 @@ class ConfigService
         return (int)$this->getConfig('ratepay/bidirectional/position/status/' . $action, null);
     }
 
+    /**
+     * @return array
+     */
+    public function getEnabledFeatures()
+    {
+        $flags = $this->getConfig('ratepay/advanced/feature_flags') ?: '';
+        return array_map(static function ($value) {
+            return trim($value);
+        }, explode(',', $flags));
+    }
+
+    /**
+     * @deprecated will be removed within the next releases
+     */
     public function getAllProfileConfigs(Shop $shop)
     {
         $allConfig = $this->configReader->getByPluginName($this->pluginName, $shop);

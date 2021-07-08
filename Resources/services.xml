@@ -36,6 +36,8 @@
             <argument key="$configReader" type="service" id="shopware.plugin.cached_config_reader"/>
         </service>
 
+        <service id="RpayRatePay\Services\FeatureService"/>
+
         <service id="RpayRatePay\Services\DfpService">
             <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
         </service>
