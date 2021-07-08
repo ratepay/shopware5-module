@@ -162,9 +162,9 @@ class ConfigService
     public function isBidirectionalEnabled($type = 'order')
     {
         //this is a global configuration
-        if($type === 'order') {
+        if ($type === 'order') {
             return $this->getConfig('ratepay/bidirectional/enable', null, null) == 1;
-        } else if($type === 'position') {
+        } else if ($type === 'position') {
             return $this->getConfig('ratepay/bidirectional/position/enable', null, null) == 1;
         }
         return false;
@@ -228,9 +228,6 @@ class ConfigService
      */
     public function getAllProfileConfigs(Shop $shop)
     {
-        $allConfig = $this->configReader->getByPluginName($this->pluginName, $shop);
-        return array_filter($allConfig, function ($key) {
-            return strpos($key, 'ratepay/profile/') === 0;
-        }, ARRAY_FILTER_USE_KEY);
+        return [];
     }
 }

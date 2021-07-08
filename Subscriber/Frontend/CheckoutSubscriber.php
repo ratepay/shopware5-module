@@ -14,7 +14,6 @@ use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\DfpService;
-use RpayRatePay\Services\StaticTextService;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;
 use Shopware\Components\Model\ModelManager;
