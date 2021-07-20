@@ -235,7 +235,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
                 if ($detail) {
                     $position->setOrderDetail($detail);
                 }
-                $items[$position->getProductNumber()] = $position;
+                $items[] = $position;
             }
         }
         $isSuccess = false;
@@ -278,7 +278,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
                 if ($detail) {
                     $position->setOrderDetail($detail);
                 }
-                $items[$position->getProductNumber()] = $position;
+                $items[] = $position;
             }
         }
 
@@ -318,7 +318,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
                 if ($detail) {
                     $position->setOrderDetail($detail);
                 }
-                $items[$position->getProductNumber()] = $position;
+                $items[] = $position;
             }
         }
 

@@ -98,8 +98,20 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
     protected function addConfigurationToProductInfo($data, $configuration)
     {
         $data[0] = $data[0] . '-' . md5(json_encode($configuration));
-        $productConfigName = str_replace(" \n", ', ', trim($configuration['additionaltext'], "\n"));
-        $data[1] = $data[1] . ' (' . $productConfigName . ')';
+        $additionalName = null;
+        if (isset($configuration['attributes']) && is_array($configuration['attributes'])) {
+            $additionalNameArray = [];
+            foreach ($configuration['attributes'] as $attribute) {
+                $additionalNameArray[] = $attribute['groupname'] . ': ' . $attribute['title'];
+            }
+            $additionalName = implode(', ', $additionalNameArray);
+        } else if (isset($configuration['additionaltext'])) {
+            $additionalName = str_replace(" \n", ', ', trim($configuration['additionaltext'], "\n"));
+        }
+        if ($additionalName) {
+            $data[1] .= ' (' . $additionalName . ')';
+        }
+
         return $data;
     }
 
