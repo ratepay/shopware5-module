@@ -9,11 +9,8 @@
 namespace RpayRatePay\Subscriber;
 
 
-use BogxProductConfigurator\Subscriber\BogxFrontendSubscriber;
-use Doctrine\DBAL\Query\QueryBuilder;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Event_EventArgs;
-use Enlight_Event_EventManager;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Attribute\OrderDetail as OrderDetailAttribute;
 use Shopware\Models\Order\Detail;
@@ -24,53 +21,21 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
      * @var ModelManager
      */
     private $modelManager;
-    /**
-     * @var Enlight_Event_EventManager
-     */
-    private $eventManager;
 
 
-    public function __construct(ModelManager $modelManager, Enlight_Event_EventManager $eventManager)
+    public function __construct(ModelManager $modelManager)
     {
         $this->modelManager = $modelManager;
-        $this->eventManager = $eventManager;
     }
 
     public static function getSubscribedEvents()
     {
         if (self::isBogxPluginInstalled()) {
             return [
-                'Enlight_Controller_Front_RouteStartup' => 'unregisterPluginEvent',
-                'Shopware_Modules_Basket_AddArticle_CheckBasketForArticle' => 'checkBasketForArticle',
                 'RatePAY_filter_order_items' => 'onFilterOrderItems'
             ];
         }
         return [];
-    }
-
-    public function unregisterPluginEvent(Enlight_Event_EventArgs $args)
-    {
-        $handlers = $this->eventManager->getListeners('Shopware_Modules_Basket_AddArticle_CheckBasketForArticle');
-        foreach ($handlers as $handler) {
-            if (isset($handler->getListener()[0]) && $handler->getListener()[0] instanceof BogxFrontendSubscriber) {
-                $this->eventManager->removeListener($handler);
-            }
-        }
-    }
-
-    public function checkBasketForArticle(Enlight_Event_EventArgs $args)
-    {
-        /** @var QueryBuilder $qb */
-        $qb = $args->get('queryBuilder');
-        $configuration = Shopware()->Front()->Request()->getParam('bogxProductConfiguratorSelection');
-
-        if ($configuration) {
-            $qb->resetQueryPart('select');
-            $qb->select(['basket.id', 'quantity']);
-            $qb->innerJoin('basket', 's_order_basket_attributes', 'attribute', 'basket.id = attribute.basketID')
-                ->andWhere($qb->expr()->eq('attribute.bogx_productconfigurator', ':configuration'))
-                ->setParameter('configuration', $configuration);
-        }
     }
 
     public function onFilterOrderItems(Enlight_Event_EventArgs $args)
@@ -155,7 +120,7 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         if (is_array($item)) {
             $configuration = $this->findValueInArray($item, ['ob_bogx_configurator']);
             if ($configuration) {
-                return $configuration = json_decode($configuration, true);
+                return json_decode($configuration, true);
             } else {
                 $orderDetailId = $this->findValueInArray($item, ['orderDetailId']);
                 /** @var OrderDetailAttribute $orderDetailAttribute */
@@ -171,7 +136,7 @@ class BogxProductConfiguratorSubscriber implements SubscriberInterface
         return null;
     }
 
-    protected final function findValueInArray(&$data = [], $keys = [], $setValue = null)
+    final protected function findValueInArray(&$data = [], $keys = [], $setValue = null)
     {
         foreach ($keys as $key) {
             if (isset($data[$key])) {
