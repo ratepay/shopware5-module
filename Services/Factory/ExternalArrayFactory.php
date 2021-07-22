@@ -30,7 +30,7 @@ class ExternalArrayFactory
     public function getData(Order $order)
     {
         if ($plainTrackingCode = $order->getTrackingCode()) {
-            $provider = null;
+            $provider = 'OTH';
             if ($order->getDispatch()) {
                 $supportedMethods = ['DHL', 'DPD', 'GLS', 'HLG', 'HVS', 'OTH', 'TNT', 'UPS'];
                 foreach ($supportedMethods as $supportedMethod) {
