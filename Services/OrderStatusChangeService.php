@@ -9,8 +9,8 @@
 namespace RpayRatePay\Services;
 
 use Monolog\Logger;
-use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Exception\RatepayPositionNotFoundException;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Request\PaymentCancelService;
@@ -67,6 +67,11 @@ class OrderStatusChangeService
      */
     protected $positionHelper;
 
+    /**
+     * @var \RpayRatePay\Services\FeatureService
+     */
+    private $featureService;
+
     public function __construct(
         ModelManager $modelManager,
         ConfigService $pluginConfig,
@@ -74,6 +79,7 @@ class OrderStatusChangeService
         PaymentDeliverService $paymentDeliverService,
         PaymentCancelService $paymentCancelService,
         PaymentReturnService $paymentReturnService,
+        FeatureService $featureService,
         Logger $logger
     )
     {
@@ -83,6 +89,7 @@ class OrderStatusChangeService
         $this->paymentDeliverService = $paymentDeliverService;
         $this->paymentCancelService = $paymentCancelService;
         $this->paymentReturnService = $paymentReturnService;
+        $this->featureService = $featureService;
         $this->logger = $logger;
     }
 
@@ -156,8 +163,18 @@ class OrderStatusChangeService
                 continue;
             }
 
-            // test if the position exists for detail. Exception will be thrown if not.
-            $this->positionHelper->getPositionForDetail($detail);
+            try {
+                // test if the position exists for detail. Exception will be thrown if not.
+                $this->positionHelper->getPositionForDetail($detail);
+            } catch (RatepayPositionNotFoundException $e) {
+                // skip the position, only if feature has been enabled
+                if ($this->featureService->isFeatureEnabled('FEATURE-8543') === false) {
+                    throw $e;
+                }
+
+                $this->logger->warning($e->getMessage(), $e->getContext());
+                continue;
+            }
 
             foreach ($roundTrips as $changeType => $statusId) {
                 if ($detail->getStatus()->getId() !== $statusId) {

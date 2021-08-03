@@ -61,13 +61,8 @@
         </service>
 
         <service id="RpayRatePay\Services\OrderStatusChangeService">
-            <argument id="models" type="service"/>
-            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
-            <argument id="RpayRatePay\Helper\PositionHelper" type="service"/>
-            <argument id="RpayRatePay\Services\Request\PaymentDeliverService" type="service"/>
-            <argument id="RpayRatePay\Services\Request\PaymentCancelService" type="service"/>
-            <argument id="RpayRatePay\Services\Request\PaymentReturnService" type="service"/>
-            <argument id="corelogger" type="service"/>
+            <argument key="$modelManager" id="models" type="service"/>
+            <argument key="$logger" id="ratepay.logger" type="service"/>
         </service>
 
         <service id="RpayRatePay\Helper\PositionHelper">
