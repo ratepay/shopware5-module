@@ -8,6 +8,7 @@
          data-allowDirectDebit="{$ratepay.calculator.rp_debitPayType.rp_paymentType_directDebit}"
     >
         <input type="hidden" name="rp-calculation-amount" value="{$sAmount}" />
+        <input type="hidden" name="ratepay[installment][paymentMethodId]" id="rp-calculation-type" value="{$form_data.payment}"  />
         <input type="hidden" name="ratepay[installment][type]" id="rp-calculation-type" value="{$form_data.ratepay.installment.type}"  />
         <input type="hidden" name="ratepay[installment][value]" id="rp-calculation-value" value="{$form_data.ratepay.installment.value}"  />
         <input type="hidden" name="ratepay[installment][paymentType]" id="rp-payment-type" value="{$form_data.ratepay.installment.paymentType}"  />
