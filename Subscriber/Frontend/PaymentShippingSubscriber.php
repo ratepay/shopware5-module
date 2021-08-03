@@ -96,9 +96,6 @@ class PaymentShippingSubscriber implements SubscriberInterface
             return;
         }
 
-        $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress();
-        $currency = $this->config->get('currency');
 
         $sUserData = $view->getAssign('sUserData');
         if (isset($sUserData['additional']['payment']['name'])) {
@@ -110,6 +107,11 @@ class PaymentShippingSubscriber implements SubscriberInterface
         }
 
         if (PaymentMethods::exists($paymentMethodName)) {
+
+            $billingAddress = $this->sessionHelper->getBillingAddress();
+            $shippingAddress = $this->sessionHelper->getShippingAddress();
+            $currency = $this->config->get('currency');
+
             $paymentMethodConfig = $this->profileConfigService->getPaymentConfiguration((new PaymentConfigSearch())
                 ->setPaymentMethod($paymentMethodName)
                 ->setBackend(false)
@@ -128,21 +130,28 @@ class PaymentShippingSubscriber implements SubscriberInterface
                 'agb' => 'https://www.ratepay.com/legal'
             ];
 
-            $view->assign('ratepay', array_merge($view->getAssign('ratepay') ? : [], $data));
-        }
+            $view->assign('ratepay', array_merge($view->getAssign('ratepay') ?: [], $data));
 
-        // fix static form data
-        $viewParams = $view->getAssign();
-        if (isset($viewParams['sFormData']['ratepay'])) {
-            $bankData = $this->sessionHelper->getBankData($billingAddress);
-            $accountHolders = BankDataUtil::getAvailableAccountHolder($billingAddress, $bankData);
-            $viewParams['sFormData']['ratepay']['bank_account']['accountHolder'] = [
-                'list' => $accountHolders,
-                'selected' => $bankData && $bankData->getAccountHolder() ? $bankData->getAccountHolder() : $accountHolders[0]
-            ];
+            // fix static form data
+            $sFormData = $view->getAssign('sFormData');
+            if (isset($sFormData['ratepay'])) {
+                $ratepayData = &$sFormData['ratepay'];
+
+                $bankData = $this->sessionHelper->getBankData($billingAddress);
+                $accountHolders = BankDataUtil::getAvailableAccountHolder($billingAddress, $bankData);
+                $ratepayData['bank_account']['accountHolder'] = [
+                    'list' => $accountHolders,
+                    'selected' => $bankData && $bankData->getAccountHolder() ? $bankData->getAccountHolder() : $accountHolders[0]
+                ];
+
+                if (isset($ratepayData['installment']['paymentMethodId']) && (int)$ratepayData['installment']['paymentMethodId'] !== $paymentMethodConfig->getPaymentMethod()->getId()) {
+                    // installment fields has to be reset if the payment method has been changed
+                    unset($ratepayData['installment']);
+                }
+
+                $view->assign('sFormData', $sFormData);
+            }
         }
-        $view->assign($viewParams);
     }
-
 
 }

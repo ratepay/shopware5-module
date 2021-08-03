@@ -29,6 +29,7 @@
                     <li>fixes issues during a b2b order with Shopware 5.7</li>
                     <li>removes empty vat-id in PaymentRequest</li>
                     <li>fixes issue with third-party plugin (Product Sets powered by Pickware) (feature flag)</li>
+                    <li>Fix switch between payment methods of instalment</li>
                 </ul>
             ]]>
         </changes>
@@ -38,6 +39,7 @@
                     <li>Fehlerbehebung bei einer B2B Bestellung in Shopware 5.7</li>
                     <li>Leere Steuer-ID im PaymentRequest entfernt</li>
                     <li>Behebt einen Fehler mit einem Drittanbieterplugin (Stücklisten / Sets powered by Pickware) (feature flag)</li>
+                    <li>Behebt einen Fehler beim Wechsel zwischen den Zahlungsmethoden der Ratenzahlungen</li>
                 </ul>
             ]]>
         </changes>
