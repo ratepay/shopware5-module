@@ -12,8 +12,10 @@ namespace RpayRatePay\Services\Request;
 use RatePAY\RequestBuilder;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\DTO\BasketPosition;
+use RpayRatePay\Exception\RatepayPositionNotFoundException;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Models\Position\AbstractPosition;
+use RpayRatePay\Services\FeatureService;
 use Shopware\Models\Order\Order;
 
 /**
@@ -35,6 +37,9 @@ trait FullActionTrait
      */
     public function doFullAction(Order $order, array $details = null)
     {
+        $featureService = Shopware()->Container()->get(FeatureService::class);
+        $ratepayLog = Shopware()->Container()->get('ratepay.logger');
+
         $sendToGateway = false;
         $basketArrayBuilder = new BasketArrayBuilder($order);
 
@@ -42,7 +47,17 @@ trait FullActionTrait
             if ($detail === BasketPosition::SHIPPING_NUMBER) {
                 continue;
             }
-            $position = $this->positionHelper->getPositionForDetail($detail);
+            try {
+                $position = $this->positionHelper->getPositionForDetail($detail);
+            } catch (RatepayPositionNotFoundException $e) {
+                // skip the position, only if feature has been enabled
+                if ($featureService->isFeatureEnabled('FEATURE-8543') === false) {
+                    throw $e;
+                }
+
+                $ratepayLog->warning($e->getMessage(), $e->getContext());
+                continue;
+            }
             // openQuantity should be the orderedQuantity.
             // To prevent unexpected errors we will only submit the openQuantity
             $qty = $this->getOpenQuantityForFullAction($position);
