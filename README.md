@@ -124,9 +124,11 @@ This will happen, if the order is an installment and there an open (not delivere
 
 You can enable specific features by setting the flags in the plugin configuration.
 
-*Please note: *You should test each feature very carefully, cause the may break your processes in some cases.
+*Please note: *You should test each feature very carefully, because they may break your processes in some cases.
 
 Please contact your contact person to make sure that this feature will work in your installation.
+
+Separate the features with a comma and no spaces.
 
 |Flag          |Description |
 |------------ |----------- |
