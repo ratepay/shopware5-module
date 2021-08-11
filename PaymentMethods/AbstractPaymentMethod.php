@@ -173,20 +173,16 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
             }
 
             $ratepayData['phone'] = trim($ratepayData['phone']);
-            //if($billingAddress->getPhone() == null) {
-            // maybe it would be better to save the value in a attribute, to not override the real customer data.
             if (!empty($ratepayData['phone'])) {
+                // maybe it would be better to save the value in a attribute, to not override the real customer data.
                 $billingAddress->setPhone($ratepayData['phone']);
             }
-            //}
 
-            //if($billingAddress->getVatId() == null) {
             if (isset($ratepayData['vatId']) && !empty($ratepayData['vatId'])) {
                 // maybe it would be better to save the value in a attribute, to not override the real customer data.
                 $ratepayData['vatId'] = trim($ratepayData['vatId']);
                 $billingAddress->setVatId($ratepayData['vatId']);
             }
-            //}
 
             $this->modelManager->flush([$customer, $billingAddress]);
             $this->saveRatePayPaymentData($userId, $request);
