@@ -78,7 +78,9 @@ class CustomerArrayFactory
 
         if ($billingAddress->getCompany()) {
             $data['CompanyName'] = $billingAddress->getCompany();
-            $data['VatId'] = $billingAddress->getVatId();
+            if(!empty($billingAddress->getVatId())) {
+                $data['VatId'] = $billingAddress->getVatId();
+            }
         }
 
         if ($paymentRequestData->getBankData()) {

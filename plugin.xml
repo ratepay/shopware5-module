@@ -27,6 +27,7 @@
             <![CDATA[
                 <ul>
                     <li>fixes issues during a b2b order with Shopware 5.7</li>
+                    <li>removes empty vat-id in PaymentRequest</li>
                 </ul>
             ]]>
         </changes>
@@ -34,6 +35,7 @@
             <![CDATA[
                 <ul>
                     <li>Fehlerbehebung bei einer B2B Bestellung in Shopware 5.7</li>
+                    <li>Leere Steuer-ID im PaymentRequest entfernt</li>
                 </ul>
             ]]>
         </changes>
