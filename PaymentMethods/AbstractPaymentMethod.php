@@ -156,19 +156,21 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
 
             $ratepayData = $request->getParam('ratepay')['customer_data'];
 
-            $birthday = new DateTime();
-            $birthday->setDate(
-                trim($ratepayData['birthday']['year']),
-                trim($ratepayData['birthday']['month']),
-                trim($ratepayData['birthday']['day'])
-            );
             $customer = $this->sessionHelper->getCustomer();
             $billingAddress = $this->sessionHelper->getBillingAddress();
 
-            //if($customer->getBirthday() == null) {
-            // maybe it would be better to save the value in a attribute, to not override the real customer data.
-            $customer->setBirthday($birthday);
-            //}
+
+            if (!$billingAddress->getCompany() || empty($billingAddress->getCompany())) {
+                $birthday = new DateTime();
+                $birthday->setDate(
+                    trim($ratepayData['birthday']['year']),
+                    trim($ratepayData['birthday']['month']),
+                    trim($ratepayData['birthday']['day'])
+                );
+
+                // maybe it would be better to save the value in a attribute, to not override the real customer data.
+                $customer->setBirthday($birthday);
+            }
 
             $ratepayData['phone'] = trim($ratepayData['phone']);
             //if($billingAddress->getPhone() == null) {
