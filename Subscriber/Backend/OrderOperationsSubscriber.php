@@ -229,6 +229,7 @@ class OrderOperationsSubscriber implements SubscriberInterface
 
         if (PaymentMethods::exists($order->getPayment()) === false) {
             //payment is not a ratepay order
+            $args->getSubject()->executeParent($args->getMethod(), $args->getArgs());
             return;
         }
         $sql = 'SELECT COUNT(*) FROM `s_order_details` AS `detail` '
