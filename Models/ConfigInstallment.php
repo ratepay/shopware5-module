@@ -26,7 +26,7 @@ class ConfigInstallment extends ModelEntity
     protected $paymentConfig;
 
     /**
-     * @var string
+     * @var array
      * @ORM\Column(name="month_allowed", type="simple_array", nullable=false)
      */
     protected $monthsAllowed;
@@ -44,7 +44,7 @@ class ConfigInstallment extends ModelEntity
     protected $debitAllowed;
 
     /**
-     * @var string
+     * @var float
      * @ORM\Column(name="rate_min_normal", type="float", nullable=false)
      */
     protected $rateMinNormal;
@@ -66,7 +66,7 @@ class ConfigInstallment extends ModelEntity
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function getMonthsAllowed()
     {
@@ -74,7 +74,7 @@ class ConfigInstallment extends ModelEntity
     }
 
     /**
-     * @param string $monthsAllowed
+     * @param array $monthsAllowed
      */
     public function setMonthsAllowed($monthsAllowed)
     {
@@ -132,7 +132,7 @@ class ConfigInstallment extends ModelEntity
     }
 
     /**
-     * @return string
+     * @return float
      */
     public function getRateMinNormal()
     {
@@ -140,7 +140,7 @@ class ConfigInstallment extends ModelEntity
     }
 
     /**
-     * @param string $rateMinNormal
+     * @param float $rateMinNormal
      */
     public function setRateMinNormal($rateMinNormal)
     {
