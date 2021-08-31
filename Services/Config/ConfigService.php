@@ -10,6 +10,7 @@ namespace RpayRatePay\Services\Config;
 
 
 use InvalidArgumentException;
+use RpayRatePay\Enum\PaymentMethods;
 use RuntimeException;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\ConfigReader;
@@ -217,6 +218,52 @@ class ConfigService
         $separator = $this->getConfig('ratepay/advanced/tracking_separator', null);
         return !empty($separator) ? $separator : null;
     }
+
+    /**
+     * Product Page: is Installment Calculator enabled?
+     * @return bool
+     */
+    public function isPicEnabled()
+    {
+        return (bool) $this->getConfig('ratepay/detailInstallmentCalculator/enabled', false);
+    }
+
+    /**
+     * Product Page Installment Calculator: enabled payment method
+     * @return string
+     */
+    public function getPicPaymentMethod()
+    {
+        return $this->getConfig('ratepay/detailInstallmentCalculator/paymentMethod', PaymentMethods::PAYMENT_RATE);
+    }
+
+    /**
+     * Product Page Installment Calculator: default billing country
+     * @return string
+     */
+    public function getPicDefaultBillingCountry()
+    {
+        return $this->getConfig('ratepay/detailInstallmentCalculator/defaultBillingCountry', 'DE');
+    }
+
+    /**
+     * Product Page Installment Calculator: default shipping country
+     * @return string
+     */
+    public function getPicDefaultShippingCountry()
+    {
+        return $this->getConfig('ratepay/detailInstallmentCalculator/defaultShippingCountry', 'DE');
+    }
+
+    /**
+     * Product Page Installment Calculator: default b2b enabled
+     * @return bool
+     */
+    public function getPicDefaultB2b()
+    {
+        return (bool) $this->getConfig('ratepay/detailInstallmentCalculator/defaultB2b', false);
+    }
+
 
     /**
      * @return array

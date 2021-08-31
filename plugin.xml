@@ -30,6 +30,7 @@
                     <li>Added: Support for different Profile-Ids for one payment method</li>
                     <li>improvement: loading of available payment methods</li>
                     <li>improve lookup for profile configs during checkout</li>
+                    <li>added: Installment information on product page</li>
                 </ul>
             ]]>
         </changes>
@@ -40,6 +41,7 @@
                     <li>Hinzugefügt: Unterstützung von mehreren Profile-Ids für eine Zahlart</li>
                     <li>Verbessert: Laden der verfügbaren Zahlmethoden</li>
                     <li>Verbessert: Laden der Profile-Ids während des Checkouts</li>
+                    <li>Hinzugefügt: Rateninformationen auf der Produktseite</li>
                 </ul>
             ]]>
         </changes>
