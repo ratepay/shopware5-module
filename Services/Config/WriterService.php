@@ -184,6 +184,8 @@ class WriterService
                     $installmentConfig->setDebitAllowed(in_array(2, $paymentFirstDay, false));
                     $installmentConfig->setBankTransferAllowed(in_array(28, $paymentFirstDay, false));
                     $installmentConfig->setRateMinNormal($responseResult['installmentConfig']['rate-min-normal']);
+                    $installmentConfig->setInterestRateDefault($responseResult['installmentConfig']['interestrate-default']);
+                    $installmentConfig->setServiceCharge($responseResult['installmentConfig']['service-charge']);
                     $installmentConfig->setDefaultPaymentType(PaymentFirstDay::getPayTypByFirstPayDay($responseResult['installmentConfig']['payment-firstday']));
                     $installmentConfigs[] = $installmentConfig;
                 }
