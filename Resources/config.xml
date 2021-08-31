@@ -269,6 +269,63 @@
             <value>ratepay</value>
         </element>
 
+        <element type="button">
+            <name>ratepay/detailInstallmentCalculator/button10</name>
+            <label lang="en">Product detail page: Instalment calculator</label>
+            <label lang="de">Produktseite: Ratenrechner</label>
+        </element>
+        <element required="true" type="boolean">
+            <name>ratepay/detailInstallmentCalculator/enabled</name>
+            <label lang="en">Enabled</label>
+            <label lang="de">Aktiviert</label>
+        </element>
+        <element required="true" type="select">
+            <name>ratepay/detailInstallmentCalculator/paymentMethod</name>
+            <label lang="en">Payment method</label>
+            <label lang="de">Zahlmethode</label>
+            <value>rpayratepayrate</value>
+            <store>
+                <option>
+                    <value>rpayratepayrate</value>
+                    <label>Normal instalment payment</label>
+                    <label lang="de">Normale Ratenzahlung</label>
+                </option>
+                <option>
+                    <value>rpayratepayrate0</value>
+                    <label>0% Financing</label>
+                    <label lang="de">0% Finanzierung</label>
+                </option>
+            </store>
+        </element>
+        <element required="true" type="combo">
+            <name>ratepay/detailInstallmentCalculator/defaultBillingCountry</name>
+            <label lang="en">Default billing country</label>
+            <label lang="de">Standard Rechnungsland</label>
+            <value>DE</value>
+            <store>Shopware.store.Country</store>
+            <options>
+                <valueField>iso</valueField>
+                <displayField>name</displayField>
+            </options>
+        </element>
+        <element required="true" type="combo">
+            <name>ratepay/detailInstallmentCalculator/defaultShippingCountry</name>
+            <label lang="en">Default shipping country</label>
+            <label lang="de">Standard Lieferland</label>
+            <value>DE</value>
+            <store>Shopware.store.Country</store>
+            <options>
+                <valueField>iso</valueField>
+                <displayField>name</displayField>
+            </options>
+        </element>
+        <element required="true" type="boolean">
+            <name>ratepay/detailInstallmentCalculator/defaultB2b</name>
+            <label lang="en">Default B2B enabled</label>
+            <label lang="de">Standardmäßig B2B aktiviert</label>
+            <value>0</value>
+        </element>
+
         <!-- @deprecated: old fields - got renamed/removed in further releases & fields got deleted in bootstrap -->
         <element><name>RatePayProfileIDDE</name><label>RatePayProfileIDDE</label></element>
         <element><name>RatePaySecurityCodeDE</name><label>RatePaySecurityCodeDE</label></element>
