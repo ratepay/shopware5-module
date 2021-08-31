@@ -13,7 +13,10 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
 
-        <defaults public="true" autoconfigure="true" autowire="true"/>
+        <defaults public="true" autoconfigure="true" autowire="true">
+            <bind key="$modelManager" id="models" type="service"/>
+            <bind key="$logger" id="ratepay.logger" type="service"/>
+        </defaults>
 
         <service id="RpayRatePay\Subscriber\Frontend\PaymentFilterSubscriber">
             <argument id="models" type="service"/>
@@ -59,6 +62,10 @@
 
         <service id="RpayRatePay\Subscriber\Frontend\MessageSubscriber">
             <argument id="RpayRatePay\Services\MessageManager" type="service"/>
+            <tag name="shopware.event_subscriber"/>
+        </service>
+
+        <service id="RpayRatePay\Subscriber\Frontend\ProductSubscriber">
             <tag name="shopware.event_subscriber"/>
         </service>
 

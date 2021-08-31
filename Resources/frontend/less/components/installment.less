@@ -22,3 +22,21 @@
     border-bottom: 1px solid #000;
   }
 }
+
+.product--buybox {
+    .ratepay--installment {
+        color: #001361;
+
+        &::before {
+            content: '';
+            background: #001361;
+            .unitize-variable(9); // returns the variable "emValue"
+            .border-radius(~"@{emValue}rem");
+            .unitize-margin(0, 5, 0, 0);
+            .unitize-width(9);
+            .unitize-height(9);
+            .unitize(line-height, 10);
+            display: inline-block;
+        }
+    }
+}
