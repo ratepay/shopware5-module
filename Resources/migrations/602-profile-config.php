@@ -15,7 +15,7 @@ class Migration602 extends AbstractPluginMigration
     // @phpstan-ignore-next-line
     public function up($mode)
     {
-        if(defined('RATEPAY_MIGRATION_DONE_603')) {
+        if(defined('RATEPAY_MIGRATION_DONE_602')) {
             return;
         }
 
