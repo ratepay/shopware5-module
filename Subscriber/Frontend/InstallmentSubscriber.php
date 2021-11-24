@@ -10,12 +10,14 @@ namespace RpayRatePay\Subscriber\Frontend;
 
 
 use Enlight\Event\SubscriberInterface;
-use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\Component\InstallmentCalculator\Model\InstallmentCalculatorContext;
+use RpayRatePay\Component\InstallmentCalculator\Service\InstallmentService;
+use RpayRatePay\Component\InstallmentCalculator\Service\SessionHelper as InstallmentSessionHelper;
 use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
-use RpayRatePay\Services\InstallmentService;
 use RpayRatePay\Services\MessageManager;
+use Shopware\Models\Payment\Payment;
 use Shopware_Controllers_Frontend_Checkout;
 
 class InstallmentSubscriber implements SubscriberInterface
@@ -33,16 +35,22 @@ class InstallmentSubscriber implements SubscriberInterface
      * @var MessageManager
      */
     private $messageManager;
+    /**
+     * @var InstallmentSessionHelper
+     */
+    private $installmentSessionHelper;
 
     public function __construct(
-        SessionHelper $sessionHelper,
+        SessionHelper      $sessionHelper,
+        InstallmentSessionHelper $installmentSessionHelper,
         InstallmentService $installmentService,
-        MessageManager $messageManager
+        MessageManager     $messageManager
     )
     {
         $this->sessionHelper = $sessionHelper;
         $this->installmentService = $installmentService;
         $this->messageManager = $messageManager;
+        $this->installmentSessionHelper = $installmentSessionHelper;
     }
 
     public static function getSubscribedEvents()
@@ -78,19 +86,17 @@ class InstallmentSubscriber implements SubscriberInterface
         }
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
+        $shippingAddress = $this->sessionHelper->getShippingAddress() ?: $billingAddress;
 
         $totalAmount = floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']); // TODO no static access!
-
-        $templateVars = $this->installmentService->getInstallmentCalculatorVars((new PaymentConfigSearch())
+        $paymentSearch = (new PaymentConfigSearch())
             ->setPaymentMethod($paymentMethod)
             ->setBackend(false)
             ->setBillingCountry($billingAddress->getCountry()->getIso())
             ->setShippingCountry($shippingAddress->getCountry()->getIso())
             ->setShop(Shopware()->Shop())
-            ->setCurrency(Shopware()->Config()->get('currency')),
-            $totalAmount
-        );
+            ->setCurrency(Shopware()->Config()->get('currency'));;
+        $templateVars = $this->installmentService->getInstallmentCalculatorVars(new InstallmentCalculatorContext($paymentSearch, $totalAmount));
 
         $view->assign('ratepay', array_merge($view->getAssign('ratepay') ?: [], $templateVars));
     }
@@ -103,7 +109,7 @@ class InstallmentSubscriber implements SubscriberInterface
         $response = $controller->Response();
         $view = $controller->View();
 
-        if ($response->isException()) {
+        if ($response->isException() || $response->isRedirect()) {
             return;
         }
 
@@ -113,28 +119,23 @@ class InstallmentSubscriber implements SubscriberInterface
             if (PaymentMethods::isInstallment($paymentMethod) === false) {
                 return;
             }
-            $billingAddress = $this->sessionHelper->getBillingAddress();
-            $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
-            $dto = $this->sessionHelper->getInstallmentRequestDTO();
+
+            $requestData = $this->installmentSessionHelper->getRequestData();
+            if (!$requestData) {
+                // seems like that the customer did not configured his installment plan
+                $controller->redirect('checkout/shippingPayment');
+                return;
+            }
+
             try {
-                //Update installment plan
-                $this->updateInstallmentPlan($dto, $paymentMethod);
+                $planData = $this->updateInstallmentPlan($requestData, $paymentMethod);
             } catch (\Exception $e) {
                 // if the calculation fails, the customer must select another payment method
                 $controller->redirect('checkout/shippingPayment');
                 return;
             }
 
-
-            $installmentPlanHtml = $this->installmentService->getInstallmentPlanTemplate((new PaymentConfigSearch())
-                ->setPaymentMethod($paymentMethod)
-                ->setBackend(false)
-                ->setBillingCountry($billingAddress->getCountry()->getIso())
-                ->setShippingCountry($shippingAddress->getCountry()->getIso())
-                ->setShop(Shopware()->Shop())
-                ->setCurrency(Shopware()->Config()->get('currency')),
-                $this->sessionHelper->getInstallmentRequestDTO()
-            );
+            $installmentPlanHtml = $this->installmentService->getInstallmentPlanTemplate($planData);
             $data['installmentPlan'] = $installmentPlanHtml;
         }
 
@@ -142,26 +143,43 @@ class InstallmentSubscriber implements SubscriberInterface
     }
 
 
-    public function updateInstallmentPlan(InstallmentRequest $dto, $paymentMethod)
+    /**
+     * @param array{total_amount: float, calculation_type: string, calculation_value:int|float} $requestData
+     * @param string|int|Payment $paymentMethod
+     * @return array{total_amount: float, calculation_type: string, calculation_value:int|float}|null|null
+     * @throws \RatePAY\Exception\RequestException
+     */
+    private function updateInstallmentPlan($requestData, $paymentMethod)
     {
         $sessionTotalAmount = $this->sessionHelper->getSession()->get('sOrderVariables')['sAmount'];
-        $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
-        if ($sessionTotalAmount != $dto->getTotalAmount()) {
-            // ups! the calculated plan does not have the same amount as the shopping cart ...
-            $dto->setTotalAmount($sessionTotalAmount);
-            // try to recalculate it.
-            $this->installmentService->initInstallmentData((new PaymentConfigSearch())
+        if ($sessionTotalAmount != $requestData['total_amount']) {
+            // ups! the calculated plan does not have the same amount as the shopping cart.
+            // so we will recalculate the plan
+
+            $billingAddress = $this->sessionHelper->getBillingAddress();
+            $shippingAddress = $this->sessionHelper->getShippingAddress() ?: $billingAddress;
+
+            $paymentConfigSearch = (new PaymentConfigSearch())
                 ->setPaymentMethod($paymentMethod)
                 ->setBackend(false)
                 ->setBillingCountry($billingAddress->getCountry()->getIso())
                 ->setShippingCountry($shippingAddress->getCountry()->getIso())
                 ->setShop(Shopware()->Shop()->getId())
-                ->setCurrency(Shopware()->Config()->get('currency')),
-                $dto
-            );
-            $this->messageManager->addInfoMessage('InstallmentPlanMayUpdated');
-        }
+                ->setCurrency(Shopware()->Config()->get('currency'));
 
+            $planResult = $this->installmentService->getInstallmentPlan(new InstallmentCalculatorContext(
+                $paymentConfigSearch,
+                $sessionTotalAmount,
+                $requestData['calculation_type'],
+                $requestData['calculation_value']
+            ));
+            $this->installmentSessionHelper->setPlanResult($planResult);
+
+            $this->messageManager->addInfoMessage('InstallmentPlanMayUpdated');
+
+            return $planResult->getPlanData();
+        } else {
+            return $this->installmentSessionHelper->getPlanData();
+        }
     }
 }
