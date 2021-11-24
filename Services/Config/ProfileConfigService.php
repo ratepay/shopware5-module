@@ -85,6 +85,18 @@ class ProfileConfigService
     }
 
     /**
+     * @param PaymentConfigSearch $configSearch
+     * @return ConfigPayment[]
+     */
+    public function getPaymentConfigurations(PaymentConfigSearch $configSearch)
+    {
+        /** @var PaymentConfigRepository $repo */
+        $repo = $this->modelManager->getRepository(ConfigPayment::class);
+
+        return $repo->findPaymentMethodConfigurations($configSearch);
+    }
+
+    /**
      * @param int|null $profileEntityId
      * @return bool
      * @throws EntityNotFoundException

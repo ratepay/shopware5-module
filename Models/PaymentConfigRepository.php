@@ -18,9 +18,31 @@ class PaymentConfigRepository extends ModelRepository
     /**
      * @param PaymentConfigSearch $configSearch
      * @return ConfigPayment|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findPaymentMethodConfiguration(PaymentConfigSearch $configSearch)
+    {
+        $qb = $this->getFindPaymentMethodConfigurationsQueryBuilder($configSearch);
+        $qb->setMaxResults(1);
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param PaymentConfigSearch $configSearch
+     * @return ConfigPayment[]
+     */
+    public function findPaymentMethodConfigurations(PaymentConfigSearch $configSearch)
+    {
+        $qb = $this->getFindPaymentMethodConfigurationsQueryBuilder($configSearch);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param \RpayRatePay\DTO\PaymentConfigSearch $configSearch
+     * @return \Shopware\Components\Model\QueryBuilder
+     */
+    public function getFindPaymentMethodConfigurationsQueryBuilder(PaymentConfigSearch $configSearch)
     {
         $qb = $this->createQueryBuilder('payment_config');
         $qb->join('payment_config.profileConfig', 'profile_config')
@@ -34,16 +56,15 @@ class PaymentConfigRepository extends ModelRepository
                     $qb->expr()->eq('profile_config.active', true),
                     $qb->expr()->eq('payment_config.paymentMethod', ':payment_method_id')
                 )
-            )
-            ->setMaxResults(1);
+            );
 
-        $qb->setParameter('billing_country_code', '%'.$configSearch->getBillingCountry().'%');
-        $qb->setParameter('shipping_country_code', '%'.$configSearch->getShippingCountry().'%');
-        $qb->setParameter('currency', '%'.$configSearch->getCurrency().'%');
+        $qb->setParameter('billing_country_code', '%' . $configSearch->getBillingCountry() . '%');
+        $qb->setParameter('shipping_country_code', '%' . $configSearch->getShippingCountry() . '%');
+        $qb->setParameter('currency', '%' . $configSearch->getCurrency() . '%');
         $qb->setParameter('shop_id', $configSearch->getShop());
         $qb->setParameter('backend', $configSearch->isBackend());
         $qb->setParameter('payment_method_id', $configSearch->getPaymentMethod());
 
-        return $qb->getQuery()->getOneOrNullResult();
+        return $qb;
     }
 }

@@ -71,46 +71,35 @@
                 </div>
             {/block}
 
-            {if $ratepay.calculator.rp_debitPayType.rp_paymentType_directDebit}
-                {block name="ratepay_payment_method__ic__sepa_outer"}
-                    <div class="rp-sepa-form">
-                        <div class="row">
-                            {block name="ratepay_payment_method__ic__sepa_notice"}
-                                <div class="col-md-12 sepa-intro">
-                                    {$ratepay.translations.wcd_sepa_notice_block}
-                                </div>
-                            {/block}
-                            {block name="ratepay_payment_method__ic__sepa_notice"}
-                                <div class="col-md-12">
-                                    <input type="hidden" name="rp-payment-type" id="rp-payment-type" />
-                                    {include file="frontend/plugins/payment/ratepay/common/bank_account.tpl"}
-                                </div>
-                            {/block}
+            {block name="ratepay_payment_method__ic__sepa_outer"}
+                <div class="row rp-sepa-form">
+                    {block name="ratepay_payment_method__ic__sepa_notice"}
+                        <div class="col-md-12 sepa-intro">
+                            {$ratepay.translations.wcd_sepa_notice_block}
                         </div>
-                    </div>
-                {/block}
-            {/if}
+                    {/block}
+                    {block name="ratepay_payment_method__ic__sepa_notice"}
+                        <div class="col-md-12">
+                            {include file="frontend/plugins/payment/ratepay/common/bank_account.tpl"}
+                        </div>
+                    {/block}
+                </div>
+            {/block}
 
-            {if $ratepay.calculator.rp_debitPayType.rp_paymentType_directDebit == true &&
-                $ratepay.calculator.rp_debitPayType.rp_paymentType_bankTransfer == true
-            }
-                {block name="ratepay_payment_method__ic__payment_type_outer"}
-                    <div class="payment-type-select-container">
-                        <div class="row">
-                            <div class="col-md-12">
-                                {block name="ratepay_payment_method__ic__payment_type_links"}
-                                    <div class="rp-payment-type-switch" id="rp-switch-payment-type-bank-transfer">
-                                        <a class="rp-link">{$ratepay.translations.rp_switch_payment_type_bank_transfer}</a>
-                                    </div>
-                                    <div class="rp-payment-type-switch" id="rp-switch-payment-type-direct-debit">
-                                        <a class="rp-link">{$ratepay.translations.rp_switch_payment_type_direct_debit}</a>
-                                    </div>
-                                {/block}
+            {block name="ratepay_payment_method__ic__payment_type_outer"}
+                <div class="row payment-type-select-container">
+                    <div class="col-md-12">
+                        {block name="ratepay_payment_method__ic__payment_type_links"}
+                            <div class="rp-payment-type-switch" id="rp-switch-payment-type-bank-transfer">
+                                <a class="rp-link">{$ratepay.translations.rp_switch_payment_type_bank_transfer}</a>
                             </div>
-                        </div>
+                            <div class="rp-payment-type-switch" id="rp-switch-payment-type-direct-debit">
+                                <a class="rp-link">{$ratepay.translations.rp_switch_payment_type_direct_debit}</a>
+                            </div>
+                        {/block}
                     </div>
-                {/block}
-            {/if}
+                </div>
+            {/block}
         </div>
     </div>
 

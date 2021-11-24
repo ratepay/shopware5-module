@@ -14,6 +14,7 @@ use Ratepay\RpayPayments\Components\PaymentHandler\InstallmentPaymentHandler;
 use Ratepay\RpayPayments\Components\PaymentHandler\InstallmentZeroPercentPaymentHandler;
 use Ratepay\RpayPayments\Components\ProfileConfig\Model\ProfileConfigEntity;
 use RpayRatePay\Component\Mapper\ModelFactory;
+use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Models\ConfigInstallment;
 use RpayRatePay\Models\ConfigPayment;
@@ -183,6 +184,7 @@ class WriterService
                     $installmentConfig->setDebitAllowed(in_array(2, $paymentFirstDay, false));
                     $installmentConfig->setBankTransferAllowed(in_array(28, $paymentFirstDay, false));
                     $installmentConfig->setRateMinNormal($responseResult['installmentConfig']['rate-min-normal']);
+                    $installmentConfig->setDefaultPaymentType(PaymentFirstDay::getPayTypByFirstPayDay($responseResult['installmentConfig']['payment-firstday']));
                     $installmentConfigs[] = $installmentConfig;
                 }
             }

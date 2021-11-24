@@ -27,6 +27,7 @@
             <![CDATA[
                 <ul>
                     <li>Update SDK</li>
+                    <li>Added: Support for different Profile-Ids for one payment method</li>
                 </ul>
             ]]>
         </changes>
@@ -34,6 +35,7 @@
             <![CDATA[
                 <ul>
                     <li>Update SDK</li>
+                    <liHinzugefügt: Unterstützung von mehreren Profile-Ids für eine Zahlart</li>
                 </ul>
             ]]>
         </changes>

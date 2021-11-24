@@ -15,6 +15,8 @@ use Monolog\Logger;
 use RatePAY\Model\Response\AbstractResponse;
 use RatePAY\Model\Response\PaymentRequest as PaymentResponse;
 use RatePAY\RequestBuilder;
+use RpayRatePay\Component\InstallmentCalculator\Service\InstallmentService;
+use RpayRatePay\Component\InstallmentCalculator\Service\SessionHelper;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\DTO\PaymentConfigSearch;
@@ -86,20 +88,29 @@ class PaymentRequestService extends AbstractRequest
      * @var \RpayRatePay\Services\FeatureService
      */
     private $featureService;
+    /**
+     * @var InstallmentService
+     */
+    private $installmentService;
+    /**
+     * @var \RpayRatePay\Models\ProfileConfig|null
+     */
+    private $_usedProfileConfig;
 
 
     public function __construct(
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
-        ConfigService $configService,
-        RequestLogger $requestLogger,
-        ProfileConfigService $profileConfigService,
-        CustomerArrayFactory $customerArrayFactory,
-        PaymentArrayFactory $paymentArrayFactory,
-        ModelManager $modelManager,
-        Shopware_Components_Modules $moduleManager,
-        PaymentMethodsService $paymentMethodsService,
-        Logger $logger,
-        FeatureService $featureService
+        ConfigService                           $configService,
+        RequestLogger                           $requestLogger,
+        ProfileConfigService                    $profileConfigService,
+        CustomerArrayFactory                    $customerArrayFactory,
+        PaymentArrayFactory                     $paymentArrayFactory,
+        ModelManager                            $modelManager,
+        Shopware_Components_Modules             $moduleManager,
+        PaymentMethodsService                   $paymentMethodsService,
+        Logger                                  $logger,
+        FeatureService                          $featureService,
+        InstallmentService                      $installmentService
     )
     {
         parent::__construct($db, $configService, $requestLogger);
@@ -111,6 +122,7 @@ class PaymentRequestService extends AbstractRequest
         $this->profileConfigService = $profileConfigService;
         $this->paymentMethodsService = $paymentMethodsService;
         $this->featureService = $featureService;
+        $this->installmentService = $installmentService;
     }
 
     /**
@@ -127,6 +139,7 @@ class PaymentRequestService extends AbstractRequest
     public function setPaymentRequestData($paymentRequestData)
     {
         $this->paymentRequestData = $paymentRequestData;
+        $this->_usedProfileConfig = null;
     }
 
     public function completeOrder(Order $order, RequestBuilder $paymentResponse)
@@ -220,7 +233,7 @@ class PaymentRequestService extends AbstractRequest
             $order->setAttribute($orderAttribute);
         }
 
-        $orderAttribute->setRatepayProfileId($this->getProfileConfig()->getProfileId());
+        $orderAttribute->setRatepayProfileId($this->_usedProfileConfig->getProfileId());
         $orderAttribute->setRatepayDescriptor($paymentResponse->getDescriptor());
         $orderAttribute->setRatepayBackend($this->isBackend);
         $orderAttribute->setRatepayFallbackDiscount($this->configService->isCommitDiscountAsCartItem());
@@ -246,7 +259,7 @@ class PaymentRequestService extends AbstractRequest
         $this->modelManager->flush($order);
 
         $paymentStatusId = $this->configService->getPaymentStatusAfterPayment($order->getPayment(), $order->getShop());
-        if ($paymentStatusId == null) {
+        if ($paymentStatusId === null) {
             $paymentStatusId = Status::PAYMENT_STATE_OPEN;
             $this->logger->error(
                 'Unable to define status for unknown method: ' . $order->getPayment()->getName()
@@ -302,20 +315,29 @@ class PaymentRequestService extends AbstractRequest
 
     protected function getProfileConfig()
     {
-        $paymentMethodConfig = $this->profileConfigService->getPaymentConfiguration((new PaymentConfigSearch())
-            ->setPaymentMethod($this->paymentRequestData->getMethod())
-            ->setBackend($this->isBackend)
-            ->setBillingCountry($this->paymentRequestData->getBillingAddress()->getCountry()->getIso())
-            ->setShippingCountry($this->paymentRequestData->getShippingAddress()->getCountry()->getIso())
-            ->setShop($this->paymentRequestData->getShop())
-            ->setCurrency($this->paymentRequestData->getCurrencyId())
-        );
-        return $paymentMethodConfig ? $paymentMethodConfig->getProfileConfig() : null;
+        if (PaymentMethods::isInstallment($this->paymentRequestData->getMethod())) {
+            return Shopware()->Container()->get(SessionHelper::class)->getProfile();
+        } else {
+            $paymentMethodConfig = $this->profileConfigService->getPaymentConfiguration((new PaymentConfigSearch())
+                ->setPaymentMethod($this->paymentRequestData->getMethod())
+                ->setBackend($this->isBackend)
+                ->setBillingCountry($this->paymentRequestData->getBillingAddress()->getCountry()->getIso())
+                ->setShippingCountry($this->paymentRequestData->getShippingAddress()->getCountry()->getIso())
+                ->setShop($this->paymentRequestData->getShop())
+                ->setCurrency($this->paymentRequestData->getCurrencyId())
+            );
+            return $paymentMethodConfig ? $paymentMethodConfig->getProfileConfig() : null;
+        }
     }
 
     protected function processSuccess()
     {
-        // TODO: Implement processSuccess() method.
+        // we store the profile-config temporary into the variable, cause the backend-orders module will create a
+        // frontend-session during order creation, and this will destroy the ratepay backend-session data.
+        // after that we can not access the installment session-data and its profile-config.
+        // this is a very bad bug of the backend-order module ...
+        // relates to RATEPLUG-144
+        $this->_usedProfileConfig = $this->getProfileConfig();
     }
 
     protected function processFailed(RequestBuilder $response)

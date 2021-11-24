@@ -9,6 +9,7 @@
 namespace RpayRatePay\Models;
 
 use Doctrine\ORM\Mapping as ORM;
+use RpayRatePay\Enum\PaymentFirstDay;
 use Shopware\Components\Model\ModelEntity;
 
 /**
@@ -42,6 +43,12 @@ class ConfigInstallment extends ModelEntity
      * @ORM\Column(name="is_debit_allowed", type="boolean", nullable=false)
      */
     protected $debitAllowed;
+
+    /**
+     * @var string
+     * @ORM\Column(name="default_payment_type", type="string", nullable=false)
+     */
+    protected $defaultPaymentType;
 
     /**
      * @var float
@@ -115,20 +122,21 @@ class ConfigInstallment extends ModelEntity
 
     /**
      * @return string
-     * @deprecated
      */
-    public function getPaymentFirstDay()
+    public function getDefaultPaymentType()
     {
-        if ($this->isDebitAllowed() && $this->isBankTransferAllowed()) {
-            return '2,28';
+        return $this->defaultPaymentType;
+    }
+
+    /**
+     * @param string $defaultPaymentType
+     */
+    public function setDefaultPaymentType($defaultPaymentType)
+    {
+        if (!PaymentFirstDay::getFirstDayForPayType($defaultPaymentType)) {
+            throw new \InvalidArgumentException('payment type `' . $defaultPaymentType . '` does not exist');
         }
-        if ($this->isDebitAllowed()) {
-            return 2;
-        }
-        if ($this->isBankTransferAllowed()) {
-            return 28;
-        }
-        throw new \RuntimeException('unknown paymentPaymentFirstDay');
+        $this->defaultPaymentType = $defaultPaymentType;
     }
 
     /**
@@ -145,5 +153,19 @@ class ConfigInstallment extends ModelEntity
     public function setRateMinNormal($rateMinNormal)
     {
         $this->rateMinNormal = $rateMinNormal;
+    }
+
+    public function getAllowedPaymentTypes()
+    {
+        $return = [];
+        if ($this->isBankTransferAllowed()) {
+            $return[] = PaymentFirstDay::PAY_TYPE_BANK_TRANSFER;
+        }
+
+        if ($this->isDebitAllowed()) {
+            $return[] = PaymentFirstDay::PAY_TYPE_DIRECT_DEBIT;
+        }
+
+        return $return;
     }
 }

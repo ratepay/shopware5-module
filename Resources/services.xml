@@ -75,13 +75,15 @@
             <argument id="front" type="service"/>
         </service>
 
-        <service id="RpayRatePay\Services\InstallmentService">
+        <service id="RpayRatePay\Component\InstallmentCalculator\Service\SessionHelper">
             <argument id="models" type="service"/>
-            <argument id="RpayRatePay\Services\Config\ProfileConfigService" type="service"/>
-            <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
-            <argument id="RpayRatePay\Helper\SessionHelper" type="service"/>
-            <argument id="template" type="service"/>
-            <argument>%rpay_rate_pay.plugin_dir%</argument>
+            <argument id="service_container" type="service"/>
+            <argument id="front" type="service"/>
+        </service>
+
+        <service id="RpayRatePay\Component\InstallmentCalculator\Service\InstallmentService">
+            <argument key="$modelManager" id="models" type="service"/>
+            <argument key="$templateManager" id="template" type="service"/>
         </service>
 
         <service id="RpayRatePay\Services\MessageManager">
