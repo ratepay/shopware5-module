@@ -10,15 +10,16 @@
 use Monolog\Logger;
 use RatePAY\Exception\RequestException;
 use RatePAY\Model\Response\PaymentRequest;
-use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\Component\InstallmentCalculator\Model\InstallmentCalculatorContext;
+use RpayRatePay\Component\InstallmentCalculator\Service\InstallmentService;
 use RpayRatePay\DTO\PaymentConfigSearch;
+use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
 use RpayRatePay\Services\Factory\PaymentRequestDataFactory;
-use RpayRatePay\Services\InstallmentService;
 use RpayRatePay\Services\MessageManager;
 use RpayRatePay\Services\Request\PaymentConfirmService;
 use RpayRatePay\Services\Request\PaymentRequestService;
@@ -185,27 +186,35 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $shippingAddress = $this->sessionHelper->getShippingAddress() ?: $billingAddress;
 
-        $requestDto = new InstallmentRequest(
+        $paymentConfigSearch = (new PaymentConfigSearch())
+            ->setPaymentMethod($paymentMethod)
+            ->setBackend(false)
+            ->setBillingCountry($billingAddress->getCountry()->getIso())
+            ->setShippingCountry($shippingAddress->getCountry()->getIso())
+            ->setShop(Shopware()->Shop())
+            ->setCurrency(Shopware()->Config()->get('currency'));
+
+        $calcContext = new InstallmentCalculatorContext(
+            $paymentConfigSearch,
             $params['calculationAmount'],
             $params['calculationType'],
-            (float)$params['calculationValue'] > 0 ? $params['calculationValue'] : 1,
-            $params['paymentType']
+            (float)$params['calculationValue'] > 0 ? $params['calculationValue'] : 1
         );
 
         try {
-            $html = $this->installmentService->getInstallmentPlanTemplate((new PaymentConfigSearch())
-                ->setPaymentMethod($paymentMethod)
-                ->setBackend(false)
-                ->setBillingCountry($billingAddress->getCountry()->getIso())
-                ->setShippingCountry($shippingAddress->getCountry()->getIso())
-                ->setShop(Shopware()->Shop())
-                ->setCurrency(Shopware()->Config()->get('currency')),
-                $requestDto
-            );
+            $planResult = $this->installmentService->getInstallmentPlan($calcContext);
+            $html = $this->installmentService->getInstallmentPlanTemplate($planResult->getPlanData());
 
             $data = [
                 'success' => true,
                 'html' => $html,
+                'installment' => [
+                    'isDirectDebitAllowed' => $planResult->isPaymentTypeAllowed(PaymentFirstDay::PAY_TYPE_DIRECT_DEBIT),
+                    'isBankTransferAllowed' => $planResult->isPaymentTypeAllowed(PaymentFirstDay::PAY_TYPE_BANK_TRANSFER),
+                ],
+                'defaults' => [
+                    'paymentType' => $planResult->getDefaultPaymentType()
+                ]
             ];
         } catch (RequestException $requestException) {
             $data = [

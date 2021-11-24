@@ -9,6 +9,7 @@
 namespace RpayRatePay\Services\Factory;
 
 
+use RpayRatePay\Component\InstallmentCalculator\Service\SessionHelper as InstallmentSessionHelper;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Enum\PaymentMethods;
@@ -36,16 +37,22 @@ class PaymentRequestDataFactory
      * @var SessionHelper
      */
     private $sessionHelper;
+    /**
+     * @var InstallmentSessionHelper
+     */
+    private $installmentSessionHelper;
 
     public function __construct(
-        ModelManager $modelManager,
-        DfpService $dfpService,
-        SessionHelper $sessionHelper
+        ModelManager             $modelManager,
+        DfpService               $dfpService,
+        SessionHelper            $sessionHelper,
+        InstallmentSessionHelper $installmentSessionHelper
     )
     {
         $this->modelManager = $modelManager;
         $this->dfpService = $dfpService;
         $this->sessionHelper = $sessionHelper;
+        $this->installmentSessionHelper = $installmentSessionHelper;
     }
 
     public function createFromOrderStruct(OrderStruct $orderStruct, array $loadedEntities = [])
@@ -76,7 +83,7 @@ class PaymentRequestDataFactory
         $installmentDetails = null;
         $bankData = null;
         if (PaymentMethods::isInstallment($paymentMethod)) {
-            $installmentDetails = $this->sessionHelper->getInstallmentDetails();
+            $installmentDetails = $this->installmentSessionHelper->getDetails();
             if ($installmentDetails && $installmentDetails->getPaymentType() === PaymentFirstDay::PAY_TYPE_DIRECT_DEBIT) {
                 $bankData = $this->sessionHelper->getBankData($billingAddress);
             }
@@ -153,7 +160,7 @@ class PaymentRequestDataFactory
             $totalAmount,
             $basket['sCurrencyId'],
             $this->sessionHelper->getBankData($billingAddress),
-            $this->sessionHelper->getInstallmentDetails()
+            $this->installmentSessionHelper->getDetails()
         );
     }
 }
