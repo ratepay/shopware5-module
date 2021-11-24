@@ -25,6 +25,11 @@ final class PaymentMethods extends Enum
     const PAYMENT_INSTALLMENT0 = 'rpayratepayrate0';
     const PAYMENT_PREPAYMENT = 'rpayratepayprepayment';
 
+    const RATEPAY_PAYMENT_INSTALLMENT = 'INSTALLMENT';
+    const RATEPAY_PAYMENT_INVOICE = 'INVOICE';
+    const RATEPAY_PAYMENT_DEBIT = 'ELV';
+    const RATEPAY_PAYMENT_PREPAYMENT = 'PREPAYMENT';
+
     const PAYMENTS = [
         self::PAYMENT_INVOICE => [
             'name' => self::PAYMENT_INVOICE,
@@ -38,7 +43,7 @@ final class PaymentMethods extends Enum
             'class' => self::PAYMENT_INVOICE,
             'real_class' => Invoice::class,
             'ratepay' => [
-                'methodName' => 'INVOICE'
+                'methodName' => self::RATEPAY_PAYMENT_INVOICE
             ]
         ],
         self::PAYMENT_RATE => [
@@ -53,7 +58,7 @@ final class PaymentMethods extends Enum
             'class' => self::PAYMENT_RATE,
             'real_class' => Installment::class,
             'ratepay' => [
-                'methodName' => 'INSTALLMENT'
+                'methodName' => self::RATEPAY_PAYMENT_INSTALLMENT
             ]
         ],
         self::PAYMENT_DEBIT => [
@@ -68,7 +73,7 @@ final class PaymentMethods extends Enum
             'class' => self::PAYMENT_DEBIT,
             'real_class' => Debit::class,
             'ratepay' => [
-                'methodName' => 'ELV'
+                'methodName' => self::RATEPAY_PAYMENT_DEBIT
             ]
         ],
         self::PAYMENT_INSTALLMENT0 => [
@@ -83,7 +88,7 @@ final class PaymentMethods extends Enum
             'class' => self::PAYMENT_INSTALLMENT0,
             'real_class' => InstallmentZeroPercent::class,
             'ratepay' => [
-                'methodName' => 'INSTALLMENT'
+                'methodName' => self::RATEPAY_PAYMENT_INSTALLMENT
             ]
         ],
         self::PAYMENT_PREPAYMENT => [
@@ -98,7 +103,7 @@ final class PaymentMethods extends Enum
             'class' => self::PAYMENT_PREPAYMENT,
             'real_class' => PrePayment::class,
             'ratepay' => [
-                'methodName' => 'PREPAYMENT'
+                'methodName' => self::RATEPAY_PAYMENT_PREPAYMENT
             ]
         ],
     ];

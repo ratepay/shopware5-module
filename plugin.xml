@@ -28,6 +28,7 @@
                 <ul>
                     <li>Update SDK</li>
                     <li>added: Installment information on product page</li>
+                    <li>Added: Support for different Profile-Ids for one payment method</li>
                 </ul>
             ]]>
         </changes>
@@ -36,6 +37,7 @@
                 <ul>
                     <li>Update SDK</li>
                     <li>Hinzugefügt: Rateninformationen auf der Produktseite</li>
+                    <li>Hinzugefügt: Unterstützung von mehreren Profile-Ids für eine Zahlart</li>
                 </ul>
             ]]>
         </changes>

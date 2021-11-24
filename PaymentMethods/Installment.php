@@ -10,10 +10,12 @@ namespace RpayRatePay\PaymentMethods;
 
 
 use Enlight_Controller_Request_Request;
-use RpayRatePay\DTO\InstallmentRequest;
+use RpayRatePay\Component\InstallmentCalculator\Model\InstallmentCalculatorContext;
+use RpayRatePay\Component\InstallmentCalculator\Service\InstallmentService;
+use RpayRatePay\Component\InstallmentCalculator\Service\SessionHelper;
+use RpayRatePay\Component\InstallmentCalculator\Service\SessionHelper as InstallmentSessionHelper;
 use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentFirstDay;
-use RpayRatePay\Services\InstallmentService;
 
 class Installment extends Debit
 {
@@ -26,10 +28,16 @@ class Installment extends Debit
      */
     private $installmentService;
 
+    /**
+     * @var InstallmentSessionHelper
+     */
+    private $installmentSessionHelper;
+
     public function __construct()
     {
         parent::__construct();
         $this->installmentService = $this->container->get(InstallmentService::class);
+        $this->installmentSessionHelper = $this->container->get(SessionHelper::class);
     }
 
     public function getCurrentPaymentDataAsArray($userId)
@@ -40,10 +48,12 @@ class Installment extends Debit
             return null;
         }
 
-        $installmentData = $this->sessionHelper->getInstallmentRequestDTO();
-        $this->isBankDataRequired = $installmentData->getPaymentType() !== PaymentFirstDay::PAY_TYPE_BANK_TRANSFER;
-
-        $data['ratepay'][$this->formDataKey] = $installmentData->toArray();
+        $installmentData = $this->installmentSessionHelper->getRequestData();
+        if ($installmentData) {
+            $installmentData['payment_type'] = $this->installmentSessionHelper->getPaymentType();
+            $this->isBankDataRequired = $this->installmentSessionHelper->getPaymentType() !== PaymentFirstDay::PAY_TYPE_BANK_TRANSFER;
+            $data['ratepay'][$this->formDataKey] = $installmentData;
+        }
 
         return $data;
     }
@@ -51,19 +61,15 @@ class Installment extends Debit
     protected function _validate($paymentData)
     {
         $installmentData = isset($paymentData['ratepay'][$this->formDataKey]) ? $paymentData['ratepay'][$this->formDataKey] : [];
-        $this->isBankDataRequired = $installmentData['paymentType'] !== PaymentFirstDay::PAY_TYPE_BANK_TRANSFER;
+        $this->isBankDataRequired = $paymentData['paymentType'] === PaymentFirstDay::PAY_TYPE_DIRECT_DEBIT;
 
         $return = parent::_validate($paymentData);
 
-        if ($installmentData == null ||
-            !isset(
-                $installmentData['type'],
-                $installmentData['value'],
-                $installmentData['paymentType']
-            ) ||
-            empty($installmentData['type']) ||
-            empty($installmentData['value']) ||
-            empty($installmentData['paymentType'])
+        if ($installmentData === null ||
+            !isset($installmentData['calculation_type'], $installmentData['calculation_value'], $installmentData['payment_type']) ||
+            empty($installmentData['calculation_type']) ||
+            empty($installmentData['calculation_value']) ||
+            empty($installmentData['payment_type'])
         ) {
             $return['sErrorMessages'][] = $this->getTranslatedMessage('InvalidCalculator');
         }
@@ -75,31 +81,30 @@ class Installment extends Debit
     {
         $paymentData = $request->getParam('ratepay');
         $installmentData = $paymentData[$this->formDataKey];
-        $this->isBankDataRequired = $installmentData['paymentType'] !== PaymentFirstDay::PAY_TYPE_BANK_TRANSFER;
+        $this->isBankDataRequired = $installmentData['payment_type'] !== PaymentFirstDay::PAY_TYPE_BANK_TRANSFER;
 
         parent::saveRatePayPaymentData($userId, $request);
-
-        $dto = new InstallmentRequest(
-            floatval($request->getParam('rp-calculation-amount')),
-            $installmentData['type'],
-            $installmentData['value'],
-            $installmentData['paymentType']
-        );
 
         $paymentMethod = $this->getPaymentMethodFromRequest($request);
 
         $billingAddress = $this->sessionHelper->getBillingAddress();
         $shippingAddress = $this->sessionHelper->getShippingAddress() ?: $billingAddress;
 
-        $this->installmentService->initInstallmentData((new PaymentConfigSearch())
+        $paymentConfigSearch = (new PaymentConfigSearch())
             ->setPaymentMethod($paymentMethod)
             ->setBackend(false)
             ->setBillingCountry($billingAddress->getCountry()->getIso())
             ->setShippingCountry($shippingAddress->getCountry()->getIso())
             ->setShop(Shopware()->Shop()->getId())
-            ->setCurrency(Shopware()->Config()->get('currency')),
-            $dto
-        );
+            ->setCurrency(Shopware()->Config()->get('currency'));
+
+        $this->installmentService->initInstallmentData(new InstallmentCalculatorContext(
+            $paymentConfigSearch,
+            $request->getParam('rp-calculation-amount'),
+            $installmentData['calculation_type'],
+            $installmentData['calculation_value']
+        ));
+        $this->installmentSessionHelper->setPaymentType($installmentData['payment_type']);
     }
 
 }

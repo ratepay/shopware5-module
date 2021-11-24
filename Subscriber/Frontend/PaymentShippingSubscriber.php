@@ -11,13 +11,13 @@ namespace RpayRatePay\Subscriber\Frontend;
 
 use Enlight\Event\SubscriberInterface;
 use Enlight_Hook_HookArgs;
+use RpayRatePay\Component\InstallmentCalculator\Service\InstallmentService;
 use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
 use RpayRatePay\Services\DfpService;
-use RpayRatePay\Services\InstallmentService;
 use RpayRatePay\Util\BankDataUtil;
 use Shopware\Bundle\StoreFrontBundle\Service\Core\ContextService;
 use Shopware\Bundle\StoreFrontBundle\Struct\ShopContextInterface;

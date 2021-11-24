@@ -8,16 +8,15 @@
  */
 
 use Monolog\Logger;
+use RpayRatePay\Component\InstallmentCalculator\Model\InstallmentCalculatorContext;
+use RpayRatePay\Component\InstallmentCalculator\Service\InstallmentService;
+use RpayRatePay\Component\InstallmentCalculator\Service\SessionHelper as InstallmentSessionHelper;
 use RpayRatePay\Component\Service\ValidationLib;
-use RpayRatePay\DTO\InstallmentRequest;
 use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentFirstDay;
-use RpayRatePay\Enum\PaymentMethods;
-use RpayRatePay\Exception\NoProfileFoundException;
 use RpayRatePay\Helper\SessionHelper;
 use RpayRatePay\Services\Config\ConfigService;
 use RpayRatePay\Services\Config\ProfileConfigService;
-use RpayRatePay\Services\InstallmentService;
 use Shopware\Components\DependencyInjection\Container;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Address;
@@ -48,6 +47,10 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
      * @var SessionHelper
      */
     protected $sessionHelper;
+    /**
+     * @var InstallmentSessionHelper
+     */
+    private $installmentSessionHelper;
 
     public function setContainer(Container $loader = null)
     {
@@ -58,6 +61,7 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
         $this->profileConfigService = $this->container->get(ProfileConfigService::class);
         $this->installmentService = $this->container->get(InstallmentService::class);
         $this->sessionHelper = $this->container->get(SessionHelper::class);
+        $this->installmentSessionHelper = $this->container->get(InstallmentSessionHelper::class);
     }
 
     /**
@@ -100,15 +104,16 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
             $billingAddress = $this->modelManager->find(Address::class, $billingAddressId);
             $shippingAddress = $this->modelManager->find(Address::class, $shippingAddressId);
 
-            $result = $this->installmentService->getInstallmentCalculator((new PaymentConfigSearch())
+            $paymentConfigSearch = (new PaymentConfigSearch())
                 ->setPaymentMethod($paymentMethodName)
                 ->setBackend(true)
                 ->setBillingCountry($billingAddress->getCountry()->getIso())
                 ->setShippingCountry($shippingAddress->getCountry()->getIso())
                 ->setShop($shopId)
-                ->setCurrency($currencyId),
-                $totalAmount
-            );
+                ->setCurrency($currencyId);
+
+            $context = new InstallmentCalculatorContext($paymentConfigSearch, $totalAmount);
+            $result = $this->installmentService->getInstallmentCalculator($context);
 
             $this->view->assign([
                 'success' => true,
@@ -119,51 +124,6 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
                 'success' => false,
                 'messages' => ['An error occurred while loading the calculator (Exception: ' . $e->getMessage() . ')']
             ]);
-        }
-    }
-
-    /**
-     * Returns array of ints containing 2 or 28.
-     */
-    public function getInstallmentPaymentOptionsAction()
-    {
-        $params = $this->Request()->getParams();
-
-        $shopId = $params['shopId'];
-        $paymentMethodName = $params['paymentMeansName'];
-        $billingAddressId = $params['billingAddressId'];
-        $shippingAddressId = $params['billingAddressId'];
-        $currencyId = $params['currencyId'];
-
-        try {
-            $billingAddress = $this->modelManager->find(Address::class, $billingAddressId);
-            $shippingAddress = $this->modelManager->find(Address::class, $shippingAddressId);
-
-            $installmentConfig = $this->profileConfigService->getInstallmentConfig((new PaymentConfigSearch())
-                ->setPaymentMethod($paymentMethodName)
-                ->setBackend(true)
-                ->setBillingCountry($billingAddress->getCountry()->getIso())
-                ->setShippingCountry($shippingAddress->getCountry()->getIso())
-                ->setShop($shopId)
-                ->setCurrency($currencyId)
-            );
-            if ($installmentConfig === null) {
-                throw new NoProfileFoundException();
-            }
-
-            $optionsString = $installmentConfig->getPaymentFirstDay();
-            $optionsArray = explode(',', $optionsString);
-            $optionsIntArray = array_map([PaymentFirstDay::class, 'getPayTypByFirstPayDay'], $optionsArray);
-            $this->view->assign([
-                'success' => true,
-                'options' => $optionsIntArray
-            ]);
-        } catch (\Exception $e) {
-            $this->view->assign([
-                'success' => false,
-                'messages' => [$e->getMessage()]
-            ]);
-            return;
         }
     }
 
@@ -181,9 +141,19 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
 
         $paymentMethodName = $params['paymentMeansName'];
         $totalAmount = $params['totalAmount'];
-        $paymentType = $params['paymentType'];
         $calcParamSet = !empty($params['value']) && !empty($params['type']);
-        $type = $calcParamSet ? $params['type'] : 'time';
+
+        if (!$calcParamSet) {
+            $this->view->assign([
+                'success' => false,
+                'messages' => [$this->getSnippet('InvalidInstallmentValue')]
+            ]);
+
+            return;
+        }
+
+        $calculationType = $params['type'];
+        $calculationValue = $params['value'];
 
         $paymentConfigSearch = (new PaymentConfigSearch())
             ->setPaymentMethod($paymentMethodName)
@@ -193,31 +163,23 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
             ->setShop($shopId)
             ->setCurrency($currencyId);
 
-        //TODO refactor
-        $val = null;
-        if ($calcParamSet) {
-            $val = $params['value'];
-        } else if (PaymentMethods::isZeroPercentInstallment($paymentMethodName)) {
-            $installmentConfig = $this->profileConfigService->getInstallmentConfig($paymentConfigSearch);
-            $allowedMonths = $installmentConfig ? $installmentConfig->getMonthsAllowed() : null;
-            $val = $allowedMonths && isset($allowedMonths[0]) ? $allowedMonths[0] : null;
-        }
-
-        if ($val === null) {
-            $this->view->assign([
-                'success' => false,
-                'messages' => [$this->getSnippet('InvalidInstallmentValue')]
-            ]);
-            return;
-        }
+        $installmentContext = new InstallmentCalculatorContext(
+            $paymentConfigSearch,
+            $totalAmount,
+            $calculationType,
+            $calculationValue
+        );
 
         try {
-            $dto = new InstallmentRequest($totalAmount, $type, $val, $paymentType);
+            $planResult = $this->installmentService->initInstallmentData($installmentContext);
 
-            $plan = $this->installmentService->initInstallmentData($paymentConfigSearch, $dto);
             $this->view->assign([
                 'success' => true,
-                'plan' => $plan,
+                'plan' => $planResult->getPlanData(),
+                'paymentTypes' => $planResult->getAllowedPaymentTypes(),
+                'defaults' => [
+                    'paymentType' => $planResult->getDefaultPaymentType()
+                ],
             ]);
         } catch (Exception $e) {
             $this->view->assign([
@@ -225,13 +187,26 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
                 'messages' => [$e->getMessage()]
             ]);
         }
-
     }
 
     public function updatePaymentSubtypeAction()
     {
         $params = $this->Request()->getParams();
-        $this->sessionHelper->setInstallmentPaymentType($params['paymentType']);
+        if (!in_array($params['paymentType'], PaymentFirstDay::PAY_TYPES, true)) {
+            $this->view->assign([
+                'success' => false,
+                'messages' => [$this->getSnippet('InvalidPaymentType')]
+            ]);
+
+            return;
+        }
+
+        $this->installmentSessionHelper->setPaymentType($params['paymentType']);
+
+        $this->view->assign([
+            'success' => true,
+            'messages' => [$this->getSnippet('paymentTypeUpdated')]
+        ]);
     }
 
     /**
@@ -240,7 +215,6 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
      */
     private function getSnippet($name)
     {
-        $ns = Shopware()->Snippets()->getNamespace('backend/ratepay');
-        return $ns->get($name);
+        return Shopware()->Snippets()->getNamespace('backend/ratepay')->get($name);
     }
 }

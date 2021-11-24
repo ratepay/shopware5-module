@@ -72,17 +72,17 @@ class OrderControllerSubscriber implements SubscriberInterface
     private $snippetManager;
 
     public function __construct(
-        ModelManager $modelManager,
+        ModelManager                        $modelManager,
         \Enlight_Components_Snippet_Manager $snippetManager,
-        ConfigService $config,
-        SessionHelper $sessionHelper,
-        DfpService $dfpService,
-        PaymentRequestDataFactory $paymentRequestDataFactory,
-        PaymentRequestService $paymentRequestService,
-        PaymentConfirmService $paymentConfirmService,
-        Logger $logger,
-        OrderHydrator $orderHydrator = null,
-        OrderValidator $orderValidator = null
+        ConfigService                       $config,
+        SessionHelper                       $sessionHelper,
+        DfpService                          $dfpService,
+        PaymentRequestDataFactory           $paymentRequestDataFactory,
+        PaymentRequestService               $paymentRequestService,
+        PaymentConfirmService               $paymentConfirmService,
+        Logger                              $logger,
+        OrderHydrator                       $orderHydrator = null,
+        OrderValidator                      $orderValidator = null
     )
     {
         $this->modelManager = $modelManager;
@@ -151,8 +151,10 @@ class OrderControllerSubscriber implements SubscriberInterface
 
             if ($paymentResponse->getResponse()->isSuccessful()) {
 
-                // we must cleanup the session before the oder will be created, cause shopware will create a frontend session.
-                // after that we do not have access anymore to the backend session data.
+                // we need to destroy0 the session data BEFORE the order got created, cause the backend-orders module will create a
+                // frontend-session during order creation, and this will destroy the ratepay backend-session data.
+                // after that we can not access/destroy the ratepay session data, cause we are already in a frontend-session.
+                // this is a very bad bug of the backend-order module ...
                 // relates to RATEPLUG-144
                 $this->sessionHelper->cleanUp();
 
