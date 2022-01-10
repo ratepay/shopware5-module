@@ -32,6 +32,10 @@ class DfpService
         $this->sessionHelper = $sessionHelper;
     }
 
+    /**
+     * @param bool $backend
+     * @return string|null
+     */
     public function getDfpId($backend = false)
     {
         if ($backend === false) {
@@ -43,7 +47,8 @@ class DfpService
             $sessionId = $this->sessionHelper->getSession()->get('sessionId');
         } else {
             // admin or console request
-            $sessionId = rand();
+            // $sessionId = rand();
+            return null; // RATEPLUG-216: disable DFP Token for admin orders
         }
 
         $token = DeviceFingerprint::createDeviceIdentToken($sessionId);

@@ -44,6 +44,9 @@ class PaymentRequestData
 
     private $shippingTax;
 
+    /**
+     * @var string|null
+     */
     private $dfpToken;
 
     private $lang;
@@ -73,7 +76,7 @@ class PaymentRequestData
         $items,
         $shippingCost,
         $shippingTax,
-        $dfpToken,
+        $dfpToken = null,
         Shop $shop,
         $amount,
         $currencyId,
@@ -170,7 +173,7 @@ class PaymentRequestData
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getDfpToken()
     {
