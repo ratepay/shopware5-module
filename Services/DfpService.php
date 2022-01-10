@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020 Ratepay GmbH
+ * Copyright (c) Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -54,7 +54,7 @@ class DfpService
         $token = DeviceFingerprint::createDeviceIdentToken($sessionId);
 
         if ($backend === false) {
-            // if it is a storefront request we will safe the token to the session for later access
+            // if it is a storefront request we will save the token to the session for later access
             // in the admin we only need it once
             $this->sessionHelper->setData(self::SESSION_VAR_NAME, $token);
         }
