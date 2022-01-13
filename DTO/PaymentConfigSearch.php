@@ -29,6 +29,15 @@ class PaymentConfigSearch
     /** @var string */
     private $currency;
 
+    /** @var bool|null */
+    private $isB2b;
+
+    /** @var bool|null */
+    private $needsAllowDifferentAddress;
+
+    /** @var float|null */
+    private $totalAmount;
+
     /**
      * @return string
      */
@@ -146,6 +155,60 @@ class PaymentConfigSearch
     public function setCurrency($currency)
     {
         $this->currency = $currency;
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isB2b()
+    {
+        return $this->isB2b;
+    }
+
+    /**
+     * @param bool $isB2b
+     * @return $this
+     */
+    public function setIsB2b($isB2b)
+    {
+        $this->isB2b = $isB2b;
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isNeedsAllowDifferentAddress()
+    {
+        return $this->needsAllowDifferentAddress;
+    }
+
+    /**
+     * @param bool $needsAllowDifferentAddress
+     * @return $this
+     */
+    public function setNeedsAllowDifferentAddress($needsAllowDifferentAddress)
+    {
+        $this->needsAllowDifferentAddress = $needsAllowDifferentAddress;
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getTotalAmount()
+    {
+        return $this->totalAmount;
+    }
+
+    /**
+     * @param float $totalAmount
+     * @return $this
+     */
+    public function setTotalAmount($totalAmount)
+    {
+        $this->totalAmount = $totalAmount;
         return $this;
     }
 
