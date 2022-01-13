@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-  ~ Copyright (c) 2020 Ratepay GmbH
+  ~ Copyright (c) Ratepay GmbH
   ~
   ~ For the full copyright and license information, please view the LICENSE
   ~ file that was distributed with this source code.
@@ -14,10 +14,15 @@
     <services>
         <defaults public="true" autoconfigure="true" autowire="true"/>
 
-        <service id="RpayRatePay\Subscriber\BogxProductConfiguratorSubscriber">
-            <argument id="models" type="service"/>
-            <argument id="events" type="service"/>
+        <service id="RpayRatePay\Component\ThirdPartySupport\BogxProductConfigurator\Subscriber\BasketSubscriber">
+            <argument key="$modelManager" id="models" type="service"/>
             <tag name="shopware.event_subscriber"/>
         </service>
+
+        <service id="RpayRatePay\Component\ThirdPartySupport\SwagCustomProducts\Subscriber\BasketSubscriber">
+            <argument key="$modelManager" type="service" id="models" />
+            <tag name="shopware.event_subscriber"/>
+        </service>
+
     </services>
 </container>
