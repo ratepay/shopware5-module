@@ -73,16 +73,16 @@ class PaymentFilterSubscriber implements SubscriberInterface
     private $front;
 
     public function __construct(
-        ModelManager $modelManager,
-        ContextService $contextService,
+        ModelManager                         $modelManager,
+        ContextService                       $contextService,
         Enlight_Components_Session_Namespace $session,
-        Shopware_Components_Config $config,
-        Shopware_Components_Modules $modules,
-        Enlight_Controller_Front $front,
-        ProfileConfigService $profileConfig,
-        SessionHelper $sessionHelper,
-        PaymentMethodsService $paymentMethodsService,
-        Logger $logger
+        Shopware_Components_Config           $config,
+        Shopware_Components_Modules          $modules,
+        Enlight_Controller_Front             $front,
+        ProfileConfigService                 $profileConfig,
+        SessionHelper                        $sessionHelper,
+        PaymentMethodsService                $paymentMethodsService,
+        Logger                               $logger
     )
     {
         $this->modelManager = $modelManager;
@@ -129,7 +129,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
         $customer = $this->sessionHelper->getCustomer();
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress() ? : $billingAddress;
+        $shippingAddress = $this->sessionHelper->getShippingAddress() ?: $billingAddress;
         if ($billingAddress === null) {
             return $return;
         }
@@ -149,38 +149,24 @@ class PaymentFilterSubscriber implements SubscriberInterface
                 continue;
             }
 
-            $paymentMethodConfiguration = $this->profileConfig->getPaymentConfiguration((new PaymentConfigSearch())
+            $paymentSearchDto = (new PaymentConfigSearch())
                 ->setPaymentMethod($paymentMethodName)
                 ->setBackend(false)
                 ->setBillingCountry($billingAddress->getCountry()->getIso())
                 ->setShippingCountry($shippingAddress->getCountry()->getIso())
                 ->setShop($this->context->getShop())
-                ->setCurrency($currency)
-            );
+                ->setCurrency($currency);
 
-            if ($paymentMethodConfiguration === null) {
-                // there is not profile/payment config for this method
-                unset($return[$idx]);
-                continue;
-            }
-
-            $isB2b = ValidationService::isCompanySet($billingAddress);
-
-            if (!ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress) &&
-                !$paymentMethodConfiguration->isAllowDifferentAddresses()
-            ) {
-                unset($return[$idx]);
-                continue;
-            }
-
+            // additional filters
+            $paymentSearchDto->setIsB2b(ValidationService::isCompanySet($billingAddress));
+            $paymentSearchDto->setNeedsAllowDifferentAddress(!ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress));
             if ($this->modules->Basket()) {
-                $totalAmount = floatval($this->modules->Basket()->sGetAmount()['totalAmount']);
+                $paymentSearchDto->setTotalAmount(floatval($this->modules->Basket()->sGetAmount()['totalAmount']));
+            }
 
-
-                if (!ValidationService::areAmountsValid($isB2b, $paymentMethodConfiguration, $totalAmount)) {
-                    unset($return[$idx]);
-                    continue;
-                }
+            if (count($this->profileConfig->getPaymentConfigurations($paymentSearchDto)) === 0) {
+                unset($return[$idx]);
+            } else {
                 $availableRatePayMethods[$paymentMethodName] = true;
             }
         }

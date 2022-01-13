@@ -28,6 +28,7 @@
                 <ul>
                     <li>Update SDK</li>
                     <li>Added: Support for different Profile-Ids for one payment method</li>
+                    <li>improvement: loading of available payment methods</li>
                 </ul>
             ]]>
         </changes>
@@ -36,6 +37,7 @@
                 <ul>
                     <li>Update SDK</li>
                     <li>Hinzugefügt: Unterstützung von mehreren Profile-Ids für eine Zahlart</li>
+                    <li>Verbessert: Laden der verfügbaren Zahlmethoden</li>
                 </ul>
             ]]>
         </changes>
