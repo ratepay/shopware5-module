@@ -19,6 +19,7 @@ use RpayRatePay\Component\InstallmentCalculator\Service\InstallmentService;
 use RpayRatePay\Component\InstallmentCalculator\Service\SessionHelper;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
+use RpayRatePay\Component\Service\ValidationLib as ValidationService;
 use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
 use RpayRatePay\Helper\PositionHelper;
@@ -325,7 +326,15 @@ class PaymentRequestService extends AbstractRequest
                 ->setShippingCountry($this->paymentRequestData->getShippingAddress()->getCountry()->getIso())
                 ->setShop($this->paymentRequestData->getShop())
                 ->setCurrency($this->paymentRequestData->getCurrencyId())
-            );
+                ->setTotalAmount($this->paymentRequestData->getAmount())
+                ->setIsB2b(ValidationService::isCompanySet($this->paymentRequestData->getBillingAddress()))
+                ->setNeedsAllowDifferentAddress(
+                    ValidationService::areBillingAndShippingSame(
+                        $this->paymentRequestData->getBillingAddress(),
+                        $this->paymentRequestData->getShippingAddress()
+                    ) === false
+                ));
+
             return $paymentMethodConfig ? $paymentMethodConfig->getProfileConfig() : null;
         }
     }

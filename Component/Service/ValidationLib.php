@@ -124,49 +124,6 @@ class ValidationLib
         return true;
     }
 
-    /**
-     * @param bool $b2b
-     * @param ConfigPayment $config
-     * @param float $totalAmount
-     * @return bool
-     */
-    public static function areAmountsValid($b2b, ConfigPayment $config, $totalAmount)
-    {
-        if ($totalAmount < $config->getLimitMin()) {
-            return false;
-        }
-
-        if ($b2b) {
-            if ($config->isAllowB2B() === false) {
-                return false;
-            }
-
-            $b2bMax = $config->getLimitMaxB2b() > 0 ? $config->getLimitMaxB2b() : $config->getLimitMax();
-
-            if ($totalAmount > $b2bMax) {
-                return false;
-            }
-        } else {
-            if ($totalAmount > $config->getLimitMax()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public static function isCurrencyValid($allowedCurrencies, $currency)
-    {
-        $allowedCurrencies = is_array($allowedCurrencies) ? $allowedCurrencies : explode(',', $allowedCurrencies);
-        return array_search($currency, $allowedCurrencies, true) !== false;
-    }
-
-    public static function isCountryValid($allowedCountries, Country $countryBilling)
-    {
-        $allowedCountries = is_array($allowedCountries) ? $allowedCountries : explode(',', $allowedCountries);
-        return array_search($countryBilling->getIso(), $allowedCountries, true) !== false;
-    }
-
     public static function isIbanValid($iban)
     {
         //got this from https://stackoverflow.com/questions/20983339/validate-iban-php
