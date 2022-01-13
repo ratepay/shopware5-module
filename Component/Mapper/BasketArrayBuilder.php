@@ -9,6 +9,7 @@
 namespace RpayRatePay\Component\Mapper;
 
 use RpayRatePay\DTO\BasketPosition;
+use RpayRatePay\Event\FilterBasketItem;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Helper\TaxHelper;
 use RpayRatePay\Services\Config\ConfigService;
@@ -90,7 +91,7 @@ class BasketArrayBuilder
             throw new RuntimeException('$data must by type of ' . Order::class . ' or ' . PaymentRequestData::class . '. ' . ($data ? get_class($data) : 'null') . ' given');
         }
 
-        if($items) {
+        if ($items) {
             foreach ($items as $item) {
                 $this->addItem($item);
             }
@@ -104,7 +105,7 @@ class BasketArrayBuilder
      * @param string|Detail|PositionStruct $item
      * @param int|null $quantity
      */
-    public function addItem($item, $quantity = null)
+    public function addItem($item, $quantity = null, $originalSourceItem = null)
     {
         $orderDetail = null;
 
@@ -127,6 +128,10 @@ class BasketArrayBuilder
             $productNumber = $item->getArticleNumber();
             $itemQuantity = $quantity ?: $item->getQuantity();
             $orderDetail = $item->getId() ? $item : null;
+            $originalSourceItem = $originalSourceItem ?: $item;
+
+            $positionClass = PositionHelper::getPositionClass($item);
+            $position = $positionClass && $item->getId() ? Shopware()->Models()->find($positionClass, $item->getId()) : null;
         } else if ($item instanceof PositionStruct) {
             if (PositionHelper::isDiscount($item) && $this->useFallbackDiscount == false) {
                 $this->addDiscountItem($item);
@@ -135,7 +140,7 @@ class BasketArrayBuilder
             $name = $item->getName();
             $productNumber = $item->getNumber();
             $itemQuantity = $quantity ?: $item->getQuantity();
-
+            $originalSourceItem = $item;
         } else if (is_array($item)) {
             //frontend call
             $detail = new Detail();
@@ -146,7 +151,7 @@ class BasketArrayBuilder
             $detail->setPrice(floatval($item['priceNumeric']));
             $detail->setTaxRate(floatval($item['tax_rate']));
             $detail->setMode(intval($item['modus']));
-            $this->addItem($detail);
+            $this->addItem($detail, $detail->getQuantity(), $item);
             return;
         } else {
             throw new RuntimeException('type ' . get_class($item) . ' is not supported');
@@ -155,20 +160,29 @@ class BasketArrayBuilder
         $price = TaxHelper::getItemGrossPrice($this->order ?: $this->paymentRequestData, $item);
         $taxRate = TaxHelper::getItemTaxRate($this->order ?: $this->paymentRequestData, $item);
 
-        $this->basket['Items'][] = [
-            'Item' => [
-                'Description' => $name,
-                'ArticleNumber' => $productNumber,
-                'Quantity' => $itemQuantity,
-                'UnitPriceGross' => $price,
-                'TaxRate' => $taxRate,
-            ]
+        $itemData = [
+            'Description' => $name,
+            'ArticleNumber' => $productNumber,
+            'Quantity' => $itemQuantity,
+            'UnitPriceGross' => $price,
+            'TaxRate' => $taxRate,
         ];
-        $position = new BasketPosition($productNumber, $itemQuantity);
-        if ($orderDetail) {
-            $position->setOrderDetail($orderDetail);
+        if (isset($position) && $position->getUniqueNumber()) {
+            $itemData['UniqueArticleNumber'] = $position->getUniqueNumber();
         }
-        $this->simpleItems[$position->getProductNumber()] = $position;
+        $itemData = $this->eventManager->filter(FilterBasketItem::class, $itemData, $event = new FilterBasketItem($this, $originalSourceItem));
+
+        if ($itemData) {
+            $this->basket['Items'][] = [
+                'Item' => $itemData
+            ];
+
+            $position = new BasketPosition($productNumber, $itemQuantity, $event->getReturn()['UniqueArticleNumber']);
+            if ($orderDetail) {
+                $position->setOrderDetail($orderDetail);
+            }
+            $this->simpleItems[$position->getProductNumber()] = $position;
+        }
     }
 
     public function addShippingItem()
@@ -253,6 +267,10 @@ class BasketArrayBuilder
         }
     }
 
+    /**
+     * @return array
+     * @deprecated
+     */
     public function toArray()
     {
         return $this->basket;
@@ -266,4 +284,13 @@ class BasketArrayBuilder
     {
         return $this->simpleItems;
     }
+
+    /**
+     * @return array
+     */
+    public function &getBasketItems()
+    {
+        return $this->basket;
+    }
+
 }

@@ -90,4 +90,9 @@ abstract class AbstractPosition
     {
         $this->cancelled = $cancelled;
     }
+
+    /**
+     * @return string|null
+     */
+    abstract public function getUniqueNumber();
 }

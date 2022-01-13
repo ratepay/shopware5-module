@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020 Ratepay GmbH
+ * Copyright (c) Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -28,6 +28,8 @@ class BasketPosition
      * @var OrderDetail
      */
     private $orderDetail;
+    /** @var string|null */
+    private $uniqueArticleNumber;
 
 
     /**
@@ -35,10 +37,11 @@ class BasketPosition
      * @param string $productNumber
      * @param $quantity
      */
-    public function __construct($productNumber, $quantity)
+    public function __construct($productNumber, $quantity, $uniqueArticleNumber = null)
     {
         $this->productNumber = $productNumber;
         $this->quantity = $quantity;
+        $this->uniqueArticleNumber = $uniqueArticleNumber;
     }
 
     /**
@@ -87,5 +90,21 @@ class BasketPosition
     public function setOrderDetail($orderDetail)
     {
         $this->orderDetail = $orderDetail;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUniqueArticleNumber()
+    {
+        return $this->uniqueArticleNumber;
+    }
+
+    /**
+     * @param string|null $uniqueArticleNumber
+     */
+    public function setUniqueArticleNumber($uniqueArticleNumber)
+    {
+        $this->uniqueArticleNumber = $uniqueArticleNumber;
     }
 }

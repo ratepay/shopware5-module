@@ -12,6 +12,7 @@ use RpayRatePay\Component\History;
 use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\DTO\BasketPosition;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Event\AdminPositionManagementBasketLoaded;
 use RpayRatePay\Services\Request\AbstractAddRequest;
 use RpayRatePay\Services\Request\PaymentCancelService;
 use RpayRatePay\Services\Request\PaymentCreditService;
@@ -126,7 +127,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             . '`articleID`, '
             . '`detail`.`id` AS `orderDetailId`, '
             . '`name`, '
-            . '`articleordernumber`, '
+            . "CONCAT(articleordernumber, CASE WHEN unique_number IS NOT NULL THEN CONCAT(' (', unique_number, ')') ELSE '' END) as articleordernumber,"
             . '`price`, '
             . '`quantity`, '
             . '(`quantity` - `delivered` - `cancelled`) AS `quantityDeliver`, '
@@ -147,7 +148,12 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
         if($discounts = $this->getDiscountFromDBAsItem($orderId)) {
             $data = array_merge($data, $discounts);
         }
-        return $data;
+
+        return $this->container->get('events')->filter(
+            AdminPositionManagementBasketLoaded::class,
+            $data,
+            new AdminPositionManagementBasketLoaded()
+        );
     }
 
     /**
@@ -200,7 +206,7 @@ class Shopware_Controllers_Backend_RatepayOrderDetail extends Shopware_Controlle
             . '`detail`.`quantity` AS `quantity`,'
             . '(1 - `delivered` - `cancelled`) AS `quantityDeliver`, '
             . '(`delivered` - `returned`) AS `quantityReturn`, '
-            . '`detail`.`articleordernumber` as `articleordernumber`, '
+            . "CONCAT(articleordernumber, CASE WHEN unique_number IS NOT NULL THEN CONCAT(' (', unique_number, ')') ELSE '' END) as articleordernumber,"
             . '`delivered`, '
             . '`cancelled`, '
             . '`returned`'

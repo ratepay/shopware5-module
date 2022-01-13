@@ -44,4 +44,9 @@ class Shipping extends AbstractPosition
     {
         return 1;
     }
+
+    public function getUniqueNumber()
+    {
+        return null;
+    }
 }

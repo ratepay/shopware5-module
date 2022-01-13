@@ -19,6 +19,7 @@ use RpayRatePay\Component\Mapper\BasketArrayBuilder;
 use RpayRatePay\Component\Mapper\PaymentRequestData;
 use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Enum\PaymentMethods;
+use RpayRatePay\Event\CreatePositionEntity;
 use RpayRatePay\Helper\PositionHelper;
 use RpayRatePay\Models\Position\Discount;
 use RpayRatePay\Models\Position\Product;
@@ -34,7 +35,7 @@ use RpayRatePay\Services\Logger\RequestLogger;
 use RpayRatePay\Services\PaymentMethodsService;
 use RuntimeException;
 use Shopware\Components\Model\ModelManager;
-use Shopware\Models\Attribute\Order as OrderAttribute;
+use Shopware\Models\Attribute\Order  as OrderAttribute;
 use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Order\Status;
@@ -191,15 +192,19 @@ class PaymentRequestService extends AbstractRequest
         $entitiesToFlush = [];
         /** @var Detail $detail */
         foreach ($details as $detail) {
-            if (PositionHelper::isDiscount($detail)) {
-                $position = new Discount();
-                $position->setOrderDetail($detail);
-            } else {
-                $position = new Product();
-                $position->setOrderDetail($detail);
+            $position = PositionHelper::isDiscount($detail) ? new Discount() : new Product();
+            $position->setOrderDetail($detail);
+
+            $position = Shopware()->Container()->get('events')->filter(
+                CreatePositionEntity::class,
+                $position,
+                new CreatePositionEntity($detail)
+            );
+
+            if($position) {
+                $this->modelManager->persist($position);
+                $entitiesToFlush[] = $position;
             }
-            $this->modelManager->persist($position);
-            $entitiesToFlush[] = $position;
         }
         $this->modelManager->flush($entitiesToFlush);
 

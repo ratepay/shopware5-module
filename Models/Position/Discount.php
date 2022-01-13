@@ -27,6 +27,12 @@ class Discount extends AbstractPosition
     protected $orderDetail;
 
     /**
+     * @var string|null
+     * @ORM\Column(name="unique_number", type="string", length=255, nullable=true)
+     */
+    protected $uniqueNumber;
+
+    /**
      * @return Detail
      */
     public function getOrderDetail()
@@ -45,5 +51,21 @@ class Discount extends AbstractPosition
     public function getOrderedQuantity()
     {
         return $this->orderDetail->getQuantity();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUniqueNumber()
+    {
+        return $this->uniqueNumber;
+    }
+
+    /**
+     * @param string|null $uniqueNumber
+     */
+    public function setUniqueNumber($uniqueNumber)
+    {
+        $this->uniqueNumber = $uniqueNumber;
     }
 }
