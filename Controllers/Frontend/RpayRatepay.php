@@ -183,19 +183,8 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
             exit(0);
         }
 
-        $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress() ?: $billingAddress;
-
-        $paymentConfigSearch = (new PaymentConfigSearch())
-            ->setPaymentMethod($paymentMethod)
-            ->setBackend(false)
-            ->setBillingCountry($billingAddress->getCountry()->getIso())
-            ->setShippingCountry($shippingAddress->getCountry()->getIso())
-            ->setShop(Shopware()->Shop())
-            ->setCurrency(Shopware()->Config()->get('currency'));
-
         $calcContext = new InstallmentCalculatorContext(
-            $paymentConfigSearch,
+            $this->sessionHelper->getPaymentConfigSearchObject($paymentMethod),
             $params['calculationAmount'],
             $params['calculationType'],
             (float)$params['calculationValue'] > 0 ? $params['calculationValue'] : 1

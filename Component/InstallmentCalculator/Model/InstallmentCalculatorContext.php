@@ -37,6 +37,8 @@ class InstallmentCalculatorContext
      */
     public function __construct(PaymentConfigSearch $paymentConfigSearch, $totalAmount, $calculationType = null, $calculationValue = null)
     {
+        $paymentConfigSearch->setTotalAmount($totalAmount);
+
         $this->paymentConfigSearch = $paymentConfigSearch;
         $this->totalAmount = $totalAmount;
         $this->calculationType = $calculationType;
