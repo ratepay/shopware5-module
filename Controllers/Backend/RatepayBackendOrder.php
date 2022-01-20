@@ -110,7 +110,10 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
                 ->setBillingCountry($billingAddress->getCountry()->getIso())
                 ->setShippingCountry($shippingAddress->getCountry()->getIso())
                 ->setShop($shopId)
-                ->setCurrency($currencyId);
+                ->setCurrency($currencyId)
+                ->setTotalAmount($totalAmount)
+                ->setIsB2b(ValidationLib::isCompanySet($billingAddress))
+                ->setNeedsAllowDifferentAddress(ValidationLib::areBillingAndShippingSame($billingAddress, $shippingAddress) === false);
 
             $context = new InstallmentCalculatorContext($paymentConfigSearch, $totalAmount);
             $result = $this->installmentService->getInstallmentCalculator($context);
@@ -161,7 +164,10 @@ class Shopware_Controllers_Backend_RatepayBackendOrder extends Shopware_Controll
             ->setBillingCountry($billingAddress->getCountry()->getIso())
             ->setShippingCountry($shippingAddress->getCountry()->getIso())
             ->setShop($shopId)
-            ->setCurrency($currencyId);
+            ->setCurrency($currencyId)
+            ->setTotalAmount($totalAmount)
+            ->setIsB2b(ValidationLib::isCompanySet($billingAddress))
+            ->setNeedsAllowDifferentAddress(ValidationLib::areBillingAndShippingSame($billingAddress, $shippingAddress) === false);
 
         $installmentContext = new InstallmentCalculatorContext(
             $paymentConfigSearch,
