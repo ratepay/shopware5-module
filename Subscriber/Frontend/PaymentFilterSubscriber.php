@@ -125,12 +125,10 @@ class PaymentFilterSubscriber implements SubscriberInterface
             return;
         }
         $return = $arguments->getReturn();
-        $currency = $this->config->get('currency'); // TODO i think this should be fetched from the session not the config ?!
 
         $customer = $this->sessionHelper->getCustomer();
         $billingAddress = $this->sessionHelper->getBillingAddress();
-        $shippingAddress = $this->sessionHelper->getShippingAddress() ?: $billingAddress;
-        if ($billingAddress === null) {
+        if ($customer === null || $billingAddress === null) {
             return $return;
         }
 
@@ -149,22 +147,10 @@ class PaymentFilterSubscriber implements SubscriberInterface
                 continue;
             }
 
-            $paymentSearchDto = (new PaymentConfigSearch())
-                ->setPaymentMethod($paymentMethodName)
-                ->setBackend(false)
-                ->setBillingCountry($billingAddress->getCountry()->getIso())
-                ->setShippingCountry($shippingAddress->getCountry()->getIso())
-                ->setShop($this->context->getShop())
-                ->setCurrency($currency);
+            $paymentSearchDto = $this->sessionHelper->getPaymentConfigSearchObject($paymentMethodName);
+            $paymentMethodConfigs = $this->profileConfig->getPaymentConfigurations($paymentSearchDto);
 
-            // additional filters
-            $paymentSearchDto->setIsB2b(ValidationService::isCompanySet($billingAddress));
-            $paymentSearchDto->setNeedsAllowDifferentAddress(!ValidationService::areBillingAndShippingSame($billingAddress, $shippingAddress));
-            if ($this->modules->Basket()) {
-                $paymentSearchDto->setTotalAmount(floatval($this->modules->Basket()->sGetAmount()['totalAmount']));
-            }
-
-            if (count($this->profileConfig->getPaymentConfigurations($paymentSearchDto)) === 0) {
+            if (count($paymentMethodConfigs) === 0) {
                 unset($return[$idx]);
             } else {
                 $availableRatePayMethods[$paymentMethodName] = true;

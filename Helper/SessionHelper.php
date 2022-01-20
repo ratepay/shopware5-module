@@ -11,10 +11,9 @@ namespace RpayRatePay\Helper;
 
 use Exception;
 use RpayRatePay\Bootstrap\PaymentMeans;
-use RpayRatePay\Component\InstallmentCalculator\Model\InstallmentPlanResult;
+use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\DTO\BankData;
-use RpayRatePay\DTO\InstallmentDetails;
-use RpayRatePay\Enum\PaymentFirstDay;
+use RpayRatePay\DTO\PaymentConfigSearch;
 use RpayRatePay\Util\BankDataUtil;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
@@ -172,5 +171,24 @@ class SessionHelper extends AbstractSessionHelper
         }
     }
 
+    /**
+     * @param string|int|Payment $paymentMethod
+     */
+    public function getPaymentConfigSearchObject($paymentMethod)
+    {
+        $billingAddress = $this->getBillingAddress();
+        $shippingAddress = $this->getShippingAddress() ?: $billingAddress;
+
+        return (new PaymentConfigSearch())
+            ->setPaymentMethod($paymentMethod)
+            ->setBackend(false)
+            ->setBillingCountry($billingAddress->getCountry()->getIso())
+            ->setShippingCountry($shippingAddress->getCountry()->getIso())
+            ->setShop(Shopware()->Shop())
+            ->setCurrency(Shopware()->Config()->get('currency'))
+            ->setNeedsAllowDifferentAddress(ValidationLib::areBillingAndShippingSame($billingAddress, $shippingAddress) === false)
+            ->setIsB2b(ValidationLib::isCompanySet($billingAddress))
+            ->setTotalAmount(floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']));
+    }
 
 }
