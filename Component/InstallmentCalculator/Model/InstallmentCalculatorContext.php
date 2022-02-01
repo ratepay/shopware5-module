@@ -30,6 +30,11 @@ class InstallmentCalculatorContext
     private $paymentConfigSearch;
 
     /**
+     * @var bool
+     */
+    private $useCheapestRate = false;
+
+    /**
      * @param PaymentConfigSearch $paymentConfigSearch
      * @param float $totalAmount
      * @param string|null $calculationType
@@ -80,4 +85,24 @@ class InstallmentCalculatorContext
     {
         return $this->paymentConfigSearch;
     }
+
+    /**
+     * @return bool
+     */
+    public function isUseCheapestRate()
+    {
+        return $this->useCheapestRate;
+    }
+
+    /**
+     * if this flag is set to true the service will try to get the cheapest rate. this will improve the performance
+     * @param bool $useCheapestRate
+     */
+    public function setUseCheapestRate($useCheapestRate)
+    {
+        $this->useCheapestRate = $useCheapestRate;
+
+        return $this;
+    }
+
 }

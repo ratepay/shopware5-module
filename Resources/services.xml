@@ -27,7 +27,9 @@
 
     <services>
 
-        <defaults public="true" autoconfigure="true" autowire="true"/>
+        <defaults public="true" autoconfigure="true" autowire="true">
+            <bind key="$logger" id="ratepay.logger" type="service"/>
+        </defaults>
 
         <service id="RpayRatePay\Services\HelperService"/>
 
@@ -46,7 +48,6 @@
             <argument id="models" type="service"/>
             <argument id="RpayRatePay\Services\Config\ConfigService" type="service"/>
             <argument id="RpayRatePay\Services\Config\WriterService" type="service"/>
-            <argument id="ratepay.logger" type="service"/>
         </service>
 
         <service id="RpayRatePay\Services\PaymentMethodsService">
@@ -57,12 +58,10 @@
         <service id="RpayRatePay\Services\Config\WriterService">
             <argument id="models" type="service"/>
             <argument id="RpayRatePay\Services\Request\ProfileRequestService" type="service" />
-            <argument id="ratepay.logger" type="service"/>
         </service>
 
         <service id="RpayRatePay\Services\OrderStatusChangeService">
             <argument key="$modelManager" id="models" type="service"/>
-            <argument key="$logger" id="ratepay.logger" type="service"/>
         </service>
 
         <service id="RpayRatePay\Helper\PositionHelper">

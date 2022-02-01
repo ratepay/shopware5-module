@@ -179,16 +179,24 @@ class SessionHelper extends AbstractSessionHelper
         $billingAddress = $this->getBillingAddress();
         $shippingAddress = $this->getShippingAddress() ?: $billingAddress;
 
-        return (new PaymentConfigSearch())
-            ->setPaymentMethod($paymentMethod)
-            ->setBackend(false)
+        return $this->getPaymentConfigSearchObjectWithoutCustomerData($paymentMethod)
             ->setBillingCountry($billingAddress->getCountry()->getIso())
             ->setShippingCountry($shippingAddress->getCountry()->getIso())
-            ->setShop(Shopware()->Shop())
-            ->setCurrency(Shopware()->Config()->get('currency'))
             ->setNeedsAllowDifferentAddress(ValidationLib::areBillingAndShippingSame($billingAddress, $shippingAddress) === false)
             ->setIsB2b(ValidationLib::isCompanySet($billingAddress))
             ->setTotalAmount(floatval(Shopware()->Modules()->Basket()->sGetAmount()['totalAmount']));
+    }
+
+    /**
+     * @param string|int|Payment $paymentMethod
+     */
+    public function getPaymentConfigSearchObjectWithoutCustomerData($paymentMethod)
+    {
+        return (new PaymentConfigSearch())
+            ->setPaymentMethod($paymentMethod)
+            ->setBackend(false)
+            ->setShop(Shopware()->Shop())
+            ->setCurrency(Shopware()->Config()->get('currency'));
     }
 
 }
