@@ -50,6 +50,18 @@ class ConfigInstallment extends ModelEntity
     protected $rateMinNormal;
 
     /**
+     * @var float
+     * @ORM\Column(name="interest_rate_default", type="float", nullable=false)
+     */
+    protected $interestRateDefault;
+
+    /**
+     * @var float
+     * @ORM\Column(name="service_charge", type="float", nullable=false)
+     */
+    protected $serviceCharge;
+
+    /**
      * @return ConfigPayment
      */
     public function getPaymentConfig()
@@ -145,5 +157,37 @@ class ConfigInstallment extends ModelEntity
     public function setRateMinNormal($rateMinNormal)
     {
         $this->rateMinNormal = $rateMinNormal;
+    }
+
+    /**
+     * @return float
+     */
+    public function getInterestRateDefault()
+    {
+        return $this->interestRateDefault;
+    }
+
+    /**
+     * @param float $interestRateDefault
+     */
+    public function setInterestRateDefault($interestRateDefault)
+    {
+        $this->interestRateDefault = $interestRateDefault;
+    }
+
+    /**
+     * @return float
+     */
+    public function getServiceCharge()
+    {
+        return $this->serviceCharge;
+    }
+
+    /**
+     * @param float $serviceCharge
+     */
+    public function setServiceCharge($serviceCharge)
+    {
+        $this->serviceCharge = $serviceCharge;
     }
 }
