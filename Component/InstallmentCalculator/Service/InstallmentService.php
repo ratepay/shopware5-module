@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020 Ratepay GmbH
+ * Copyright (c) Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -11,10 +11,15 @@ namespace RpayRatePay\Component\InstallmentCalculator\Service;
 
 use Enlight_Template_Default;
 use Enlight_Template_Manager;
+use Monolog\Logger;
 use RatePAY\Exception\RequestException;
+use RatePAY\ModelBuilder;
+use RatePAY\Service\OfflineInstallmentCalculation;
 use RpayRatePay\Component\InstallmentCalculator\Model\InstallmentBuilder;
 use RpayRatePay\Component\InstallmentCalculator\Model\InstallmentCalculatorContext;
 use RpayRatePay\Component\InstallmentCalculator\Model\InstallmentPlanResult;
+use RpayRatePay\Component\InstallmentCalculator\Model\OfflineInstallmentCalculatorResult;
+use RpayRatePay\Enum\PaymentFirstDay;
 use RpayRatePay\Exception\NoProfileFoundException;
 use RpayRatePay\Helper\LanguageHelper;
 use RpayRatePay\Models\ConfigInstallment;
@@ -25,7 +30,6 @@ use RpayRatePay\Services\Config\ProfileConfigService;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Shop\Shop;
 
-// TODO improve this service ....
 class InstallmentService
 {
     const CALCULATION_TYPE_TIME = 'time';
@@ -52,13 +56,18 @@ class InstallmentService
      * @var Enlight_Template_Manager
      */
     private $templateManager;
+    /**
+     * @var Logger
+     */
+    private $logger;
 
     public function __construct(
         ModelManager             $modelManager,
         ProfileConfigService     $profileConfigService,
         ConfigService            $configService,
         SessionHelper            $sessionHelper,
-        Enlight_Template_Manager $templateManager
+        Enlight_Template_Manager $templateManager,
+        Logger                   $logger
     )
     {
         $this->modelManager = $modelManager;
@@ -66,6 +75,7 @@ class InstallmentService
         $this->configService = $configService;
         $this->sessionHelper = $sessionHelper;
         $this->templateManager = $templateManager;
+        $this->logger = $logger;
     }
 
     /**
@@ -88,64 +98,121 @@ class InstallmentService
      */
     public function getInstallmentPlan(InstallmentCalculatorContext $context)
     {
-        $installmentBuilders = $this->getInstallmentBuilders($context);
-        if (!count($installmentBuilders)) {
-            throw new \RuntimeException('InstallmentBuilder can not be created.');
+        $result = $this->calculateInstallmentOffline($context);
+        if ($matchedBuilder = $result->getBuilder()) {
+            try {
+                $panJson = $matchedBuilder->getInstallmentPlanAsJson($context->getTotalAmount(), $context->getCalculationType(), $context->getCalculationValue());
+                $matchedPlan = json_decode($panJson, true);
+
+                if (is_array($matchedPlan)) {
+                    return new InstallmentPlanResult($context, $matchedBuilder, $matchedPlan);
+                }
+            } catch (RequestException $e) {
+                $this->logger->error('Error during fetching installment plan: ' . $e->getMessage(), [
+                    'total_amount' => $context->getTotalAmount(),
+                    'calculation_type' => $context->getCalculationType(),
+                    'calculation_value' => $context->getCalculationValue(),
+                    'profile_id' => $matchedBuilder->getProfileConfig()->getProfileId()
+                ]);
+
+                throw $e;
+            }
         }
 
-        $matchedPlan = $matchedBuilder = null;
-        $plans = $amountBuilders = [];
+        return null;
+    }
+
+    /**
+     * @param InstallmentCalculatorContext $context
+     * @return OfflineInstallmentCalculatorResult
+     * @throws NoProfileFoundException
+     * @throws RequestException
+     */
+    public function calculateInstallmentOffline(InstallmentCalculatorContext $context)
+    {
+        $installmentBuilders = $this->getInstallmentBuilders($context);
+
+        if (!count($installmentBuilders)) {
+            throw new NoProfileFoundException();
+        }
+
+        /**
+         * @var array{0: InstallmentBuilder, 0: int} $amountBuilders
+         */
+        $amountBuilders = [];
 
         foreach ($installmentBuilders as $installmentBuilder) {
-            if ($context->getCalculationType() === self::CALCULATION_TYPE_TIME) {
-                $panJson = $installmentBuilder->getInstallmentPlanAsJson($context->getTotalAmount(), $context->getCalculationType(), $context->getCalculationValue());
+            $installmentConfig = $installmentBuilder->getInstallmentPaymentConfig();
 
-                $matchedPlan = json_decode($panJson, true);
-                $matchedBuilder = $installmentBuilder;
-                break;
+            if ($context->getCalculationType() === self::CALCULATION_TYPE_TIME) {
+                $rate = $this->calculateMonthlyRate($context->getTotalAmount(), $installmentConfig, $context->getCalculationValue());
+                if ($rate >= $installmentConfig->getRateMinNormal()) {
+                    $amountBuilders[$rate] = [$installmentBuilder, $context->getCalculationValue()];
+                    break; // an explicit month was requested and there is a result. It is not required to compare it with other profiles
+                }
             }
 
             if ($context->getCalculationType() === self::CALCULATION_TYPE_RATE) {
                 // collect all rates for all available plans
-                try {
-                    $_planJson = $installmentBuilder->getInstallmentPlanAsJson($context->getTotalAmount(), $context->getCalculationType(), $context->getCalculationValue());
-                    $planArray = json_decode($_planJson, true);
-                    $amountBuilders[$planArray['rate']] = $installmentBuilder;
-                    $plans[$planArray['rate']] = $planArray;
-                } catch (RequestException $e) {
-                    if (strpos($e->getMessage(), 'CONFIGURATION_NOT_VALID: The rate was too low to match minimum')) {
-                        // this exception is expected if the monthly rate is too low --> do nothing
-                        continue;
+                foreach ($installmentConfig->getMonthsAllowed() as $month) {
+                    $rate = $this->calculateMonthlyRate($context->getTotalAmount(), $installmentConfig, $month);
+                    if ($rate >= $installmentConfig->getRateMinNormal()) {
+                        $amountBuilders[(string)$rate] = [$installmentBuilder, $month];
+                        // we will NOT break the parent foreach, cause there might be a better result (of a builder) which is nearer to the requested value than the current.
                     }
-                    throw $e;
                 }
             }
         }
 
-        if ($context->getCalculationType() === self::CALCULATION_TYPE_RATE) {
+        $count = count($amountBuilders);
+        if ($count === 0) {
+            return null;
+        } else if ($count > 1) {
             // find the best matching for the given monthly rate and the available rates from the calculated plans
-            $closestAmount = null;
+            $monthlyRate = null;
             $availableMonthlyRates = array_keys($amountBuilders);
             sort($availableMonthlyRates);
-            foreach ($availableMonthlyRates as $availableMonthlyRate) {
-                if ($closestAmount === null || abs($context->getCalculationValue() - $closestAmount) > abs($availableMonthlyRate - $context->getCalculationValue())) {
-                    $closestAmount = $availableMonthlyRate;
-                } else if ($availableMonthlyRate > $context->getCalculationValue()) {
-                    // if it is not a match, and the calculated rate is already higher than the given value,
-                    // we can cancel the loop, cause every higher values will not match, either.
-                    break;
+            if ($context->isUseCheapestRate()) {
+                $monthlyRate = $availableMonthlyRates[0];
+            } else {
+                foreach ($availableMonthlyRates as $availableMonthlyRate) {
+                    if ($monthlyRate === null || abs($context->getCalculationValue() - (float)$monthlyRate) > abs($availableMonthlyRate - $context->getCalculationValue())) {
+                        $monthlyRate = $availableMonthlyRate;
+                    } else if ($availableMonthlyRate > $context->getCalculationValue()) {
+                        // if it is not a match, and the calculated rate is already higher than the given value,
+                        // we can cancel the loop, cause every higher values will not match, either.
+                        break;
+                    }
                 }
             }
-
-            $matchedBuilder = $amountBuilders[$closestAmount];
-            $matchedPlan = $plans[$closestAmount];
+        } else {
+            $monthlyRate = array_key_first($amountBuilders);
         }
 
-        if ($matchedPlan && $matchedBuilder) {
-            return new InstallmentPlanResult($context, $matchedBuilder, $matchedPlan);
-        }
+        return new OfflineInstallmentCalculatorResult(
+            $context,
+            $amountBuilders[$monthlyRate][0],
+            $amountBuilders[$monthlyRate][1],
+            (float)$monthlyRate
+        );
+    }
 
-        return null;
+    private function calculateMonthlyRate($totalAmount, ConfigInstallment $config, $month)
+    {
+        $mbContent = new ModelBuilder('Content');
+        $mbContent->setArray([
+            'InstallmentCalculation' => [
+                'Amount' => $totalAmount,
+                'PaymentFirstday' => PaymentFirstDay::getFirstDayForPayType($config->getDefaultPaymentType()),
+                'InterestRate' => $config->getInterestRateDefault(),
+                'ServiceCharge' => $config->getServiceCharge(),
+                'CalculationTime' => [
+                    'Month' => $month
+                ]
+            ]
+        ]);
+
+        return (new OfflineInstallmentCalculation())->callOfflineCalculation($mbContent)->subtype('calculation-by-time');
     }
 
     /**
@@ -155,7 +222,7 @@ class InstallmentService
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    protected function getInstallmentBuilders(InstallmentCalculatorContext $context)
+    private function getInstallmentBuilders(InstallmentCalculatorContext $context)
     {
         $shop = $this->modelManager->find(Shop::class, $context->getPaymentConfigSearch()->getShop());
 
@@ -168,7 +235,7 @@ class InstallmentService
         }, $this->getProfileConfigs($context));
     }
 
-    public function getProfileConfigs(InstallmentCalculatorContext $context)
+    private function getProfileConfigs(InstallmentCalculatorContext $context)
     {
         $paymentMethodConfigs = $this->profileConfigService->getPaymentConfigurations($context->getPaymentConfigSearch());
 
@@ -212,18 +279,17 @@ class InstallmentService
             throw new NoProfileFoundException();
         }
 
-        $data = [];
+        $allowedMonths = [];
         foreach ($installmentBuilders as $installmentBuilder) {
-            $json = $installmentBuilder->getInstallmentCalculatorAsJson($context->getTotalAmount());
-            $configuratorData = json_decode($json, true);
-
-            if (count($data) === 0) {
-                $data = $configuratorData;
+            $installmentConfig = $installmentBuilder->getInstallmentPaymentConfig();
+            foreach ($installmentConfig->getMonthsAllowed() as $month) {
+                if ($this->calculateMonthlyRate($context->getTotalAmount(), $installmentConfig, $month) >= $installmentConfig->getRateMinNormal()) {
+                    $allowedMonths[] = $month;
+                }
             }
-
-            $data['rp_allowedMonths'] = array_merge($data['rp_allowedMonths'], $configuratorData['rp_allowedMonths']);
         }
-        $data['rp_allowedMonths'] = array_unique($data['rp_allowedMonths']);
+
+        $data['rp_allowedMonths'] = $allowedMonths;
         sort($data['rp_allowedMonths']);
 
         $data['defaults']['type'] = self::CALCULATION_TYPE_TIME;
