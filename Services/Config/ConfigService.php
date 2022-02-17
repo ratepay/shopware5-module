@@ -94,43 +94,6 @@ class ConfigService
     }
 
     /**
-     * @param $countryISO
-     * @param bool $zeroPercentPayment
-     * @param bool $isBackend
-     * @param Shop|int $shop
-     * @return mixed
-     */
-    public function getProfileId($countryISO, $zeroPercentPayment = false, $isBackend = false, $shop = null)
-    {
-        return $this->getConfig($this->getProfileIdKey($countryISO, $zeroPercentPayment, $isBackend), null, $shop);
-    }
-
-    public function getProfileIdKey($countryISO, $zeroPercentPayment, $isBackend)
-    {
-        //ratepay/profile/de/frontend/id - this comment is just for finding this line ;-)
-        //ratepay/profile/de/frontend/id/installment0 - this comment is just for finding this line ;-)
-        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/id" . ($zeroPercentPayment ? "/installment0" : "");
-    }
-
-    /**
-     * @param $countryISO
-     * @param $zeroPercentPayment
-     * @param bool $isBackend
-     * @param Shop|int $shop
-     * @return mixed
-     */
-    public function getSecurityCode($countryISO, $zeroPercentPayment, $isBackend = false, $shop = null)
-    {
-        return $this->getConfig($this->getSecurityCodeKey($countryISO, $zeroPercentPayment, $isBackend), null, $shop);
-    }
-
-    public function getSecurityCodeKey($countryISO, $zeroPercentPayment, $isBackend)
-    {
-        //ratepay/profile/de/frontend/security_code - this comment is just for finding this line ;-)
-        return "ratepay/profile/" . strtolower($countryISO) . "/" . ($isBackend ? 'backend' : 'frontend') . "/security_code" . "/id" . ($zeroPercentPayment ? "/installment0" : "");
-    }
-
-    /**
      * @return bool
      */
     public function isCommitDiscountAsCartItem()
@@ -225,7 +188,7 @@ class ConfigService
      */
     public function isPicEnabled()
     {
-        return (bool) $this->getConfig('ratepay/detailInstallmentCalculator/enabled', false);
+        return (bool)$this->getConfig('ratepay/detailInstallmentCalculator/enabled', false);
     }
 
     /**
@@ -261,9 +224,8 @@ class ConfigService
      */
     public function getPicDefaultB2b()
     {
-        return (bool) $this->getConfig('ratepay/detailInstallmentCalculator/defaultB2b', false);
+        return (bool)$this->getConfig('ratepay/detailInstallmentCalculator/defaultB2b', false);
     }
-
 
     /**
      * @return array
