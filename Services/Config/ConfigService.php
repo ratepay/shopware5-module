@@ -275,12 +275,4 @@ class ConfigService
             return trim($value);
         }, explode(',', $flags));
     }
-
-    /**
-     * @deprecated will be removed within the next releases
-     */
-    public function getAllProfileConfigs(Shop $shop)
-    {
-        return [];
-    }
 }
