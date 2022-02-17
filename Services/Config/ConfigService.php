@@ -228,6 +228,28 @@ class ConfigService
     }
 
     /**
+     * @return bool
+     */
+    public function isUserInputPhoneNumberRequired()
+    {
+        // yes, we could use the DI to get this service, but we do not want to add a second "config" service to the
+        // constructor, because this could be confusing.
+        return $this->isUserInputPhoneNumberVisible() && Shopware()->Config()->offsetGet('requirePhoneField');
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUserInputPhoneNumberVisible()
+    {
+        // yes, we could use the DI to get this service, but we do not want to add a second "config" service to the
+        // constructor, because this could be confusing.
+        // return (bool)Shopware()->Config()->offsetGet('showphonenumberfield');
+
+        return true; // currently, the shopware configuration should not be respected. So always return true.
+    }
+
+    /**
      * @return array
      */
     public function getEnabledFeatures()

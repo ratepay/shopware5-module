@@ -14,6 +14,7 @@ use Enlight_Controller_Front;
 use Enlight_Controller_Request_Request;
 use RpayRatePay\Component\Service\ValidationLib;
 use RpayRatePay\Helper\SessionHelper;
+use RpayRatePay\Services\Config\ConfigService;
 use Shopware\Components\DependencyInjection\Container;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Payment\Payment;
@@ -44,6 +45,10 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
      * @var Enlight_Controller_Front
      */
     private $front;
+    /**
+     * @var ConfigService
+     */
+    private $config;
 
     public function __construct()
     {
@@ -52,6 +57,7 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
         $this->modelManager = $this->container->get('models');
         $this->snippetManager = $this->container->get('snippets');
         $this->front = $this->container->get('front');
+        $this->config = $this->container->get(ConfigService::class);
     }
 
     protected function isRequestInCheckoutProcess()
@@ -77,6 +83,8 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
 
         $data['ratepay']['customer_data'] = [
             'phone' => $billingAddress->getPhone(),
+            'phone_required' => $this->config->isUserInputPhoneNumberRequired(),
+            'phone_visible' => $this->config->isUserInputPhoneNumberVisible(),
             'birthday_required' => ValidationLib::isCompanySet($billingAddress) === false,
             'birthday' => [
                 'year' => $birthday ? $birthday->format('Y') : null,
@@ -112,6 +120,16 @@ abstract class AbstractPaymentMethod extends GenericPaymentMethod
                 }
             }
         }
+
+        if ($this->config->isUserInputPhoneNumberRequired()) {
+            if (!isset($ratepayData['phone']) || empty(trim($ratepayData['phone']))) {
+                $return['sErrorMessages'][] = $this->getTranslatedMessage('MissingPhone');
+            }
+            if ((strlen(trim($ratepayData['phone'])) > 6) === false) {
+                $return['sErrorMessages'][] = sprintf($this->getTranslatedMessage('InvalidPhone'), 6);
+            }
+        }
+
         $billingAddress = $this->sessionHelper->getBillingAddress();
         if (isset($ratepayData['vatId_required'], $ratepayData['vatId']) && ((int)$ratepayData['vatId_required']) === 1) {
             $ratepayData['vatId'] = trim($ratepayData['vatId']);

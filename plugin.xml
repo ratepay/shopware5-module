@@ -12,7 +12,7 @@
     <label lang="de">Ratepay Payment Plugin für Shopware 5</label>
     <label>Ratepay Payment Plugin for Shopware 5</label>
 
-    <version>6.2.0</version>
+    <version>6.2.1</version>
     <copyright>Copyright (c), Ratepay GmbH</copyright>
     <license>MIT</license>
     <link>https://www.ratepay.com</link>
@@ -22,13 +22,30 @@
     <description>Ratepay enables you to accept online payments without any risk of fraud and without the hassle of debtors management.</description>
     <description lang="de">Ratepay stellt verschiedene Zahlungsarten für Ihren Onlineshop zur Verfügung, ohne dass Sie sich mit der Risikoprüfung oder dem Debitorenmanagement beschäftigen müssen.</description>
 
+    <changelog version="6.2.1">
+        <changes>
+            <![CDATA[
+                <ul>
+                    <li>Improvement: respect the Showpare settings of display and require the phone number</li>
+                </ul>
+            ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+                <ul>
+                    <li>Verbesserung: Die Shopware Felder für das Anzeigen und der Erfordernis der Telefonnummer werden nun berücksichtigt.</li>
+                </ul>
+            ]]>
+        </changes>
+    </changelog>
+
     <changelog version="6.2.0">
         <changes>
             <![CDATA[
                 <ul>
                     <li>Update SDK</li>
                     <li>Added: Support for different Profile-Ids for one payment method</li>
-                    <li>improvement: loading of available payment methods</li>
+                    <li>Improvement: loading of available payment methods</li>
                     <li>improve lookup for profile configs during checkout</li>
                     <li>added: Installment information on product page</li>
                 </ul>
