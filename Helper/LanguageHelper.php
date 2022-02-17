@@ -22,7 +22,7 @@ class LanguageHelper
      */
     public static function getRatepayTranslations(Shop $shop)
     {
-        return (new LanguageService(substr($shop->getLocale()->getLocale(), 3, 5)))->getArray();
+        return (new LanguageService(substr($shop->getLocale()->getLocale(), 0, 2)))->getArray();
     }
 
 }
