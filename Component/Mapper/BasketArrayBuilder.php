@@ -241,6 +241,12 @@ class BasketArrayBuilder
                 throw new RuntimeException('the object must be a type of ' . Detail::class . ' or ' . PositionStruct::class);
             }
 
+            // we do combine the description of the discount, cause the description got always overridden on the gateway,
+            // on each request. So if you have multiple discounts and the discounts got marked as sent in different
+            // request, the final discount description will be the description of the last discount.
+            // This is the reason why wo not submit a concatenated description of all discounts.
+            // Last tickets to this: RATEPLUG-77 & RATEPLUG-224
+
             $this->basket['Discount']['Description'] = 'Rabatt'; // TODO translation
             $this->basket['Discount']['UnitPriceGross'] = isset($this->basket['Discount']['UnitPriceGross']) ? $this->basket['Discount']['UnitPriceGross'] + $price : $price;
             $this->basket['Discount']['TaxRate'] = $taxRate;
