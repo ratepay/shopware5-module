@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (c) 2020 Ratepay GmbH
+  ~ Copyright (c) Ratepay GmbH
   ~
   ~ For the full copyright and license information, please view the LICENSE
   ~ file that was distributed with this source code.
@@ -12,7 +12,7 @@
     <label lang="de">Ratepay Payment Plugin für Shopware 5</label>
     <label>Ratepay Payment Plugin for Shopware 5</label>
 
-    <version>6.2.0</version>
+    <version>7.0.0</version>
     <copyright>Copyright (c), Ratepay GmbH</copyright>
     <license>MIT</license>
     <link>https://www.ratepay.com</link>
@@ -22,32 +22,16 @@
     <description>Ratepay enables you to accept online payments without any risk of fraud and without the hassle of debtors management.</description>
     <description lang="de">Ratepay stellt verschiedene Zahlungsarten für Ihren Onlineshop zur Verfügung, ohne dass Sie sich mit der Risikoprüfung oder dem Debitorenmanagement beschäftigen müssen.</description>
 
-    <changelog version="6.2.1">
+    <changelog version="7.0.0">
         <changes>
             <![CDATA[
                 <ul>
-                    <li>Improvement: Using the language instead the country to load the translations from the SDK (installment)</li>
-                </ul>
-            ]]>
-        </changes>
-        <changes lang="de">
-            <![CDATA[
-                <ul>
-                    <li>Verbesserung: Es wird nun die Sprache anstatt des Landes genutzt, um Übersetzungen aus dem SDK zu laden (Ratenzahlung)</li>
-                </ul>
-            ]]>
-        </changes>
-    </changelog>
-
-    <changelog version="6.2.0">
-        <changes>
-            <![CDATA[
-                <ul>
-                    <li>Update SDK</li>
-                    <li>Added: Support for different Profile-Ids for one payment method</li>
-                    <li>improvement: loading of available payment methods</li>
-                    <li>improve lookup for profile configs during checkout</li>
+                    <li>update SDK</li>
+                    <li>added: Support for different Profile-Ids for one payment method</li>
                     <li>added: Installment information on product page</li>
+                    <li>improved: loading of available payment methods</li>
+                    <li>improved: Using the language instead the country to load the translations from the SDK (installment)</li>
+                    <li>improve lookup for profile configs during checkout</li>
                 </ul>
             ]]>
         </changes>
@@ -56,9 +40,10 @@
                 <ul>
                     <li>Update SDK</li>
                     <li>Hinzugefügt: Unterstützung von mehreren Profile-Ids für eine Zahlart</li>
-                    <li>Verbessert: Laden der verfügbaren Zahlmethoden</li>
-                    <li>Verbessert: Laden der Profile-Ids während des Checkouts</li>
                     <li>Hinzugefügt: Rateninformationen auf der Produktseite</li>
+                    <li>Verbessert: Laden der verfügbaren Zahlmethoden</li>
+                    <li>Verbessert: Es wird nun die Sprache anstatt des Landes genutzt, um Übersetzungen aus dem SDK zu laden (Ratenzahlung)</li>
+                    <li>Verbessert: Laden der Profile-Ids während des Checkouts</li>
                 </ul>
             ]]>
         </changes>
