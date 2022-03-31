@@ -52,7 +52,7 @@ file that was distributed with this source code.
                 {$ratepay.translations.rp_debit_rate}
                 <p class="rp-installment-plan-description small">{$ratepay.translations.rp_mouseover_debit_rate}</p>
             </td>
-            <td class="text-right">{$ratepay.plan.monthlyDebitInterest} %</td>
+            <td class="text-right">{$ratepay.plan.interestRate} %</td>
         </tr>
         <tr class="rp-installment-plan-details">
             <td class="rp-installment-plan-title">
