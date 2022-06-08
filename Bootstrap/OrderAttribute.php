@@ -37,7 +37,7 @@ class OrderAttribute extends AbstractAttributeBootstrap
         if ($addDirectDeliveryAttribute) {
             $connection->exec("
                 UPDATE s_order_attributes attr
-                    INNER JOIN s_order s_order ON (s_order.id = attr.id)
+                    INNER JOIN s_order s_order ON (s_order.id = attr.orderID)
                     INNER JOIN s_core_paymentmeans payment ON (s_order.paymentID = payment.id)
                     SET 
                         attr.ratepay_direct_delivery = 0 
@@ -51,7 +51,7 @@ class OrderAttribute extends AbstractAttributeBootstrap
         ) {
             $connection->exec("
                 UPDATE s_order_attributes attr
-                    INNER JOIN s_order s_order ON (s_order.id = attr.id)
+                    INNER JOIN s_order s_order ON (s_order.id = attr.orderID)
                     INNER JOIN s_core_paymentmeans payment ON (s_order.paymentID = payment.id)
                     SET 
                         attr.ratepay_descriptor = attr.attribute5
@@ -61,7 +61,7 @@ class OrderAttribute extends AbstractAttributeBootstrap
             ");
             $connection->exec("
                 UPDATE s_order_attributes attr
-                    INNER JOIN s_order s_order ON (s_order.id = attr.id)
+                    INNER JOIN s_order s_order ON (s_order.id = attr.orderID)
                     INNER JOIN s_core_paymentmeans payment ON (s_order.paymentID = payment.id)
                     SET 
                         attr.attribute5 = NULL, 
