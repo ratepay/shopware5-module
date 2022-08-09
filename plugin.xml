@@ -12,7 +12,7 @@
     <label lang="de">Ratepay Payment Plugin für Shopware 5</label>
     <label>Ratepay Payment Plugin for Shopware 5</label>
 
-    <version>7.0.0</version>
+    <version>7.0.1</version>
     <copyright>Copyright (c), Ratepay GmbH</copyright>
     <license>MIT</license>
     <link>https://www.ratepay.com</link>
@@ -21,6 +21,23 @@
 
     <description>Ratepay enables you to accept online payments without any risk of fraud and without the hassle of debtors management.</description>
     <description lang="de">Ratepay stellt verschiedene Zahlungsarten für Ihren Onlineshop zur Verfügung, ohne dass Sie sich mit der Risikoprüfung oder dem Debitorenmanagement beschäftigen müssen.</description>
+
+    <changelog version="7.0.1">
+        <changes>
+            <![CDATA[
+                <ul>
+                    <li>Mandatsreferenz Text ausgetauscht</li>
+                </ul>
+            ]]>
+        </changes>
+        <changes lang="de">
+            <![CDATA[
+                <ul>
+                    <li>Replaced mandat-reference text</li>
+                </ul>
+            ]]>
+        </changes>
+    </changelog>
 
     <changelog version="7.0.0">
         <changes>

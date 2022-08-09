@@ -2,15 +2,7 @@
 
     {block name="ratepay_payment_method__bank_account__legal_text"}
         <div class="legal-text">
-            <p></p>
-        </div>
-        <div class="form-group row">
-            <label class="col-sm-2 col-form-label">
-                {s namespace="frontend/plugins/payment/ratepay" name="SepaCreditorInfo"}{/s}:
-            </label>
-            <div class="col-sm-10">
-                {s namespace="frontend/plugins/payment/ratepay" name="sepaLegalText"}{/s}
-            </div>
+            <p>{s namespace="frontend/plugins/payment/ratepay" name="SepaMandatInformation"}{/s}</p>
         </div>
     {/block}
 
