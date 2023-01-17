@@ -205,13 +205,12 @@ class PaymentRequestService extends AbstractRequest
         $entitiesToFlush = [];
         /** @var Detail $detail */
         foreach ($details as $detail) {
-            if (PositionHelper::isDiscount($detail)) {
-                $position = new Discount();
-                $position->setOrderDetail($detail);
-            } else {
-                $position = new Product();
-                $position->setOrderDetail($detail);
+            $class = PositionHelper::getPositionClass($detail);
+            if (!$class || ($class !== Product::class && $class !== Discount::class)) {
+                continue;
             }
+            $position = new $class();
+            $position->setOrderDetail($detail);
             $this->modelManager->persist($position);
             $entitiesToFlush[] = $position;
         }

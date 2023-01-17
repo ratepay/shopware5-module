@@ -27,6 +27,7 @@
             <![CDATA[
                 <ul>
                     <li>Mandatsreferenz Text ausgetauscht</li>
+                    <li>Kompatibilität zu Shopware Premium Plugin "Bundles" verbessert</li>
                 </ul>
             ]]>
         </changes>
@@ -34,6 +35,7 @@
             <![CDATA[
                 <ul>
                     <li>Replaced mandat-reference text</li>
+                    <li>improved compatibility of Shopware Premium Plugin "Bundles"</li>
                 </ul>
             ]]>
         </changes>

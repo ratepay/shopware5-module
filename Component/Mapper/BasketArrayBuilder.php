@@ -104,7 +104,7 @@ class BasketArrayBuilder
      * @param string|Detail|PositionStruct $item
      * @param int|null $quantity
      */
-    public function addItem($item, $quantity = null)
+    public function addItem($item, $quantity = null, $originalItem = null)
     {
         $orderDetail = null;
 
@@ -146,7 +146,7 @@ class BasketArrayBuilder
             $detail->setPrice(floatval($item['priceNumeric']));
             $detail->setTaxRate(floatval($item['tax_rate']));
             $detail->setMode(intval($item['modus']));
-            $this->addItem($detail);
+            $this->addItem($detail, null, $item);
             return;
         } else {
             throw new RuntimeException('type ' . get_class($item) . ' is not supported');
@@ -155,14 +155,17 @@ class BasketArrayBuilder
         $price = TaxHelper::getItemGrossPrice($this->order ?: $this->paymentRequestData, $item);
         $taxRate = TaxHelper::getItemTaxRate($this->order ?: $this->paymentRequestData, $item);
 
+        $itemData = [
+            'Description' => $name,
+            'ArticleNumber' => $productNumber,
+            'Quantity' => $itemQuantity,
+            'UnitPriceGross' => $price,
+            'TaxRate' => $taxRate,
+        ];
+        $itemData = $this->eventManager->filter('ratepay_basket_builder_add_item', $itemData, ['item' => $item, 'originalItem' => $originalItem]);
+
         $this->basket['Items'][] = [
-            'Item' => [
-                'Description' => $name,
-                'ArticleNumber' => $productNumber,
-                'Quantity' => $itemQuantity,
-                'UnitPriceGross' => $price,
-                'TaxRate' => $taxRate,
-            ]
+            'Item' => $itemData
         ];
         $position = new BasketPosition($productNumber, $itemQuantity);
         if ($orderDetail) {

@@ -19,5 +19,9 @@
             <argument id="events" type="service"/>
             <tag name="shopware.event_subscriber"/>
         </service>
+
+        <service id="RpayRatePay\Subscriber\SwagBundleSubscriber">
+            <tag name="shopware.event_subscriber"/>
+        </service>
     </services>
 </container>

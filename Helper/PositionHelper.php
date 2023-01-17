@@ -21,6 +21,7 @@ use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Detail;
 use Shopware\Models\Order\Order;
 use SwagBackendOrder\Components\Order\Struct\PositionStruct;
+use SwagBundle\Components\BundleBasketInterface;
 
 class PositionHelper
 {
@@ -116,7 +117,8 @@ class PositionHelper
             case self::MODE_SW_DISCOUNT[0]: //voucher
             case self::MODE_SW_DISCOUNT[1]: //IS_REBATE = rabatt
             case self::MODE_SW_DISCOUNT[2]: //IS_SURCHARGE_DISCOUNT //IST ZUSCHLAGSRABATT
-                if($detail->getPrice() > 0 ) {
+            case self::getSwagBundleOrderItemMode():
+                if ($detail->getPrice() > 0) {
                     return Product::class;
                 }
                 return Discount::class;
@@ -134,6 +136,15 @@ class PositionHelper
     public function getShippingPositionForOrder(Order $order)
     {
         return $this->modelManager->find(ShippingPosition::class, $order->getId());
+    }
+
+    private static function getSwagBundleOrderItemMode()
+    {
+        if (class_exists(BundleBasketInterface::class)) {
+            return BundleBasketInterface::BUNDLE_DISCOUNT_BASKET_MODE;
+        }
+        // if the module got uninstalled, the value is still there. (only a fallback)
+        return 10;
     }
 
 }
