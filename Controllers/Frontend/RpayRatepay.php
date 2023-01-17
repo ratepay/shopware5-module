@@ -192,11 +192,13 @@ class Shopware_Controllers_Frontend_RpayRatepay extends Shopware_Controllers_Fro
 
         try {
             $planResult = $this->installmentService->getInstallmentPlan($calcContext);
-            $html = $this->installmentService->getInstallmentPlanTemplate($planResult->getPlanData());
+            $html = $this->installmentService->getInstallmentPlanTemplate($planResult->getPlanData(), false);
+            $htmlPreview = $this->installmentService->getInstallmentPlanTemplate($planResult->getPlanData(), true);
 
             $data = [
                 'success' => true,
                 'html' => $html,
+                'htmlPreview' => $htmlPreview,
                 'installment' => [
                     'isDirectDebitAllowed' => $planResult->isPaymentTypeAllowed(PaymentFirstDay::PAY_TYPE_DIRECT_DEBIT),
                     'isBankTransferAllowed' => $planResult->isPaymentTypeAllowed(PaymentFirstDay::PAY_TYPE_BANK_TRANSFER),

@@ -62,12 +62,12 @@ class InstallmentService
     private $logger;
 
     public function __construct(
-        ModelManager             $modelManager,
-        ProfileConfigService     $profileConfigService,
-        ConfigService            $configService,
-        SessionHelper            $sessionHelper,
+        ModelManager $modelManager,
+        ProfileConfigService $profileConfigService,
+        ConfigService $configService,
+        SessionHelper $sessionHelper,
         Enlight_Template_Manager $templateManager,
-        Logger                   $logger
+        Logger $logger
     )
     {
         $this->modelManager = $modelManager;
@@ -257,11 +257,16 @@ class InstallmentService
      * @return string
      * @throws \SmartyException
      */
-    public function getInstallmentPlanTemplate($planData)
+    public function getInstallmentPlanTemplate($planData, $isPreview = false)
     {
+        if ($isPreview) {
+            $templateFile = 'frontend/plugins/payment/ratepay/installment/plan_preview.tpl';
+        } else {
+            $templateFile = 'frontend/plugins/payment/ratepay/installment/plan.tpl';
+        }
 
         /** @var Enlight_Template_Default $template */
-        $template = $this->templateManager->createTemplate('frontend/plugins/payment/ratepay/installment/plan.tpl');
+        $template = $this->templateManager->createTemplate($templateFile);
 
         $template->assign('ratepay', [
             'translations' => LanguageHelper::getRatepayTranslations(Shopware()->Shop()),

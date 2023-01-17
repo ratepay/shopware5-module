@@ -1,118 +1,256 @@
 /*
- * Copyright (c) 2020 Ratepay GmbH
+ * Copyright (c) Ratepay GmbH
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-.installment-calculator > .container > .row,
-.rp-container-calculator > .row {
-  & + .row {
-    margin-top: 10px;
-  }
+@ratepay-border: 1px solid #ccc;
+
+.installment-calculator > .container > .row {
+    & + .row {
+        margin-top: 10px;
+    }
 }
 
 //hide some components on initial load
 .rp-container-calculator,
 .rp-installment-plan-details,
-#rp-switch-payment-type-direct-debit,
 #rp-rate-elv,
 #rp-hide-installment-plan-details,
 .rp-sepa-form {
-  display: none;
+    display: none;
 }
 
 .rp-installment-plan-description {
-  margin: 0;
+    margin: 0;
 }
 
 #rp-installment-plan-no-details {
-  display: block;
+    display: block;
 }
 
 #rp-show-installment-plan-details {
-  display: block;
+    display: block;
 }
 
 .rp-menue,
 .rp-installment-plan-details,
 .rp-installment-plan-no-details {
-  border-bottom: 1px solid #ddd;
-  width: 100%;
-  margin: 0px 3px;
-  padding: 13px 6px;
+    border-bottom: 1px solid #ddd;
+    width: 100%;
+    margin: 0px 3px;
+    padding: 13px 6px;
 }
 
 .rp-installment-plan-details:nth-child(odd) {
-  background-color: #f9f9f9;
+    background-color: #f9f9f9;
 }
 
 .rp-details-icon {
-  float: right;
-  padding: 5px;
-  height: 20px;
+    float: right;
+    padding: 5px;
+    height: 20px;
 }
 
 .rp-link {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 #rp-iban-account-number {
-  display: block;
+    display: block;
 }
 
-.rp-payment-type-switch {
-  text-decoration: underline;
+.payment-type-select-container {
+    border-top: @ratepay-border;
+
+    .rp-payment-type-switch {
+        position: relative;
+        padding: 0.7rem 0.7rem 0.7rem 3rem;
+        border-bottom: @ratepay-border;
+        cursor: pointer;
+
+        &.is--checked:before {
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            font-family: @sw-icon-fontname;
+            font-weight: @font-base-weight;
+            text-align: center;
+            content: @sw-icon-check;
+            font-size: 1rem;
+        }
+    }
 }
 
 .rp-label-sepa-agreement {
-  display: inline !important;
+    display: inline !important;
 }
 
 .table-striped td.headline {
-  border-top: 1px solid #000;
-  padding: 10px;
+    border-top: 1px solid #000;
+    padding: 10px;
 }
 
 #rpResultContainer {
-  margin-top: 20px;
+    margin-top: 20px;
 }
 
 .rp-container-calculator {
 
-  .runtime-select-container {
-    margin-bottom: 0;
-  }
+    .runtime-select-container {
+        margin-bottom: 0;
+    }
 
-  .js--fancy-select, #rp-btn-runtime {
-    display: block;
-    max-width: none;
-    width: 100%;
-  }
+    .js--fancy-select, #rp-btn-runtime {
+        display: block;
+        max-width: none;
+        width: 100%;
+    }
 
-  .form-group,
-  .input-group,
-  .input-group input,
-  .input-group button {
-    height: 42px;
-    margin-bottom: 0;
-  }
+    .form-group,
+    .input-group,
+    .input-group input,
+    .input-group button {
+        height: 42px;
+        margin-bottom: 0;
+    }
 }
 
-.rp-sepa-form,
-.payment-type-select-container,
-.rp-container-calculator {
-  margin-top: 20px;
-  border-top: 1px solid @border-color;
-  padding-top: 20px;
+.installment-payment {
+    margin-top: 1rem;
 }
 
 .rp-sepa-form {
-  .sepa-intro {
-    margin-bottom: 20px;
-  }
+    margin-top: 0.5rem;
+
+    .sepa-intro {
+        margin-bottom: 20px;
+    }
 }
 
 .runtime-select-container {
-  margin-bottom: 0;
+    margin-bottom: 0;
+}
+
+#rpResultPreviewContainer {
+    .preview-heading {
+        font-weight: bold;
+        border-top: @ratepay-border;
+        border-bottom: @ratepay-border;
+        padding: 0.5rem 0;
+    }
+
+    .preview-table {
+        border-bottom: @ratepay-border;
+
+        span.small {
+            font-size: 0.8em;
+        }
+
+        td:last-child {
+            text-align: right;
+        }
+    }
+
+    .preview-after-table {
+        text-align: right;
+        padding: 0.5rem 0 0.5rem 0.5rem;
+
+        .icon--arrow-right {
+            position: relative;
+            top: 1px;
+        }
+    }
+}
+
+.installment-calculator__modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 2rem;
+
+    &.is--visible {
+        display: flex !important;
+    }
+
+    &-header {
+        position: relative;
+
+        .close {
+            float: right;
+            height: 3rem;
+            width: 4rem;
+            text-align: right;
+            cursor: pointer;
+        }
+    }
+
+    &-inner {
+        max-width: 800px;
+        padding: 2rem;
+        background: #fff;
+        max-height: 80%;
+        overflow-y: auto;
+    }
+}
+
+.installment-calculator {
+    .calculator-intro {
+        margin-bottom: 1rem;
+        border-bottom: @ratepay-border;
+        padding-bottom: 1rem;
+    }
+
+    .calculator_calculation-types {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .calculator_calculation-type {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    }
+
+    .cct-heading {
+        color: #333;
+        background-color: #f5f5f5;
+        border-color: #ddd;
+        text-align: center;
+        padding: 1rem;
+
+        h2 {
+            margin-top: 0;
+        }
+    }
+
+    .cct-body {
+        text-align: center;
+        padding: 0.5rem;
+
+        .form-group {
+            margin: 0;
+        }
+
+        .select-field, .js--fancy-select {
+            display: block;
+            margin: auto;
+        }
+
+        #rp-rate-value {
+            height: 42px;
+        }
+    }
 }

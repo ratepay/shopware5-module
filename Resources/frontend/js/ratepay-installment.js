@@ -15,6 +15,7 @@
             bankTransferPaymentFirstDay: null,
             directDebitPaymentFirstDay: null,
 
+            selectorPaymentMethodContent: '.payment-method-installment-content',
             selectorCalculator: '.rp-container-calculator',
             selectorRuntimeSelect: '#rp-btn-runtime',
             selectorFixAmountButton: '.rp-btn-rate',
@@ -26,7 +27,11 @@
             selectorCalculationValue: 'input[name="ratepay[installment][calculation_value]"]',
             selectorPaymentTypeValue: 'input[name="ratepay[installment][payment_type]"]',
             selectorSepaForm: '.rp-sepa-form',
-            selectorPlanResult: '#rpResultContainer'
+            selectorPlanResult: '#rpResultContainer',
+            selectorPlanPreviewResult: '#rpResultPreviewContainer',
+            selectorDisplayPlanDetails: '#rpChangeInstallmentDetails',
+            selectorPaymentTypes: '.payment-type-select-container',
+            selectorPaymentContainer: '.installment-payment'
         },
         paymentTypes: {
             bankTransfer: 'BANK-TRANSFER',
@@ -47,6 +52,11 @@
 
             me.$el.on('click', me.opts.selectorPaymentSwitchDirectDebit, $.proxy(me.switchPaymentType, me, this.paymentTypes.directDebit));
             me.$el.on('click', me.opts.selectorPaymentSwitchBankTransfer, $.proxy(me.switchPaymentType, me, this.paymentTypes.bankTransfer));
+
+            me.$el.on('click', me.opts.selectorDisplayPlanDetails, $.proxy(me.openPlanDetails, me));
+            me.$el.on('click', me.opts.selectorDisplayPlanDetails, $.proxy(me.openPlanDetails, me));
+            me.$el.on('click', '.installment-calculator__modal [data-trigger=close]', $.proxy(me.closePlanDetails, me))
+
 
             me.initCalculator();
         },
@@ -74,6 +84,20 @@
             }
 
             StateManager.updatePlugin('select', 'swSelectboxReplacement');
+        },
+
+        openPlanDetails: function (event) {
+            event.preventDefault();
+            this.$el.find('.installment-calculator__modal')
+                .addClass('is--visible')
+                .removeClass('is--hidden')
+        },
+
+        closePlanDetails: function (event) {
+            event.preventDefault();
+            this.$el.find('.installment-calculator__modal')
+                .addClass('is--hidden')
+                .removeClass('is--visible')
         },
 
         selectRuntime: function (event) {
@@ -116,22 +140,25 @@
         switchPaymentType: function (paymentType) {
             var me = this,
                 $sepaForm = me.$el.find(me.opts.selectorSepaForm),
-                $fields = $sepaForm.find('input');
+                $fields = $sepaForm.find('input'),
+                $debitSelect = me.$el.find(me.opts.selectorPaymentSwitchDirectDebit),
+                $bankSelect = me.$el.find(me.opts.selectorPaymentSwitchBankTransfer);
+
+            $debitSelect.removeClass('is--checked');
+            $bankSelect.removeClass('is--checked');
+
+            $(this.opts.selectorPaymentContainer).toggleClass('is--hidden', !me.isDirectDebitAllowed || !me.isBankTransferAllowed);
 
             if (paymentType === me.paymentTypes.bankTransfer) {
+                $bankSelect.addClass('is--checked');
                 $sepaForm.hide();
                 $fields.prop('disabled', true).prop('required', false);
 
-                me.$el.find(me.opts.selectorPaymentSwitchBankTransfer).hide();
-                me.isDirectDebitAllowed && me.$el.find(me.opts.selectorPaymentSwitchDirectDebit).show();
-
                 $(me.opts.selectorPaymentTypeValue).val(paymentType);
             } else if (paymentType === me.paymentTypes.directDebit) {
+                $debitSelect.addClass('is--checked');
                 $sepaForm.show();
                 $fields.prop('disabled', false).prop('required', true);
-
-                me.$el.find(me.opts.selectorPaymentSwitchDirectDebit).hide();
-                me.isBankTransferAllowed && me.$el.find(me.opts.selectorPaymentSwitchBankTransfer).show();
 
                 $(me.opts.selectorPaymentTypeValue).val(paymentType);
             }
@@ -144,8 +171,7 @@
 
             $sepaForm.hide();
             $fields.prop('disabled', true).prop('required', false);
-            me.$el.find(me.opts.selectorPaymentSwitchBankTransfer).hide();
-            me.$el.find(me.opts.selectorPaymentSwitchDirectDebit).hide();
+            $(this.selectorPaymentMethodContent).hide();
         },
 
         callInstallmentPlan: function (calcType, calcValue) {
@@ -166,6 +192,7 @@
                 me.hasBeenInitialized = true;
                 if (response.success) {
                     me.$el.find(me.opts.selectorPlanResult).html(response.html);
+                    me.$el.find(me.opts.selectorPlanPreviewResult).html(response.htmlPreview);
                     me.$el.find(me.opts.selectorCalculationType).val(calcType);
                     me.$el.find(me.opts.selectorCalculationValue).val(calcValue);
 
@@ -173,6 +200,7 @@
                     me.isBankTransferAllowed = response.installment.isBankTransferAllowed;
 
                     me.switchPaymentType(response.defaults.paymentType);
+                    $(this.selectorPaymentMethodContent).show();
                 } else {
                     var $messageContainer = jQuery('#ratepay__installment__message-template').clone();
                     $messageContainer.find('.placeholder').replaceWith(response.message);
