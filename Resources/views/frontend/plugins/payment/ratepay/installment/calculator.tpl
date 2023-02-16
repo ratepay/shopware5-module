@@ -7,9 +7,7 @@
 
 <div class="payment-method-installment-content">
     {block name="ratepay_payment_method__ic__plan_preview_outer"}
-        <div class="row">
-            <div class="col-md-12" id="rpResultPreviewContainer"></div>
-        </div>
+        <div class="ratepay-installment-preview" id="rpResultPreviewContainer"></div>
     {/block}
 
     {block name="ratepay_payment_method__ic_modal"}
@@ -63,12 +61,12 @@
                                                 </div>
 
                                                 <div class="cct-body">
-                                                    <div class="input-group">
-                                                        <span class="input-group-addon">&euro;</span>
-                                                        <input type="text" id="rp-rate-value" class="form-control" />
-                                                        <span class="input-group-btn">
-                                                            <button class="btn btn-default rp-btn-rate" type="button" disabled>{$ratepay.translations.rp_calculate_rate}</button>
-                                                        </span>
+                                                    <div class="cct_by-rate">
+                                                        <div class="input-group">
+                                                            <span class="currency">&euro;</span>
+                                                            <input type="text" id="rp-rate-value" class="form-control cct_by-rate_input" />
+                                                        </div>
+                                                        <button class="btn btn-default rp-btn-rate" type="button" disabled>{$ratepay.translations.rp_calculate_rate}</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -106,14 +104,14 @@
                 </div>
             {/block}
             {block name="ratepay_payment_method__ic__sepa_outer"}
-                <div class="row rp-sepa-form">
+                <div id="ratepay-installment_bank-data" class="ratepay-installment_bank-data_outer">
                     {block name="ratepay_payment_method__ic__sepa_notice"}
-                        <div class="col-md-12 sepa-intro">
+                        <div class="sepa-intro">
                             {$ratepay.translations.wcd_sepa_notice_block}
                         </div>
                     {/block}
-                    {block name="ratepay_payment_method__ic__sepa_notice"}
-                        <div class="col-md-12">
+                    {block name="ratepay_payment_method__ic__bank_account"}
+                        <div class="ratepay-installment_bank-data">
                             {include file="frontend/plugins/payment/ratepay/common/bank_account.tpl"}
                         </div>
                     {/block}

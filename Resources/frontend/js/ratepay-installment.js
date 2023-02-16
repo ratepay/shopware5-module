@@ -26,7 +26,7 @@
             selectorCalculationType: 'input[name="ratepay[installment][calculation_type]"]',
             selectorCalculationValue: 'input[name="ratepay[installment][calculation_value]"]',
             selectorPaymentTypeValue: 'input[name="ratepay[installment][payment_type]"]',
-            selectorSepaForm: '.rp-sepa-form',
+            selectorSepaForm: '#ratepay-installment_bank-data',
             selectorPlanResult: '#rpResultContainer',
             selectorPlanPreviewResult: '#rpResultPreviewContainer',
             selectorDisplayPlanDetails: '#rpChangeInstallmentDetails',

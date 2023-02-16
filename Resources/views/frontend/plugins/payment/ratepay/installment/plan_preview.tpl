@@ -9,7 +9,7 @@ file that was distributed with this source code.
 
 {block name="ratepay_payment_method__ic_plan_preview"}
     <div class="preview-heading">{$ratepay.translations.rp_personal_calculation}</div>
-    <table class="preview-table">
+    <table class="preview-table ratepay-installment_plan-table">
         <tbody>
         <tr>
             <td>

@@ -7,250 +7,285 @@
 
 @ratepay-border: 1px solid #ccc;
 
-.installment-calculator > .container > .row {
-    & + .row {
-        margin-top: 10px;
-    }
-}
-
 //hide some components on initial load
 .rp-container-calculator,
 .rp-installment-plan-details,
 #rp-rate-elv,
 #rp-hide-installment-plan-details,
-.rp-sepa-form {
-    display: none;
-}
-
-.rp-installment-plan-description {
-    margin: 0;
+.ratepay-installment_bank-data_outer {
+  display: none;
 }
 
 #rp-installment-plan-no-details {
-    display: block;
+  display: block;
 }
 
 #rp-show-installment-plan-details {
-    display: block;
+  display: block;
 }
 
-.rp-menue,
+#rp-show-installment-plan-details,
+#rp-hide-installment-plan-details {
+  [class^="icon--"] {
+    margin-left: 0.5rem;
+    font-size: 0.6em;
+  }
+}
+
 .rp-installment-plan-details,
 .rp-installment-plan-no-details {
-    border-bottom: 1px solid #ddd;
-    width: 100%;
-    margin: 0px 3px;
-    padding: 13px 6px;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+  margin: 0 3px;
+  padding: 13px 6px;
 }
 
 .rp-installment-plan-details:nth-child(odd) {
-    background-color: #f9f9f9;
-}
-
-.rp-details-icon {
-    float: right;
-    padding: 5px;
-    height: 20px;
+  background-color: #f9f9f9;
 }
 
 .rp-link {
-    cursor: pointer;
-}
-
-#rp-iban-account-number {
-    display: block;
+  cursor: pointer;
 }
 
 .payment-type-select-container {
-    border-top: @ratepay-border;
+  border-top: @ratepay-border;
 
-    .rp-payment-type-switch {
-        position: relative;
-        padding: 0.7rem 0.7rem 0.7rem 3rem;
-        border-bottom: @ratepay-border;
-        cursor: pointer;
+  .rp-payment-type-switch {
+    position: relative;
+    padding: 0.7rem 0.7rem 0.7rem 3rem;
+    border-bottom: @ratepay-border;
+    cursor: pointer;
 
-        &.is--checked:before {
-            position: absolute;
-            top: 50%;
-            left: 1rem;
-            transform: translateY(-50%);
-            font-family: @sw-icon-fontname;
-            font-weight: @font-base-weight;
-            text-align: center;
-            content: @sw-icon-check;
-            font-size: 1rem;
-        }
+    &.is--checked:before {
+      position: absolute;
+      top: 50%;
+      left: 1rem;
+      transform: translateY(-50%);
+      font-family: @sw-icon-fontname;
+      font-weight: @font-base-weight;
+      text-align: center;
+      content: @sw-icon-check;
+      font-size: 1rem;
     }
-}
-
-.rp-label-sepa-agreement {
-    display: inline !important;
-}
-
-.table-striped td.headline {
-    border-top: 1px solid #000;
-    padding: 10px;
+  }
 }
 
 #rpResultContainer {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 .rp-container-calculator {
 
-    .runtime-select-container {
-        margin-bottom: 0;
-    }
+  .runtime-select-container {
+    margin-bottom: 0;
+  }
 
-    .js--fancy-select, #rp-btn-runtime {
-        display: block;
-        max-width: none;
-        width: 100%;
-    }
-
-    .form-group,
-    .input-group,
-    .input-group input,
-    .input-group button {
-        height: 42px;
-        margin-bottom: 0;
-    }
+  .js--fancy-select, #rp-btn-runtime {
+    display: block;
+    max-width: none;
+    width: 100%;
+  }
 }
 
 .installment-payment {
-    margin-top: 1rem;
+  margin-top: 1rem;
 }
 
-.rp-sepa-form {
-    margin-top: 0.5rem;
+.ratepay-installment_bank-data_outer {
+  margin-top: 0.5rem;
 
-    .sepa-intro {
-        margin-bottom: 20px;
-    }
+  .sepa-intro {
+    margin-bottom: 20px;
+  }
 }
 
 .runtime-select-container {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
-#rpResultPreviewContainer {
-    .preview-heading {
-        font-weight: bold;
-        border-top: @ratepay-border;
-        border-bottom: @ratepay-border;
-        padding: 0.5rem 0;
+.payment-method-installment-content {
+  margin-top: 1.5rem;
+}
+
+.ratepay-installment-preview {
+  .preview-heading {
+    font-weight: bold;
+    border-top: @ratepay-border;
+    border-bottom: @ratepay-border;
+    padding: 0.5rem 0;
+  }
+
+  .preview-table {
+    border-bottom: @ratepay-border;
+  }
+
+  .preview-after-table {
+    text-align: right;
+    padding: 0.5rem 0 0.5rem 0.5rem;
+
+    .icon--arrow-right {
+      position: relative;
+      top: 1px;
+    }
+  }
+}
+
+.ratepay-installment_plan-table {
+  width: 100%;
+
+  thead {
+    th {
+      background: none;
+      color: @text-color;
+      border-top: @ratepay-border;
+      border-bottom: @ratepay-border;
+      padding: 0.5rem;
+
+      & > span {
+        display: block;
+      }
     }
 
-    .preview-table {
-        border-bottom: @ratepay-border;
-
-        span.small {
-            font-size: 0.8em;
-        }
-
-        td:last-child {
-            text-align: right;
-        }
+    .calculation-info {
+      font-size: .8em;
+      line-height: 1.25em;
+      font-weight: normal;
     }
+  }
 
-    .preview-after-table {
-        text-align: right;
-        padding: 0.5rem 0 0.5rem 0.5rem;
+  span.small {
+    display: block;
+    font-size: 0.8em;
+  }
 
-        .icon--arrow-right {
-            position: relative;
-            top: 1px;
-        }
+  tbody {
+    td:last-child {
+      text-align: right;
+      white-space: nowrap;
     }
+  }
 }
 
 .installment-calculator__modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.5);
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 2rem;
+
+  &.is--visible {
+    display: flex !important;
+  }
+
+  &-header {
+    position: relative;
+
+    .close {
+      float: right;
+      height: 3rem;
+      width: 4rem;
+      text-align: right;
+      cursor: pointer;
+    }
+  }
+
+  &-inner {
+    max-width: 800px;
     padding: 2rem;
-
-    &.is--visible {
-        display: flex !important;
-    }
-
-    &-header {
-        position: relative;
-
-        .close {
-            float: right;
-            height: 3rem;
-            width: 4rem;
-            text-align: right;
-            cursor: pointer;
-        }
-    }
-
-    &-inner {
-        max-width: 800px;
-        padding: 2rem;
-        background: #fff;
-        max-height: 80%;
-        overflow-y: auto;
-    }
+    background: #fff;
+    max-height: 80%;
+    overflow-y: auto;
+  }
 }
 
 .installment-calculator {
-    .calculator-intro {
-        margin-bottom: 1rem;
-        border-bottom: @ratepay-border;
-        padding-bottom: 1rem;
+  .calculator-intro {
+    margin-bottom: 1rem;
+    border-bottom: @ratepay-border;
+    padding-bottom: 1rem;
+  }
+
+  .calculator_calculation-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .calculator_calculation-type {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  }
+
+  .cct-heading {
+    color: #333;
+    background-color: #f5f5f5;
+    border-color: #ddd;
+    text-align: center;
+    padding: 1rem;
+
+    h2 {
+      margin-top: 0;
+    }
+  }
+
+  .cct-body {
+    text-align: center;
+    padding: 0.5rem;
+
+    .form-group {
+      margin: 0;
     }
 
-    .calculator_calculation-types {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        grid-gap: 1rem;
-        margin-bottom: 1rem;
+    .select-field, .js--fancy-select {
+      display: block;
+      margin: auto;
     }
 
-    .calculator_calculation-type {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    #rp-rate-value {
+      height: 42px;
     }
+  }
 
-    .cct-heading {
-        color: #333;
-        background-color: #f5f5f5;
-        border-color: #ddd;
-        text-align: center;
-        padding: 1rem;
+  .cct_by-rate {
+    white-space: nowrap;
+    align-items: center;
+    grid-gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
 
-        h2 {
-            margin-top: 0;
-        }
+    .input-group {
+      position: relative;
+      flex: 1 0 5rem;
+
+      .currency {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1.75rem;
+        font-size: 1.3em;
+      }
+
+      .cct_by-rate_input {
+        padding-left: 2rem;
+      }
     }
+  }
+}
 
-    .cct-body {
-        text-align: center;
-        padding: 0.5rem;
-
-        .form-group {
-            margin: 0;
-        }
-
-        .select-field, .js--fancy-select {
-            display: block;
-            margin: auto;
-        }
-
-        #rp-rate-value {
-            height: 42px;
-        }
-    }
+// confirm page: installment plan
+.panel.ratepay-installment_plan {
+  .panel--body {
+    height: auto !important; // override inline-css by js
+  }
 }
