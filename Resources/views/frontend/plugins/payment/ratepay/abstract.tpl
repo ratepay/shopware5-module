@@ -1,4 +1,7 @@
 {namespace name="frontend/ratepay"}
+
+{include file="frontend/plugins/payment/ratepay/common/prems-osc-compatibilty.tpl"}
+
 {if $sPayments && $payment_mean.id == $form_data.payment}
     {block name="ratepay_payment_method"}
         {if $form_data.ratepay == null}

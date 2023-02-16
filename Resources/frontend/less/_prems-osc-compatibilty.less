@@ -1,0 +1,20 @@
+@media (min-width: 1260px), (max-width: 570px) {
+  #one-page-checkout {
+    .ratepay-input {
+      display: block;
+    }
+
+    .ratepay-payment-method {
+      .unitize(margin-left, -40);
+    }
+  }
+}
+
+.content--wrapper > .panel.opc-ratepay-installment_plan {
+  // we will reuse the style of the agb--on-top to match the custom width of the panels. (with is not 100%)
+  // to keep compatibility to the module in the future, we extend the style.
+  &:extend(#one-page-checkout .agb--on-top);
+  margin-top: 2rem;
+  margin-bottom: 0;
+  padding: 0;
+}
