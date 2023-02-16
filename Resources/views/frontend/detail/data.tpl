@@ -1,6 +1,8 @@
 {extends file="parent:frontend/detail/data.tpl"}
 
-{block name="frontend_detail_data" append}
+{block name="frontend_detail_data"}
+    {$smarty.block.parent}
+
     {if $ratepay.installment}
         {block name="frontend_detail_data_ratepay_installment"}
             <div class="ratepay--installment">

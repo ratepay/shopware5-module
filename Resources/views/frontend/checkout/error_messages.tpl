@@ -2,6 +2,8 @@
 
 {* RatePay informations *}
 {block name='frontend_checkout_error_messages_basket_error'}
+    {$smarty.block.parent}
+
     {foreach from=$ratePayMessages item=message}
         {include file="frontend/_includes/messages.tpl" type=$message.type content=$message.message}
     {/foreach}
