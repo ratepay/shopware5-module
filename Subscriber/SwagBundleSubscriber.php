@@ -34,7 +34,7 @@ class SwagBundleSubscriber implements SubscriberInterface
         if ($itemToAdd instanceof Detail && is_array($originalItem) && isset($originalItem['bundlePackageId'])) {
             // frontend request
             $packageId = $originalItem['bundlePackageId'];
-        } else if ($itemToAdd instanceof Detail && $itemToAdd->getAttribute() && method_exists($itemToAdd->getAttribute(), 'getBundlePackageId')) {
+        } else if ($itemToAdd instanceof Detail && $itemToAdd->getAttribute() !== null && method_exists($itemToAdd->getAttribute(), 'getBundlePackageId')) {
             // order management (ship/cancel/return)
             $packageId = $itemToAdd->getAttribute()->getBundlePackageId();
         }
