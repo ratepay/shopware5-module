@@ -6,7 +6,8 @@
 |Shop Version | `5.5.0` - `5.7.x`
 |Link | http://www.ratepay.com
 |Mail | integration@ratepay.com
-|Full Documentation | https://ratepay.gitbook.io/shopware5/
+|Full Documentation | [click here](https://docs.ratepay.com/docs/developer/shop_modules/shopware/shopware_5/ratepay_payment_plugin_for_shopware/)|
+|Legal Disclaimer   | [click here](https://docs.ratepay.com/docs/developer/shop_modules/overview/)| 
 
 ## Installation
 
